@@ -1,0 +1,590 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>ambari-hive-storage-based-authorization | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="概要hive使用hdfs的文件系统权限来约束用户对database/table/partition的访问权限，可以让用户属于多个group，不同权限的数据属于不同group就可以随意组合用户的权限了。
+ambari配置参数123456789101112131415161718192021222324252627&amp;lt;property&amp;gt;  &amp;lt;name&amp;gt;hive.security.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ambari-hive-storage-based-authorization">
+<meta property="og:url" content="http://willcup.com/2016/12/05/ambari-hive-storage-based-authorization/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="概要hive使用hdfs的文件系统权限来约束用户对database/table/partition的访问权限，可以让用户属于多个group，不同权限的数据属于不同group就可以随意组合用户的权限了。
+ambari配置参数123456789101112131415161718192021222324252627&amp;lt;property&amp;gt;  &amp;lt;name&amp;gt;hive.security.">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.773Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ambari-hive-storage-based-authorization">
+<meta name="twitter:description" content="概要hive使用hdfs的文件系统权限来约束用户对database/table/partition的访问权限，可以让用户属于多个group，不同权限的数据属于不同group就可以随意组合用户的权限了。
+ambari配置参数123456789101112131415161718192021222324252627&amp;lt;property&amp;gt;  &amp;lt;name&amp;gt;hive.security.">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/ambari-hive-storage-based-authorization/" title="ambari-hive-storage-based-authorization" itemprop="url">ambari-hive-storage-based-authorization</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:08:35.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#概要"><span class="toc-text">概要</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ambari配置参数"><span class="toc-text">ambari配置参数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#测试时间"><span class="toc-text">测试时间</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#延伸"><span class="toc-text">延伸</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#参考"><span class="toc-text">参考</span></a></li></ol>
+		
+		</div>
+		
+		<h4 id="概要"><a href="#概要" class="headerlink" title="概要"></a>概要</h4><p>hive使用hdfs的文件系统权限来约束用户对database/table/partition的访问权限，可以让用户属于多个group，不同权限的数据属于不同group就可以随意组合用户的权限了。</p>
+<h4 id="ambari配置参数"><a href="#ambari配置参数" class="headerlink" title="ambari配置参数"></a>ambari配置参数</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>hive.security.metastore.authorization.manager<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>org.apache.hadoop.hive.ql.security.authorization.DefaultHiveMetastoreAuthorizationProvider<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>authorization manager class name to be used in the metastore for authorization.</div><div class="line">  The user defined authorization class should implement interface</div><div class="line">  org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider.</div><div class="line">  <span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line"> <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>hive.security.metastore.authenticator.manager<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>authenticator manager class name to be used in the metastore for authentication.</div><div class="line">  The user defined authenticator should implement interface </div><div class="line">  org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider.</div><div class="line">  <span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>hive.metastore.pre.event.listeners<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span> <span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>pre-event listener classes to be loaded on the metastore side to run code</div><div class="line">  whenever databases, tables, and partitions are created, altered, or dropped.</div><div class="line">  Set to org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener</div><div class="line">  if metastore-side authorization is desired.</div><div class="line">  <span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div></pre></td></tr></table></figure>
+<h4 id="测试时间"><a href="#测试时间" class="headerlink" title="测试时间"></a>测试时间</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">hive&gt; create database willtest;</div><div class="line"></div><div class="line">hive&gt; CREATE TABLE `batting`(</div><div class="line">    &gt;   `id` int, </div><div class="line">    &gt;   `dtdontquery` string, </div><div class="line">    &gt;   `name` string)</div><div class="line">    &gt; PARTITIONED BY ( </div><div class="line">    &gt;   `dt` string);</div><div class="line">    </div><div class="line">hive&gt; insert into willtest.batting partition(dt=&apos;20150409&apos;) values(12, &apos;will test string&apos;, &apos;will&apos;);</div></pre></td></tr></table></figure>
+<ol>
+<li>创建测试库willtest</li>
+<li>创建测试表willtest.batting</li>
+<li>插入一条测试数据，使用ambari用户maming到hive view查询此表，正常。</li>
+<li>观察一下hdfs上的文件.<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">[hdfs@data-test02 root]$ hdfs dfs -ls /apps/hive/warehouse</div><div class="line">drwxrwxrwx   - hive hdfs          0 2016-05-27 15:22 /apps/hive/warehouse/willtest.db</div><div class="line"></div><div class="line">[hdfs@data-test02 root]$ hdfs dfs -ls /apps/hive/warehouse/willtest.db</div><div class="line">drwxrwxrwx   - hive hdfs          0 2016-05-27 15:23 /apps/hive/warehouse/willtest.db/batting</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>现在这个库和表的权限都是谁都可以随便操作的，而且owner是hive，group是hdfs。</p>
+<ol>
+<li>修改batting表的权限，期望我们的ambari用户maming不能查询；<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[hdfs@data-test02 root]$ hdfs dfs -chmod -R 770 /apps/hive/warehouse/willtest.db/batting</div><div class="line">[hdfs@data-test02 root]$ hdfs dfs -ls /apps/hive/warehouse/willtest.db</div><div class="line">drwxrwx---   - hive hdfs          0 2016-05-27 15:23 /apps/hive/warehouse/willtest.db/batting</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>先把group和all的权限约束一下，这里因为maming本来就不是hdfs group的，所以就暂时不用修改group了。</p>
+<ol>
+<li><p>再使用ambari用户amming查询willtest.batting，报错：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"> org.apache.ambari.view.hive.client.HiveErrorStatusException: H110 Unable to submit statement. Error while compiling statement: FAILED: SemanticException Unable to fetch table batting. java.security.AccessControlException: Permission denied: user=maming, access=READ, inode=&quot;/apps/hive/warehouse/willtest.db/batting&quot;:hive:hdfs:drwxrwx---</div><div class="line">...</div></pre></td></tr></table></figure>
+</li>
+<li><p>补充一下maming等几个用户的权限</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">[hdfs@data-test02 root]$ hdfs groups maming</div><div class="line">maming : maming</div><div class="line">[hdfs@data-test02 root]$ hdfs groups sqoop</div><div class="line">sqoop : hadoop</div><div class="line">[hdfs@data-test02 root]$ hdfs groups hdfs</div><div class="line">hdfs : hadoop hdfs</div></pre></td></tr></table></figure>
+</li>
+<li><p>将maming暂时加入hdfs这个group之后再试一下，成功</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>测试成功。</p>
+<h4 id="延伸"><a href="#延伸" class="headerlink" title="延伸"></a>延伸</h4><p>好，基本需求能够实现。那么如果我们为某个group分配了某个db的权限。如果我们新增一个表batting2呢，再看一下文件属性<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[hdfs@data-test02 root]$ hdfs dfs -ls /apps/hive/warehouse/willtest.db</div><div class="line">drwxrwx---   - hive hdfs          0 2016-05-27 15:23 /apps/hive/warehouse/willtest.db/batting</div><div class="line">drwxrwxrwx   - hive hdfs          0 2016-05-27 15:51 /apps/hive/warehouse/willtest.db/batting2</div></pre></td></tr></table></figure></p>
+<p>问题出现，我们需要修改创建数据仓库文件的默认权限才行，不然我们就需要每次增加新库都得改一下table文件权限。</p>
+<p>找到两个相关参数<br>|参数 |含义 |<br>|—|—|<br>| hive.warehouse.subdir.inherit.perms |true/false 是否 <strong>继承上级文件夹的umask</strong> |<br>| hive.files.umask.value | 0770 解释说是被上面那个参数替换了 |<br>那就设置hive.warehouse.subdir.inherit.perms为true，重启一下hive，再去创建表看一下文件夹的权限。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">[hdfs@data-test02 root]$ hdfs dfs -chmod -R 770 /apps/hive/warehouse/</div><div class="line">[hdfs@data-test02 root]$ hdfs dfs -ls /apps/hive/warehouse/</div><div class="line">Found 2 items</div><div class="line">drwxrwx---   - hive hdfs          0 2016-05-27 15:10 /apps/hive/warehouse/batting</div><div class="line">drwxrwx---   - hive hdfs          0 2016-05-27 16:26 /apps/hive/warehouse/willtest.db</div><div class="line">[hdfs@data-test02 root]$ hdfs dfs -ls /apps/hive/warehouse/willtest.db</div><div class="line">Found 4 items</div><div class="line">drwxrwx---   - hive hdfs          0 2016-05-27 15:23 /apps/hive/warehouse/willtest.db/batting</div><div class="line">drwxrwx---   - hive hdfs          0 2016-05-27 15:51 /apps/hive/warehouse/willtest.db/batting2</div><div class="line">drwxrwx---   - hive hdfs          0 2016-05-27 16:27 /apps/hive/warehouse/willtest.db/batting4</div></pre></td></tr></table></figure></p>
+<p>先把willtest.db的文件夹权限改成了770，然后在willtest库里创建了一个新的表batting4，可以看到hdfs里的权限已经跟父目录保持一致了。<br>这样我们给指定了某个db的文件夹权限之后，下面的table的新增与变化，权限都会稍微固定一些。</p>
+<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><p><a href="https://cwiki.apache.org/confluence/display/Hive/Storage+Based+Authorization+in+the+Metastore+Server" target="_blank" rel="external">https://cwiki.apache.org/confluence/display/Hive/Storage+Based+Authorization+in+the+Metastore+Server</a><br><a href="https://cwiki.apache.org/confluence/display/Hive/HCatalog+Authorization" target="_blank" rel="external">https://cwiki.apache.org/confluence/display/Hive/HCatalog+Authorization</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/12/05/ambari-hive-storage-based-authorization/" data-title="ambari-hive-storage-based-authorization | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/12/05/hive中的权限-SQL-Standard-Based-Hive-Authorization/" title="hive中的权限-SQL-Standard-Based-Hive-Authorization">
+  <strong>上一篇：</strong><br/>
+  <span>
+  hive中的权限-SQL-Standard-Based-Hive-Authorization</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/12/05/django模板语言/"  title="django模板语言">
+ <strong>下一篇：</strong><br/> 
+ <span>django模板语言
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/12/05/ambari-hive-storage-based-authorization/" data-title="ambari-hive-storage-based-authorization" data-url="http://willcup.com/2016/12/05/ambari-hive-storage-based-authorization/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#概要"><span class="toc-number">1.</span> <span class="toc-text">概要</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ambari配置参数"><span class="toc-number">2.</span> <span class="toc-text">ambari配置参数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#测试时间"><span class="toc-number">3.</span> <span class="toc-text">测试时间</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#延伸"><span class="toc-number">4.</span> <span class="toc-text">延伸</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#参考"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

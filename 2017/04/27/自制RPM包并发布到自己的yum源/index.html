@@ -1,0 +1,631 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>自制RPM包并发布到自己的yum源 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="使用一个普通用户执行，以免对系统造成重伤。
+1yum install -y rpmdevtools rpm-build
+自定义工作空间方案1：
+1rpmdev-setuptree
+方案2
+创建文件~/.rpmmacros1%_topdir        /home/will/rpmbuild
+配置了空间之后，还得手动创建一下1mkdir /home/will/rpmbuild
+创建需要的目录12c">
+<meta property="og:type" content="article">
+<meta property="og:title" content="自制RPM包并发布到自己的yum源">
+<meta property="og:url" content="http://willcup.com/2017/04/27/自制RPM包并发布到自己的yum源/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="使用一个普通用户执行，以免对系统造成重伤。
+1yum install -y rpmdevtools rpm-build
+自定义工作空间方案1：
+1rpmdev-setuptree
+方案2
+创建文件~/.rpmmacros1%_topdir        /home/will/rpmbuild
+配置了空间之后，还得手动创建一下1mkdir /home/will/rpmbuild
+创建需要的目录12c">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.797Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="自制RPM包并发布到自己的yum源">
+<meta name="twitter:description" content="使用一个普通用户执行，以免对系统造成重伤。
+1yum install -y rpmdevtools rpm-build
+自定义工作空间方案1：
+1rpmdev-setuptree
+方案2
+创建文件~/.rpmmacros1%_topdir        /home/will/rpmbuild
+配置了空间之后，还得手动创建一下1mkdir /home/will/rpmbuild
+创建需要的目录12c">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/自制RPM包并发布到自己的yum源/" title="自制RPM包并发布到自己的yum源" itemprop="url">自制RPM包并发布到自己的yum源</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T03:29:46.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#自定义工作空间"><span class="toc-text">自定义工作空间</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#源码放到SOURCES目录"><span class="toc-text">源码放到SOURCES目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SPECS下创建配置"><span class="toc-text">SPECS下创建配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#开始构建"><span class="toc-text">开始构建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题"><span class="toc-text">问题</span></a></li></ol>
+		
+		</div>
+		
+		<p>使用一个普通用户执行，以免对系统造成重伤。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">yum install -y rpmdevtools rpm-build</div></pre></td></tr></table></figure>
+<h2 id="自定义工作空间"><a href="#自定义工作空间" class="headerlink" title="自定义工作空间"></a>自定义工作空间</h2><p>方案1：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rpmdev-setuptree</div></pre></td></tr></table></figure>
+<p>方案2</p>
+<p>创建文件~/.rpmmacros<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">%_topdir        /home/will/rpmbuild</div></pre></td></tr></table></figure></p>
+<p>配置了空间之后，还得手动创建一下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mkdir /home/will/rpmbuild</div></pre></td></tr></table></figure></p>
+<p>创建需要的目录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">cd ~/rpmbuild  </div><div class="line">mkdir -pv &#123;BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS&#125;</div></pre></td></tr></table></figure></p>
+<ul>
+<li>BUILD #编译之前，如解压包后存放的路径</li>
+<li>BUILDROOT #编译后存放的路径</li>
+<li>RPMS #打包完成后rpm包存放的路径</li>
+<li>SOURCES #源包所放置的路径</li>
+<li>SPECS #spec文档放置的路径</li>
+<li>SPRMS #源码rpm包放置的路径</li>
+</ul>
+<p>注：一般我们都把源码打包成tar.gz格式然后存放于SOURCES路径下，而在SPECS路径下编写spec文档，通过命令打包后，默认会把打包后的rpm包放在RPMS下，而源码包会被放置在SRPMS下</p>
+<h2 id="源码放到SOURCES目录"><a href="#源码放到SOURCES目录" class="headerlink" title="源码放到SOURCES目录"></a>源码放到SOURCES目录</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">cp /tmp/redis-3.2.8.tar.gz SOURCES</div></pre></td></tr></table></figure>
+<h2 id="SPECS下创建配置"><a href="#SPECS下创建配置" class="headerlink" title="SPECS下创建配置"></a>SPECS下创建配置</h2><p>到SPECS下创建指定配置，编辑的时候会自动生成模板。编辑<code>SPECS/redis.spec</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div></pre></td><td class="code"><pre><div class="line">Name:		redis</div><div class="line">Version:	3.2.8	</div><div class="line">Release:	3%&#123;dist&#125;</div><div class="line">Summary:	redis from will	</div><div class="line"></div><div class="line">Group:		System Environment/Daemons</div><div class="line">License:	GPLv2</div><div class="line">URL:		https://github.com/willcup</div><div class="line">Source0:	redis-3.2.8.tar.gz</div><div class="line"></div><div class="line">Packager:       WillCup &lt;willcup@163.com&gt; </div><div class="line">BuildRequires:	gcc,make</div><div class="line">Requires:	openssl,chkconfig</div><div class="line">BuildRoot:      %_topdir/BUILDROOT</div><div class="line"></div><div class="line"></div><div class="line">%define PortFindDir /usr/local/will_redis</div><div class="line"></div><div class="line">%description</div><div class="line">this is build from will, just for ambari service.</div><div class="line"></div><div class="line">%prep</div><div class="line">%setup -q</div><div class="line"></div><div class="line">%build</div><div class="line">make %&#123;?_smp_mflags&#125;</div><div class="line"></div><div class="line"></div><div class="line">%install</div><div class="line">[ ! -e $RPM_BUILD_ROOT%&#123;PortFindDir&#125; ] &amp;&amp; mkdir -p $RPM_BUILD_ROOT%&#123;PortFindDir&#125;</div><div class="line">cp -rfv * $RPM_BUILD_ROOT%&#123;PortFindDir&#125;</div><div class="line">[ ! -e $RPM_BUILD_ROOT/etc/init.d ] &amp;&amp; mkdir -p $RPM_BUILD_ROOT/etc/init.d</div><div class="line">[ ! -e $RPM_BUILD_ROOT/usr/local/bin ] &amp;&amp; mkdir -p $RPM_BUILD_ROOT/usr/local/bin</div><div class="line">cp -vf $RPM_BUILD_ROOT%&#123;PortFindDir&#125;/utils/redis_init_script $RPM_BUILD_ROOT/etc/init.d/redis</div><div class="line">cp -vf $RPM_BUILD_ROOT%&#123;PortFindDir&#125;/src/redis-server $RPM_BUILD_ROOT/usr/local/bin</div><div class="line">cp -vf $RPM_BUILD_ROOT%&#123;PortFindDir&#125;/src/redis-cli $RPM_BUILD_ROOT/usr/local/bin</div><div class="line">#mkdir -p &quot;$RPM_BUILD_ROOT&quot;</div><div class="line">#cp -rvf * &quot;$RPM_BUILD_ROOT&quot;</div><div class="line">#ls -l &quot;$RPM_BUILD_ROOT&quot;</div><div class="line">echo &quot;no reason to install redis, just move it&quot;</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">%files</div><div class="line">%defattr (-,root,root,0755)</div><div class="line">%dir %&#123;PortFindDir&#125;</div><div class="line">%attr(0755, root, root) %&#123;PortFindDir&#125;/*</div><div class="line">%attr(0755, root, root)	/etc/init.d/redis</div><div class="line">%attr(0755, root, root) /usr/local/bin</div><div class="line">%doc</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">%postun	</div><div class="line">rm -fr %(PortFindDir&#125;</div><div class="line">rm -vf /usr/local/bin/redis-*</div><div class="line">rm -vf /etc/init.d/redis</div><div class="line"></div><div class="line">%changelog</div><div class="line">* Fri Dec 29 2016 willcup &lt;willcup@163.com&gt; - 3.2.8-1 </div><div class="line">- Initial version just changelog</div></pre></td></tr></table></figure></p>
+<p>其实上面的buildroot就相当于是后面rpm安装时候的系统根目录。所以一般都需要指定一个子目录。不然是行不通的，会发现弄完以后RPM包里没有任何文件。</p>
+<h2 id="开始构建"><a href="#开始构建" class="headerlink" title="开始构建"></a>开始构建</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rpmbuild -ba redis.spec</div></pre></td></tr></table></figure>
+<p>可以看到已经有了结果</p>
+<p>这个是构建过程中的源码目录：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">[will@datanode08 rpmbuild]$ ll BUILD/redis-3.2.8/</div><div class="line">total 204</div><div class="line">-rw-r--r--.  1 will will 85775 Feb 12 23:14 00-RELEASENOTES</div><div class="line">-rw-r--r--.  1 will will    53 Feb 12 23:14 BUGS</div><div class="line">-rw-r--r--.  1 will will  1805 Feb 12 23:14 CONTRIBUTING</div><div class="line">-rw-r--r--.  1 will will  1487 Feb 12 23:14 COPYING</div><div class="line">-rw-r--r--.  1 will will     0 Apr 27 12:25 debugfiles.list</div><div class="line">-rw-r--r--.  1 will will     0 Apr 27 12:25 debuglinks.list</div><div class="line">-rw-r--r--.  1 will will     0 Apr 27 12:25 debugsources.list</div><div class="line">drwxr-xr-x.  7 will will  4096 Apr 27 12:25 deps</div><div class="line">-rw-r--r--.  1 will will    11 Feb 12 23:14 INSTALL</div><div class="line">-rw-r--r--.  1 will will   151 Feb 12 23:14 Makefile</div><div class="line">-rw-r--r--.  1 will will  4223 Feb 12 23:14 MANIFESTO</div><div class="line">-rw-r--r--.  1 will will  6834 Feb 12 23:14 README.md</div><div class="line">-rw-r--r--.  1 will will 46695 Feb 12 23:14 redis.conf</div><div class="line">-rwxr-xr-x.  1 will will   271 Feb 12 23:14 runtest</div><div class="line">-rwxr-xr-x.  1 will will   280 Feb 12 23:14 runtest-cluster</div><div class="line">-rwxr-xr-x.  1 will will   281 Feb 12 23:14 runtest-sentinel</div><div class="line">-rw-r--r--.  1 will will  7606 Feb 12 23:14 sentinel.conf</div><div class="line">drwxr-xr-x.  2 will will  4096 Apr 27 12:25 src</div><div class="line">drwxr-xr-x. 10 will will  4096 Feb 12 23:14 tests</div><div class="line">drwxr-xr-x.  7 will will  4096 Feb 12 23:14 utils</div></pre></td></tr></table></figure></p>
+<p>打包完成后rpm包存放的路径：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">[will@datanode08 rpmbuild]$ ll RPMS/x86_64/</div><div class="line">total 8</div><div class="line">-rw-rw-r--. 1 will will 1752 Apr 27 12:25 redis-3.2.8-1.el6.x86_64.rpm</div><div class="line">-rw-rw-r--. 1 will will 1880 Apr 27 12:25 redis-debuginfo-3.2.8-1.el6.x86_64.rpm</div></pre></td></tr></table></figure></p>
+<p>源码rpm包放置的路径<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[will@datanode08 rpmbuild]$ ll SRPMS/</div><div class="line">total 1516</div><div class="line">-rw-rw-r--. 1 will will 1549338 Apr 27 12:25 redis-3.2.8-1.el6.src.rpm</div></pre></td></tr></table></figure></p>
+<p>然而查看rpm包的文件，竟然什么都没有。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">[will@datanode08 rpmbuild]$ rpm -qlp RPMS/x86_64/redis-3.2.8-1.el6.x86_64.rpm </div><div class="line">(contains no files)</div></pre></td></tr></table></figure></p>
+<p>修改之后，能够正常安装与使用了。</p>
+<p>使用 rpm -ivh xx.rpm成功测试。</p>
+<p>下一步，将RPM发布至我们自有的yum源上。</p>
+<p>按照其他的类似hadoop之类，创建一个redis目录，然后把我们的rpm包放上去</p>
+<p>目录样子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">[root@datanode21 2.4.2.0]# ll</div><div class="line">total 2146284</div><div class="line">.....</div><div class="line">drwxr-xr-x  2 ambari-qa users       4096 Apr 25  2016 hadoop</div><div class="line">drwxr-xr-x  2 ambari-qa users       4096 Apr 25  2016 hadooplzo</div><div class="line">drwxr-xr-x  2 ambari-qa users       4096 Apr 25  2016 hbase</div><div class="line">.......</div><div class="line">drwxr-xr-x  2 ambari-qa users       4096 Apr 25  2016 oozie</div><div class="line">drwxr-xr-x  2 ambari-qa users       4096 Apr 25  2016 phoenix</div><div class="line">drwxr-xr-x  2 ambari-qa users       4096 Apr 25  2016 pig</div><div class="line">drwxr-xr-x  2 ambari-qa users       4096 Apr 25  2016 ranger</div><div class="line">drwxr-xr-x  2 root      root        4096 Apr 27 16:45 redis</div><div class="line">You have new mail in /var/spool/mail/root</div><div class="line">[root@datanode21 2.4.2.0]# pwd</div><div class="line">/server/www/html/hdp/HDP/centos6/2.x/updates/2.4.2.0</div></pre></td></tr></table></figure></p>
+<p>先看下我们的HDP.repo<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">[HDP-2.4]</div><div class="line">name=HDP-2.4</div><div class="line">baseurl=http://10.2.19.110/hdp/HDP/centos6/2.x/updates/2.4.2.0</div><div class="line"></div><div class="line">path=/</div><div class="line">enabled=1</div><div class="line">gpgcheck=0</div></pre></td></tr></table></figure></p>
+<p>可以看到是同一个目录，我们需要在这个目录下重新执行<code>createrepo</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">[root@datanode21 2.4.2.0]# createrepo .</div><div class="line">Spawning worker 0 with 182 pkgs</div><div class="line">Workers Finished</div><div class="line">Gathering worker results</div><div class="line"></div><div class="line">Saving Primary metadata</div><div class="line">Saving file lists metadata</div><div class="line">Saving other metadata</div><div class="line">Generating sqlite DBs</div><div class="line">Sqlite DBs complete</div><div class="line">[root@datanode21 2.4.2.0]# ll repodata</div><div class="line">total 856</div><div class="line">-rw-r--r-- 1 root root 373992 Apr 27 17:59 458b198ae4b61c02b0f7bb03ae9421365dcb2076ffb6087e6808e7915ec31778-filelists.sqlite.bz2</div><div class="line">-rw-r--r-- 1 root root   9092 Apr 27 17:59 9a59871d45121b0be43f188ae7ffe788e2eceb07d03648717323dedd26faf567-other.xml.gz</div><div class="line">-rw-r--r-- 1 root root  12162 Apr 27 17:59 bb3c2dc4c1f7ae17b172f104e3df5171d0d09db797a5f5a9227ab4ae424a45b7-other.sqlite.bz2</div><div class="line">-rw-r--r-- 1 root root  37245 Apr 27 17:59 c23cec21ae4b3e9b89a029b593362ca1e2483316e1d07843a9035ad8e3c93053-primary.xml.gz</div><div class="line">-rw-r--r-- 1 root root 363468 Apr 27 17:59 c521ec682137ff19e61f7ec91e86c725d6d6fa7553be01c783a67ffb68b30afe-filelists.xml.gz</div><div class="line">-rw-r--r-- 1 root root  65483 Apr 27 17:59 eb98320b3ad040203135b91f26caee107900f2e9bdc86a4be6c5218fcc505036-primary.sqlite.bz2</div><div class="line">-rw-r--r-- 1 root root   2996 Apr 27 17:59 repomd.xml</div></pre></td></tr></table></figure></p>
+<p>然后更新客户机上，也就是要安装redis 的机器上的repo信息。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">yum clean all</div><div class="line">yum update</div><div class="line">yum search redis</div></pre></td></tr></table></figure></p>
+<p>能够搜到，至此结束。</p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>我们要构建redis，主要是为了适应既有ambari的redis service，它执行安装的命令是<code>yum install redis.3.2.8</code>。当然我们是可以修改一下他的install代码的，但是考虑到以后其他组件很有可能还是通过yum安装，那还是现在就把自己动手构建yum的rpm包这个问题解决了吧，以绝后患。</p>
+<p>问题来了，上面我们搜到的只是<code>redis.x86_64</code>,实际安装的时候请求的是3.2.8，需要版本号加进去才行。看到spec里有version关键字。。。折腾了好半天，都不是，构建出来search的时候都还是只有redis。</p>
+<p>后来参考既有的hadoop、flume等yum源，成功搞定。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">flume_2_4_2_0_258-1.5.2.2.4.2.0-258.el6.noarch.rpm	25-Apr-2016 19:54	40M	 </div><div class="line">	</div><div class="line">flume_2_4_2_0_258-agent-1.5.2.2.4.2.0-258.el6.noarch.rpm	25-Apr-2016 19:54	6.4K</div></pre></td></tr></table></figure></p>
+<p>发现这个版本号貌似是跟着文件夹的。</p>
+<p>所以，修改如下:</p>
+<ul>
+<li>修改redis.spec为redis-3.2.8.spec</li>
+<li>编辑spec文件<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Name:           redis-3.2.8</div><div class="line">Version:        1_0_0</div><div class="line"></div><div class="line">URL:            https://github.com/willcup</div><div class="line">Source0:        redis-3.2.8.tar.gz</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>关键在于Name，后面都是喽啰</p>
+<ul>
+<li>这样解压后会去redis-3.2.8-1_0_0，也就是根据name和version生成的规则，所以可能要调整一下tar.gz里的文件夹名称</li>
+<li>重新构建预发布，即可<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">redis-3.2.8-1_0_0-4.el6.x86_64.rpm</div><div class="line"></div><div class="line">yum search redis</div><div class="line">redis.x86_64 : redis from will</div><div class="line">redis-3.2.8.x86_64 : redis 3 2 8 from will</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>参考：</p>
+<ul>
+<li><a href="https://docs.fedoraproject.org/en-US/Fedora_Draft_Documentation/0.1/html/Packagers_Guide/chap-Packagers_Guide-Spec_File_Reference-Preamble.html" target="_blank" rel="external">https://docs.fedoraproject.org/en-US/Fedora_Draft_Documentation/0.1/html/Packagers_Guide/chap-Packagers_Guide-Spec_File_Reference-Preamble.html</a></li>
+<li><a href="https://fedoraproject.org/wiki/How_to_create_an_RPM_package/zh-cn#.E5.AE.9E.E4.BE.8B" target="_blank" rel="external">https://fedoraproject.org/wiki/How_to_create_an_RPM_package/zh-cn#.E5.AE.9E.E4.BE.8B</a></li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/04/27/自制RPM包并发布到自己的yum源/" data-title="自制RPM包并发布到自己的yum源 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/05/09/ambari个别component扩张/" title="ambari个别component扩张">
+  <strong>上一篇：</strong><br/>
+  <span>
+  ambari个别component扩张</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/04/26/TEZ-hadoop上数据处理的新篇章/"  title="TEZ-hadoop上数据处理的新篇章">
+ <strong>下一篇：</strong><br/> 
+ <span>TEZ-hadoop上数据处理的新篇章
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/04/27/自制RPM包并发布到自己的yum源/" data-title="自制RPM包并发布到自己的yum源" data-url="http://willcup.com/2017/04/27/自制RPM包并发布到自己的yum源/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#自定义工作空间"><span class="toc-number">1.</span> <span class="toc-text">自定义工作空间</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#源码放到SOURCES目录"><span class="toc-number">2.</span> <span class="toc-text">源码放到SOURCES目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SPECS下创建配置"><span class="toc-number">3.</span> <span class="toc-text">SPECS下创建配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#开始构建"><span class="toc-number">4.</span> <span class="toc-text">开始构建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题"><span class="toc-number">5.</span> <span class="toc-text">问题</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

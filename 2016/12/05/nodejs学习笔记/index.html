@@ -1,0 +1,679 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>nodejs学习笔记 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="v8的出现，还有commonjs的规范化使得nodejs提供后台服务成为可能。
+两种启动方式：
+
+node app.js   不自动更新
+supervisor app.js 自动更新，修改后不用重启
+
+
+特点
+默认全部都是异步操作
+123456789var fs = require(&apos;fs&apos;);fs.readFile(&apos;test.file&apos;, &apos;utf-8&apos;, function(err, data">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nodejs学习笔记">
+<meta property="og:url" content="http://willcup.com/2016/12/05/nodejs学习笔记/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="v8的出现，还有commonjs的规范化使得nodejs提供后台服务成为可能。
+两种启动方式：
+
+node app.js   不自动更新
+supervisor app.js 自动更新，修改后不用重启
+
+
+特点
+默认全部都是异步操作
+123456789var fs = require(&apos;fs&apos;);fs.readFile(&apos;test.file&apos;, &apos;utf-8&apos;, function(err, data">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.789Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="nodejs学习笔记">
+<meta name="twitter:description" content="v8的出现，还有commonjs的规范化使得nodejs提供后台服务成为可能。
+两种启动方式：
+
+node app.js   不自动更新
+supervisor app.js 自动更新，修改后不用重启
+
+
+特点
+默认全部都是异步操作
+123456789var fs = require(&apos;fs&apos;);fs.readFile(&apos;test.file&apos;, &apos;utf-8&apos;, function(err, data">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/nodejs学习笔记/" title="nodejs学习笔记" itemprop="url">nodejs学习笔记</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:08:17.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#特点"><span class="toc-text">特点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#module和package"><span class="toc-text">module和package</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#pacakge"><span class="toc-text">pacakge</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#包管理器和代码调试"><span class="toc-text">包管理器和代码调试</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#包管理器"><span class="toc-text">包管理器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#代码调试"><span class="toc-text">代码调试</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#全局对象和全局变量"><span class="toc-text">全局对象和全局变量</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#console"><span class="toc-text">console</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#process"><span class="toc-text">process</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#util和EventEmitter"><span class="toc-text">util和EventEmitter</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#utilities"><span class="toc-text">utilities</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#events"><span class="toc-text">events</span></a></li></ol></li></ol></li></ol></li></ol>
+		
+		</div>
+		
+		<p>v8的出现，还有commonjs的规范化使得nodejs提供后台服务成为可能。</p>
+<p>两种启动方式：</p>
+<ul>
+<li>node app.js   不自动更新</li>
+<li>supervisor app.js 自动更新，修改后不用重启</li>
+</ul>
+<hr>
+<h2 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h2><ul>
+<li><p>默认全部都是异步操作</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line">fs.readFile(<span class="string">'test.file'</span>, <span class="string">'utf-8'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">err, data</span>)</span>&#123;</div><div class="line">    <span class="keyword">if</span> (err) &#123;</div><div class="line">        <span class="built_in">console</span>.log(err);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="built_in">console</span>.log(data);</div><div class="line">    &#125;</div><div class="line">&#125;);</div><div class="line"><span class="built_in">console</span>.log(<span class="string">'end'</span>); <span class="comment">// 这一行会先被打印出来</span></div></pre></td></tr></table></figure>
+</li>
+<li><p>全部基于事件处理机制，nodejs的所有机制都是围绕事件回调机制完成的。事件的回调函数在执行的过程中，可能会发出IO请求或者emit事件，执行完毕后再返回事件循环</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 声明事件对象</span></div><div class="line"><span class="keyword">var</span> EventEmitter=<span class="built_in">require</span>(<span class="string">'events'</span>).EventEmiiter;</div><div class="line"><span class="keyword">var</span> event = <span class="keyword">new</span> EventEmiiter();</div><div class="line"></div><div class="line"><span class="comment">//注册事件</span></div><div class="line">event.on(<span class="string">'some_event'</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">"this is a custom event"</span>);</div><div class="line">&#125;);</div><div class="line"></div><div class="line"></div><div class="line"><span class="comment">// 3秒钟后触发事件</span></div><div class="line">setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    event.emit(<span class="string">'some_event'</span>);</div><div class="line">&#125;, <span class="number">3000</span>);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<hr>
+<h2 id="module和package"><a href="#module和package" class="headerlink" title="module和package"></a>module和package</h2><p>nodejs的module可以是js、json或者c++扩展。<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> http = <span class="built_in">require</span>(<span class="string">'http'</span>); <span class="comment">// c++的module</span></div></pre></td></tr></table></figure></p>
+<p>exports是模块对外开放的接口<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> name;</div><div class="line">exports.setName = <span class="function"><span class="keyword">function</span>(<span class="params">n</span>)</span>&#123;</div><div class="line">    name = n;</div><div class="line">&#125;</div><div class="line"></div><div class="line">exports.say = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'name is : '</span> + name);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>require是外部引用模块的接口, 只会引入一次<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> modu1=<span class="built_in">require</span>(<span class="string">'./modu'</span>);</div><div class="line">modu1.setName(<span class="string">'will'</span>);</div><div class="line"><span class="keyword">var</span> modu2=<span class="built_in">require</span>(<span class="string">'./modu'</span>);</div><div class="line">modu2.setName(<span class="string">'william'</span>);</div><div class="line">modu2.say(); <span class="comment">// 会输出william</span></div></pre></td></tr></table></figure></p>
+<p>如果我们要每次都弄一个新的对象呢??<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">hello</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> name;</div><div class="line">    <span class="keyword">this</span>.setName = <span class="function"><span class="keyword">function</span>(<span class="params">n</span>)</span>&#123;</div><div class="line">        name = n;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="keyword">this</span>.say = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'name is : '</span> + name);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="built_in">module</span>.exports = hello;</div></pre></td></tr></table></figure></p>
+<p>对应的引入为：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> hello=<span class="built_in">require</span>(<span class="string">'./modu'</span>);</div><div class="line"><span class="keyword">var</span> modu1 = <span class="keyword">new</span> hello();</div><div class="line">modu1.setName(<span class="string">'will'</span>);</div><div class="line"><span class="keyword">var</span> modu2 = <span class="keyword">new</span> hello();</div><div class="line">modu2.setName(<span class="string">'william'</span>);</div><div class="line">modu1.say(); <span class="comment">// 会输出will</span></div><div class="line">modu2.say(); <span class="comment">// 会输出william</span></div></pre></td></tr></table></figure></p>
+<h3 id="pacakge"><a href="#pacakge" class="headerlink" title="pacakge"></a>pacakge</h3><p>commonJS规范后，可以发布在npm上</p>
+<ul>
+<li>package.json在根目录下，没有的话就去找index.js</li>
+<li>二进制文件在bin目录下</li>
+<li>js代码在lib目录下</li>
+<li>测试在test目录</li>
+<li>….</li>
+</ul>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">// package.json</div><div class="line">&#123;</div><div class="line">    "main" : "./lib/index.js", // 入口</div><div class="line">    "name" : "名",</div><div class="line">    "repositories": "仓库托管地址数据，每个元素要包含type、url、path",</div><div class="line">    "dependencies" : "依赖"</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<hr>
+<h2 id="包管理器和代码调试"><a href="#包管理器和代码调试" class="headerlink" title="包管理器和代码调试"></a>包管理器和代码调试</h2><h4 id="包管理器"><a href="#包管理器" class="headerlink" title="包管理器"></a>包管理器</h4><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>介绍</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>npm init</td>
+<td>初始化一个package目录，会自动生成规范目录与package.json</td>
+</tr>
+<tr>
+<td>npm install xxx</td>
+<td>本地模式安装xxx，将package安装到node_modules目录下</td>
+</tr>
+<tr>
+<td>npm list</td>
+<td>查看已经安装的包</td>
+</tr>
+<tr>
+<td>npm help <json></json></td>
+<td>查看json的使用</td>
+</tr>
+<tr>
+<td>npm publish</td>
+<td>进入到package下执行，发布package到公共库（最好是通过npm init生成的目录规范）</td>
+</tr>
+<tr>
+<td>npm unpublish</td>
+<td>取消发布</td>
+</tr>
+</tbody>
+</table>
+<p><strong><em>全局安装的包，不能直接require，不会搜索/usr/local/lib/node_modules。只有需要命令行使用的时候才安装全局模式</em></strong></p>
+<h4 id="代码调试"><a href="#代码调试" class="headerlink" title="代码调试"></a>代码调试</h4><ol>
+<li>node –debug-brk=5858 app.js, 会等待debug连上来</li>
+<li>eclipse插件V8 vm里弄一个debug就行了</li>
+</ol>
+<hr>
+<h2 id="全局对象和全局变量"><a href="#全局对象和全局变量" class="headerlink" title="全局对象和全局变量"></a>全局对象和全局变量</h2><p>global是所有全局变量的宿主。</p>
+<h4 id="console"><a href="#console" class="headerlink" title="console"></a>console</h4><p>log\error\trace</p>
+<h4 id="process"><a href="#process" class="headerlink" title="process"></a>process</h4><p>描述当前进程状态，提供了与os交互的接口。<br>|变量|描述|<br>|—|—|<br>|process.argv|命令行参数，第一个是node，第二是脚本名称，第三个才是参数|<br>|process.stdout|标准输出|<br>|process.stdin|标准输入，需要先process.stdin.resume()|<br>|process.nextTick(callback)|为事件循环设置一个任务|<br>nodejs适合io密集型的应用，而不是计算密集型的应用。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">doSth</span>(<span class="params">args, callback</span>)</span>&#123;</div><div class="line">    sthComplext(args);</div><div class="line">    callback();</div><div class="line">&#125;;</div><div class="line"></div><div class="line">doSth(<span class="string">'123'</span>, <span class="function"><span class="keyword">function</span> <span class="title">onEnd</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    compute();</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>有了process.nextTick后可以写成：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">doSth</span>(<span class="params">args, callback</span>)</span>&#123;</div><div class="line">    sthComplext(args);</div><div class="line">    process.nextTick(callback); <span class="comment">// 把耗时的两个程序拆成两个事件，提高并行度</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="util和EventEmitter"><a href="#util和EventEmitter" class="headerlink" title="util和EventEmitter"></a>util和EventEmitter</h2><h5 id="utilities"><a href="#utilities" class="headerlink" title="utilities"></a>utilities</h5><table>
+<thead>
+<tr>
+<th>api</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>inheris(constructor, superConstructor)</td>
+<td>实现对象间原型继承</td>
+</tr>
+<tr>
+<td>inspect()</td>
+<td>将任意对象以字符串的形式打印出来</td>
+</tr>
+</tbody>
+</table>
+<h5 id="events"><a href="#events" class="headerlink" title="events"></a>events</h5><p>nodejs本身架构就是事件驱动的。<br>EventEmitter的核心就是事件发射与事件监听功能的封装。EventEmitter的每个事件由一个事件或若干个参数组成。对于某个事件，EventEmitter支持若干个事件监听器。事件发生时，事件监听器被依次调用，事件参数作为回调函数的参数传递。<br>|api|描述|<br>|—|—|<br>|EventEmitter.on(event, listener)|为指定事件注册监听器|<br>|EventEmitter.emit()|发射event事件|<br>|EventEmitter.once(event, listener)|监听器只出发一次|<br>|EventEmitter.removeListener(event, listener)|移除监听器|<br>|EventEmitter.removeAllListener(event)|移除所有监听器|</p>
+<p>特殊事件error，出错的时候，EventEmitter没有注册相应的监听器，就当做异常，退出程序，打印调用栈。</p>
+<p>一般继承EventEmitter来使用它。 </p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/12/05/nodejs学习笔记/" data-title="nodejs学习笔记 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/12/05/django模板语言/" title="django模板语言">
+  <strong>上一篇：</strong><br/>
+  <span>
+  django模板语言</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/12/05/celery笔记/"  title="celery笔记">
+ <strong>下一篇：</strong><br/> 
+ <span>celery笔记
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/12/05/nodejs学习笔记/" data-title="nodejs学习笔记" data-url="http://willcup.com/2016/12/05/nodejs学习笔记/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#特点"><span class="toc-number">1.</span> <span class="toc-text">特点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#module和package"><span class="toc-number">2.</span> <span class="toc-text">module和package</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#pacakge"><span class="toc-number">2.1.</span> <span class="toc-text">pacakge</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#包管理器和代码调试"><span class="toc-number">3.</span> <span class="toc-text">包管理器和代码调试</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#包管理器"><span class="toc-number">3.0.1.</span> <span class="toc-text">包管理器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#代码调试"><span class="toc-number">3.0.2.</span> <span class="toc-text">代码调试</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#全局对象和全局变量"><span class="toc-number">4.</span> <span class="toc-text">全局对象和全局变量</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#console"><span class="toc-number">4.0.1.</span> <span class="toc-text">console</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#process"><span class="toc-number">4.0.2.</span> <span class="toc-text">process</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#util和EventEmitter"><span class="toc-number">5.</span> <span class="toc-text">util和EventEmitter</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#utilities"><span class="toc-number">5.0.0.1.</span> <span class="toc-text">utilities</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#events"><span class="toc-number">5.0.0.2.</span> <span class="toc-text">events</span></a></li></ol></li></ol></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

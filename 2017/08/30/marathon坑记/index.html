@@ -1,0 +1,586 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>marathon坑记 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="资源不足场景运行marathon官网提供的docker get started案例(https://mesosphere.github.io/marathon/docs/application-basics.html)可以成功。12345678910111213141516&amp;#123;  &amp;quot;id&amp;quot;: &amp;quot;basic-3&amp;quot;,  &amp;quot;cmd&amp;quot;:">
+<meta property="og:type" content="article">
+<meta property="og:title" content="marathon坑记">
+<meta property="og:url" content="http://willcup.com/2017/08/30/marathon坑记/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="资源不足场景运行marathon官网提供的docker get started案例(https://mesosphere.github.io/marathon/docs/application-basics.html)可以成功。12345678910111213141516&amp;#123;  &amp;quot;id&amp;quot;: &amp;quot;basic-3&amp;quot;,  &amp;quot;cmd&amp;quot;:">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.785Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="marathon坑记">
+<meta name="twitter:description" content="资源不足场景运行marathon官网提供的docker get started案例(https://mesosphere.github.io/marathon/docs/application-basics.html)可以成功。12345678910111213141516&amp;#123;  &amp;quot;id&amp;quot;: &amp;quot;basic-3&amp;quot;,  &amp;quot;cmd&amp;quot;:">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/08/30/marathon坑记/" title="marathon坑记" itemprop="url">marathon坑记</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-08-30T06:17:42.000Z" itemprop="datePublished"> 发表于 2017-08-30</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#资源不足"><span class="toc-text">资源不足</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#场景"><span class="toc-text">场景</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#其他"><span class="toc-text">其他</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#配置实例"><span class="toc-text">配置实例</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#host"><span class="toc-text">host</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#示例"><span class="toc-text">示例</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#bridge"><span class="toc-text">bridge</span></a></li></ol></li></ol></li></ol></li></ol>
+		
+		</div>
+		
+		<h2 id="资源不足"><a href="#资源不足" class="headerlink" title="资源不足"></a>资源不足</h2><h4 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h4><p>运行marathon官网提供的docker get started案例(<a href="https://mesosphere.github.io/marathon/docs/application-basics.html)可以成功。" target="_blank" rel="external">https://mesosphere.github.io/marathon/docs/application-basics.html)可以成功。</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;id&quot;: &quot;basic-3&quot;,</div><div class="line">  &quot;cmd&quot;: &quot;python3 -m http.server 8080&quot;,</div><div class="line">  &quot;cpus&quot;: 0.5,</div><div class="line">  &quot;mem&quot;: 32.0,</div><div class="line">  &quot;container&quot;: &#123;</div><div class="line">    &quot;type&quot;: &quot;DOCKER&quot;,</div><div class="line">    &quot;docker&quot;: &#123;</div><div class="line">      &quot;image&quot;: &quot;python:3&quot;,</div><div class="line">      &quot;network&quot;: &quot;BRIDGE&quot;,</div><div class="line">      &quot;portMappings&quot;: [</div><div class="line">        &#123; &quot;containerPort&quot;: 8080, &quot;hostPort&quot;: 0 &#125;</div><div class="line">      ]</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>我自己提了一个,屡次卡住不能deploy成功。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;id&quot;: &quot;/docker-tt&quot;,</div><div class="line">  &quot;cmd&quot;: null,</div><div class="line">  &quot;cpus&quot;: 1,</div><div class="line">  &quot;mem&quot;: 128,</div><div class="line">  &quot;disk&quot;: 0,</div><div class="line">  &quot;instances&quot;: 1,</div><div class="line">  &quot;acceptedResourceRoles&quot;: [</div><div class="line">    &quot;*&quot;</div><div class="line">  ],</div><div class="line">  &quot;container&quot;: &#123;</div><div class="line">    &quot;type&quot;: &quot;DOCKER&quot;,</div><div class="line">    &quot;volumes&quot;: [],</div><div class="line">    &quot;docker&quot;: &#123;</div><div class="line">      &quot;image&quot;: &quot;nginx:stable-alpine&quot;,</div><div class="line">      &quot;network&quot;: &quot;BRIDGE&quot;,</div><div class="line">      &quot;portMappings&quot;: [</div><div class="line">        &#123;</div><div class="line">          &quot;containerPort&quot;: 80,</div><div class="line">          &quot;hostPort&quot;: 880,</div><div class="line">          &quot;servicePort&quot;: 10000,</div><div class="line">          &quot;protocol&quot;: &quot;tcp&quot;,</div><div class="line">          &quot;name&quot;: &quot;nn&quot;,</div><div class="line">          &quot;labels&quot;: &#123;&#125;</div><div class="line">        &#125;</div><div class="line">      ],</div><div class="line">      &quot;privileged&quot;: false,</div><div class="line">      &quot;parameters&quot;: [],</div><div class="line">      &quot;forcePullImage&quot;: false</div><div class="line">    &#125;</div><div class="line">  &#125;,</div><div class="line">  &quot;portDefinitions&quot;: [</div><div class="line">    &#123;</div><div class="line">      &quot;port&quot;: 10000,</div><div class="line">      &quot;protocol&quot;: &quot;tcp&quot;,</div><div class="line">      &quot;name&quot;: &quot;default&quot;,</div><div class="line">      &quot;labels&quot;: &#123;&#125;</div><div class="line">    &#125;</div><div class="line">  ]</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>参考了官网的<a href="https://mesosphere.github.io/marathon/docs/troubleshooting.html#an-app-stays-in-quot-waiting-quot-forever" target="_blank" rel="external">这个链接</a> 的第一个，提示说：如果app一直都处于<strong>waiting</strong>的状态，那么很可能是由于资源不足的造成的，例如CPU，内存，磁盘等。</p>
+<p>最后还说，如果还找不到问题，就到github提一个issue，把/state的内容贴近issue，这样就可以让社区的人帮忙分析。 </p>
+<p>按照提示，我么有找到任何资源匮乏，当前的framework占用资源都是0.在查看slaves提供的物理资源的时候被亮瞎了狗眼：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&quot;resources&quot;: &#123;</div><div class="line">    &quot;disk&quot;: 12758,</div><div class="line">    &quot;mem&quot;: 2767,</div><div class="line">    &quot;gpus&quot;: 0,</div><div class="line">    &quot;cpus&quot;: 2,</div><div class="line">    &quot;ports&quot;: &quot;[31000-32000]&quot;</div><div class="line">&#125;,</div></pre></td></tr></table></figure></p>
+<p>注意<strong>ports</strong>…..每个slave为什么要把自己的端口范围也限制啊……跪了。把上面的docker启动host端口改为31111后，测试通过，成功部署了nginx服务。</p>
+<h4 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h4><p><a href="https://mesosphere.github.io/marathon/docs/ports.html" target="_blank" rel="external">官网端口映射相关</a></p>
+<p>portMapping： 对于所有需要给外部访问的docker容器，端口映射都很重要。一个端口映射是一个包含host port、container port、service port以及protocaol的tuple。有时也需要多个端口映射定义。不固定的hostPort默认是0，这样marathons会随机选一个端口。在Docker的USER模式下，hostPort是几乎不变的：hostport并不是必要的，如果没有制定，那么marathon不会自动随机选一个。这样就允许container可以在USER网络里发布，只包含containerPort和发现信息，但是不暴露这些端口给hsot网络。</p>
+<p>portDefinitions： 一个数据定义了端口资源池。只在使用HOST网络，并且没有指定portMapping的时候是必须要有的。</p>
+<p>servicePort：当在marathon创建新的app时，要为其指定一个或多个service port。你可以指定合理的port，也可以设为0让marathon自动分配可用端口。如果自己选择，就需要确保这个端口在所有app中是唯一的。</p>
+<p>如果containerport和hostport同时被设置为0，那么他俩的端口虽然是会被随机分配，但是他俩是一样的，比如8888，那么就都是8888。</p>
+<h5 id="配置实例"><a href="#配置实例" class="headerlink" title="配置实例"></a>配置实例</h5><h6 id="host"><a href="#host" class="headerlink" title="host"></a>host</h6><p>host网络模式是默认的网络模式，也是非docker app的唯一网络模式。注意在你的dockerfile里expose端口并不是必须的。</p>
+<h6 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&quot;container&quot;: &#123;</div><div class="line">  &quot;type&quot;: &quot;DOCKER&quot;,</div><div class="line">  &quot;docker&quot;: &#123;</div><div class="line">    &quot;image&quot;: &quot;my-image:1.0&quot;,</div><div class="line">    &quot;network&quot;: &quot;HOST&quot;</div><div class="line">  &#125;</div><div class="line">&#125;,</div></pre></td></tr></table></figure>
+<p>指定端口的两种方式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&quot;ports&quot;: [</div><div class="line">        2001, 2002, 3000</div><div class="line">    ],</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&quot;portDefinitions&quot;: [</div><div class="line">        &#123;&quot;port&quot;: 2001&#125;, &#123;&quot;port&quot;: 2002&#125;, &#123;&quot;port&quot;: 3000&#125;</div><div class="line">    ],</div></pre></td></tr></table></figure>
+<p>这时环境变量$PORT0,$PORT1, $PORT2就分别是2001，2002，3000，如果都是0的话就都是随机分配的。</p>
+<p>另外，保证一个服务发现程序例如haproxy从service port请求host port也是必须的。那么我们或许希望这个app的service ports与host ports保持一致，那么就可以设置requirePorts为true。这样marathons就只调度这个app到有这些端口的agent上了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&quot;ports&quot;: [</div><div class="line">        2001, 2002, 3000</div><div class="line">    ],</div><div class="line">    &quot;requirePorts&quot; : true</div></pre></td></tr></table></figure></p>
+<p>现在，service 和host的ports就都是2001， 2002， 3000了。</p>
+<p>定义portDefinitions队列可以让我们制定protocol，每个port都有一个名字和自己的label。在启动新的task的时候，marathon会把metadata发送给mesos。mesos会在这个task的discovery字段中暴露这些信息。自定义网络发现服务可以读取这个字段，发现app服务。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&quot;portDefinitions&quot;: [</div><div class="line">     &#123;</div><div class="line">         &quot;port&quot;: 0,</div><div class="line">         &quot;protocol&quot;: &quot;tcp&quot;,</div><div class="line">         &quot;name&quot;: &quot;http&quot;,</div><div class="line">         &quot;labels&quot;: &#123;&quot;VIP_0&quot;: &quot;10.0.0.1:80&quot;&#125;</div><div class="line">     &#125;</div><div class="line"> ],</div></pre></td></tr></table></figure>
+<p>这是一个动态的tcp端口，name为http，并包含一个label。 port字段是必须的，protocol、name、labels是可选的。如果portDefinitions中只定义port字段的时候，其实跟定义ports数组没有分别。</p>
+<p>注意：如果ports和portDefinitions内容不一致，那么就不能同时定义。</p>
+<h5 id="bridge"><a href="#bridge" class="headerlink" title="bridge"></a>bridge</h5><p>bridge网络模型允许映射hostport到内部的container端口，而且只能用于docker container。通常在使用一个拥有固定端口的docker image的时候只用这种方式。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&quot;container&quot;: &#123;</div><div class="line">   &quot;type&quot;: &quot;DOCKER&quot;,</div><div class="line">   &quot;docker&quot;: &#123;</div><div class="line">     &quot;image&quot;: &quot;my-image:1.0&quot;,</div><div class="line">     &quot;network&quot;: &quot;BRIDGE&quot;</div><div class="line">   &#125;</div><div class="line"> &#125;,</div></pre></td></tr></table></figure>
+<p>指定USER网络<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">&quot;container&quot;: &#123;</div><div class="line">    &quot;type&quot;: &quot;DOCKER&quot;,</div><div class="line">    &quot;docker&quot;: &#123;</div><div class="line">      &quot;image&quot;: &quot;my-image:1.0&quot;,</div><div class="line">      &quot;network&quot;: &quot;USER&quot;</div><div class="line">    &#125;</div><div class="line">  &#125;,</div><div class="line">  &quot;ipAddress&quot;: &#123;</div><div class="line">    &quot;networkName&quot;: &quot;someUserNetwork&quot;</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
+<p>指定端口</p>
+<p>端口隐射与把-p参数传递给docker命令行差不多。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">&quot;container&quot;: &#123;</div><div class="line">  &quot;type&quot;: &quot;DOCKER&quot;,</div><div class="line">  &quot;docker&quot;: &#123;</div><div class="line">    &quot;image&quot;: &quot;my-image:1.0&quot;,</div><div class="line">    &quot;network&quot;: &quot;BRIDGE&quot;,</div><div class="line">    &quot;portMappings&quot;: [</div><div class="line">      &#123; &quot;containerPort&quot;: 0, &quot;hostPort&quot;: 0 &#125;,</div><div class="line">      &#123; &quot;containerPort&quot;: 0, &quot;hostPort&quot;: 0 &#125;,</div><div class="line">      &#123; &quot;containerPort&quot;: 0, &quot;hostPort&quot;: 0 &#125;</div><div class="line">    ]</div><div class="line">  &#125;</div><div class="line">&#125;,</div></pre></td></tr></table></figure></p>
+<p>上面的例子中，containerPort会和hostPort一致，都是随机的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">&quot;container&quot;: &#123;</div><div class="line">  &quot;type&quot;: &quot;DOCKER&quot;,</div><div class="line">  &quot;docker&quot;: &#123;</div><div class="line">    &quot;image&quot;: &quot;my-image:1.0&quot;,</div><div class="line">    &quot;network&quot;: &quot;BRIDGE&quot;,</div><div class="line">    &quot;portMappings&quot;: [</div><div class="line">      &#123; &quot;containerPort&quot;: 80, &quot;hostPort&quot;: 0 &#125;,</div><div class="line">      &#123; &quot;containerPort&quot;: 443, &quot;hostPort&quot;: 0 &#125;,</div><div class="line">      &#123; &quot;containerPort&quot;: 4000, &quot;hostPort&quot;: 0 &#125;</div><div class="line">    ]</div><div class="line">  &#125;</div><div class="line">&#125;,</div></pre></td></tr></table></figure>
+<p>这个例子，marathon会随机分配端口来与容器的80，443，4000进行对应。</p>
+<p>marathon会为每port都穿件service port。service port用来给服务发现程序使用，通常用一些常见的port。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">&quot;container&quot;: &#123;</div><div class="line">  &quot;type&quot;: &quot;DOCKER&quot;,</div><div class="line">  &quot;docker&quot;: &#123;</div><div class="line">    &quot;image&quot;: &quot;my-image:1.0&quot;,</div><div class="line">    &quot;network&quot;: &quot;BRIDGE&quot;,</div><div class="line">    &quot;portMappings&quot;: [</div><div class="line">      &#123; &quot;containerPort&quot;: 80, &quot;hostPort&quot;: 0, &quot;protocol&quot;: &quot;tcp&quot;, &quot;servicePort&quot;: 2000 &#125;,</div><div class="line">      &#123; &quot;containerPort&quot;: 443, &quot;hostPort&quot;: 0, &quot;protocol&quot;: &quot;tcp&quot;, &quot;servicePort&quot;: 2001 &#125;,</div><div class="line">      &#123; &quot;containerPort&quot;: 4000, &quot;hostPort&quot;: 0, &quot;protocol&quot;: &quot;udp&quot;, &quot;servicePort&quot;: 3000&#125;</div><div class="line">    ]</div><div class="line">  &#125;</div><div class="line">&#125;,</div></pre></td></tr></table></figure></p>
+<p>host port还是随机的，但是service port固定了。HAProxy就可以配置路由从这些<br>service port 到host port 了。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/08/30/marathon坑记/" data-title="marathon坑记 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/08/31/RunningAlert/" title="RunningAlert">
+  <strong>上一篇：</strong><br/>
+  <span>
+  RunningAlert</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/08/24/marathon/"  title="marathon">
+ <strong>下一篇：</strong><br/> 
+ <span>marathon
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/08/30/marathon坑记/" data-title="marathon坑记" data-url="http://willcup.com/2017/08/30/marathon坑记/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#资源不足"><span class="toc-number">1.</span> <span class="toc-text">资源不足</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#场景"><span class="toc-number">1.0.1.</span> <span class="toc-text">场景</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#其他"><span class="toc-number">1.0.2.</span> <span class="toc-text">其他</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#配置实例"><span class="toc-number">1.0.2.1.</span> <span class="toc-text">配置实例</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#host"><span class="toc-number">1.0.2.1.1.</span> <span class="toc-text">host</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#示例"><span class="toc-number">1.0.2.1.2.</span> <span class="toc-text">示例</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#bridge"><span class="toc-number">1.0.2.2.</span> <span class="toc-text">bridge</span></a></li></ol></li></ol></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

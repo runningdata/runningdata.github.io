@@ -1,0 +1,566 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>安装dockercenter的ucp | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="123456789101112131415161718192021222324252627282930[root@controller wil]# docker pull docker/ucp:2.1.02.1.0: Pulling from docker/ucpb7f33cc0b48e: Pulling fs layer 8257d57cc15c: Pulling fs layer b7f33c">
+<meta property="og:type" content="article">
+<meta property="og:title" content="安装dockercenter的ucp">
+<meta property="og:url" content="http://willcup.com/2017/02/17/安装dockercenter的ucp/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="123456789101112131415161718192021222324252627282930[root@controller wil]# docker pull docker/ucp:2.1.02.1.0: Pulling from docker/ucpb7f33cc0b48e: Pulling fs layer 8257d57cc15c: Pulling fs layer b7f33c">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.793Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="安装dockercenter的ucp">
+<meta name="twitter:description" content="123456789101112131415161718192021222324252627282930[root@controller wil]# docker pull docker/ucp:2.1.02.1.0: Pulling from docker/ucpb7f33cc0b48e: Pulling fs layer 8257d57cc15c: Pulling fs layer b7f33c">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/02/17/安装dockercenter的ucp/" title="安装dockercenter的ucp" itemprop="url">安装dockercenter的ucp</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-02-17T10:53:36.000Z" itemprop="datePublished"> 发表于 2017-02-17</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker pull docker/ucp:2.1.0</div><div class="line">2.1.0: Pulling from docker/ucp</div><div class="line">b7f33cc0b48e: Pulling fs layer </div><div class="line">8257d57cc15c: Pulling fs layer </div><div class="line">b7f33cc0b48e: Pull complete </div><div class="line">8257d57cc15c: Extracting [==================================================&gt;] 348.8 kB/348.8 kB</div><div class="line">8257d57cc15c: Pull complete </div><div class="line">f691f14109b2: Pull complete </div><div class="line">Digest: sha256:fd43a6560b6f5731d0e383a7b5fe6da91cea11bc6b3fd65afe08f5e4a97dbc90</div><div class="line">Status: Downloaded newer image for docker/ucp:2.1.0</div><div class="line">[root@controller wil]# docker run --rm -it --name ucp   -v /var/run/docker.sock:/var/run/docker.sock   docker/ucp:2.1.0 install   --host-address 10.1.5.129   --interactive</div><div class="line"></div><div class="line">INFO[0000] Verifying your system is compatible with UCP </div><div class="line">INFO[0000] Your engine version 1.13.1, build 092cba3 (3.10.0-514.2.2.el7.x86_64) is compatible </div><div class="line">WARN[0003] Your system uses devicemapper.  We can not accurately detect available storage space.  Please make sure you have at least 3.00 GB available in /server/dspace </div><div class="line">Admin Username: unable to scan value: unexpected newline</div><div class="line">FATA[0005] unable to get admin username, giving up    </div><div class="line">[root@controller wil]# docker login</div><div class="line">Login with your Docker ID to push and pull images from Docker Hub. If you don&apos;t have a Docker ID, head over to https://hub.docker.com to create one.</div><div class="line">Username (willcup): </div><div class="line">Password: </div><div class="line">Login Succeeded</div><div class="line">[root@controller wil]# docker run --rm -it --name ucp   -v /var/run/docker.sock:/var/run/docker.sock   docker/ucp:2.1.0 install   --host-address 10.1.5.129   --interactive</div><div class="line">INFO[0000] Verifying your system is compatible with UCP </div><div class="line">INFO[0000] Your engine version 1.13.1, build 092cba3 (3.10.0-514.2.2.el7.x86_64) is compatible </div><div class="line">WARN[0001] Your system uses devicemapper.  We can not accurately detect available storage space.  Please make sure you have at least 3.00 GB available in /server/dspace </div><div class="line">Admin Username: willcup</div><div class="line">Admin Password: </div><div class="line">Confirm Admin Password: </div><div class="line">INFO[0021] Pulling required images... (this may take a while)</div></pre></td></tr></table></figure>
+<p>可以看到如果不先docker login的话，启动时候就报错找不到admin name。然而启动的时候又让我们自己定义admin name和passwd。醉了。</p>
+<p>打开debug：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker run --rm -it --name ucp   -v /var/run/docker.sock:/var/run/docker.sock   docker/ucp:2.1.0 install   --host-address 10.1.5.129   -D --interactive</div><div class="line">DEBU[0000] New UCP Instance ID will be &quot;XZNK:CP6T:DHHE:XJZA:OXOM:CLS6:RIRW:SAVZ:4JIL:G3Q4:DJ7F:L7P3&quot; </div><div class="line">INFO[0000] Verifying your system is compatible with UCP </div><div class="line">DEBU[0000] Checking for compatible kernel version       </div><div class="line">DEBU[0000] Kernel version 3.10.0-514.2.2.el7.x86_64 is compatible </div><div class="line">DEBU[0000] Checking for compatible engine version       </div><div class="line">INFO[0000] Your engine version 1.13.1, build 092cba3 (3.10.0-514.2.2.el7.x86_64) is compatible </div><div class="line">DEBU[0000] Container ucp-phase2 not present: Error: No such container: ucp-phase2 </div><div class="line">DEBU[0000] Detected container ucp                       </div><div class="line">DEBU[0000] Container ucp-controller not present: Error: No such container: ucp-controller </div><div class="line">DEBU[0000] Container ucp-swarm-manager not present: Error: No such container: ucp-swarm-manager </div><div class="line">DEBU[0000] Container ucp-swarm-join not present: Error: No such container: ucp-swarm-join </div><div class="line">DEBU[0000] Container ucp-kv not present: Error: No such container: ucp-kv </div><div class="line">DEBU[0000] Container ucp-proxy not present: Error: No such container: ucp-proxy </div><div class="line">DEBU[0000] Container ucp-client-root-ca not present: Error: No such container: ucp-client-root-ca </div><div class="line">DEBU[0000] Container ucp-cluster-root-ca not present: Error: No such container: ucp-cluster-root-ca </div><div class="line">DEBU[0000] Container ucp-auth-store not present: Error: No such container: ucp-auth-store </div><div class="line">DEBU[0000] Container ucp-auth-api not present: Error: No such container: ucp-auth-api </div><div class="line">DEBU[0000] Container ucp-auth-worker not present: Error: No such container: ucp-auth-worker </div><div class="line">DEBU[0000] Container ucp-kv-backup not present: Error: No such container: ucp-kv-backup </div><div class="line">DEBU[0000] Container ucp-kv-restore not present: Error: No such container: ucp-kv-restore </div><div class="line">DEBU[0000] Container ucp-metrics not present: Error: No such container: ucp-metrics </div><div class="line">DEBU[0000] Validating base system meets minimum requirements </div><div class="line">DEBU[0000] Your system meets minimum memory requirements:  3.88 GB &gt;= 2.00 GB </div><div class="line">WARN[0000] Your system uses devicemapper.  We can not accurately detect available storage space.  Please make sure you have at least 3.00 GB available in /server/dspace </div><div class="line">Admin Username: will</div><div class="line">Admin Password: </div><div class="line">Confirm Admin Password: </div><div class="line">DEBU[0207] Checking for images                          </div><div class="line">INFO[0207] All required images are present              </div><div class="line">DEBU[0208] Local Name: controller                       </div><div class="line">WARN[0208] None of the hostnames we&apos;ll be using in the UCP certificates [controller 127.0.0.1 172.17.0.1] contain a domain component.  Your generated certs may fail TLS validation unless you only use one of these shortnames or IPs to connect.  You can use the --san flag to add more aliases </div><div class="line"></div><div class="line">You may enter additional aliases (SANs) now or press enter to proceed with the above list.</div><div class="line">Additional aliases: willalias</div><div class="line">DEBU[0222] User entered: willalias</div><div class="line">                     </div><div class="line">DEBU[0222] Hostnames: [controller 127.0.0.1 172.17.0.1 willalias] </div><div class="line">DEBU[0245] Launching phase 2 with: [install --host-address 10.1.5.129 -D --interactive] (6f2f352ea35e614de1005fe6d93c9843c3f972dc1e7cf5191ea9ed7a0e46fb25) </div><div class="line">DEBU[0000] Beginning phase 2 install for instance XZNK:CP6T:DHHE:XJZA:OXOM:CLS6:RIRW:SAVZ:4JIL:G3Q4:DJ7F:L7P3 </div><div class="line">DEBU[0000] Checking for compatible kernel version       </div><div class="line">DEBU[0000] Kernel version 3.10.0-514.2.2.el7.x86_64 is compatible </div><div class="line">DEBU[0000] Checking for compatible engine version       </div><div class="line">DEBU[0000] Detected container ucp-phase2                </div><div class="line">DEBU[0001] Container ucp-controller not present: Error: No such container: ucp-controller </div><div class="line">DEBU[0001] Container ucp-swarm-manager not present: Error: No such container: ucp-swarm-manager </div><div class="line">DEBU[0001] Container ucp-swarm-join not present: Error: No such container: ucp-swarm-join </div><div class="line">DEBU[0001] Container ucp-kv not present: Error: No such container: ucp-kv </div><div class="line">DEBU[0001] Container ucp-proxy not present: Error: No such container: ucp-proxy </div><div class="line">DEBU[0001] Container ucp-client-root-ca not present: Error: No such container: ucp-client-root-ca </div><div class="line">DEBU[0001] Container ucp-cluster-root-ca not present: Error: No such container: ucp-cluster-root-ca </div><div class="line">DEBU[0001] Container ucp-auth-store not present: Error: No such container: ucp-auth-store </div><div class="line">DEBU[0001] Container ucp-auth-api not present: Error: No such container: ucp-auth-api </div><div class="line">DEBU[0001] Container ucp-auth-worker not present: Error: No such container: ucp-auth-worker </div><div class="line">DEBU[0001] Container ucp-kv-backup not present: Error: No such container: ucp-kv-backup </div><div class="line">DEBU[0001] Container ucp-kv-restore not present: Error: No such container: ucp-kv-restore </div><div class="line">DEBU[0001] Container ucp-metrics not present: Error: No such container: ucp-metrics </div><div class="line">DEBU[0001] Local Name: controller                       </div><div class="line">DEBU[0001] Hostnames: [controller 127.0.0.1 172.17.0.1 willalias] </div><div class="line">DEBU[0001] This node is known as efpood09fyouiyib1f78y5oa6 </div><div class="line">DEBU[0001] Got node IP 10.1.5.129 from swarm            </div><div class="line">DEBU[0001] EnginePortCheck: port 2375, prpl http, err Get http://10.1.5.129:2375/info: dial tcp 10.1.5.129:2375: getsockopt: connection refused </div><div class="line">DEBU[0001] EnginePortCheck: port 2375, prpl https, err Get https://10.1.5.129:2375/info: dial tcp 10.1.5.129:2375: getsockopt: connection refused </div><div class="line">DEBU[0001] EnginePortCheck: port 2376, prpl http, err Get http://10.1.5.129:2376/info: dial tcp 10.1.5.129:2376: getsockopt: connection refused </div><div class="line">DEBU[0001] EnginePortCheck: port 2376, prpl https, err Get https://10.1.5.129:2376/info: dial tcp 10.1.5.129:2376: getsockopt: connection refused </div><div class="line">DEBU[0001] Checking for available and accessible port 12387 </div><div class="line">DEBU[0001] Checking for available and accessible port 12380 </div><div class="line">DEBU[0001] Checking for available and accessible port 12381 </div><div class="line">DEBU[0001] Checking for available and accessible port 443 </div><div class="line">DEBU[0001] Checking for available and accessible port 12382 </div><div class="line">DEBU[0001] Checking for available and accessible port 2376 </div><div class="line">DEBU[0001] Checking for available and accessible port 12383 </div><div class="line">DEBU[0001] Checking for available and accessible port 12376 </div><div class="line">DEBU[0001] Checking for available and accessible port 12384 </div><div class="line">DEBU[0001] Checking for available and accessible port 4789 </div><div class="line">DEBU[0001] Checking for available and accessible port 12385 </div><div class="line">DEBU[0001] Checking for available and accessible port 12379 </div><div class="line">DEBU[0001] Checking for available and accessible port 12386 </div><div class="line">DEBU[0038] Checking for liveness of http://10.1.5.129:4789/ </div><div class="line">DEBU[0039] Connected to http://10.1.5.129:4789/         </div><div class="line">DEBU[0063] Checking for liveness of http://10.1.5.129:12387/ </div><div class="line">DEBU[0063] Connected to http://10.1.5.129:12387/        </div><div class="line">DEBU[0089] Checking for liveness of http://10.1.5.129:12382/ </div><div class="line">DEBU[0089] Connected to http://10.1.5.129:12382/        </div><div class="line">DEBU[0114] Checking for liveness of http://10.1.5.129:12384/ </div><div class="line">DEBU[0114] Connected to http://10.1.5.129:12384/        </div><div class="line">DEBU[0126] Checking for liveness of http://10.1.5.129:12376/ </div><div class="line">DEBU[0126] Connected to http://10.1.5.129:12376/        </div><div class="line">DEBU[0158] Checking for liveness of http://10.1.5.129:12383/ </div><div class="line">DEBU[0161] Connected to http://10.1.5.129:12383/        </div><div class="line">DEBU[0183] Checking for liveness of http://10.1.5.129:443/ </div><div class="line">DEBU[0185] Connected to http://10.1.5.129:443/          </div><div class="line">DEBU[0199] Checking for liveness of http://10.1.5.129:2376/ </div><div class="line">DEBU[0201] Connected to http://10.1.5.129:2376/         </div><div class="line">DEBU[0235] Checking for liveness of http://10.1.5.129:12386/ </div><div class="line">DEBU[0240] Connected to http://10.1.5.129:12386/        </div><div class="line">DEBU[0260] Checking for liveness of http://10.1.5.129:12381/ </div><div class="line">DEBU[0260] Connected to http://10.1.5.129:12381/        </div><div class="line">DEBU[0271] Checking for liveness of http://10.1.5.129:12385/ </div><div class="line">DEBU[0271] Connected to http://10.1.5.129:12385/        </div><div class="line">DEBU[0295] Checking for liveness of http://10.1.5.129:12379/ </div><div class="line">DEBU[0295] Connected to http://10.1.5.129:12379/        </div><div class="line">DEBU[0321] Checking for liveness of http://10.1.5.129:12380/ </div><div class="line">DEBU[0321] Connected to http://10.1.5.129:12380/        </div><div class="line">DEBU[0429] All ports are open and available             </div><div class="line">DEBU[0429] Purging old state from UCP volumes mounted in /var/lib/docker/ucp </div><div class="line">INFO[0429] Establishing mutual Cluster Root CA with Swarm </div><div class="line">INFO[0429] Installing UCP with host address 10.1.5.129 - If this is incorrect, please specify an alternative address with the &apos;--host-address&apos; flag </div><div class="line">INFO[0429] Generating UCP Client Root CA                </div><div class="line">DEBU[0429] Writing /var/lib/docker/ucp/ucp-client-root-ca/key.pem </div><div class="line">INFO[0430] Deploying UCP Service                        </div><div class="line">DEBU[0433] Local task container not found, trying again. </div><div class="line">DEBU[0459] Local task container not found, trying again. </div><div class="line">................</div><div class="line">................</div><div class="line">DEBU[0461] Local task container not found, trying again. </div><div class="line">ERRO[0461] Unable to get local task container for ucp-agent service </div><div class="line">FATA[0461] unable to find local task container</div></pre></td></tr></table></figure></p>
+<p>重新仔细阅读一下官方文档，发现有些前置条件没有满足：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">Docker Engine 1.13.0</div><div class="line">Docker Remote API 1.25</div><div class="line">Compose 1.9</div></pre></td></tr></table></figure></p>
+<p>刚才docker remote没有开启，compose的版本也不够。</p>
+<p>先升级一下所有docker节点的compose：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">[root@dnode2 willyarnbase]# curl -L &quot;https://github.com/docker/compose/releases/download/1.11.1/docker-compose-$(uname -s)-$(uname -m)&quot; -o /usr/local/bin/docker-compose</div><div class="line">  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current</div><div class="line">                                 Dload  Upload   Total   Spent    Left  Speed</div><div class="line">100   600    0   600    0     0    534      0 --:--:--  0:00:01 --:--:--   534</div><div class="line">100 8053k  100 8053k    0     0   403k      0  0:00:19  0:00:19 --:--:--  806k</div><div class="line">[root@dnode2 willyarnbase]# docker-compose -v</div><div class="line">docker-compose version 1.11.1, build 7c5d5e4</div></pre></td></tr></table></figure></p>
+<p>再编辑/etc/docker/daemon.json配置文件，添加下面配置，启动docker remote API:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&quot;hosts&quot;: [&quot;tcp://0.0.0.0:4243&quot;,&quot;unix:///var/run/docker.sock&quot;]</div></pre></td></tr></table></figure></p>
+<p>然后访问此docker节点的4243接口，例如：<a href="http://10.1.5.129:4243/images/json，测试可以获取到当前节点的image信息，代表已经成功启用了docker" target="_blank" rel="external">http://10.1.5.129:4243/images/json，测试可以获取到当前节点的image信息，代表已经成功启用了docker</a> remote api。</p>
+<p>访问<a href="http://10.1.5.129:4243/version，查看相关版本信息：" target="_blank" rel="external">http://10.1.5.129:4243/version，查看相关版本信息：</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">&quot;Version&quot;: &quot;1.13.1&quot;,</div><div class="line">&quot;ApiVersion&quot;: &quot;1.26&quot;,</div><div class="line">&quot;MinAPIVersion&quot;: &quot;1.12&quot;,</div><div class="line">&quot;GitCommit&quot;: &quot;092cba3&quot;,</div><div class="line">&quot;GoVersion&quot;: &quot;go1.7.5&quot;,</div><div class="line">&quot;Os&quot;: &quot;linux&quot;,</div><div class="line">&quot;Arch&quot;: &quot;amd64&quot;,</div><div class="line">&quot;KernelVersion&quot;: &quot;3.10.0-514.2.2.el7.x86_64&quot;,</div><div class="line">&quot;BuildTime&quot;: &quot;2017-02-08T06:38:28.018621521+00:00&quot;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>版本是1.26，已经满足前面的各个docker组件的版本需求，把这个配置scp给其他的docker节点即可。</p>
+<p>参考： <a href="https://docs.docker.com/engine/api/v1.26/" target="_blank" rel="external">https://docs.docker.com/engine/api/v1.26/</a></p>
+<p>再去controller启动ucp：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker run --rm -it --name ucp   -v /var/run/docker.sock:/var/run/docker.sock   docker/ucp:2.1.0 install   --host-address 10.1.5.129  --interactive</div><div class="line">INFO[0000] Verifying your system is compatible with UCP </div><div class="line">INFO[0000] Your engine version 1.13.1, build 092cba3 (3.10.0-514.2.2.el7.x86_64) is compatible </div><div class="line">FATA[0019] This swarm is already managed by UCP. Please either uninstall UCP first using the &apos;uninstall-ucp&apos; operation or upgrade your cluster to a newer version</div></pre></td></tr></table></figure></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/02/17/安装dockercenter的ucp/" data-title="安装dockercenter的ucp | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/02/27/Fabric自动化运维脚本/" title="Fabric自动化运维脚本">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Fabric自动化运维脚本</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/02/09/机器学习与R语言——模型Tips/"  title="机器学习与R语言——模型Tips">
+ <strong>下一篇：</strong><br/> 
+ <span>机器学习与R语言——模型Tips
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/02/17/安装dockercenter的ucp/" data-title="安装dockercenter的ucp" data-url="http://willcup.com/2017/02/17/安装dockercenter的ucp/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

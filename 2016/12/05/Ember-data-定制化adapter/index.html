@@ -1,0 +1,609 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>Ember-data-定制化adapter | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="adapter在Ember Data中决定数据怎样被持久化到后端数据存储层。比如处理URL格式、REST API的header等。(数据格式决定于serializer.)Ember Data的默认adapter有一些内置的假设规范，参看：REST API should look。如果你的后端不满足这些规范，就集成默认的adapter，修改一下它的方法。
+一些典型的应用场景是在你的urls中使用un">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ember-data-定制化adapter">
+<meta property="og:url" content="http://willcup.com/2016/12/05/Ember-data-定制化adapter/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="adapter在Ember Data中决定数据怎样被持久化到后端数据存储层。比如处理URL格式、REST API的header等。(数据格式决定于serializer.)Ember Data的默认adapter有一些内置的假设规范，参看：REST API should look。如果你的后端不满足这些规范，就集成默认的adapter，修改一下它的方法。
+一些典型的应用场景是在你的urls中使用un">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.781Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ember-data-定制化adapter">
+<meta name="twitter:description" content="adapter在Ember Data中决定数据怎样被持久化到后端数据存储层。比如处理URL格式、REST API的header等。(数据格式决定于serializer.)Ember Data的默认adapter有一些内置的假设规范，参看：REST API should look。如果你的后端不满足这些规范，就集成默认的adapter，修改一下它的方法。
+一些典型的应用场景是在你的urls中使用un">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/Ember-data-定制化adapter/" title="Ember-data-定制化adapter" itemprop="url">Ember-data-定制化adapter</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:09:13.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#定制化JSONAPIAdapter"><span class="toc-text">定制化JSONAPIAdapter</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#URL规范"><span class="toc-text">URL规范</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Pluralization-Customization"><span class="toc-text">Pluralization Customization</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Endpoint-Path-Customization"><span class="toc-text">Endpoint Path Customization</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Host-Customization"><span class="toc-text">Host Customization</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Path-Customization"><span class="toc-text">Path Customization</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Headers-customization"><span class="toc-text">Headers customization</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Authoring-Adapters"><span class="toc-text">Authoring Adapters</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#社区的Adapters"><span class="toc-text">社区的Adapters</span></a></li></ol>
+		
+		</div>
+		
+		<p>adapter在Ember Data中决定数据怎样被持久化到后端数据存储层。比如处理URL格式、REST API的header等。(数据格式决定于<br><a href="../customizing-serializers/">serializer</a>.)Ember Data的默认adapter有一些内置的假设规范，参看：REST API should look。如果你的后端不满足这些规范，就集成默认的adapter，修改一下它的方法。</p>
+<p>一些典型的应用场景是在你的urls中使用<br><code>underscores_case</code> , 使用中介而不是直接使用你后端的server，甚至直接使用<br><a href="https://github.com/locks/ember-localstorage-adapter" target="_blank" rel="external">local storage backend</a>.</p>
+<p>继承adapter在Ember Data中是很轻松的过程。</p>
+<p>如果你的后端你有一致性要求，你可以定义一个<br><code>adapter:application</code>.  <code>adapter:application</code> 的优先级高于所有其他的默认Adapter, 但是低于model内指定的Adapters.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  // Application specific overrides go here</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>如果你有一个model相对于其他的model在与后台沟通的时候需要额外的规则，那么你就可以创建一个Model指定的<br>Adapter：<code>ember generate adapter adapter-name</code>.<br>例如，运行<code>ember generate adapter post</code> 会创建下面的文件:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  namespace: &apos;api/v1&apos;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>Ember Data默认有几个内置的adapter。</p>
+<ul>
+<li><p><a href="http://emberjs.com/api/data/classes/DS.Adapter.html" target="_blank" rel="external">Adapter</a> 是最基础的adapter，不好喊任何功能。如果你要创建一个不同于其他的adapter功能的adapter，通常它是要给不错的起点。</p>
+</li>
+<li><p><a href="http://emberjs.com/api/data/classes/DS.JSONAPIAdapter.html" target="_blank" rel="external">JSONAPIAdapter</a><br><code>JSONAPIAdapter</code>是遵循默认JSON API规范的adapter，负责通过XHR传递JSON与http server沟通。</p>
+</li>
+<li><p><a href="http://emberjs.com/api/data/classes/DS.RESTAdapter.html" target="_blank" rel="external">RESTAdapter</a><br><code>RESTAdapter</code> 通过XHR传递JSON允许你的store与http server直接沟通。2.0版本之前，这个是默认的adapter。</p>
+</li>
+</ul>
+<h2 id="定制化JSONAPIAdapter"><a href="#定制化JSONAPIAdapter" class="headerlink" title="定制化JSONAPIAdapter"></a>定制化JSONAPIAdapter</h2><p><a href="http://emberjs.com/api/data/classes/DS.JSONAPIAdapter.html" target="_blank" rel="external">JSONAPIAdapter</a><br>有一些很好用的hooks来适应非标准的后台。</p>
+<h3 id="URL规范"><a href="#URL规范" class="headerlink" title="URL规范"></a>URL规范</h3><p><code>JSONAPIAdapter</code>可以通过mode的名字来判断 URLs.比如，如果你通过ID查询<code>Post</code>:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">store.findRecord(<span class="string">'post'</span>, <span class="number">1</span>).then(<span class="function"><span class="keyword">function</span>(<span class="params">post</span>) </span>&#123;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>JSON API adapter会自动发送一个<code>GET</code> 请求到<code>/posts/1</code>.</p>
+<p>JSON API adapter中的操作与url对应如下:</p>
+<table><br>  <thead><br>    <tr><th>Action</th><th>HTTP Verb</th><th>URL</th></tr><br>  </thead><br>  <tbody><br>    <tr><th>Find</th><td>GET</td><td>/posts/123</td></tr><br>    <tr><th>Find All</th><td>GET</td><td>/posts</td></tr><br>    <tr><th>Update</th><td>PATCH</td><td>/posts/123</td></tr><br>    <tr><th>Create</th><td>POST</td><td>/posts</td></tr><br>    <tr><th>Delete</th><td>DELETE</td><td>/posts/123</td></tr><br>  </tbody><br></table>
+
+<h4 id="Pluralization-Customization"><a href="#Pluralization-Customization" class="headerlink" title="Pluralization Customization"></a>Pluralization Customization</h4><p>To facilitate pluralizing model names when generating route urls Ember<br>Data comes bundled with<br><a href="https://github.com/stefanpenner/ember-inflector" target="_blank" rel="external">Ember Inflector</a>, a<br>ActiveSupport::Inflector compatible library for inflecting words<br>between plural and singular forms. Irregular or uncountable<br>pluralizations can be specified via <code>Ember.Inflector.inflector</code>.<br>A common way to do this is<br>（上面的没咋看懂，就是url中处理model负数问题的）<br>:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">// sets up Ember.Inflector</div><div class="line">import &apos;./models/custom-inflector-rules&apos;;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">import Inflector from &apos;ember-inflector&apos;;</div><div class="line"></div><div class="line">const inflector = Inflector.inflector;</div><div class="line"></div><div class="line">inflector.irregular(&apos;formula&apos;, &apos;formulae&apos;);</div><div class="line">inflector.uncountable(&apos;advice&apos;);</div><div class="line"></div><div class="line">// Meet Ember Inspector&apos;s expectation of an export</div><div class="line">export default &#123;&#125;;</div></pre></td></tr></table></figure>
+<p>这告诉JSON API adapter对于<code>formula</code>的请求应该去<code>/formulae/1</code> 而不是 <code>/formulas/1</code>, 对于<code>advice</code>的请求应该去 <code>/advice/1</code> 而不是 <code>/advices/1</code>.</p>
+<h4 id="Endpoint-Path-Customization"><a href="#Endpoint-Path-Customization" class="headerlink" title="Endpoint Path Customization"></a>Endpoint Path Customization</h4><p><code>namespace</code> 属性可以作为指定url的前缀.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  namespace: &apos;api/1&apos;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>请求<code>person</code> 被指向 <code>http://emberjs.com/api/1/people/1</code>.</p>
+<h4 id="Host-Customization"><a href="#Host-Customization" class="headerlink" title="Host Customization"></a>Host Customization</h4><p>默认adapter会向当前域发送请求。如果要指定新的域名需要设置adapter的<code>host</code>属性。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  host: &apos;https://api.example.com&apos;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>请求<code>person</code> 会指向 <code>https://api.example.com/people/1</code>.</p>
+<h4 id="Path-Customization"><a href="#Path-Customization" class="headerlink" title="Path Customization"></a>Path Customization</h4><p>默认 <code>JSONAPIAdapter</code>会处理model的名字为复数，生成path。如果这并不适用于你的后台，那就override <code>pathForType</code> 方法.</p>
+<p>例如，如果你不想复数化你的model名称，而是要把你的model名字从驼峰转为下滑线，你可以这边写<br><code>pathForType</code> 方法:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  pathForType: function(type) &#123;</div><div class="line">    return Ember.String.underscore(type);</div><div class="line">  &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>请求 <code>person</code> 被定向到 <code>/person/1</code>.<br>请求 <code>user-profile</code>定向到 <code>/user_profile/1</code>.</p>
+<h4 id="Headers-customization"><a href="#Headers-customization" class="headerlink" title="Headers customization"></a>Headers customization</h4><p>又的API必须要有一些header才行，如果提供一个key。在<code>JSONAPIAdapter</code>的 <code>headers</code>对象中我们可以设置任意的header信息。Ember Data会在发送每个ajax 请求的时候带上它们.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  headers: &#123;</div><div class="line">    &apos;API_KEY&apos;: &apos;secret key&apos;,</div><div class="line">    &apos;ANOTHER_HEADER&apos;: &apos;Some header value&apos;</div><div class="line">  &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p><code>headers</code>也可以使用 computed property来支持动态header. 下面例子中是基于<code>session</code>service中的<code>authToken</code>属性的.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  session: Ember.inject.service(&apos;session&apos;),</div><div class="line">  headers: Ember.computed(&apos;session.authToken&apos;, function() &#123;</div><div class="line">    return &#123;</div><div class="line">      &apos;API_KEY&apos;: this.get(&apos;session.authToken&apos;),</div><div class="line">      &apos;ANOTHER_HEADER&apos;: &apos;Some header value&apos;</div><div class="line">    &#125;;</div><div class="line">  &#125;)</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>In some cases, your dynamic headers may require data from some<br>object outside of Ember’s observer system (for example<br><code>document.cookie</code>). You can use the<br><a href="http://emberjs.com/api/classes/Ember.ComputedProperty.html#method_volatile" target="_blank" rel="external">volatile</a><br>function to set the property into a non-cached mode causing the headers to<br>be recomputed with every request.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  headers: Ember.computed(function() &#123;</div><div class="line">    return &#123;</div><div class="line">      &apos;API_KEY&apos;: Ember.get(document.cookie.match(/apiKey\=([^;]*)/), &apos;1&apos;),</div><div class="line">      &apos;ANOTHER_HEADER&apos;: &apos;Some header value&apos;</div><div class="line">    &#125;;</div><div class="line">  &#125;).volatile()</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h4 id="Authoring-Adapters"><a href="#Authoring-Adapters" class="headerlink" title="Authoring Adapters"></a>Authoring Adapters</h4><p><code>defaultSerializer</code> 可以用来指定adapter的serializer. 只有model需要指定的serializer或者么有定义<code>serializer:application</code>的时候才会用到。</p>
+<p>在app中, 指定<br><code>serializer:application</code>通常很容易. 但是，如果你是一个社区adapter的作者，记住一定要设置这个属性，以免你的用户忘记没有指定这个属性，Ember就报错了。.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  defaultSerializer: &apos;-default&apos;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h2 id="社区的Adapters"><a href="#社区的Adapters" class="headerlink" title="社区的Adapters"></a>社区的Adapters</h2><p>可以从下面的地址中找到社区贡献的adapter，或许有适合你的哦:</p>
+<ul>
+<li><a href="http://emberobserver.com/categories/data" target="_blank" rel="external">Ember Observer</a></li>
+<li><a href="https://github.com/search?q=ember+data+adapter&amp;ref=cmdform" target="_blank" rel="external">GitHub</a></li>
+<li><a href="http://bower.io/search/?q=ember-data-" target="_blank" rel="external">Bower</a></li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/12/05/Ember-data-定制化adapter/" data-title="Ember-data-定制化adapter | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/12/05/celery上手/" title="celery上手">
+  <strong>上一篇：</strong><br/>
+  <span>
+  celery上手</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/12/05/jenkins/"  title="jenkins">
+ <strong>下一篇：</strong><br/> 
+ <span>jenkins
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/12/05/Ember-data-定制化adapter/" data-title="Ember-data-定制化adapter" data-url="http://willcup.com/2016/12/05/Ember-data-定制化adapter/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#定制化JSONAPIAdapter"><span class="toc-number">1.</span> <span class="toc-text">定制化JSONAPIAdapter</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#URL规范"><span class="toc-number">1.1.</span> <span class="toc-text">URL规范</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Pluralization-Customization"><span class="toc-number">1.1.1.</span> <span class="toc-text">Pluralization Customization</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Endpoint-Path-Customization"><span class="toc-number">1.1.2.</span> <span class="toc-text">Endpoint Path Customization</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Host-Customization"><span class="toc-number">1.1.3.</span> <span class="toc-text">Host Customization</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Path-Customization"><span class="toc-number">1.1.4.</span> <span class="toc-text">Path Customization</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Headers-customization"><span class="toc-number">1.1.5.</span> <span class="toc-text">Headers customization</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Authoring-Adapters"><span class="toc-number">1.1.6.</span> <span class="toc-text">Authoring Adapters</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#社区的Adapters"><span class="toc-number">2.</span> <span class="toc-text">社区的Adapters</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

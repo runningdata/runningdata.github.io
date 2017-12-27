@@ -1,0 +1,596 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>SparkR安装历程 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="在centos上安装一下R的基础包。
+123yum install -y RR CMD javareconf
+
+安装Rstudio server
+123wget https://download2.rstudio.org/rstudio-server-rhel-1.0.136-x86_64.rpmyum install --nogpgcheck rstudio-server-rhel-1.0.1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SparkR安装历程">
+<meta property="og:url" content="http://willcup.com/2017/01/09/SparkR安装历程/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="在centos上安装一下R的基础包。
+123yum install -y RR CMD javareconf
+
+安装Rstudio server
+123wget https://download2.rstudio.org/rstudio-server-rhel-1.0.136-x86_64.rpmyum install --nogpgcheck rstudio-server-rhel-1.0.1">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.793Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SparkR安装历程">
+<meta name="twitter:description" content="在centos上安装一下R的基础包。
+123yum install -y RR CMD javareconf
+
+安装Rstudio server
+123wget https://download2.rstudio.org/rstudio-server-rhel-1.0.136-x86_64.rpmyum install --nogpgcheck rstudio-server-rhel-1.0.1">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/01/09/SparkR安装历程/" title="SparkR安装历程" itemprop="url">SparkR安装历程</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-01-09T02:35:52.000Z" itemprop="datePublished"> 发表于 2017-01-09</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<ol>
+<li><p>在centos上安装一下R的基础包。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">yum install -y R</div><div class="line"></div><div class="line">R CMD javareconf</div></pre></td></tr></table></figure>
+</li>
+<li><p>安装Rstudio server</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">wget https://download2.rstudio.org/rstudio-server-rhel-1.0.136-x86_64.rpm</div><div class="line">yum install --nogpgcheck rstudio-server-rhel-1.0.136-x86_64.rpm</div><div class="line">rstudio-server verify-installation</div></pre></td></tr></table></figure>
+</li>
+<li><p>为Rstudio server添加用户，默认是使用linux用户的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">useradd rtest</div><div class="line">passwd rtest</div></pre></td></tr></table></figure>
+</li>
+<li><p>R安装依赖<br>为R安装sparkR的库</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">R CMD INSTALL /usr/hdp/current/spark-client/R/lib/SparkR/</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>安装forecast的时候报错, g++版本低，通过安装devtools-2解决：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">sudo rpm --import http://ftp.scientificlinux.org/linux/scientific/5x/x86_64/RPM-GPG-KEYs/RPM-GPG-KEY-cern</div><div class="line">wget -O /etc/yum.repos.d/slc6-devtoolset.repo http://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo</div><div class="line">sudo yum install devtoolset-2</div><div class="line">scl enable devtoolset-2 bash</div></pre></td></tr></table></figure></p>
+<p>这样版本就已经好了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">$ gcc --version</div><div class="line">gcc (GCC) 4.8.2 20140120 (Red Hat 4.8.2-15)</div><div class="line">...</div><div class="line"></div><div class="line">$ g++ --version</div><div class="line">g++ (GCC) 4.8.2 20140120 (Red Hat 4.8.2-15)</div><div class="line">...</div><div class="line"></div><div class="line">$ gfortran --version</div><div class="line">GNU Fortran (GCC) 4.8.2 20140120 (Red Hat 4.8.2-15)</div><div class="line">...</div></pre></td></tr></table></figure></p>
+<p>参考： <a href="https://gist.github.com/stephenturner/e3bc5cfacc2dc67eca8b" target="_blank" rel="external">https://gist.github.com/stephenturner/e3bc5cfacc2dc67eca8b</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div><div class="line">221</div><div class="line">222</div><div class="line">223</div><div class="line">224</div><div class="line">225</div><div class="line">226</div><div class="line">227</div><div class="line">228</div><div class="line">229</div><div class="line">230</div><div class="line">231</div><div class="line">232</div><div class="line">233</div><div class="line">234</div><div class="line">235</div><div class="line">236</div><div class="line">237</div><div class="line">238</div><div class="line">239</div><div class="line">240</div><div class="line">241</div><div class="line">242</div><div class="line">243</div><div class="line">244</div><div class="line">245</div><div class="line">246</div><div class="line">247</div><div class="line">248</div><div class="line">249</div><div class="line">250</div><div class="line">251</div><div class="line">252</div><div class="line">253</div><div class="line">254</div><div class="line">255</div><div class="line">256</div><div class="line">257</div><div class="line">258</div><div class="line">259</div><div class="line">260</div><div class="line">261</div><div class="line">262</div><div class="line">263</div><div class="line">264</div><div class="line">265</div><div class="line">266</div><div class="line">267</div><div class="line">268</div><div class="line">269</div><div class="line">270</div><div class="line">271</div><div class="line">272</div><div class="line">273</div><div class="line">274</div><div class="line">275</div><div class="line">276</div><div class="line">277</div><div class="line">278</div><div class="line">279</div><div class="line">280</div><div class="line">281</div><div class="line">282</div><div class="line">283</div><div class="line">284</div><div class="line">285</div><div class="line">286</div></pre></td><td class="code"><pre><div class="line">&gt; sc&lt;-sparkR.init(master = &quot;yarn-client&quot;)</div><div class="line">Launching java with spark-submit command spark-submit   sparkr-shell /tmp/RtmpERrwOX/backend_port628c57c68104 </div><div class="line">17/01/10 15:28:50 INFO SparkContext: Running Spark version 1.5.2</div><div class="line">17/01/10 15:28:53 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable</div><div class="line">17/01/10 15:28:54 INFO SecurityManager: Changing view acls to: zhangjiayi</div><div class="line">17/01/10 15:28:54 INFO SecurityManager: Changing modify acls to: zhangjiayi</div><div class="line">17/01/10 15:28:54 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users with view permissions: Set(zhangjiayi); users with modify permissions: Set(zhangjiayi)</div><div class="line">17/01/10 15:29:00 INFO Slf4jLogger: Slf4jLogger started</div><div class="line">17/01/10 15:29:00 INFO Remoting: Starting remoting</div><div class="line">17/01/10 15:29:01 INFO Remoting: Remoting started; listening on addresses :[akka.tcp://sparkDriver@10.1.5.65:34109]</div><div class="line">17/01/10 15:29:01 INFO Utils: Successfully started service &apos;sparkDriver&apos; on port 34109.</div><div class="line">17/01/10 15:29:01 INFO SparkEnv: Registering MapOutputTracker</div><div class="line">17/01/10 15:29:01 INFO SparkEnv: Registering BlockManagerMaster</div><div class="line">17/01/10 15:29:02 INFO DiskBlockManager: Created local directory at /tmp/blockmgr-ce31222a-c674-4391-be3c-43b075e758d4</div><div class="line">17/01/10 15:29:02 INFO MemoryStore: MemoryStore started with capacity 530.0 MB</div><div class="line">17/01/10 15:29:02 INFO HttpFileServer: HTTP File server directory is /tmp/spark-c2196ae2-3c1b-46e0-97dd-583cd7a240a3/httpd-af4e2720-d455-4d5a-93de-6a0e7231da34</div><div class="line">17/01/10 15:29:02 INFO HttpServer: Starting HTTP Server</div><div class="line">17/01/10 15:29:03 INFO Server: jetty-8.y.z-SNAPSHOT</div><div class="line">17/01/10 15:29:03 INFO AbstractConnector: Started SocketConnector@0.0.0.0:44708</div><div class="line">17/01/10 15:29:03 INFO Utils: Successfully started service &apos;HTTP file server&apos; on port 44708.</div><div class="line">17/01/10 15:29:03 INFO SparkEnv: Registering OutputCommitCoordinator</div><div class="line">17/01/10 15:29:03 INFO Server: jetty-8.y.z-SNAPSHOT</div><div class="line">17/01/10 15:29:03 INFO AbstractConnector: Started SelectChannelConnector@0.0.0.0:4040</div><div class="line">17/01/10 15:29:03 INFO Utils: Successfully started service &apos;SparkUI&apos; on port 4040.</div><div class="line">17/01/10 15:29:03 INFO SparkUI: Started SparkUI at http://10.1.5.65:4040</div><div class="line">17/01/10 15:29:04 WARN MetricsSystem: Using default name DAGScheduler for source because spark.app.id is not set.</div><div class="line">spark.yarn.driver.memoryOverhead is set but does not apply in client mode.</div><div class="line">17/01/10 15:29:05 INFO TimelineClientImpl: Timeline service address: http://slavenode4:8188/ws/v1/timeline/</div><div class="line">17/01/10 15:29:06 INFO RMProxy: Connecting to ResourceManager at slavenode3/10.1.5.64:8050</div><div class="line">17/01/10 15:29:11 WARN DomainSocketFactory: The short-circuit local reads feature cannot be used because libhadoop cannot be loaded.</div><div class="line">17/01/10 15:29:12 INFO Client: Requesting a new application from cluster with 5 NodeManagers</div><div class="line">17/01/10 15:29:12 INFO Client: Verifying our application has not requested more than the maximum memory capability of the cluster (5120 MB per container)</div><div class="line">17/01/10 15:29:12 INFO Client: Will allocate AM container, with 896 MB memory including 384 MB overhead</div><div class="line">17/01/10 15:29:12 INFO Client: Setting up container launch context for our AM</div><div class="line">17/01/10 15:29:12 INFO Client: Setting up the launch environment for our AM container</div><div class="line">17/01/10 15:29:12 INFO Client: Preparing resources for our AM container</div><div class="line">17/01/10 15:29:12 INFO Client: Uploading resource file:/usr/hdp/2.3.4.0-3485/spark/lib/spark-assembly-1.5.2.2.3.4.0-3485-hadoop2.7.1.2.3.4.0-3485.jar -&gt; hdfs://masternode:8020/user/zhangjiayi/.sparkStaging/application_1483512430911_0002/spark-assembly-1.5.2.2.3.4.0-3485-hadoop2.7.1.2.3.4.0-3485.jar</div><div class="line">17/01/10 15:29:22 INFO Client: Uploading resource file:/tmp/spark-c2196ae2-3c1b-46e0-97dd-583cd7a240a3/__spark_conf__1393429344923620787.zip -&gt; hdfs://masternode:8020/user/zhangjiayi/.sparkStaging/application_1483512430911_0002/__spark_conf__1393429344923620787.zip</div><div class="line">17/01/10 15:29:22 INFO SecurityManager: Changing view acls to: zhangjiayi</div><div class="line">17/01/10 15:29:22 INFO SecurityManager: Changing modify acls to: zhangjiayi</div><div class="line">17/01/10 15:29:22 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users with view permissions: Set(zhangjiayi); users with modify permissions: Set(zhangjiayi)</div><div class="line">17/01/10 15:29:22 INFO Client: Submitting application 2 to ResourceManager</div><div class="line">17/01/10 15:29:22 INFO YarnClientImpl: Submitted application application_1483512430911_0002</div><div class="line">17/01/10 15:29:22 INFO YarnExtensionServices: Starting Yarn extension services with app application_1483512430911_0002 and attemptId None</div><div class="line">17/01/10 15:29:22 INFO YarnHistoryService: Starting YarnHistoryService for application application_1483512430911_0002 attempt None; state=1; endpoint=http://slavenode4:8188/ws/v1/timeline/; bonded to ATS=false; listening=false; batchSize=10; flush count=0; total number queued=0, processed=0; attempted entity posts=0 successful entity posts=0 failed entity posts=0; events dropped=0; app start event received=false; app end event received=false;</div><div class="line">17/01/10 15:29:22 INFO YarnHistoryService: Spark events will be published to the Timeline service at http://slavenode4:8188/ws/v1/timeline/</div><div class="line">17/01/10 15:29:22 INFO TimelineClientImpl: Timeline service address: http://slavenode4:8188/ws/v1/timeline/</div><div class="line">17/01/10 15:29:22 INFO YarnHistoryService: History Service listening for events: YarnHistoryService for application application_1483512430911_0002 attempt None; state=1; endpoint=http://slavenode4:8188/ws/v1/timeline/; bonded to ATS=true; listening=true; batchSize=10; flush count=0; total number queued=0, processed=0; attempted entity posts=0 successful entity posts=0 failed entity posts=0; events dropped=0; app start event received=false; app end event received=false;</div><div class="line">17/01/10 15:29:22 INFO YarnExtensionServices: Service org.apache.spark.deploy.yarn.history.YarnHistoryService started</div><div class="line">17/01/10 15:29:23 INFO Client: Application report for application_1483512430911_0002 (state: ACCEPTED)</div><div class="line">17/01/10 15:29:23 INFO Client: </div><div class="line">	 client token: N/A</div><div class="line">	 diagnostics: N/A</div><div class="line">	 ApplicationMaster host: N/A</div><div class="line">	 ApplicationMaster RPC port: -1</div><div class="line">	 queue: default</div><div class="line">	 start time: 1484033362415</div><div class="line">	 final status: UNDEFINED</div><div class="line">	 tracking URL: http://slavenode3:8088/proxy/application_1483512430911_0002/</div><div class="line">	 user: zhangjiayi</div><div class="line">17/01/10 15:29:24 INFO Client: Application report for application_1483512430911_0002 (state: ACCEPTED)</div><div class="line">17/01/10 15:29:25 INFO Client: Application report for application_1483512430911_0002 (state: ACCEPTED)</div><div class="line">17/01/10 15:29:26 INFO Client: Application report for application_1483512430911_0002 (state: ACCEPTED)</div><div class="line">17/01/10 15:29:27 INFO YarnSchedulerBackend$YarnSchedulerEndpoint: ApplicationMaster registered as AkkaRpcEndpointRef(Actor[akka.tcp://sparkYarnAM@10.1.5.66:34209/user/YarnAM#-468278157])</div><div class="line">17/01/10 15:29:27 INFO YarnClientSchedulerBackend: Add WebUI Filter. org.apache.hadoop.yarn.server.webproxy.amfilter.AmIpFilter, Map(PROXY_HOSTS -&gt; slavenode3, PROXY_URI_BASES -&gt; http://slavenode3:8088/proxy/application_1483512430911_0002), /proxy/application_1483512430911_0002</div><div class="line">17/01/10 15:29:27 INFO JettyUtils: Adding filter: org.apache.hadoop.yarn.server.webproxy.amfilter.AmIpFilter</div><div class="line">17/01/10 15:29:27 INFO Client: Application report for application_1483512430911_0002 (state: RUNNING)</div><div class="line">17/01/10 15:29:27 INFO Client: </div><div class="line">	 client token: N/A</div><div class="line">	 diagnostics: N/A</div><div class="line">	 ApplicationMaster host: 10.1.5.66</div><div class="line">	 ApplicationMaster RPC port: 0</div><div class="line">	 queue: default</div><div class="line">	 start time: 1484033362415</div><div class="line">	 final status: UNDEFINED</div><div class="line">	 tracking URL: http://slavenode3:8088/proxy/application_1483512430911_0002/</div><div class="line">	 user: zhangjiayi</div><div class="line">17/01/10 15:29:27 INFO YarnClientSchedulerBackend: Application application_1483512430911_0002 has started running.</div><div class="line">17/01/10 15:29:27 INFO Utils: Successfully started service &apos;org.apache.spark.network.netty.NettyBlockTransferService&apos; on port 44133.</div><div class="line">17/01/10 15:29:27 INFO NettyBlockTransferService: Server created on 44133</div><div class="line">17/01/10 15:29:27 INFO BlockManagerMaster: Trying to register BlockManager</div><div class="line">17/01/10 15:29:27 INFO BlockManagerMasterEndpoint: Registering block manager 10.1.5.65:44133 with 530.0 MB RAM, BlockManagerId(driver, 10.1.5.65, 44133)</div><div class="line">17/01/10 15:29:27 INFO BlockManagerMaster: Registered BlockManager</div><div class="line">17/01/10 15:29:28 INFO YarnHistoryService: Application started: SparkListenerApplicationStart(SparkR,Some(application_1483512430911_0002),1484033330463,zhangjiayi,None,None)</div><div class="line">17/01/10 15:29:28 INFO YarnHistoryService: About to POST entity application_1483512430911_0002 with 3 events to timeline service http://slavenode4:8188/ws/v1/timeline/</div><div class="line">17/01/10 15:29:34 INFO YarnClientSchedulerBackend: SchedulerBackend is ready for scheduling beginning after waiting maxRegisteredResourcesWaitingTime: 30000(ms)</div><div class="line">&gt; </div><div class="line">17/01/10 15:29:35 INFO YarnClientSchedulerBackend: Registered executor: AkkaRpcEndpointRef(Actor[akka.tcp://sparkExecutor@slavenode3:41731/user/Executor#207450695]) with ID 1</div><div class="line">17/01/10 15:29:35 INFO BlockManagerMasterEndpoint: Registering block manager slavenode3:45665 with 530.0 MB RAM, BlockManagerId(1, slavenode3, 45665)</div><div class="line">17/01/10 15:29:39 INFO YarnClientSchedulerBackend: Registered executor: AkkaRpcEndpointRef(Actor[akka.tcp://sparkExecutor@slavenode2:42294/user/Executor#1616446929]) with ID 2</div><div class="line">17/01/10 15:29:39 INFO BlockManagerMasterEndpoint: Registering block manager slavenode2:42279 with 530.0 MB RAM, BlockManagerId(2, slavenode2, 42279)</div><div class="line">&gt; sqlcontext&lt;-sparkRSQL.init(sc)</div><div class="line">&gt; df&lt;-createDataFrame(sqlContext = sqlcontext,data = iris)</div><div class="line">17/01/10 15:29:54 INFO SparkContext: Starting job: collectPartitions at NativeMethodAccessorImpl.java:-2</div><div class="line">17/01/10 15:29:54 INFO DAGScheduler: Got job 0 (collectPartitions at NativeMethodAccessorImpl.java:-2) with 1 output partitions</div><div class="line">17/01/10 15:29:54 INFO DAGScheduler: Final stage: ResultStage 0(collectPartitions at NativeMethodAccessorImpl.java:-2)</div><div class="line">17/01/10 15:29:54 INFO DAGScheduler: Parents of final stage: List()</div><div class="line">17/01/10 15:29:54 INFO DAGScheduler: Missing parents: List()</div><div class="line">17/01/10 15:29:54 INFO DAGScheduler: Submitting ResultStage 0 (ParallelCollectionRDD[0] at parallelize at RRDD.scala:454), which has no missing parents</div><div class="line">17/01/10 15:30:03 INFO MemoryStore: ensureFreeSpace(1280) called with curMem=0, maxMem=555755765</div><div class="line">17/01/10 15:30:03 INFO MemoryStore: Block broadcast_0 stored as values in memory (estimated size 1280.0 B, free 530.0 MB)</div><div class="line">17/01/10 15:30:03 INFO MemoryStore: ensureFreeSpace(854) called with curMem=1280, maxMem=555755765</div><div class="line">17/01/10 15:30:03 INFO MemoryStore: Block broadcast_0_piece0 stored as bytes in memory (estimated size 854.0 B, free 530.0 MB)</div><div class="line">17/01/10 15:30:03 INFO BlockManagerInfo: Added broadcast_0_piece0 in memory on 10.1.5.65:44133 (size: 854.0 B, free: 530.0 MB)</div><div class="line">17/01/10 15:30:03 INFO SparkContext: Created broadcast 0 from broadcast at DAGScheduler.scala:861</div><div class="line">17/01/10 15:30:03 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 0 (ParallelCollectionRDD[0] at parallelize at RRDD.scala:454)</div><div class="line">17/01/10 15:30:03 INFO YarnScheduler: Adding task set 0.0 with 1 tasks</div><div class="line">17/01/10 15:30:03 INFO TaskSetManager: Starting task 0.0 in stage 0.0 (TID 0, slavenode2, PROCESS_LOCAL, 16553 bytes)</div><div class="line">17/01/10 15:30:05 INFO BlockManagerInfo: Added broadcast_0_piece0 in memory on slavenode2:42279 (size: 854.0 B, free: 530.0 MB)</div><div class="line">17/01/10 15:30:05 INFO TaskSetManager: Finished task 0.0 in stage 0.0 (TID 0) in 1661 ms on slavenode2 (1/1)</div><div class="line">17/01/10 15:30:05 INFO DAGScheduler: ResultStage 0 (collectPartitions at NativeMethodAccessorImpl.java:-2) finished in 1.786 s</div><div class="line">17/01/10 15:30:05 INFO DAGScheduler: Job 0 finished: collectPartitions at NativeMethodAccessorImpl.java:-2, took 11.381818 s</div><div class="line">17/01/10 15:30:05 INFO YarnScheduler: Removed TaskSet 0.0, whose tasks have all completed, from pool </div><div class="line">17/01/10 15:30:06 INFO YarnHistoryService: About to POST entity application_1483512430911_0002 with 10 events to timeline service http://slavenode4:8188/ws/v1/timeline/</div><div class="line">Warning messages:</div><div class="line">1: In FUN(X[[i]], ...) :</div><div class="line">  Use Sepal_Length instead of Sepal.Length  as column name</div><div class="line">2: In FUN(X[[i]], ...) :</div><div class="line">  Use Sepal_Width instead of Sepal.Width  as column name</div><div class="line">3: In FUN(X[[i]], ...) :</div><div class="line">  Use Petal_Length instead of Petal.Length  as column name</div><div class="line">4: In FUN(X[[i]], ...) :</div><div class="line">  Use Petal_Width instead of Petal.Width  as column name</div><div class="line">&gt; </div><div class="line">&gt; typeof(df)</div><div class="line">[1] &quot;S4&quot;</div><div class="line">&gt; a&lt;-&apos;sdfsd&apos;</div><div class="line">&gt; typeof(a)</div><div class="line">[1] &quot;character&quot;</div><div class="line">&gt; head(df)</div><div class="line">17/01/10 15:31:24 INFO SparkContext: Starting job: dfToCols at NativeMethodAccessorImpl.java:-2</div><div class="line">17/01/10 15:31:24 INFO DAGScheduler: Got job 1 (dfToCols at NativeMethodAccessorImpl.java:-2) with 1 output partitions</div><div class="line">17/01/10 15:31:24 INFO DAGScheduler: Final stage: ResultStage 1(dfToCols at NativeMethodAccessorImpl.java:-2)</div><div class="line">17/01/10 15:31:24 INFO DAGScheduler: Parents of final stage: List()</div><div class="line">17/01/10 15:31:24 INFO DAGScheduler: Missing parents: List()</div><div class="line">17/01/10 15:31:24 INFO DAGScheduler: Submitting ResultStage 1 (MapPartitionsRDD[4] at dfToCols at NativeMethodAccessorImpl.java:-2), which has no missing parents</div><div class="line">17/01/10 15:31:24 INFO MemoryStore: ensureFreeSpace(9176) called with curMem=2134, maxMem=555755765</div><div class="line">17/01/10 15:31:24 INFO MemoryStore: Block broadcast_1 stored as values in memory (estimated size 9.0 KB, free 530.0 MB)</div><div class="line">17/01/10 15:31:24 INFO MemoryStore: ensureFreeSpace(3690) called with curMem=11310, maxMem=555755765</div><div class="line">17/01/10 15:31:24 INFO MemoryStore: Block broadcast_1_piece0 stored as bytes in memory (estimated size 3.6 KB, free 530.0 MB)</div><div class="line">17/01/10 15:31:24 INFO BlockManagerInfo: Added broadcast_1_piece0 in memory on 10.1.5.65:44133 (size: 3.6 KB, free: 530.0 MB)</div><div class="line">17/01/10 15:31:24 INFO SparkContext: Created broadcast 1 from broadcast at DAGScheduler.scala:861</div><div class="line">17/01/10 15:31:24 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 1 (MapPartitionsRDD[4] at dfToCols at NativeMethodAccessorImpl.java:-2)</div><div class="line">17/01/10 15:31:24 INFO YarnScheduler: Adding task set 1.0 with 1 tasks</div><div class="line">17/01/10 15:31:24 INFO TaskSetManager: Starting task 0.0 in stage 1.0 (TID 1, slavenode3, PROCESS_LOCAL, 16553 bytes)</div><div class="line">17/01/10 15:31:24 INFO BlockManagerInfo: Added broadcast_1_piece0 in memory on slavenode3:45665 (size: 3.6 KB, free: 530.0 MB)</div><div class="line">17/01/10 15:31:35 WARN TaskSetManager: Lost task 0.0 in stage 1.0 (TID 1, slavenode3): java.net.SocketTimeoutException: Accept timed out</div><div class="line">	at java.net.PlainSocketImpl.socketAccept(Native Method)</div><div class="line">	at java.net.AbstractPlainSocketImpl.accept(AbstractPlainSocketImpl.java:409)</div><div class="line">	at java.net.ServerSocket.implAccept(ServerSocket.java:545)</div><div class="line">	at java.net.ServerSocket.accept(ServerSocket.java:513)</div><div class="line">	at org.apache.spark.api.r.RRDD$.createRWorker(RRDD.scala:426)</div><div class="line">	at org.apache.spark.api.r.BaseRRDD.compute(RRDD.scala:62)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:66)</div><div class="line">	at org.apache.spark.scheduler.Task.run(Task.scala:88)</div><div class="line">	at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:214)</div><div class="line">	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)</div><div class="line">	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)</div><div class="line">	at java.lang.Thread.run(Thread.java:745)</div><div class="line"></div><div class="line">17/01/10 15:31:35 INFO TaskSetManager: Starting task 0.1 in stage 1.0 (TID 2, slavenode2, PROCESS_LOCAL, 16553 bytes)</div><div class="line">17/01/10 15:31:35 INFO BlockManagerInfo: Added broadcast_1_piece0 in memory on slavenode2:42279 (size: 3.6 KB, free: 530.0 MB)</div><div class="line">17/01/10 15:31:37 WARN TaskSetManager: Lost task 0.1 in stage 1.0 (TID 2, slavenode2): java.io.IOException: Cannot run program &quot;Rscript&quot;: error=13, Permission denied</div><div class="line">	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1048)</div><div class="line">	at org.apache.spark.api.r.RRDD$.createRProcess(RRDD.scala:407)</div><div class="line">	at org.apache.spark.api.r.RRDD$.createRWorker(RRDD.scala:423)</div><div class="line">	at org.apache.spark.api.r.BaseRRDD.compute(RRDD.scala:62)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:66)</div><div class="line">	at org.apache.spark.scheduler.Task.run(Task.scala:88)</div><div class="line">	at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:214)</div><div class="line">	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)</div><div class="line">	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)</div><div class="line">	at java.lang.Thread.run(Thread.java:745)</div><div class="line">Caused by: java.io.IOException: error=13, Permission denied</div><div class="line">	at java.lang.UNIXProcess.forkAndExec(Native Method)</div><div class="line">	at java.lang.UNIXProcess.&lt;init&gt;(UNIXProcess.java:248)</div><div class="line">	at java.lang.ProcessImpl.start(ProcessImpl.java:134)</div><div class="line">	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1029)</div><div class="line">	... 20 more</div><div class="line"></div><div class="line">17/01/10 15:31:37 INFO TaskSetManager: Starting task 0.2 in stage 1.0 (TID 3, slavenode3, PROCESS_LOCAL, 16553 bytes)</div><div class="line">17/01/10 15:31:47 WARN TaskSetManager: Lost task 0.2 in stage 1.0 (TID 3, slavenode3): java.net.SocketTimeoutException: Accept timed out</div><div class="line">	at java.net.PlainSocketImpl.socketAccept(Native Method)</div><div class="line">	at java.net.AbstractPlainSocketImpl.accept(AbstractPlainSocketImpl.java:409)</div><div class="line">	at java.net.ServerSocket.implAccept(ServerSocket.java:545)</div><div class="line">	at java.net.ServerSocket.accept(ServerSocket.java:513)</div><div class="line">	at org.apache.spark.api.r.RRDD$.createRWorker(RRDD.scala:426)</div><div class="line">	at org.apache.spark.api.r.BaseRRDD.compute(RRDD.scala:62)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:66)</div><div class="line">	at org.apache.spark.scheduler.Task.run(Task.scala:88)</div><div class="line">	at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:214)</div><div class="line">	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)</div><div class="line">	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)</div><div class="line">	at java.lang.Thread.run(Thread.java:745)</div><div class="line"></div><div class="line">17/01/10 15:31:47 INFO TaskSetManager: Starting task 0.3 in stage 1.0 (TID 4, slavenode2, PROCESS_LOCAL, 16553 bytes)</div><div class="line">17/01/10 15:31:47 WARN TaskSetManager: Lost task 0.3 in stage 1.0 (TID 4, slavenode2): java.io.IOException: Cannot run program &quot;Rscript&quot;: error=13, Permission denied</div><div class="line">	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1048)</div><div class="line">	at org.apache.spark.api.r.RRDD$.createRProcess(RRDD.scala:407)</div><div class="line">	at org.apache.spark.api.r.RRDD$.createRWorker(RRDD.scala:423)</div><div class="line">	at org.apache.spark.api.r.BaseRRDD.compute(RRDD.scala:62)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:66)</div><div class="line">	at org.apache.spark.scheduler.Task.run(Task.scala:88)</div><div class="line">	at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:214)</div><div class="line">	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)</div><div class="line">	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)</div><div class="line">	at java.lang.Thread.run(Thread.java:745)</div><div class="line">Caused by: java.io.IOException: error=13, Permission denied</div><div class="line">	at java.lang.UNIXProcess.forkAndExec(Native Method)</div><div class="line">	at java.lang.UNIXProcess.&lt;init&gt;(UNIXProcess.java:248)</div><div class="line">	at java.lang.ProcessImpl.start(ProcessImpl.java:134)</div><div class="line">	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1029)</div><div class="line">	... 20 more</div><div class="line"></div><div class="line">17/01/10 15:31:47 ERROR TaskSetManager: Task 0 in stage 1.0 failed 4 times; aborting job</div><div class="line">17/01/10 15:31:47 INFO YarnScheduler: Removed TaskSet 1.0, whose tasks have all completed, from pool </div><div class="line">17/01/10 15:31:47 INFO YarnScheduler: Cancelling stage 1</div><div class="line">17/01/10 15:31:47 INFO DAGScheduler: ResultStage 1 (dfToCols at NativeMethodAccessorImpl.java:-2) failed in 23.005 s</div><div class="line">17/01/10 15:31:47 INFO DAGScheduler: Job 1 failed: dfToCols at NativeMethodAccessorImpl.java:-2, took 23.056582 s</div><div class="line">17/01/10 15:31:47 ERROR RBackendHandler: dfToCols on org.apache.spark.sql.api.r.SQLUtils failed</div><div class="line">17/01/10 15:31:47 INFO YarnHistoryService: About to POST entity application_1483512430911_0002 with 10 events to timeline service http://slavenode4:8188/ws/v1/timeline/</div><div class="line">Error in invokeJava(isStatic = TRUE, className, methodName, ...) : </div><div class="line">  org.apache.spark.SparkException: Job aborted due to stage failure: Task 0 in stage 1.0 failed 4 times, most recent failure: Lost task 0.3 in stage 1.0 (TID 4, slavenode2): java.io.IOException: Cannot run program &quot;Rscript&quot;: error=13, Permission denied</div><div class="line">	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1048)</div><div class="line">	at org.apache.spark.api.r.RRDD$.createRProcess(RRDD.scala:407)</div><div class="line">	at org.apache.spark.api.r.RRDD$.createRWorker(RRDD.scala:423)</div><div class="line">	at org.apache.spark.api.r.BaseRRDD.compute(RRDD.scala:62)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD</div><div class="line">17/01/10 16:30:49 INFO ContextCleaner: Cleaned accumulator 1</div><div class="line">17/01/10 16:30:49 INFO BlockManagerInfo: Removed broadcast_1_piece0 on slavenode3:45665 in memory (size: 3.6 KB, free: 530.0 MB)</div><div class="line">17/01/10 16:30:49 INFO BlockManagerInfo: Removed broadcast_1_piece0 on slavenode2:42279 in memory (size: 3.6 KB, free: 530.0 MB)</div><div class="line">17/01/10 16:30:49 INFO BlockManagerInfo: Removed broadcast_1_piece0 on 10.1.5.65:44133 in memory (size: 3.6 KB, free: 530.0 MB)</div><div class="line">17/01/10 16:30:49 INFO ContextCleaner: Cleaned accumulator 2</div><div class="line">17/01/10 16:30:49 INFO BlockManagerInfo: Removed broadcast_0_piece0 on 10.1.5.65:44133 in memory (size: 854.0 B, free: 530.0 MB)</div><div class="line">17/01/10 16:30:49 INFO BlockManagerInfo: Removed broadcast_0_piece0 on slavenode2:42279 in memory (size: 854.0 B, free: 530.0 MB)</div></pre></td></tr></table></figure>
+<p>搜了一下没有理想答案，所以只能看源码了,下面是报错的代码位置：<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">createRProcess</span></span>(port: <span class="type">Int</span>, script: <span class="type">String</span>): <span class="type">BufferedStreamThread</span> = &#123;</div><div class="line">    <span class="comment">// "spark.sparkr.r.command" is deprecated and replaced by "spark.r.command",</span></div><div class="line">    <span class="comment">// but kept here for backward compatibility.</span></div><div class="line">    <span class="keyword">val</span> sparkConf = <span class="type">SparkEnv</span>.get.conf</div><div class="line">    <span class="keyword">var</span> rCommand = sparkConf.get(<span class="string">"spark.sparkr.r.command"</span>, <span class="string">"Rscript"</span>)</div><div class="line">    rCommand = sparkConf.get(<span class="string">"spark.r.command"</span>, rCommand)</div><div class="line"></div><div class="line">    <span class="keyword">val</span> rOptions = <span class="string">"--vanilla"</span></div><div class="line">    <span class="keyword">val</span> rLibDir = <span class="type">RUtils</span>.sparkRPackagePath(isDriver = <span class="literal">false</span>)</div><div class="line">    <span class="keyword">val</span> rExecScript = rLibDir(<span class="number">0</span>) + <span class="string">"/SparkR/worker/"</span> + script</div><div class="line">    print(rCommand)</div><div class="line">    print(rOptions)</div><div class="line">    print(rExecScript)</div><div class="line">    <span class="keyword">val</span> pb = <span class="keyword">new</span> <span class="type">ProcessBuilder</span>(<span class="type">Arrays</span>.asList(rCommand, rOptions, rExecScript))</div><div class="line">    <span class="comment">// Unset the R_TESTS environment variable for workers.</span></div><div class="line">    <span class="comment">// This is set by R CMD check as startup.Rs</span></div><div class="line">    <span class="comment">// (http://svn.r-project.org/R/trunk/src/library/tools/R/testing.R)</span></div><div class="line">    <span class="comment">// and confuses worker script which tries to load a non-existent file</span></div><div class="line">    pb.environment().put(<span class="string">"R_TESTS"</span>, <span class="string">""</span>)</div><div class="line">    pb.environment().put(<span class="string">"SPARKR_RLIBDIR"</span>, rLibDir.mkString(<span class="string">","</span>))</div><div class="line">    pb.environment().put(<span class="string">"SPARKR_WORKER_PORT"</span>, port.toString)</div><div class="line">    pb.redirectErrorStream(<span class="literal">true</span>)  <span class="comment">// redirect stderr into stdout</span></div><div class="line">    <span class="keyword">val</span> proc = pb.start()</div><div class="line">    <span class="keyword">val</span> errThread = startStdoutThread(proc)</div><div class="line">    errThread</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
+<p>上面的print语句是我加上去的。</p>
+<p>忘了一个前置条件，使用sparkR的时候不指定master，也就是local模式的话是可以成功的。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div></pre></td><td class="code"><pre><div class="line">&gt;sc&lt;-sparkR.init()</div><div class="line">Launching java with spark-submit command spark-submit   sparkr-shell /tmp/RtmpRKsp2x/backend_port306c2e180534 </div><div class="line">17/01/10 18:20:53 INFO SparkContext: Running Spark version 1.5.2</div><div class="line">17/01/10 18:20:54 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable</div><div class="line">17/01/10 18:20:54 INFO SecurityManager: Changing view acls to: zhangjiayi</div><div class="line">17/01/10 18:20:54 INFO SecurityManager: Changing modify acls to: zhangjiayi</div><div class="line">17/01/10 18:20:54 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users with view permissions: Set(zhangjiayi); users with modify permissions: Set(zhangjiayi)</div><div class="line">17/01/10 18:20:59 INFO Slf4jLogger: Slf4jLogger started</div><div class="line">17/01/10 18:20:59 INFO Remoting: Starting remoting</div><div class="line">17/01/10 18:21:01 INFO Remoting: Remoting started; listening on addresses :[akka.tcp://sparkDriver@10.1.5.65:45017]</div><div class="line">17/01/10 18:21:01 INFO Utils: Successfully started service &apos;sparkDriver&apos; on port 45017.</div><div class="line">17/01/10 18:21:01 INFO SparkEnv: Registering MapOutputTracker</div><div class="line">17/01/10 18:21:02 INFO SparkEnv: Registering BlockManagerMaster</div><div class="line">17/01/10 18:21:02 INFO DiskBlockManager: Created local directory at /tmp/blockmgr-a7f2bf0d-c363-4220-ade9-5210fe54f9f7</div><div class="line">17/01/10 18:21:03 INFO MemoryStore: MemoryStore started with capacity 530.0 MB</div><div class="line">17/01/10 18:21:03 INFO HttpFileServer: HTTP File server directory is /tmp/spark-d5f07559-6482-4523-aa40-8b99b7fbc84b/httpd-00d9c253-b8f8-41c2-ae1e-ad5bac726bf1</div><div class="line">17/01/10 18:21:03 INFO HttpServer: Starting HTTP Server</div><div class="line">17/01/10 18:21:04 INFO Server: jetty-8.y.z-SNAPSHOT</div><div class="line">17/01/10 18:21:04 INFO AbstractConnector: Started SocketConnector@0.0.0.0:35349</div><div class="line">17/01/10 18:21:04 INFO Utils: Successfully started service &apos;HTTP file server&apos; on port 35349.</div><div class="line">17/01/10 18:21:04 INFO SparkEnv: Registering OutputCommitCoordinator</div><div class="line">17/01/10 18:21:05 INFO Server: jetty-8.y.z-SNAPSHOT</div><div class="line">17/01/10 18:21:05 INFO AbstractConnector: Started SelectChannelConnector@0.0.0.0:4040</div><div class="line">17/01/10 18:21:05 INFO Utils: Successfully started service &apos;SparkUI&apos; on port 4040.</div><div class="line">17/01/10 18:21:05 INFO SparkUI: Started SparkUI at http://10.1.5.65:4040</div><div class="line">17/01/10 18:21:05 WARN MetricsSystem: Using default name DAGScheduler for source because spark.app.id is not set.</div><div class="line">17/01/10 18:21:05 INFO Executor: Starting executor ID driver on host localhost</div><div class="line">17/01/10 18:21:05 INFO Utils: Successfully started service &apos;org.apache.spark.network.netty.NettyBlockTransferService&apos; on port 38751.</div><div class="line">17/01/10 18:21:05 INFO NettyBlockTransferService: Server created on 38751</div><div class="line">17/01/10 18:21:05 INFO BlockManagerMaster: Trying to register BlockManager</div><div class="line">17/01/10 18:21:05 INFO BlockManagerMasterEndpoint: Registering block manager localhost:38751 with 530.0 MB RAM, BlockManagerId(driver, localhost, 38751)</div><div class="line">17/01/10 18:21:05 INFO BlockManagerMaster: Registered BlockManager</div><div class="line">&gt; </div><div class="line">&gt; sqlcontext&lt;-sparkRSQL.init(sc)sc</div><div class="line">Error: unexpected symbol in &quot;sqlcontext&lt;-sparkRSQL.init(sc)sc&quot;</div><div class="line">&gt; sqlcontext&lt;-sparkRSQL.init(sc)</div><div class="line">&gt; df&lt;-createDataFrame(sqlContext = sqlcontext,data = iris)</div><div class="line">17/01/10 18:23:34 INFO SparkContext: Starting job: collectPartitions at NativeMethodAccessorImpl.java:-2</div><div class="line">17/01/10 18:23:34 INFO DAGScheduler: Got job 0 (collectPartitions at NativeMethodAccessorImpl.java:-2) with 1 output partitions</div><div class="line">17/01/10 18:23:34 INFO DAGScheduler: Final stage: ResultStage 0(collectPartitions at NativeMethodAccessorImpl.java:-2)</div><div class="line">17/01/10 18:23:34 INFO DAGScheduler: Parents of final stage: List()</div><div class="line">17/01/10 18:23:34 INFO DAGScheduler: Missing parents: List()</div><div class="line">17/01/10 18:23:34 INFO DAGScheduler: Submitting ResultStage 0 (ParallelCollectionRDD[0] at parallelize at RRDD.scala:454), which has no missing parents</div><div class="line">17/01/10 18:23:35 INFO MemoryStore: ensureFreeSpace(1280) called with curMem=0, maxMem=555755765</div><div class="line">17/01/10 18:23:35 INFO MemoryStore: Block broadcast_0 stored as values in memory (estimated size 1280.0 B, free 530.0 MB)</div><div class="line">17/01/10 18:23:35 INFO MemoryStore: ensureFreeSpace(854) called with curMem=1280, maxMem=555755765</div><div class="line">17/01/10 18:23:35 INFO MemoryStore: Block broadcast_0_piece0 stored as bytes in memory (estimated size 854.0 B, free 530.0 MB)</div><div class="line">17/01/10 18:23:35 INFO BlockManagerInfo: Added broadcast_0_piece0 in memory on localhost:38751 (size: 854.0 B, free: 530.0 MB)</div><div class="line">17/01/10 18:23:35 INFO SparkContext: Created broadcast 0 from broadcast at DAGScheduler.scala:861</div><div class="line">17/01/10 18:23:35 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 0 (ParallelCollectionRDD[0] at parallelize at RRDD.scala:454)</div><div class="line">17/01/10 18:23:35 INFO TaskSchedulerImpl: Adding task set 0.0 with 1 tasks</div><div class="line">17/01/10 18:23:36 INFO TaskSetManager: Starting task 0.0 in stage 0.0 (TID 0, localhost, PROCESS_LOCAL, 16553 bytes)</div><div class="line">17/01/10 18:23:36 INFO Executor: Running task 0.0 in stage 0.0 (TID 0)</div><div class="line">17/01/10 18:23:36 INFO Executor: Finished task 0.0 in stage 0.0 (TID 0). 15464 bytes result sent to driver</div><div class="line">17/01/10 18:23:36 INFO TaskSetManager: Finished task 0.0 in stage 0.0 (TID 0) in 249 ms on localhost (1/1)</div><div class="line">17/01/10 18:23:36 INFO TaskSchedulerImpl: Removed TaskSet 0.0, whose tasks have all completed, from pool </div><div class="line">17/01/10 18:23:36 INFO DAGScheduler: ResultStage 0 (collectPartitions at NativeMethodAccessorImpl.java:-2) finished in 0.300 s</div><div class="line">17/01/10 18:23:36 INFO DAGScheduler: Job 0 finished: collectPartitions at NativeMethodAccessorImpl.java:-2, took 1.618354 s</div><div class="line">Warning messages:</div><div class="line">1: In FUN(X[[i]], ...) :</div><div class="line">  Use Sepal_Length instead of Sepal.Length  as column name</div><div class="line">2: In FUN(X[[i]], ...) :</div><div class="line">  Use Sepal_Width instead of Sepal.Width  as column name</div><div class="line">3: In FUN(X[[i]], ...) :</div><div class="line">  Use Petal_Length instead of Petal.Length  as column name</div><div class="line">4: In FUN(X[[i]], ...) :</div><div class="line">  Use Petal_Width instead of Petal.Width  as column name</div><div class="line">&gt; </div><div class="line">&gt; head(df)</div><div class="line">17/01/10 18:23:45 INFO SparkContext: Starting job: dfToCols at NativeMethodAccessorImpl.java:-2</div><div class="line">17/01/10 18:23:45 INFO DAGScheduler: Got job 1 (dfToCols at NativeMethodAccessorImpl.java:-2) with 1 output partitions</div><div class="line">17/01/10 18:23:45 INFO DAGScheduler: Final stage: ResultStage 1(dfToCols at NativeMethodAccessorImpl.java:-2)</div><div class="line">17/01/10 18:23:45 INFO DAGScheduler: Parents of final stage: List()</div><div class="line">17/01/10 18:23:45 INFO DAGScheduler: Missing parents: List()</div><div class="line">17/01/10 18:23:45 INFO DAGScheduler: Submitting ResultStage 1 (MapPartitionsRDD[4] at dfToCols at NativeMethodAccessorImpl.java:-2), which has no missing parents</div><div class="line">17/01/10 18:23:45 INFO MemoryStore: ensureFreeSpace(9176) called with curMem=2134, maxMem=555755765</div><div class="line">17/01/10 18:23:45 INFO MemoryStore: Block broadcast_1 stored as values in memory (estimated size 9.0 KB, free 530.0 MB)</div><div class="line">17/01/10 18:23:45 INFO MemoryStore: ensureFreeSpace(3690) called with curMem=11310, maxMem=555755765</div><div class="line">17/01/10 18:23:45 INFO MemoryStore: Block broadcast_1_piece0 stored as bytes in memory (estimated size 3.6 KB, free 530.0 MB)</div><div class="line">17/01/10 18:23:45 INFO BlockManagerInfo: Added broadcast_1_piece0 in memory on localhost:38751 (size: 3.6 KB, free: 530.0 MB)</div><div class="line">17/01/10 18:23:45 INFO SparkContext: Created broadcast 1 from broadcast at DAGScheduler.scala:861</div><div class="line">17/01/10 18:23:45 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 1 (MapPartitionsRDD[4] at dfToCols at NativeMethodAccessorImpl.java:-2)</div><div class="line">17/01/10 18:23:45 INFO TaskSchedulerImpl: Adding task set 1.0 with 1 tasks</div><div class="line">17/01/10 18:23:45 INFO TaskSetManager: Starting task 0.0 in stage 1.0 (TID 1, localhost, PROCESS_LOCAL, 16553 bytes)</div><div class="line">17/01/10 18:23:45 INFO Executor: Running task 0.0 in stage 1.0 (TID 1)</div><div class="line">17/01/10 18:23:51 INFO Executor: Finished task 0.0 in stage 1.0 (TID 1). 1794 bytes result sent to driver</div><div class="line">17/01/10 18:23:51 INFO DAGScheduler: ResultStage 1 (dfToCols at NativeMethodAccessorImpl.java:-2) finished in 5.469 s</div><div class="line">17/01/10 18:23:51 INFO DAGScheduler: Job 1 finished: dfToCols at NativeMethodAccessorImpl.java:-2, took 5.493984 s</div><div class="line">17/01/10 18:23:51 INFO TaskSetManager: Finished task 0.0 in stage 1.0 (TID 1) in 5468 ms on localhost (1/1)</div><div class="line">17/01/10 18:23:51 INFO TaskSchedulerImpl: Removed TaskSet 1.0, whose tasks have all completed, from pool </div><div class="line">  Sepal_Length Sepal_Width Petal_Length Petal_Width Species</div><div class="line">1          5.1         3.5          1.4         0.2  setosa</div><div class="line">2          4.9         3.0          1.4         0.2  setosa</div><div class="line">3          4.7         3.2          1.3         0.2  setosa</div><div class="line">4          4.6         3.1          1.5         0.2  setosa</div><div class="line">5          5.0         3.6          1.4         0.2  setosa</div><div class="line">6          5.4         3.9          1.7         0.4  setosa</div></pre></td></tr></table></figure></p>
+<p>单机 :<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">-----------will---------------------will mid----------zhangjiayi</div><div class="line">-----------will-end----------rCommand is : RscriptrOptions is : --vanillarExecScript is : /usr/hdp/2.3.4.0-3485/spark/R/lib/SparkR/worker/daemon.R</div></pre></td></tr></table></figure></p>
+<p>用户是zhangjiayi ,<br>执行的系统xi</p>
+<p>集群是打印在yarn的container的stdout里的：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">-----------will---------------------will mid----------yarn</div><div class="line">-----------will-end----------rCommand is : RscriptrOptions is : --vanillarExecScript is : /server/hadoop/yarn/local/usercache/zhangjiayi/appcache/application_1483512430911_0006/container_e18_1483512430911_0006_01_000002/sparkr/SparkR/worker/daemon.R-----------will---------------------will mid----------yarn</div><div class="line">-----------will-end----------rCommand is : RscriptrOptions is : --vanillarExecScript is : /server/hadoop/yarn/local/usercache/zhangjiayi/appcache/application_1483512430911_0006/container_e18_1483512430911_0006_01_000002/sparkr/SparkR/worker/daemon.R</div></pre></td></tr></table></figure></p>
+<p>结果找不到：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">[root@slavenode5 ~]# ll /server/hadoop/yarn/local/usercache/zhangjiayi/appcache/application_1483512430911_0006/container_e18_1483512430911_0006_01_000002/sparkr/SparkR/worker/daemon.R</div><div class="line">ls: cannot access /server/hadoop/yarn/local/usercache/zhangjiayi/appcache/application_1483512430911_0006/container_e18_1483512430911_0006_01_000002/sparkr/SparkR/worker/daemon.R: No such file or directory</div><div class="line">[root@slavenode5 ~]# ll /server/hadoop/yarn/local/usercache/zhangjiayi/appcache/application_1483512430911_0006/container_e18_1483512430911_0006_01_000002/sparkr/SparkR/worker/daemon.R</div><div class="line">ls: cannot access /server/hadoop/yarn/local/usercache/zhangjiayi/appcache/application_1483512430911_0006/container_e18_1483512430911_0006_01_000002/sparkr/SparkR/worker/daemon.R: No such file or directory</div><div class="line">[root@slavenode5 ~]# ll /server/hadoop/yarn/local/usercache/zhangjiayi/appcache/application_1483512430911_0006/container_e18_1483512430911_0006_01_000002/</div><div class="line">total 24</div><div class="line">-rw-r--r--. 1 yarn hadoop   88 Jan 11 12:25 container_tokens</div><div class="line">-rwx------. 1 yarn hadoop  687 Jan 11 12:25 default_container_executor_session.sh</div><div class="line">-rwx------. 1 yarn hadoop  741 Jan 11 12:25 default_container_executor.sh</div><div class="line">-rwx------. 1 yarn hadoop 4042 Jan 11 12:25 launch_container.sh</div><div class="line">lrwxrwxrwx. 1 yarn hadoop  122 Jan 11 12:25 __spark__.jar -&gt; /server/hadoop/yarn/local/usercache/zhangjiayi/filecache/19/spark-assembly-1.5.2.2.3.4.0-3485-hadoop2.7.1.2.3.4.0-3485.jar</div><div class="line">drwx--x---. 2 yarn hadoop 4096 Jan 11 12:25 tmp</div></pre></td></tr></table></figure></p>
+<p>此时控制台的报错只有：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">17/01/11 12:25:42 INFO TaskSetManager: Starting task 0.2 in stage 1.0 (TID 3, slavenode5, PROCESS_LOCAL, 16553 bytes)</div><div class="line">17/01/11 12:25:52 WARN TaskSetManager: Lost task 0.2 in stage 1.0 (TID 3, slavenode5): java.net.SocketTimeoutException: Accept timed out</div><div class="line">	at java.net.PlainSocketImpl.socketAccept(Native Method)</div><div class="line">	at java.net.AbstractPlainSocketImpl.accept(AbstractPlainSocketImpl.java:409)</div><div class="line">	at java.net.ServerSocket.implAccept(ServerSocket.java:545)</div><div class="line">	at java.net.ServerSocket.accept(ServerSocket.java:513)</div><div class="line">	at org.apache.spark.api.r.RRDD$.createRWorker(RRDD.scala:446)</div><div class="line">	at org.apache.spark.api.r.BaseRRDD.compute(RRDD.scala:62)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:66)</div><div class="line">	at org.apache.spark.scheduler.Task.run(Task.scala:88)</div><div class="line">	at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:214)</div><div class="line">	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)</div><div class="line">	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)</div><div class="line">	at java.lang.Thread.run(Thread.java:745)</div><div class="line">17/01/11 12:25:52 INFO TaskSetManager: Starting task 0.3 in stage 1.0 (TID 4, slavenode1, PROCESS_LOCAL, 16553 bytes)</div><div class="line">17/01/11 12:26:02 WARN TaskSetManager: Lost task 0.3 in stage 1.0 (TID 4, slavenode1): java.net.SocketTimeoutException: Accept timed out</div><div class="line">	at java.net.PlainSocketImpl.socketAccept(Native Method)</div><div class="line">	at java.net.AbstractPlainSocketImpl.accept(AbstractPlainSocketImpl.java:409)</div><div class="line">	at java.net.ServerSocket.implAccept(ServerSocket.java:545)</div><div class="line">	at java.net.ServerSocket.accept(ServerSocket.java:513)</div><div class="line">	at org.apache.spark.api.r.RRDD$.createRWorker(RRDD.scala:446)</div><div class="line">	at org.apache.spark.api.r.BaseRRDD.compute(RRDD.scala:62)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:66)</div><div class="line">	at org.apache.spark.scheduler.Task.run(Task.scala:88)</div><div class="line">	at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:214)</div><div class="line">	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)</div><div class="line">	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)</div><div class="line">	at java.lang.Thread.run(Thread.java:745)</div><div class="line"></div><div class="line">17/01/11 12:26:02 ERROR TaskSetManager: Task 0 in stage 1.0 failed 4 times; aborting job</div><div class="line">17/01/11 12:26:02 INFO YarnScheduler: Removed TaskSet 1.0, whose tasks have all completed, from pool </div><div class="line">17/01/11 12:26:02 INFO YarnScheduler: Cancelling stage 1</div><div class="line">17/01/11 12:26:02 INFO DAGScheduler: ResultStage 1 (dfToCols at NativeMethodAccessorImpl.java:-2) failed in 42.286 s</div><div class="line">17/01/11 12:26:02 INFO DAGScheduler: Job 1 failed: dfToCols at NativeMethodAccessorImpl.java:-2, took 42.314808 s</div><div class="line">17/01/11 12:26:02 ERROR RBackendHandler: dfToCols on org.apache.spark.sql.api.r.SQLUtils failed</div><div class="line">Error in invokeJava(isStatic = TRUE, className, methodName, ...) : </div><div class="line">  org.apache.spark.SparkException: Job aborted due to stage failure: Task 0 in stage 1.0 failed 4 times, most recent failure: Lost task 0.3 in stage 1.0 (TID 4, slavenode1): java.net.SocketTimeoutException: Accept timed out</div><div class="line">	at java.net.PlainSocketImpl.socketAccept(Native Method)</div><div class="line">	at java.net.AbstractPlainSocketImpl.accept(AbstractPlainSocketImpl.java:409)</div><div class="line">	at java.net.ServerSocket.implAccept(ServerSocket.java:545)</div><div class="line">	at java.net.ServerSocket.accept(ServerSocket.java:513)</div><div class="line">	at org.apache.spark.api.r.RRDD$.createRWorker(RRDD.scala:446)</div><div class="line">	at org.apache.spark.api.r.BaseRRDD.compute(RRDD.scala:62)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div><div class="line">	at org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:300)</div><div class="line">	at org.apache.spark.rdd.RDD.iterator(RDD.scala:264)</div><div class="line">	at org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)</div></pre></td></tr></table></figure>
+<p>可以看到是createRWorker里而不是createRProcess报错了。。</p>
+<hr>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">Launching java with command  /server/java/jdk1.8.0_60/bin/java   -Xmx512m -cp &apos;/usr/lib64/R/library/SparkR/sparkr-assembly-0.1.jar:&apos; edu.berkeley.cs.amplab.sparkr.SparkRBackend /tmp/Rtmp34rELP/backend_port4e6c126d914 </div><div class="line">createSparkContext on edu.berkeley.cs.amplab.sparkr.RRDD failed with java.lang.NullPointerException</div><div class="line">java.lang.NullPointerException</div><div class="line">	at edu.berkeley.cs.amplab.sparkr.SparkRBackendHandler.handleMethodCall(SparkRBackendHandler.scala:111)</div><div class="line">	at edu.berkeley.cs.amplab.sparkr.SparkRBackendHandler.channelRead0(SparkRBackendHandler.scala:58)</div><div class="line">	at edu.berkeley.cs.amplab.sparkr.SparkRBackendHandler.channelRead0(SparkRBackendHandler.scala:19)</div><div class="line">	at io.netty.channel.SimpleChannelInboundHandler.channelRead(SimpleChannelInboundHandler.java:105)</div><div class="line">	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:308)</div><div class="line">	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:294)</div><div class="line">	at io.netty.handler.codec.MessageToMessageDecoder.channelRead(MessageToMessageDecoder.java:103)</div><div class="line">	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:308)</div><div class="line">	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:294)</div><div class="line">	at io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:244)</div><div class="line">	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:308)</div><div class="line">	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:294)</div><div class="line">	at io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:846)</div><div class="line">	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:131)</div><div class="line">	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:511)</div><div class="line">	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:468)</div><div class="line">	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:382)</div><div class="line">	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:354)</div><div class="line">	at io.netty.util.concurrent.SingleThreadEventExecutor$2.run(SingleThreadEventExecutor.java:111)</div><div class="line">	at io.netty.util.concurrent.DefaultThreadFactory$DefaultRunnableDecorator.run(DefaultThreadFactory.java:137)</div><div class="line">	at java.lang.Thread.run(Thread.java:745)</div></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/01/09/SparkR安装历程/" data-title="SparkR安装历程 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/01/15/InfoQ视频记录/" title="InfoQ视频记录">
+  <strong>上一篇：</strong><br/>
+  <span>
+  InfoQ视频记录</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/01/09/R/"  title="R">
+ <strong>下一篇：</strong><br/> 
+ <span>R
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/01/09/SparkR安装历程/" data-title="SparkR安装历程" data-url="http://willcup.com/2017/01/09/SparkR安装历程/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,609 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>fabric与anisible对比 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="主要是跟anisible做对比，搞数据集群的环境越来越大，机器越来越多，不弄点儿自动化维护的工具，真心折腾不过来，而且容易出现失误。
+这两天陪媳妇去图书馆自习，我就看书，看了一本不错的小说《兄弟》：余华写的，相当不错，笑中带泪，奔放中带着坚韧。因为近期工作中想要用一下docker来部署生产环境，为算法的同学提供动态可自定义的各种语言程序运行环境。前面听过几场关于docker环境部署的，听过几个人使">
+<meta property="og:type" content="article">
+<meta property="og:title" content="fabric与anisible对比">
+<meta property="og:url" content="http://willcup.com/2017/05/26/fabric与anisible对比/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="主要是跟anisible做对比，搞数据集群的环境越来越大，机器越来越多，不弄点儿自动化维护的工具，真心折腾不过来，而且容易出现失误。
+这两天陪媳妇去图书馆自习，我就看书，看了一本不错的小说《兄弟》：余华写的，相当不错，笑中带泪，奔放中带着坚韧。因为近期工作中想要用一下docker来部署生产环境，为算法的同学提供动态可自定义的各种语言程序运行环境。前面听过几场关于docker环境部署的，听过几个人使">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.781Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="fabric与anisible对比">
+<meta name="twitter:description" content="主要是跟anisible做对比，搞数据集群的环境越来越大，机器越来越多，不弄点儿自动化维护的工具，真心折腾不过来，而且容易出现失误。
+这两天陪媳妇去图书馆自习，我就看书，看了一本不错的小说《兄弟》：余华写的，相当不错，笑中带泪，奔放中带着坚韧。因为近期工作中想要用一下docker来部署生产环境，为算法的同学提供动态可自定义的各种语言程序运行环境。前面听过几场关于docker环境部署的，听过几个人使">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/05/26/fabric与anisible对比/" title="fabric与anisible对比" itemprop="url">fabric与anisible对比</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-05-26T03:18:37.000Z" itemprop="datePublished"> 发表于 2017-05-26</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#吸引"><span class="toc-text">吸引</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题"><span class="toc-text">问题</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#概念"><span class="toc-text">概念</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#问题-1"><span class="toc-text">问题</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fabric"><span class="toc-text">fabric</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#并行任务"><span class="toc-text">并行任务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#获取任务结果"><span class="toc-text">获取任务结果</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#文件传递"><span class="toc-text">文件传递</span></a></li></ol>
+		
+		</div>
+		
+		<p>主要是跟anisible做对比，搞数据集群的环境越来越大，机器越来越多，不弄点儿自动化维护的工具，真心折腾不过来，而且容易出现失误。</p>
+<p>这两天陪媳妇去图书馆自习，我就看书，看了一本不错的小说《兄弟》：余华写的，相当不错，笑中带泪，奔放中带着坚韧。因为近期工作中想要用一下docker来部署生产环境，为算法的同学提供动态可自定义的各种语言程序运行环境。前面听过几场关于docker环境部署的，听过几个人使用anisible进行docker部署，所以就在图书馆拿了本《奔跑吧：anisible》。</p>
+<h2 id="吸引"><a href="#吸引" class="headerlink" title="吸引"></a>吸引</h2><p>里面提到anisible的我看中的功能性卖点：</p>
+<ul>
+<li>host分组</li>
+<li>任务有顺序依赖的执行</li>
+<li>获取上一个task的输出，比如docker容器mysql部署后，把这个容器的id保存给下一个容器web服务的配置文件使用。</li>
+<li>配置文件模板化，接受外来变量赋值后，copy进入指定主机的指定目录。</li>
+</ul>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><p>但是有一个比较恶心的问题，要记住一些概念</p>
+<ul>
+<li>inventory 主机</li>
+<li>task<ul>
+<li>module 具体执行的一些功能模块</li>
+</ul>
+</li>
+<li>handler 等待被task触发</li>
+<li>fact 主机相关的一些信息，比如CPU、内存、ip啥的</li>
+</ul>
+<h4 id="问题-1"><a href="#问题-1" class="headerlink" title="问题"></a>问题</h4><ul>
+<li>module之类的都是别人封装好的，自己要完全按照人家的规则走，不舒服</li>
+<li>有些需要额外处理的东西还是要自己写python代码处理，因为有些自定义的处理逻辑，是不会存在于既有的module中的</li>
+</ul>
+<p>那么恶心的事情就出现了：既要去使用module中别人给自己制定的规则， 又他么要自己写代码完成自己的逻辑。还不如fabric，完全按照自己的代码去执行逻辑。</p>
+<h2 id="fabric"><a href="#fabric" class="headerlink" title="fabric"></a>fabric</h2><p>今儿早上看了一下fabric</p>
+<ul>
+<li>主机分组 【Y：有role进行分组】</li>
+<li>任务 【Y】</li>
+<li>任务依赖 【Y：通过定义额外的任务组合惹怒我】</li>
+<li>主机信息【并没有感觉有什么用】</li>
+<li><strong>task间变量传递</strong>【上一个任务给环境中的变量赋值，下一个任务可以直接接收到，比如dict】 —— <strong>失败</strong></li>
+</ul>
+<p>直接上自己的脚本文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">from fabric.api import *</div><div class="line"></div><div class="line"># 不指定用户的话，就是当前用户，跟ssh一样</div><div class="line">env.hosts = [</div><div class="line">    &apos;user@192.168.1.1&apos;,</div><div class="line">    &apos;user@192.168.1.2&apos;,</div><div class="line">]</div><div class="line"></div><div class="line"># 必须全面指定 ： user@ip:port</div><div class="line">env.passwords = &#123;</div><div class="line">    &apos;user@192.168.1.1:22&apos;: &apos;password1&apos;,</div><div class="line">    &apos;user@192.168.1.2:22&apos;: &apos;password2&apos;,</div><div class="line">&#125;</div><div class="line"></div><div class="line"># 这个标识有么有都可以 1.6.3版本</div><div class="line">@task</div><div class="line">def echo():</div><div class="line">    run(&apos;echo &quot;hello,world&quot;&apos;)</div></pre></td></tr></table></figure></p>
+<p>动态为自己的机器分组, 那么就在fabric.py里执行以下逻辑：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">services = []</div><div class="line">datanodes = []</div><div class="line">hosts = list()</div><div class="line"></div><div class="line">def get_host():</div><div class="line">    with open(&apos;/etc/hosts&apos;, &apos;r&apos;) as hf:</div><div class="line">        for line in hf.readlines():</div><div class="line">            ss = line.split()</div><div class="line">            if &apos;node&apos; in ss[1]:</div><div class="line">                hosts.append(ss[0])</div><div class="line">            if &apos;servicenode&apos; in ss[1]:</div><div class="line">                services.append(ss[0])</div><div class="line">            if &apos;datanode&apos; in ss[1]:</div><div class="line">                datanodes.append(ss[0])</div><div class="line">    hosts.remove(&apos;10.2.19.104&apos;)</div><div class="line"></div><div class="line">env.hosts=hosts</div><div class="line"></div><div class="line">env.roledefs = &#123;</div><div class="line">    &apos;services&apos;: services,</div><div class="line">    &apos;datanodes&apos;: datanodes</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>其实这里的/etc/hosts就相当于anisible的inventory文件了。</p>
+<p>调用的时候指定host组：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">fab cmd:roles=services,cmd=&apos;df -h&apos;</div></pre></td></tr></table></figure></p>
+<p>至此：放弃fabric……不能支持依赖部署，或者容器编排。离开……【尝试在任务重使用变量赋值失败，因为每个remote机器赋值都是对于自己的，并不能对全局变量赋值。但是其实通过获取任务的output，所以不放弃了】</p>
+<p>稻草一枚：</p>
+<ul>
+<li><a href="http://fabric-chs.readthedocs.io/zh_CN/chs/api/core/tasks.html" target="_blank" rel="external">http://fabric-chs.readthedocs.io/zh_CN/chs/api/core/tasks.html</a></li>
+<li><a href="https://stackoverflow.com/questions/42946197/return-value-from-fabric-task" target="_blank" rel="external">https://stackoverflow.com/questions/42946197/return-value-from-fabric-task</a></li>
+<li></li>
+</ul>
+<h2 id="并行任务"><a href="#并行任务" class="headerlink" title="并行任务"></a>并行任务</h2><p>fabric现在也支持并行执行task，并且提供一次并行多少的粒度<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">from fabric.api import *</div><div class="line"></div><div class="line">@parallel(pool_size=5)</div><div class="line">def heavy_task():</div><div class="line">    # lots of heavy local lifting or lots of IO here</div></pre></td></tr></table></figure></p>
+<p>指定一次并行5个远程机器<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">fab -P -z 5 heavy_task</div></pre></td></tr></table></figure></p>
+<p><a href="http://docs.fabfile.org/en/1.13/usage/parallel.html" target="_blank" rel="external">http://docs.fabfile.org/en/1.13/usage/parallel.html</a></p>
+<h2 id="获取任务结果"><a href="#获取任务结果" class="headerlink" title="获取任务结果"></a>获取任务结果</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">from fabric.api import task, execute, run, runs_once</div><div class="line"></div><div class="line">@task</div><div class="line">def workhorse():</div><div class="line">    return run(&quot;get my infos&quot;)</div><div class="line"></div><div class="line">@task</div><div class="line">@runs_once</div><div class="line">def go():</div><div class="line">    results = execute(workhorse)</div><div class="line">    print results</div></pre></td></tr></table></figure>
+<p>注意：execute是在任务在每个remote host上执行完之后获取结果，而run的stdout则是在单个任务内返回。</p>
+<p><a href="http://docs.fabfile.org/en/1.13/usage/execution.html#intelligently-executing-tasks-with-execute" target="_blank" rel="external">http://docs.fabfile.org/en/1.13/usage/execution.html#intelligently-executing-tasks-with-execute</a></p>
+<h2 id="文件传递"><a href="#文件传递" class="headerlink" title="文件传递"></a>文件传递</h2><p>使用put放到远程机器<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">with cd(&apos;/tmp&apos;):</div><div class="line">    put(&apos;/path/to/local/test.txt&apos;, &apos;files&apos;)</div><div class="line">    </div><div class="line">put(&apos;bin/project.zip&apos;, &apos;/tmp/project.zip&apos;)</div><div class="line">put(&apos;*.py&apos;, &apos;cgi-bin/&apos;)</div><div class="line">put(&apos;index.html&apos;, &apos;index.html&apos;, mode=0755)</div></pre></td></tr></table></figure></p>
+<p>使用get获取远程机器文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">get(&apos;/path/to/remote_file.txt&apos;, &apos;local_directory&apos;)</div></pre></td></tr></table></figure></p>
+<p>上面的put对比anisible来说，只有一方面不足，就是对于类似nginx配置文件中的一些变量信息，我们需要额外自己引入模板，渲染之后再put出去。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/05/26/fabric与anisible对比/" data-title="fabric与anisible对比 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/06/07/nginx代理HDP集群代码段/" title="nginx代理HDP集群代码段">
+  <strong>上一篇：</strong><br/>
+  <span>
+  nginx代理HDP集群代码段</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/05/25/ansible笔记/"  title="ansible笔记">
+ <strong>下一篇：</strong><br/> 
+ <span>ansible笔记
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/05/26/fabric与anisible对比/" data-title="fabric与anisible对比" data-url="http://willcup.com/2017/05/26/fabric与anisible对比/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#吸引"><span class="toc-number">1.</span> <span class="toc-text">吸引</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题"><span class="toc-number">2.</span> <span class="toc-text">问题</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#概念"><span class="toc-number">2.0.1.</span> <span class="toc-text">概念</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#问题-1"><span class="toc-number">2.0.2.</span> <span class="toc-text">问题</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fabric"><span class="toc-number">3.</span> <span class="toc-text">fabric</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#并行任务"><span class="toc-number">4.</span> <span class="toc-text">并行任务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#获取任务结果"><span class="toc-number">5.</span> <span class="toc-text">获取任务结果</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#文件传递"><span class="toc-number">6.</span> <span class="toc-text">文件传递</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

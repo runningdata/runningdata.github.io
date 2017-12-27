@@ -1,0 +1,580 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>marathon---constraints | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="constraint控制app运行的位置，可以用来调优容错以及本地部署。constraint包含3个部分：fieldname， operator， 可选参数。field可以是agent node 的hostname或者agent node的其他属性。
+FieldsHostname支持所有的marathon operator 。
+Attribute如果filed name不是hostname，就会被">
+<meta property="og:type" content="article">
+<meta property="og:title" content="marathon---constraints">
+<meta property="og:url" content="http://willcup.com/2017/09/07/marathon---constraints/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="constraint控制app运行的位置，可以用来调优容错以及本地部署。constraint包含3个部分：fieldname， operator， 可选参数。field可以是agent node 的hostname或者agent node的其他属性。
+FieldsHostname支持所有的marathon operator 。
+Attribute如果filed name不是hostname，就会被">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.785Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="marathon---constraints">
+<meta name="twitter:description" content="constraint控制app运行的位置，可以用来调优容错以及本地部署。constraint包含3个部分：fieldname， operator， 可选参数。field可以是agent node 的hostname或者agent node的其他属性。
+FieldsHostname支持所有的marathon operator 。
+Attribute如果filed name不是hostname，就会被">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/09/07/marathon---constraints/" title="marathon---constraints" itemprop="url">marathon---constraints</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-09-07T06:17:50.000Z" itemprop="datePublished"> 发表于 2017-09-07</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Fields"><span class="toc-text">Fields</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Hostname"><span class="toc-text">Hostname</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Attribute"><span class="toc-text">Attribute</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Operator"><span class="toc-text">Operator</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#UNIQUE-operator"><span class="toc-text">UNIQUE operator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CLUSTER-operator"><span class="toc-text">CLUSTER operator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#GROUP-BY-operator"><span class="toc-text">GROUP_BY operator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#LIKE-operator"><span class="toc-text">LIKE operator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#UNLIKE-operator"><span class="toc-text">UNLIKE operator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#MAX-PER-operator"><span class="toc-text">MAX_PER operator</span></a></li></ol></li></ol></li></ol>
+		
+		</div>
+		
+		<p>constraint控制app运行的位置，可以用来调优容错以及本地部署。constraint包含3个部分：fieldname， operator， 可选参数。field可以是agent node 的hostname或者agent node的其他属性。</p>
+<h2 id="Fields"><a href="#Fields" class="headerlink" title="Fields"></a>Fields</h2><h4 id="Hostname"><a href="#Hostname" class="headerlink" title="Hostname"></a>Hostname</h4><p>支持所有的marathon operator 。</p>
+<h4 id="Attribute"><a href="#Attribute" class="headerlink" title="Attribute"></a>Attribute</h4><p>如果filed name不是hostname，就会被看作一个mesos agent node 的attribute。一个mesos agent attribute可以用来给agent node打tag。可以看一下mesos-slave –help.</p>
+<p>如果制定的attribute还没有在agent node上定义，那么多数的operator都会拒绝在agent node上运行任务。目前是有UNLIKE operator会接受这个offer，其他的都会拒绝。</p>
+<p>attribute field支持marathon所有的operator。</p>
+<p>Marathon 支持text，scalar，range以及set类型的attribute的值。对于scalar、range、set类型的值，marathon会基于格式化的值执行一个字符串对比操作。对于range和set类型，格式分别是[begin-end,….]和{item,….}。例如: [100-200]和{a,b,c]</p>
+<p>LIKE和UNLIKE的operator支持正则表达式。</p>
+<h2 id="Operator"><a href="#Operator" class="headerlink" title="Operator"></a>Operator</h2><h4 id="UNIQUE-operator"><a href="#UNIQUE-operator" class="headerlink" title="UNIQUE operator"></a>UNIQUE operator</h4><p>UNIQUE是告诉marathon对于一个app的所有task保证attribute的唯一性。例如下面的contraint保证了每个host上只运行一个app任务。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">   &quot;id&quot;: &quot;sleep-unique&quot;,</div><div class="line">   &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">   &quot;instances&quot;: 3,</div><div class="line">   &quot;constraints&quot;: [[&quot;hostname&quot;, &quot;UNIQUE&quot;]]</div><div class="line"> &#125;&apos;</div></pre></td></tr></table></figure>
+<h4 id="CLUSTER-operator"><a href="#CLUSTER-operator" class="headerlink" title="CLUSTER operator"></a>CLUSTER operator</h4><p>CLUSTER可以让app 的task运行在共享指定attribute的agent node上。对于有硬件要求的任务比较适用，或者想要把任务集中运行在同一个机栈中。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">    &quot;id&quot;: &quot;sleep-cluster&quot;,</div><div class="line">    &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">    &quot;instances&quot;: 3,</div><div class="line">    &quot;constraints&quot;: [[&quot;rack_id&quot;, &quot;CLUSTER&quot;, &quot;rack-1&quot;]]</div><div class="line">  &#125;&apos;</div></pre></td></tr></table></figure></p>
+<p>也可以指定一个hostname，把app绑定在指定的一个机器上。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">    &quot;id&quot;: &quot;sleep-cluster&quot;,</div><div class="line">    &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">    &quot;instances&quot;: 3,</div><div class="line">    &quot;constraints&quot;: [[&quot;hostname&quot;, &quot;CLUSTER&quot;, &quot;a.specific.node.com&quot;]]</div><div class="line">  &#125;&apos;</div></pre></td></tr></table></figure></p>
+<h4 id="GROUP-BY-operator"><a href="#GROUP-BY-operator" class="headerlink" title="GROUP_BY operator"></a>GROUP_BY operator</h4><p>风来在不同的rack或者数据中心中均匀地分配任务，实现HA。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">    &quot;id&quot;: &quot;sleep-group-by&quot;,</div><div class="line">    &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">    &quot;instances&quot;: 3,</div><div class="line">    &quot;constraints&quot;: [[&quot;rack_id&quot;, &quot;GROUP_BY&quot;]]</div><div class="line">  &#125;&apos;</div></pre></td></tr></table></figure>
+<p>marathon会分析mesos进来的offer，获取不同的rack_id属性。如果任务没有覆盖到所有的值，那么在constraint中指定一个数。如果不指定，可能会出现任务只被部署到一个rack的情况。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">    &quot;id&quot;: &quot;sleep-group-by&quot;,</div><div class="line">    &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">    &quot;instances&quot;: 3,</div><div class="line">    &quot;constraints&quot;: [[&quot;rack_id&quot;, &quot;GROUP_BY&quot;, &quot;3&quot;]]</div><div class="line">  &#125;&apos;</div></pre></td></tr></table></figure></p>
+<h4 id="LIKE-operator"><a href="#LIKE-operator" class="headerlink" title="LIKE operator"></a>LIKE operator</h4><p>接收一个正则表达式作为参数，允许filed值满足这个正则的所有agent node运行当前任务。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">    &quot;id&quot;: &quot;sleep-group-by&quot;,</div><div class="line">    &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">    &quot;instances&quot;: 3,</div><div class="line">    &quot;constraints&quot;: [[&quot;rack_id&quot;, &quot;LIKE&quot;, &quot;rack-[1-3]&quot;]]</div><div class="line">  &#125;&apos;</div></pre></td></tr></table></figure></p>
+<p>注意，参数一定要有，不然会有警告。</p>
+<h4 id="UNLIKE-operator"><a href="#UNLIKE-operator" class="headerlink" title="UNLIKE operator"></a>UNLIKE operator</h4><p>和LIKE operator一样的道理。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">   &quot;id&quot;: &quot;sleep-group-by&quot;,</div><div class="line">   &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">   &quot;instances&quot;: 3,</div><div class="line">   &quot;constraints&quot;: [[&quot;rack_id&quot;, &quot;UNLIKE&quot;, &quot;rack-[7-9]&quot;]]</div><div class="line"> &#125;&apos;</div></pre></td></tr></table></figure>
+<h4 id="MAX-PER-operator"><a href="#MAX-PER-operator" class="headerlink" title="MAX_PER operator"></a>MAX_PER operator</h4><p>接受一个数字参数，制定每个group的最大大小。可以用来限制跨rack或者数据中心的任务数量。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">   &quot;id&quot;: &quot;sleep-group-by&quot;,</div><div class="line">   &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">   &quot;instances&quot;: 3,</div><div class="line">   &quot;constraints&quot;: [[&quot;rack_id&quot;, &quot;MAX_PER&quot;, &quot;2&quot;]]</div><div class="line"> &#125;&apos;</div></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/09/07/marathon---constraints/" data-title="marathon---constraints | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/09/07/marathon---event-bus/" title="marathon---event-bus">
+  <strong>上一篇：</strong><br/>
+  <span>
+  marathon---event-bus</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/09/05/compose版本/"  title="compose版本">
+ <strong>下一篇：</strong><br/> 
+ <span>compose版本
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/09/07/marathon---constraints/" data-title="marathon---constraints" data-url="http://willcup.com/2017/09/07/marathon---constraints/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Fields"><span class="toc-number">1.</span> <span class="toc-text">Fields</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Hostname"><span class="toc-number">1.0.1.</span> <span class="toc-text">Hostname</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Attribute"><span class="toc-number">1.0.2.</span> <span class="toc-text">Attribute</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Operator"><span class="toc-number">2.</span> <span class="toc-text">Operator</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#UNIQUE-operator"><span class="toc-number">2.0.1.</span> <span class="toc-text">UNIQUE operator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CLUSTER-operator"><span class="toc-number">2.0.2.</span> <span class="toc-text">CLUSTER operator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#GROUP-BY-operator"><span class="toc-number">2.0.3.</span> <span class="toc-text">GROUP_BY operator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#LIKE-operator"><span class="toc-number">2.0.4.</span> <span class="toc-text">LIKE operator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#UNLIKE-operator"><span class="toc-number">2.0.5.</span> <span class="toc-text">UNLIKE operator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#MAX-PER-operator"><span class="toc-number">2.0.6.</span> <span class="toc-text">MAX_PER operator</span></a></li></ol></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

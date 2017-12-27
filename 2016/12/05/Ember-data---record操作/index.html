@@ -1,0 +1,612 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>Ember-data---record操作 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="查询record抽取单个record使用 store.findRecord()方法，按照id和type进行查询. 返回一个包含对应record的promise:
+1var post = this.store.findRecord(&apos;post&apos;, 1); // =&amp;gt; GET /posts/1
+使用 store.peekRecord().跟上面的一样，但是只查询store中当前已经存在的reco">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ember-data---record操作">
+<meta property="og:url" content="http://willcup.com/2016/12/05/Ember-data---record操作/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="查询record抽取单个record使用 store.findRecord()方法，按照id和type进行查询. 返回一个包含对应record的promise:
+1var post = this.store.findRecord(&apos;post&apos;, 1); // =&amp;gt; GET /posts/1
+使用 store.peekRecord().跟上面的一样，但是只查询store中当前已经存在的reco">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.781Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ember-data---record操作">
+<meta name="twitter:description" content="查询record抽取单个record使用 store.findRecord()方法，按照id和type进行查询. 返回一个包含对应record的promise:
+1var post = this.store.findRecord(&apos;post&apos;, 1); // =&amp;gt; GET /posts/1
+使用 store.peekRecord().跟上面的一样，但是只查询store中当前已经存在的reco">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/Ember-data---record操作/" title="Ember-data---record操作" itemprop="url">Ember-data---record操作</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:09:52.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#查询record"><span class="toc-text">查询record</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#抽取单个record"><span class="toc-text">抽取单个record</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#抽取多个Records"><span class="toc-text">抽取多个Records</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#查询多个Records"><span class="toc-text">查询多个Records</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#查询单个Record"><span class="toc-text">查询单个Record</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建、更新与删除"><span class="toc-text">创建、更新与删除</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建"><span class="toc-text">创建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#更新"><span class="toc-text">更新</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#持久化"><span class="toc-text">持久化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#验证错误"><span class="toc-text">验证错误</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Promises"><span class="toc-text">Promises</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#删除"><span class="toc-text">删除</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#事先推送record进入store"><span class="toc-text">事先推送record进入store</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#推送"><span class="toc-text">推送</span></a></li></ol></li></ol>
+		
+		</div>
+		
+		<h2 id="查询record"><a href="#查询record" class="headerlink" title="查询record"></a>查询record</h2><h3 id="抽取单个record"><a href="#抽取单个record" class="headerlink" title="抽取单个record"></a>抽取单个record</h3><p>使用 <a href="http://emberjs.com/api/data/classes/DS.Store.html#method_findRecord" target="_blank" rel="external"><code>store.findRecord()</code></a>方法，按照id和type进行查询. 返回一个包含对应record的promise:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> post = <span class="keyword">this</span>.store.findRecord(<span class="string">'post'</span>, <span class="number">1</span>); <span class="comment">// =&gt; GET /posts/1</span></div></pre></td></tr></table></figure>
+<p>使用 <a href="http://emberjs.com/api/data/classes/DS.Store.html#method_peekRecord" target="_blank" rel="external"><code>store.peekRecord()</code></a>.跟上面的一样，但是只查询store中当前已经存在的record，不会向后端server请求:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> post = <span class="keyword">this</span>.store.peekRecord(<span class="string">'post'</span>, <span class="number">1</span>); <span class="comment">// =&gt; no network request</span></div></pre></td></tr></table></figure>
+<h3 id="抽取多个Records"><a href="#抽取多个Records" class="headerlink" title="抽取多个Records"></a>抽取多个Records</h3><p>使用 <a href="http://emberjs.com/api/data/classes/DS.Store.html#method_findAll" target="_blank" rel="external"><code>store.findAll()</code></a>查询某个类型的所有record:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> posts = <span class="keyword">this</span>.store.findAll(<span class="string">'post'</span>); <span class="comment">// =&gt; GET /posts</span></div></pre></td></tr></table></figure>
+<p>参上： <a href="http://emberjs.com/api/data/classes/DS.Store.html#method_peekAll" target="_blank" rel="external"><code>store.peekAll()</code></a>:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> posts = <span class="keyword">this</span>.store.peekAll(<span class="string">'post'</span>); <span class="comment">// =&gt; no network request</span></div></pre></td></tr></table></figure>
+<p><code>store.findAll()</code> 返回的<code>PromiseArray</code> 包含<br><code>RecordArray</code> 。 <code>store.peekAll</code>直接返回<code>RecordArray</code>.</p>
+<p>注意<code>RecordArray</code>并不是JavaScript array，而是一个实现了<a href="http://emberjs.com/api/classes/Ember.Enumerable.html" target="_blank" rel="external"><code>Ember.Enumerable</code></a>的对象，所以如果要按照index访问数据，不能使用 <code>[]</code>，而应该使用 <code>objectAt(index)</code> .</p>
+<h3 id="查询多个Records"><a href="#查询多个Records" class="headerlink" title="查询多个Records"></a>查询多个Records</h3><p>可以查一些满足某些范式的record。<br><a href="http://emberjs.com/api/data/classes/DS.Store.html#method_query" target="_blank" rel="external"><code>store.query()</code></a>会发起一个带有查询参数的GET请求，返回值跟findAll一样是一个 <code>PromiseArray</code>.</p>
+<p>找出所有名字叫<code>Peter</code>的<code>person</code> models :</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// GET to /persons?filter[name]=Peter</span></div><div class="line"><span class="keyword">this</span>.store.query(<span class="string">'person'</span>, &#123; <span class="attr">filter</span>: &#123; <span class="attr">name</span>: <span class="string">'Peter'</span> &#125; &#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params">peters</span>) </span>&#123;</div><div class="line">  <span class="comment">// Do something with `peters`</span></div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h3 id="查询单个Record"><a href="#查询单个Record" class="headerlink" title="查询单个Record"></a>查询单个Record</h3><p><a href="http://emberjs.com/api/data/classes/DS.Store.html#method_queryRecord" target="_blank" rel="external"><code>store.queryRecord()</code></a>返回一个promise。</p>
+<p>查询邮箱是’tomster@example.com’ 的person model:<br><code>tomster@example.com</code>:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// GET to /persons?filter[email]=tomster@example.com</span></div><div class="line"><span class="keyword">this</span>.store.queryRecord(<span class="string">'person'</span>, &#123; <span class="attr">filter</span>: &#123; <span class="attr">email</span>: <span class="string">'tomster@example.com'</span> &#125; &#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params">tomster</span>) </span>&#123;</div><div class="line">  <span class="comment">// do something with `tomster`</span></div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h2 id="创建、更新与删除"><a href="#创建、更新与删除" class="headerlink" title="创建、更新与删除"></a>创建、更新与删除</h2><h2 id="创建"><a href="#创建" class="headerlink" title="创建"></a>创建</h2><p><a href="http://emberjs.com/api/data/classes/DS.Store.html#method_createRecord" target="_blank" rel="external"><code>createRecord()</code></a></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">store.createRecord(<span class="string">'post'</span>, &#123;</div><div class="line">  <span class="attr">title</span>: <span class="string">'Rails is Omakase'</span>,</div><div class="line">  <span class="attr">body</span>: <span class="string">'Lorem ipsum'</span></div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>在controller或者route中直接调用 <code>this.store</code>就可以获得store对象.</p>
+<h2 id="更新"><a href="#更新" class="headerlink" title="更新"></a>更新</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">this</span>.store.findRecord(<span class="string">'person'</span>, <span class="number">1</span>).then(<span class="function"><span class="keyword">function</span>(<span class="params">tyrion</span>) </span>&#123;</div><div class="line">  <span class="comment">// ...after the record has loaded</span></div><div class="line">  tyrion.set(<span class="string">'firstName'</span>, <span class="string">"Yollo"</span>);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>Ember中修改属性特别便捷。例如，你可以使用 <code>Ember.Object</code>的<br><a href="http://emberjs.com/api/classes/Ember.Object.html#method_incrementProperty" target="_blank" rel="external"><code>incrementProperty</code></a> helper:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">person.incrementProperty(<span class="string">'age'</span>); <span class="comment">// Happy birthday!</span></div></pre></td></tr></table></figure>
+<h2 id="持久化"><a href="#持久化" class="headerlink" title="持久化"></a>持久化</h2><p>执行Model的任意实例的<a href="http://emberjs.com/api/data/classes/DS.Model.html#method_save" target="_blank" rel="external"><code>save()</code></a>方法都会触发网络请求.</p>
+<p>Ember Data会跟踪每个record的状态。这样当存储新创建的record和已经存在的record的时候就能区别对待。</p>
+<p>Ember Data默认<code>POST</code> 新创建的record到它的type对应的url.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> post = store.createRecord(<span class="string">'post'</span>, &#123;</div><div class="line">  <span class="attr">title</span>: <span class="string">'Rails is Omakase'</span>,</div><div class="line">  <span class="attr">body</span>: <span class="string">'Lorem ipsum'</span></div><div class="line">&#125;);</div><div class="line"></div><div class="line">post.save(); <span class="comment">// =&gt; POST to '/posts'</span></div></pre></td></tr></table></figure>
+<p>已经存在的record使用HTTP的 <code>PATCH</code>动作.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">store.findRecord(<span class="string">'post'</span>, <span class="number">1</span>).then(<span class="function"><span class="keyword">function</span>(<span class="params">post</span>) </span>&#123;</div><div class="line">  post.get(<span class="string">'title'</span>); <span class="comment">// =&gt; "Rails is Omakase"</span></div><div class="line"></div><div class="line">  post.set(<span class="string">'title'</span>, <span class="string">'A new post'</span>);</div><div class="line"></div><div class="line">  post.save(); <span class="comment">// =&gt; PATCH to '/posts/1'</span></div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>你可以通过record的<br><a href="http://emberjs.com/api/data/classes/DS.Model.html#property_hasDirtyAttributes" target="_blank" rel="external"><code>hasDirtyAttributes</code></a><br>属性来辨别是否有没有提交的修改. 也可以使用<br><a href="http://emberjs.com/api/data/classes/DS.Model.html#method_changedAttributes" target="_blank" rel="external"><code>changedAttributes()</code></a><br>方法辨别，哪些属性修改了，哪些没有. <code>changedAttributes</code>返回一个对象，key是被修改的属性名称，值是<code>[oldValue, newValue]</code>.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">person.get(<span class="string">'isAdmin'</span>);            <span class="comment">//=&gt; false</span></div><div class="line">person.get(<span class="string">'hasDirtyAttributes'</span>); <span class="comment">//=&gt; false</span></div><div class="line">person.set(<span class="string">'isAdmin'</span>, <span class="literal">true</span>);</div><div class="line">person.get(<span class="string">'hasDirtyAttributes'</span>); <span class="comment">//=&gt; true</span></div><div class="line">person.changedAttributes();       <span class="comment">//=&gt; &#123; isAdmin: [false, true] &#125;</span></div></pre></td></tr></table></figure>
+<p>这时，你可以调用save()方法持久化这些改变，也可以调用<br><a href="http://emberjs.com/api/data/classes/DS.Model.html#method_rollbackAttributes" target="_blank" rel="external"><code>rollbackAttributes()</code></a><br>回滚这些修改。如果这个record <code>isNew</code>【是新建的】，那么就会被从store中删除.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">person.get(<span class="string">'hasDirtyAttributes'</span>); <span class="comment">//=&gt; true</span></div><div class="line">person.changedAttributes();       <span class="comment">//=&gt; &#123; isAdmin: [false, true] &#125;</span></div><div class="line"></div><div class="line">person.rollbackAttributes();</div><div class="line"></div><div class="line">person.get(<span class="string">'hasDirtyAttributes'</span>); <span class="comment">//=&gt; false</span></div><div class="line">person.get(<span class="string">'isAdmin'</span>);            <span class="comment">//=&gt; false</span></div><div class="line">person.changedAttributes();       <span class="comment">//=&gt; &#123;&#125;</span></div></pre></td></tr></table></figure>
+<h2 id="验证错误"><a href="#验证错误" class="headerlink" title="验证错误"></a>验证错误</h2><p>如果后端server尝试save的时候返回了验证错误，那么会体现在你的model的<code>errors</code>属性上。你可以通过下面的方法在你的模板中展示这些错误：</p>
+<figure class="highlight hbs"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="template-tag">&#123;&#123;#<span class="name"><span class="builtin-name">each</span></span> post.errors.title as |error|&#125;&#125;</span></div><div class="line">  &lt;div class="error"&gt;<span class="template-variable">&#123;&#123;error.message&#125;&#125;</span>&lt;/div&gt;</div><div class="line"><span class="template-tag">&#123;&#123;/<span class="name"><span class="builtin-name">each</span></span>&#125;&#125;</span></div><div class="line"><span class="template-tag">&#123;&#123;#<span class="name"><span class="builtin-name">each</span></span> post.errors.body as |error|&#125;&#125;</span></div><div class="line">  &lt;div class="error"&gt;<span class="template-variable">&#123;&#123;error.message&#125;&#125;</span>&lt;/div&gt;</div><div class="line"><span class="template-tag">&#123;&#123;/<span class="name"><span class="builtin-name">each</span></span>&#125;&#125;</span></div></pre></td></tr></table></figure>
+<h2 id="Promises"><a href="#Promises" class="headerlink" title="Promises"></a>Promises</h2><p><a href="http://emberjs.com/api/data/classes/DS.Model.html#method_save" target="_blank" rel="external"><code>save()</code></a> 返回一个promise。下面是典型操作:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> post = store.createRecord(<span class="string">'post'</span>, &#123;</div><div class="line">  <span class="attr">title</span>: <span class="string">'Rails is Omakase'</span>,</div><div class="line">  <span class="attr">body</span>: <span class="string">'Lorem ipsum'</span></div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="keyword">var</span> self = <span class="keyword">this</span>;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">transitionToPost</span>(<span class="params">post</span>) </span>&#123;</div><div class="line">  self.transitionToRoute(<span class="string">'posts.show'</span>, post);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">failure</span>(<span class="params">reason</span>) </span>&#123;</div><div class="line">  <span class="comment">// handle the error</span></div><div class="line">&#125;</div><div class="line"></div><div class="line">post.save().then(transitionToPost).catch(failure);</div><div class="line"></div><div class="line"><span class="comment">// =&gt; POST to '/posts'</span></div><div class="line"><span class="comment">// =&gt; transitioning to posts.show route</span></div></pre></td></tr></table></figure>
+<h2 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h2><p>删除跟创建一样直接。 调用一个实例的<a href="http://emberjs.com/api/data/classes/DS.Model.html#method_deleteRecord" target="_blank" rel="external"><code>deleteRecord()</code></a>方法. 之后会标记record为 <code>isDeleted</code>. 使用<code>save()</code>持久化删除操作. 或者使用<code>destroyRecord</code> 方法直接物理删除.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">store.findRecord(<span class="string">'post'</span>, <span class="number">1</span>).then(<span class="function"><span class="keyword">function</span>(<span class="params">post</span>) </span>&#123;</div><div class="line">  post.deleteRecord();</div><div class="line">  post.get(<span class="string">'isDeleted'</span>); <span class="comment">// =&gt; true</span></div><div class="line">  post.save(); <span class="comment">// =&gt; DELETE to /posts/1</span></div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">// OR</span></div><div class="line">store.findRecord(<span class="string">'post'</span>, <span class="number">2</span>).then(<span class="function"><span class="keyword">function</span>(<span class="params">post</span>) </span>&#123;</div><div class="line">  post.destroyRecord(); <span class="comment">// =&gt; DELETE to /posts/2</span></div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h2 id="事先推送record进入store"><a href="#事先推送record进入store" class="headerlink" title="事先推送record进入store"></a>事先推送record进入store</h2><p>controller或者route请求store中没有的store时，store还要向adapter发起网络请求。<br>除了等待app请求一个record，你也可以提前向store中push record。</p>
+<p>如果你知道你的用户下一步会使用什么record，那这就很有用。当他们请求的时候，会飞速返回。Ember可以自动重新渲染模板。</p>
+<p>另外一个用例是与后端建立streaming connection的时候。当一个record被创建或者修改后，你应该马上更新UI。</p>
+<h3 id="推送"><a href="#推送" class="headerlink" title="推送"></a>推送</h3><p>调用store的 <a href="http://emberjs.com/api/data/classes/DS.Store.html#method_push" target="_blank" rel="external"><code>push()</code></a> 方法.</p>
+<p>假设当app刚启动的时候，我们要预加载一些数据到store中。</p>
+<p>我们使用<code>route:application</code>来做这项工作. <code>route:application</code> 是route层级结构中的最顶级route，他的 <code>model</code> hook 只在app启动的时候被调用一次.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">import Model from &apos;ember-data/model&apos;;</div><div class="line">import attr from &apos;ember-data/attr&apos;;</div><div class="line"></div><div class="line">export default Model.extend(&#123;</div><div class="line">  title: attr(),</div><div class="line">  artist: attr(),</div><div class="line">  songCount: attr()</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">export default Ember.Route.extend(&#123;</div><div class="line">  model() &#123;</div><div class="line">    this.store.push(&#123;</div><div class="line">      data: [&#123;</div><div class="line">        id: 1,</div><div class="line">        type: &apos;album&apos;,</div><div class="line">        attributes: &#123;</div><div class="line">          title: &apos;Fewer Moving Parts&apos;,</div><div class="line">          artist: &apos;David Bazan&apos;,</div><div class="line">          songCount: 10</div><div class="line">        &#125;,</div><div class="line">        relationships: &#123;&#125;</div><div class="line">      &#125;, &#123;</div><div class="line">        id: 2,</div><div class="line">        type: &apos;album&apos;,</div><div class="line">        attributes: &#123;</div><div class="line">          title: &apos;Calgary b/w I Can\&apos;t Make You Love Me/Nick Of Time&apos;,</div><div class="line">          artist: &apos;Bon Iver&apos;,</div><div class="line">          songCount: 2</div><div class="line">        &#125;,</div><div class="line">        relationships: &#123;&#125;</div><div class="line">      &#125;]</div><div class="line">    &#125;);</div><div class="line">  &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>store的 <code>push()</code> 方法是一个低级API，接收JSON API文档，使用JSONAPISerializer进行解析 。JSON API终端 type名称必须跟model的严格对应。（这个例子里就是<code>album</code>，因为model就是<code>app/models/album.js</code>）。属性和关系的大小写也必须和model定义中完全一致。</p>
+<p>如果你想在推送进store前标准化model默认的serializer，可使用<br><a href="http://emberjs.com/api/data/classes/DS.Store.html#method_pushPayload" target="_blank" rel="external"><code>store.pushPayload()</code></a> 方法.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">import RestSerializer from &apos;ember-data/serializers/rest&apos;;</div><div class="line"></div><div class="line">export default RestSerializer.extend(&#123;</div><div class="line">  normalize(typeHash, hash) &#123;</div><div class="line">    hash[&apos;songCount&apos;] = hash[&apos;song_count&apos;]</div><div class="line">    delete hash[&apos;song_count&apos;]</div><div class="line">    return this._super(typeHash, hash);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">&#125;)</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">export default Ember.Route.extend(&#123;</div><div class="line">  model() &#123;</div><div class="line">    this.store.pushPayload(&#123;</div><div class="line">      albums: [</div><div class="line">        &#123;</div><div class="line">          id: 1,</div><div class="line">          title: &apos;Fever Moving Parts&apos;,</div><div class="line">          artist: &apos;David Bazan&apos;,</div><div class="line">          song_count: 10</div><div class="line">        &#125;,</div><div class="line">        &#123;</div><div class="line">          id: 2,</div><div class="line">          title: &apos;Calgary b/w I Can\&apos;t Make You Love Me/Nick Of Time&apos;,</div><div class="line">          artist: &apos;Bon Iver&apos;,</div><div class="line">          song_count: 2</div><div class="line">        &#125;</div><div class="line">      ]</div><div class="line">    &#125;);</div><div class="line">  &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p><code>push()</code> 方法在于复杂终端协同的时候也很重要。你的应用终端有时会执行一些业务逻辑，创建多个record。这对于Ember Data的<code>save()</code> API并不是完全对应，后者只能操作单条record。这是，你应该使用自己的ajax请求推送结果数据到store中，供其他UI页面使用。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">export default Ember.Route.extend(&#123;</div><div class="line">  actions: &#123;</div><div class="line">    confirm: function(data) &#123;</div><div class="line">      $.ajax(&#123;</div><div class="line">        data: data,</div><div class="line">        method: &apos;POST&apos;,</div><div class="line">        url: &apos;process-payment&apos;</div><div class="line">      &#125;).then((digitalInventory) =&gt; &#123;</div><div class="line">        this.store.pushPayload(digitalInventory);</div><div class="line">        this.transitionTo(&apos;thank-you&apos;);</div><div class="line">      &#125;);</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/12/05/Ember-data---record操作/" data-title="Ember-data---record操作 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/12/05/celery队列路由/" title="celery队列路由">
+  <strong>上一篇：</strong><br/>
+  <span>
+  celery队列路由</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/12/05/ambari上hive-view添加用户/"  title="ambari上hive-view添加用户">
+ <strong>下一篇：</strong><br/> 
+ <span>ambari上hive-view添加用户
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/12/05/Ember-data---record操作/" data-title="Ember-data---record操作" data-url="http://willcup.com/2016/12/05/Ember-data---record操作/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#查询record"><span class="toc-number">1.</span> <span class="toc-text">查询record</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#抽取单个record"><span class="toc-number">1.1.</span> <span class="toc-text">抽取单个record</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#抽取多个Records"><span class="toc-number">1.2.</span> <span class="toc-text">抽取多个Records</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#查询多个Records"><span class="toc-number">1.3.</span> <span class="toc-text">查询多个Records</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#查询单个Record"><span class="toc-number">1.4.</span> <span class="toc-text">查询单个Record</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建、更新与删除"><span class="toc-number">2.</span> <span class="toc-text">创建、更新与删除</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建"><span class="toc-number">3.</span> <span class="toc-text">创建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#更新"><span class="toc-number">4.</span> <span class="toc-text">更新</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#持久化"><span class="toc-number">5.</span> <span class="toc-text">持久化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#验证错误"><span class="toc-number">6.</span> <span class="toc-text">验证错误</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Promises"><span class="toc-number">7.</span> <span class="toc-text">Promises</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#删除"><span class="toc-number">8.</span> <span class="toc-text">删除</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#事先推送record进入store"><span class="toc-number">9.</span> <span class="toc-text">事先推送record进入store</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#推送"><span class="toc-number">9.1.</span> <span class="toc-text">推送</span></a></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,681 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>hadoop-vs-mpp | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="什么是MPPMPP全名是massively parallel processing，是网格计算的一种实现，网格中的所有节点都参与计算过程。MPP DBMS是基于MPP的DBMS。每个查询都需要先切分计算任务，这会比传统的SMP RDBMS更快一些。另外，MPP还具有扩展性，我们可以方便的向网格中添加节点来扩展计算与存储能力。为了处理大量数据，需要对数据进行在节点之间进行shard，这样每个节点都只">
+<meta property="og:type" content="article">
+<meta property="og:title" content="hadoop-vs-mpp">
+<meta property="og:url" content="http://willcup.com/2017/10/09/hadoop-vs-mpp/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="什么是MPPMPP全名是massively parallel processing，是网格计算的一种实现，网格中的所有节点都参与计算过程。MPP DBMS是基于MPP的DBMS。每个查询都需要先切分计算任务，这会比传统的SMP RDBMS更快一些。另外，MPP还具有扩展性，我们可以方便的向网格中添加节点来扩展计算与存储能力。为了处理大量数据，需要对数据进行在节点之间进行shard，这样每个节点都只">
+<meta property="og:image" content="https://0x0fff.com/wp-content/uploads/2015/07/MPP_arch.gif">
+<meta property="og:image" content="https://0x0fff.com/wp-content/uploads/2015/07/HiveArchitecture.jpg">
+<meta property="og:image" content="https://0x0fff.com/wp-content/uploads/2015/07/impala.png">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.781Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="hadoop-vs-mpp">
+<meta name="twitter:description" content="什么是MPPMPP全名是massively parallel processing，是网格计算的一种实现，网格中的所有节点都参与计算过程。MPP DBMS是基于MPP的DBMS。每个查询都需要先切分计算任务，这会比传统的SMP RDBMS更快一些。另外，MPP还具有扩展性，我们可以方便的向网格中添加节点来扩展计算与存储能力。为了处理大量数据，需要对数据进行在节点之间进行shard，这样每个节点都只">
+<meta name="twitter:image" content="https://0x0fff.com/wp-content/uploads/2015/07/MPP_arch.gif">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/10/09/hadoop-vs-mpp/" title="hadoop-vs-mpp" itemprop="url">hadoop-vs-mpp</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-10-09T03:45:18.000Z" itemprop="datePublished"> 发表于 2017-10-09</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#什么是MPP"><span class="toc-text">什么是MPP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hadoop"><span class="toc-text">hadoop</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#可选"><span class="toc-text">可选</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#hive"><span class="toc-text">hive</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#MPP"><span class="toc-text">MPP</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#SparkSQL"><span class="toc-text">SparkSQL</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a></li></ol>
+		
+		</div>
+		
+		<h2 id="什么是MPP"><a href="#什么是MPP" class="headerlink" title="什么是MPP"></a>什么是MPP</h2><p>MPP全名是massively parallel processing，是网格计算的一种实现，网格中的所有节点都参与计算过程。MPP DBMS是基于MPP的DBMS。每个查询都需要先切分计算任务，这会比传统的SMP RDBMS更快一些。另外，MPP还具有扩展性，我们可以方便的向网格中添加节点来扩展计算与存储能力。为了处理大量数据，需要对数据进行在节点之间进行shard，这样每个节点都只处理自己本地的数据。这进一步提升了数据处理速度，因为使用共享存储的话会出现一个很大的问题—— 更复杂，更昂贵，不易扩展，更高的网络IO，更小的并行度。这就是大多数MPP DBMS方案share-nothing不共享任何东西，运行在DAS（direct-attached storage）或者小组server共享机架存储的原因。Teradata、Greenplum、Vertica、Netezza等都是使用的这种方式。这些工具都有一个复杂且成熟，专为MPP方案订制的SQL optimizer。而且他们都是可扩展的，围绕这些方案有很多的工具包来支持用户的需求：地理位置分析、全文检索等。他们都是闭源的复杂的企业级解决方案(Greenplum在2015年开源)。</p>
+<p><img src="https://0x0fff.com/wp-content/uploads/2015/07/MPP_arch.gif" alt=""></p>
+<h2 id="hadoop"><a href="#hadoop" class="headerlink" title="hadoop"></a>hadoop</h2><p>那么hadoop呢？不是一个单一的技术，而是一个生态。基友好处也有坏处，最大的优点就是延展性好 - 催生了一些列的新组件（spark），而且这些组件的核心都与hadoop息息相关，这就给集群的扩展性很多可能性。一个缺点是弄一个整套的生态是比较费事儿的，现在没人手工弄，都是借助工具了。</p>
+<p>hadoop的存储技术是一个完全不同的方式。并不是根据key去把数据进行shard，而是把数据弄成指定大小的block块进行切分，以block为单位存储在不同节点上。这些数据块一般是比较大且只读的，整个文件系统也是只读的。简单来说，对于加载100行数据表，MPP引擎会基于某个key把数据进行shard，对于较大的集群来说这种方式可能会出现每个node上只有一条记录的现象。而如果使用HDFS的话，这个小的表会被写在一个数据块中，对于datanode的文件系统来说只是一个普通的 文件而已。</p>
+<p>资源管理呢？不同于MPP方案，hadoop的资源管理器具有更细粒度。MR任务不需要所有的计算任务都并行执行，如果集群资源满载的时候，我们甚至可以把某个任务的数据和所有计算任务都丢到一个节点上执行。还有一系列的其他延展性，支持长时间运行的container等..但是事实上，它比MPP的资源管理器会慢一些，而且对于并发管理表现也稍逊一筹。</p>
+<h2 id="可选"><a href="#可选" class="headerlink" title="可选"></a>可选</h2><p>对于Hadoop的SQL接口工具，有很多工具可以选择：基于MR/Tez/Spark的hive、sparksql、impala、HAQW或者IBM BigSQL、或者完全不同的Splice Machine。因为有太多工具可选，也很容易迷失。</p>
+<h4 id="hive"><a href="#hive" class="headerlink" title="hive"></a>hive</h4><p>把sql转化为MR/Tez/Spark任务，在集群上执行。所有的这些任务类型其实都是基于MR思想，可以很好的利用集群，也方便与其他的hadoop技术栈进行整合。缺点也很明显 —— 执行查询的延迟较大，对于表之间的join操作性能堪忧，没有查询优化器引擎只按照你说的方式进行执行。下图覆盖了废弃的MR1的设计图：<br><img src="https://0x0fff.com/wp-content/uploads/2015/07/HiveArchitecture.jpg" alt=""></p>
+<h4 id="MPP"><a href="#MPP" class="headerlink" title="MPP"></a>MPP</h4><p>类似impala和HAWQ的解决方案则与hive相对，使用了基于HDFS的MPP执行引擎。他们对于查询有更小的延迟、更少的处理时间，但是牺牲了一些扩展性和稳定性。</p>
+<p><img src="https://0x0fff.com/wp-content/uploads/2015/07/impala.png" alt=""></p>
+<h4 id="SparkSQL"><a href="#SparkSQL" class="headerlink" title="SparkSQL"></a>SparkSQL</h4><p>sparkSQL是一个介于MR和MPP-over-hadoop之间的解决方案。与MR类似，它把job切分为一组task进行分别调度，这样来保证比较好的稳定性。又类似于MPP，试图把各个执行的stage之间流式串联起来来提高处理速度。他还使用类似于MPP的固定的executor来降低查询延迟。它继承了优点，同样缺点也跟了过来 —— 不及MPP快，不及MR稳定。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>MPP</th>
+<th>Hadoop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>平台开放性</td>
+<td>闭塞且专利。对于一些技术甚至连文档都是闭源的</td>
+<td>完全开源</td>
+</tr>
+<tr>
+<td>硬件选择</td>
+<td>很多都是必须依托服务方的，很少能部署在自己的集群上。所有的解决方案都需要企业级的硬件，比如快速硬盘，大ECC RAM的服务器，无线带宽等</td>
+<td>任何硬件都可用。最推荐的就是使用廉价的带有DAS的硬件【就是磁盘单挂】</td>
+</tr>
+<tr>
+<td>节点水平扩展</td>
+<td>平均几十台，最多100-200台</td>
+<td>平均100台，最多几千台</td>
+</tr>
+<tr>
+<td>用户数据扩展性</td>
+<td>几十TB，最多PB级别</td>
+<td>几百TB, 最多几十PB</td>
+</tr>
+<tr>
+<td>查询延迟</td>
+<td>10-20 milliseconds</td>
+<td>10-20 seconds</td>
+</tr>
+<tr>
+<td>平均查询时间</td>
+<td>5-7 seconds</td>
+<td>10-15 minutes</td>
+</tr>
+<tr>
+<td>最大查询时间</td>
+<td>1-2 hours</td>
+<td>1-2 weeks</td>
+</tr>
+<tr>
+<td>查询优化</td>
+<td>复杂的企业级查询优化引擎使用全局最优的方式</td>
+<td>没有optimizer，或者有限制，有时甚至都不支持cost-based</td>
+</tr>
+<tr>
+<td>查询debug与profile</td>
+<td>有查询计划与查询静态量，提供错误信息</td>
+<td>OON问题和java堆溢出分析，GC停止信息，分离的任务日志</td>
+</tr>
+<tr>
+<td>技术代价</td>
+<td>每个节点几千或者几万美元</td>
+<td>每个节点最多几千美元</td>
+</tr>
+<tr>
+<td>终端用户的访问</td>
+<td>SQL接口和一些简单的数据库函数</td>
+<td>SQL并不完全兼容。用户需要关注执行逻辑，数据的分布。函数一般需要用java进行编写，放到集群中</td>
+</tr>
+<tr>
+<td>目标用户</td>
+<td>商业分析师</td>
+<td>java dev和经验丰富的DBA</td>
+</tr>
+<tr>
+<td>单job冗余度</td>
+<td>低，MPP节点失败，则job失败</td>
+<td>高，job失败后有重试</td>
+</tr>
+<tr>
+<td>目标系统</td>
+<td>一般的DWH和分析系统</td>
+<td>为特定目标构建的数据处理引擎</td>
+</tr>
+<tr>
+<td>vendor lock-in</td>
+<td>typical case</td>
+<td>Rare case usually caused by technology misuse</td>
+</tr>
+<tr>
+<td>推荐的最小的数据大小</td>
+<td>任何</td>
+<td>GB</td>
+</tr>
+<tr>
+<td>最大并发</td>
+<td>几十到几百个query</td>
+<td>10-20个job</td>
+</tr>
+<tr>
+<td>技术延展性</td>
+<td>只能使用厂家提供的工具</td>
+<td>可以随意组合开源工具</td>
+</tr>
+<tr>
+<td>需要的DBA技术级别</td>
+<td>一般水平</td>
+<td>精通java和RDBMS背景</td>
+</tr>
+<tr>
+<td>方案实现服务性</td>
+<td>中</td>
+<td>高</td>
+</tr>
+</tbody>
+</table>
+<p>有了以上信息，我们知道为什么hadoop不能完全取代传统企业级数据仓库，但是他是可以用作处理海量数据的一种分布式引擎。facebook有一个300PB的hadoop集群，它还额外用了50TB的Vertica集群。Linkedin有一个巨大的hadoop集群，也同样有一个Aster数据中心（Teradata提供的MPP工具）。</p>
+<p>参考：<br><a href="https://0x0fff.com/hadoop-vs-mpp/" target="_blank" rel="external">https://0x0fff.com/hadoop-vs-mpp/</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/10/09/hadoop-vs-mpp/" data-title="hadoop-vs-mpp | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/10/09/impala架构/" title="impala架构">
+  <strong>上一篇：</strong><br/>
+  <span>
+  impala架构</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/09/30/centos7-微服务相关环境部署/"  title="centos7-微服务相关环境部署">
+ <strong>下一篇：</strong><br/> 
+ <span>centos7-微服务相关环境部署
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/10/09/hadoop-vs-mpp/" data-title="hadoop-vs-mpp" data-url="http://willcup.com/2017/10/09/hadoop-vs-mpp/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#什么是MPP"><span class="toc-number">1.</span> <span class="toc-text">什么是MPP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hadoop"><span class="toc-number">2.</span> <span class="toc-text">hadoop</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#可选"><span class="toc-number">3.</span> <span class="toc-text">可选</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#hive"><span class="toc-number">3.0.1.</span> <span class="toc-text">hive</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#MPP"><span class="toc-number">3.0.2.</span> <span class="toc-text">MPP</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#SparkSQL"><span class="toc-number">3.0.3.</span> <span class="toc-text">SparkSQL</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

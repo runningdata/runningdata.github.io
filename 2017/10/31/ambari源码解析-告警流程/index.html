@@ -1,0 +1,574 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>ambari源码解析-告警流程 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="从ambari的包找起，找到一个alert的package，下面有一个类StaleAlertRunnable，看一下注释：。那么谁调用它呢？AmbariServerAlertService，与它在同一个目录的还有一个名字很显眼的类AlertNoticeDispatchService。
+它是用来扫描表alert_notice中状态为pending的记录，并调用各种dispatcher执行告警分发的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ambari源码解析-告警流程">
+<meta property="og:url" content="http://willcup.com/2017/10/31/ambari源码解析-告警流程/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="从ambari的包找起，找到一个alert的package，下面有一个类StaleAlertRunnable，看一下注释：。那么谁调用它呢？AmbariServerAlertService，与它在同一个目录的还有一个名字很显眼的类AlertNoticeDispatchService。
+它是用来扫描表alert_notice中状态为pending的记录，并调用各种dispatcher执行告警分发的。">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.777Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ambari源码解析-告警流程">
+<meta name="twitter:description" content="从ambari的包找起，找到一个alert的package，下面有一个类StaleAlertRunnable，看一下注释：。那么谁调用它呢？AmbariServerAlertService，与它在同一个目录的还有一个名字很显眼的类AlertNoticeDispatchService。
+它是用来扫描表alert_notice中状态为pending的记录，并调用各种dispatcher执行告警分发的。">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/10/31/ambari源码解析-告警流程/" title="ambari源码解析-告警流程" itemprop="url">ambari源码解析-告警流程</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-10-31T11:23:25.000Z" itemprop="datePublished"> 发表于 2017-10-31</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<p>从ambari的包找起，找到一个alert的package，下面有一个类StaleAlertRunnable，看一下注释：。那么谁调用它呢？AmbariServerAlertService，与它在同一个目录的还有一个名字很显眼的类AlertNoticeDispatchService。</p>
+<p>它是用来扫描表<code>alert_notice</code>中状态为pending的记录，并调用各种dispatcher执行告警分发的。那么谁把notice放进这个表里的呢？没有追踪到。</p>
+<p>不过我们发现它继承自guava的<code>AbstractScheduledService</code>类，那么就搜一下这个类的使用，发现在ControllerModule里出现，而ControllerModule是出现在AmbariServer.main之中的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Injector injector = Guice.createInjector(<span class="keyword">new</span> ControllerModule());</div></pre></td></tr></table></figure>
+<p>使用工具guice执行了ControllerModule中的依赖注入工作。我们知道Guice.createInjector接收<code>AbstractModule</code>接口的类，一般我们需要实现<code>AbstractModule</code>接口的<code>configure</code>方法。然后在<code>configure</code>方法中将依赖的接口与其具体实现进行绑定，也就是执行<code>bind(xxx.class).to(xxx.class)</code>等工作。下面我们就看一下ControllerModule()做了哪些依赖注入声明的工作。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div></pre></td><td class="code"><pre><div class="line">protected void configure() &#123;</div><div class="line">    // 各种工厂接口与其实现类的绑定</div><div class="line">    installFactories();</div><div class="line"></div><div class="line"></div><div class="line">    // 绑定session相关manager到具体实例</div><div class="line">    final SessionIdManager sessionIdManager = new HashSessionIdManager();</div><div class="line">    final SessionManager sessionManager = new HashSessionManager();</div><div class="line">    sessionManager.getSessionCookieConfig().setPath(&quot;/&quot;);</div><div class="line">    sessionManager.setSessionIdManager(sessionIdManager);</div><div class="line">    bind(SessionManager.class).toInstance(sessionManager);</div><div class="line">    bind(SessionIdManager.class).toInstance(sessionIdManager);</div><div class="line"></div><div class="line">    // kerberos相关</div><div class="line">    bind(KerberosOperationHandlerFactory.class);</div><div class="line">    bind(KerberosDescriptorFactory.class);</div><div class="line">    bind(KerberosServiceDescriptorFactory.class);</div><div class="line">    bind(KerberosHelper.class).to(KerberosHelperImpl.class);</div><div class="line"></div><div class="line">    bind(CredentialStoreService.class).to(CredentialStoreServiceImpl.class);</div><div class="line"></div><div class="line">    bind(Configuration.class).toInstance(configuration);</div><div class="line">    bind(OsFamily.class).toInstance(os_family);</div><div class="line">    bind(HostsMap.class).toInstance(hostsMap);</div><div class="line">    bind(PasswordEncoder.class).toInstance(new StandardPasswordEncoder());</div><div class="line">    bind(DelegatingFilterProxy.class).toInstance(new DelegatingFilterProxy() &#123;</div><div class="line">      &#123;</div><div class="line">        setTargetBeanName(&quot;springSecurityFilterChain&quot;);</div><div class="line">      &#125;</div><div class="line">    &#125;);</div><div class="line"></div><div class="line">    bind(Gson.class).annotatedWith(Names.named(&quot;prettyGson&quot;)).toInstance(prettyGson);</div><div class="line">    </div><div class="line">    // jpa持久化相关</div><div class="line">    install(buildJpaPersistModule());</div><div class="line"></div><div class="line">    bind(Gson.class).in(Scopes.SINGLETON);</div><div class="line">    bind(SecureRandom.class).in(Scopes.SINGLETON);</div><div class="line"></div><div class="line">    bind(Clusters.class).to(ClustersImpl.class);</div><div class="line">    bind(AmbariCustomCommandExecutionHelper.class);</div><div class="line">    bind(ActionDBAccessor.class).to(ActionDBAccessorImpl.class);</div><div class="line">    bindConstant().annotatedWith(Names.named(&quot;schedulerSleeptime&quot;)).to(</div><div class="line">      configuration.getExecutionSchedulerWait());</div><div class="line"></div><div class="line">    // This time is added to summary timeout time of all tasks in stage</div><div class="line">    // So it&apos;s an &quot;additional time&quot;, given to stage to finish execution before</div><div class="line">    // it is considered as timed out</div><div class="line">    bindConstant().annotatedWith(Names.named(&quot;actionTimeout&quot;)).to(600000L);</div><div class="line"></div><div class="line">    bindConstant().annotatedWith(Names.named(&quot;dbInitNeeded&quot;)).to(dbInitNeeded);</div><div class="line">    bindConstant().annotatedWith(Names.named(&quot;statusCheckInterval&quot;)).to(5000L);</div><div class="line"></div><div class="line">    //ExecutionCommands cache size</div><div class="line"></div><div class="line">    bindConstant().annotatedWith(Names.named(&quot;executionCommandCacheSize&quot;)).</div><div class="line">        to(configuration.getExecutionCommandsCacheSize());</div><div class="line"></div><div class="line"></div><div class="line">    // Host role commands status summary max cache enable/disable</div><div class="line">    bindConstant().annotatedWith(Names.named(HostRoleCommandDAO.HRC_STATUS_SUMMARY_CACHE_ENABLED)).</div><div class="line">      to(configuration.getHostRoleCommandStatusSummaryCacheEnabled());</div><div class="line"></div><div class="line">    // Host role commands status summary max cache size</div><div class="line">    bindConstant().annotatedWith(Names.named(HostRoleCommandDAO.HRC_STATUS_SUMMARY_CACHE_SIZE)).</div><div class="line">      to(configuration.getHostRoleCommandStatusSummaryCacheSize());</div><div class="line">    // Host role command status summary cache expiry duration in minutes</div><div class="line">    bindConstant().annotatedWith(Names.named(HostRoleCommandDAO.HRC_STATUS_SUMMARY_CACHE_EXPIRY_DURATION_MINUTES)).</div><div class="line">      to(configuration.getHostRoleCommandStatusSummaryCacheExpiryDuration());</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">    bind(AmbariManagementController.class).to(</div><div class="line">      AmbariManagementControllerImpl.class);</div><div class="line">    bind(AbstractRootServiceResponseFactory.class).to(RootServiceResponseFactory.class);</div><div class="line">    bind(ExecutionScheduler.class).to(ExecutionSchedulerImpl.class);</div><div class="line">    bind(DBAccessor.class).to(DBAccessorImpl.class);</div><div class="line">    bind(ViewInstanceHandlerList.class).to(AmbariHandlerList.class);</div><div class="line">    bind(TimelineMetricCacheProvider.class);</div><div class="line">    bind(TimelineMetricCacheEntryFactory.class);</div><div class="line">    bind(SecurityConfigurationFactory.class).in(Scopes.SINGLETON);</div><div class="line"></div><div class="line">    bind(PersistedState.class).to(PersistedStateImpl.class);</div><div class="line"></div><div class="line">    requestStaticInjection(ExecutionCommandWrapper.class);</div><div class="line">    requestStaticInjection(DatabaseChecker.class);</div><div class="line">    requestStaticInjection(KerberosChecker.class);</div><div class="line">    </div><div class="line">    // 这里是ControllerModule自定义的一个方法，根据注解执行绑定工作</div><div class="line">    bindByAnnotation(null);</div><div class="line">    </div><div class="line">    // 这里是我们关心的dispatcher相关绑定</div><div class="line">    bindNotificationDispatchers();</div><div class="line">    registerUpgradeChecks();</div><div class="line">  &#125;</div></pre></td></tr></table></figure>
+<p>我们发现serviceManager就在这个类中出现。它的说明是为需要注入的带有某种注解的接口提供初始化工作。典型应用一：是用来处理一些没有入口的单例，换种表达方式，就是那些没有被任何接口依赖注入，但是仍然被整体的guice框架需要的类。典型应用二：某些类需要注入静态static成员的时候。传入的参数beanDefinitions为空的时候，会默认扫描带有注解<code>EagerSingleton</code>,<code>StaticallyInject</code>,<code>AmbariService</code>的类。这三个注解都是ambari自定义的。我们看到上面调用这个方法的时候传入参数是null。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">protected</span> Set&lt;BeanDefinition&gt; <span class="title">bindByAnnotation</span><span class="params">(Set&lt;BeanDefinition&gt; beanDefinitions)</span> </span>&#123;</div><div class="line">    List&lt;Class&lt;? extends Annotation&gt;&gt; classes = Arrays.asList(</div><div class="line">        EagerSingleton.class, StaticallyInject.class, AmbariService.class);</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (<span class="keyword">null</span> == beanDefinitions || beanDefinitions.size() == <span class="number">0</span>) &#123;</div><div class="line">      ClassPathScanningCandidateComponentProvider scanner =</div><div class="line">          <span class="keyword">new</span> ClassPathScanningCandidateComponentProvider(<span class="keyword">false</span>);</div><div class="line"></div><div class="line">      <span class="comment">// match only singletons that are eager listeners</span></div><div class="line">      <span class="comment">// 为scanner加入目标注解过滤器</span></div><div class="line">      <span class="keyword">for</span> (Class&lt;? extends Annotation&gt; cls : classes) &#123;</div><div class="line">        scanner.addIncludeFilter(<span class="keyword">new</span> AnnotationTypeFilter(cls));</div><div class="line">      &#125;</div><div class="line">      <span class="comment">// 找出所有的带有注解的类</span></div><div class="line">      beanDefinitions = scanner.findCandidateComponents(AMBARI_PACKAGE);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (<span class="keyword">null</span> == beanDefinitions || beanDefinitions.size() == <span class="number">0</span>) &#123;</div><div class="line">      LOG.warn(<span class="string">"No instances of &#123;&#125; found to register"</span>, classes);</div><div class="line">      <span class="keyword">return</span> beanDefinitions;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    Set&lt;com.google.common.util.concurrent.Service&gt; services =</div><div class="line">        <span class="keyword">new</span> HashSet&lt;com.google.common.util.concurrent.Service&gt;();</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (BeanDefinition beanDefinition : beanDefinitions) &#123;</div><div class="line">      String className = beanDefinition.getBeanClassName();</div><div class="line">      Class&lt;?&gt; clazz = ClassUtils.resolveClassName(className,</div><div class="line">          ClassUtils.getDefaultClassLoader());</div><div class="line"></div><div class="line">      <span class="keyword">if</span> (<span class="keyword">null</span> != clazz.getAnnotation(EagerSingleton.class)) &#123;</div><div class="line">        bind(clazz).asEagerSingleton();</div><div class="line">        LOG.debug(<span class="string">"Binding singleton &#123;&#125; eagerly"</span>, clazz);</div><div class="line">      &#125;</div><div class="line"></div><div class="line">      <span class="keyword">if</span> (<span class="keyword">null</span> != clazz.getAnnotation(StaticallyInject.class)) &#123;</div><div class="line">        requestStaticInjection(clazz);</div><div class="line">        LOG.debug(<span class="string">"Statically injecting &#123;&#125; "</span>, clazz);</div><div class="line">      &#125;</div><div class="line"></div><div class="line">      <span class="comment">// Ambari services are registered with Guava</span></div><div class="line">      <span class="comment">// 使用Guava的AmbariService注解类</span></div><div class="line">      <span class="keyword">if</span> (<span class="keyword">null</span> != clazz.getAnnotation(AmbariService.class)) &#123;</div><div class="line">        <span class="comment">// 看看是不是一个Guava service</span></div><div class="line">        <span class="keyword">if</span> (!AbstractScheduledService.class.isAssignableFrom(clazz)) &#123;</div><div class="line">          String message = MessageFormat.format(</div><div class="line">              <span class="string">"Unable to register service &#123;0&#125; because it is not an AbstractScheduledService"</span>,</div><div class="line">              clazz);</div><div class="line"></div><div class="line">          LOG.warn(message);</div><div class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(message);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="comment">// 实例化，并作为单例注入到guice中，然后再添加到services中</span></div><div class="line">        AbstractScheduledService service = <span class="keyword">null</span>;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">          service = (AbstractScheduledService) clazz.newInstance();</div><div class="line">          bind((Class&lt;AbstractScheduledService&gt;) clazz).toInstance(service);</div><div class="line">          services.add(service);</div><div class="line">          LOG.debug(<span class="string">"Registering service &#123;&#125; "</span>, clazz);</div><div class="line">        &#125; <span class="keyword">catch</span> (Exception exception) &#123;</div><div class="line">          LOG.error(<span class="string">"Unable to register &#123;&#125; as a service"</span>, clazz, exception);</div><div class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(exception);</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// 使用上面扫描完获取到的所有services，实例化serviceManager，并单例化注入guice</span></div><div class="line">    ServiceManager manager = <span class="keyword">new</span> ServiceManager(services);</div><div class="line">    bind(ServiceManager.class).toInstance(manager);</div><div class="line"></div><div class="line">    <span class="keyword">return</span> beanDefinitions;</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
+<p>ServiceManager作为AmbariServer的依赖项被注入，然后在run方法中被调用其startAsync方法，我们看到其实是遍历调用了services中的service的startAsync方法：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">public ServiceManager startAsync() &#123;</div><div class="line">  for (Service service : services) &#123;</div><div class="line">    State state = service.state();</div><div class="line">    checkState(state == NEW, &quot;Service %s is %s, cannot start it.&quot;, service, state);</div><div class="line">  &#125;</div><div class="line">  for (Service service : services) &#123;</div><div class="line">    try &#123;</div><div class="line">      service.startAsync();</div><div class="line">    &#125; catch (IllegalStateException e) &#123;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">  return this;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>参考：<a href="https://github.com/google/guice/wiki/GettingStarted" target="_blank" rel="external">https://github.com/google/guice/wiki/GettingStarted</a></p>
+<p>看了这么多，但是实际alert来源呢？一般都是agent在本地执行检查，符合告警规则的才发送给server端。那么是怎样发送到server的呢？首先想到的是rest api里的AlertNoticeService，可是这个类只有get方法，没有POST接口。那么下一个嫌疑就是HeartBeat信息了。看下HeartBeat的定义<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">private long responseId = -1;</div><div class="line">private long timestamp;</div><div class="line">private String hostname;</div><div class="line">List&lt;CommandReport&gt; reports = new ArrayList&lt;CommandReport&gt;();</div><div class="line">List&lt;ComponentStatus&gt; componentStatus = new ArrayList&lt;ComponentStatus&gt;();</div><div class="line">private List&lt;DiskInfo&gt; mounts = new ArrayList&lt;DiskInfo&gt;();</div><div class="line">HostStatus nodeStatus;</div><div class="line">private AgentEnv agentEnv = null;</div><div class="line">private List&lt;Alert&gt; alerts = null;</div><div class="line">private RecoveryReport recoveryReport;</div></pre></td></tr></table></figure></p>
+<p>果然，那么我们就也能找到HeartBeat相关的resource了：AgentResource。HeartBeatHandler处理过程中会把heartbeat放进HeartbeatProcessor的队列里，做异步处理，告警部分的持久化就在这个异步处理的代码里了。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Path</span>(<span class="string">"heartbeat/&#123;hostName&#125;"</span>)</div><div class="line">  <span class="meta">@POST</span></div><div class="line">  <span class="meta">@Consumes</span>(MediaType.APPLICATION_JSON)</div><div class="line">  <span class="meta">@Produces</span>(&#123;MediaType.APPLICATION_JSON&#125;)</div><div class="line">  <span class="function"><span class="keyword">public</span> HeartBeatResponse <span class="title">heartbeat</span><span class="params">(HeartBeat message)</span></span></div><div class="line">      <span class="keyword">throws</span> WebApplicationException &#123;</div><div class="line">    <span class="keyword">if</span> (LOG.isDebugEnabled()) &#123;</div><div class="line">      LOG.debug(<span class="string">"Received Heartbeat message "</span> + message);</div><div class="line">    &#125;</div><div class="line">    HeartBeatResponse heartBeatResponse;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">    <span class="comment">// hh是一个单例的HeartBeatHandler</span></div><div class="line">      heartBeatResponse = hh.handleHeartBeat(message);</div><div class="line">      <span class="keyword">if</span> (LOG.isDebugEnabled()) &#123;</div><div class="line">        LOG.debug(<span class="string">"Sending heartbeat response with response id "</span> + heartBeatResponse.getResponseId());</div><div class="line">        LOG.debug(<span class="string">"Response details "</span> + heartBeatResponse);</div><div class="line">      &#125;</div><div class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">      LOG.warn(<span class="string">"Error in HeartBeat"</span>, e);</div><div class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> WebApplicationException(<span class="number">500</span>);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> heartBeatResponse;</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
+<p>中间经过guava的eventbus的多次事件中转后，在AlertStateChangedListener中被完全持久化进入数据库中。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">public void onAlertEvent(AlertStateChangeEvent event) &#123;</div><div class="line">    ...</div><div class="line">    ...</div><div class="line">    for (AlertGroupEntity group : groups) &#123;</div><div class="line">      Set&lt;AlertTargetEntity&gt; targets = group.getAlertTargets();</div><div class="line">      if (null == targets || targets.size() == 0) &#123;</div><div class="line">        continue;</div><div class="line">      &#125;</div><div class="line"></div><div class="line">      for (AlertTargetEntity target : targets) &#123;</div><div class="line">        if (!isAlertTargetInterested(target, history)) &#123;</div><div class="line">          continue;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        AlertNoticeEntity notice = new AlertNoticeEntity();</div><div class="line">        notice.setUuid(UUID.randomUUID().toString());</div><div class="line">        notice.setAlertTarget(target);</div><div class="line">        notice.setAlertHistory(event.getNewHistoricalEntry());</div><div class="line">        notice.setNotifyState(NotificationState.PENDING);</div><div class="line">        notices.add(notice);</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">    m_alertsDispatchDao.createNotices(notices);</div><div class="line">  &#125;</div></pre></td></tr></table></figure>
+<p>启动HeartBeatHandler的地方出现在AmbariServer.run的代码中<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">....</div><div class="line">AgentResource.statHeartBeatHandler();</div><div class="line">....</div></pre></td></tr></table></figure></p>
+<p>至于agent那边具体实现，我们暂时不太关心，因为暂时不需要自定义alert。</p>
+<p>综上，对于告警渠道的添加，我们需要自己实现guava的<code>AbstractScheduledService</code>抽象类接口，依照既有的SNNP或者EMAIL等写Dispatcher，然后把它们放置到<code>ServiceManager.AMBARI_PACKAGE</code>的位置。然后，最好是通过ambari提供的REST API添加alert_target，因为要处理跟alert_group相关的事情，自己直接操作数据库比较复杂一些，基本上要复制一遍代码里的所有操作。</p>
+<p>大功告成！</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/10/31/ambari源码解析-告警流程/" data-title="ambari源码解析-告警流程 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/11/02/ambari源码解析-告警问题/" title="ambari源码解析-告警问题">
+  <strong>上一篇：</strong><br/>
+  <span>
+  ambari源码解析-告警问题</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/10/31/ambari源码解析-资源状态监听/"  title="ambari源码解析-资源状态监听">
+ <strong>下一篇：</strong><br/> 
+ <span>ambari源码解析-资源状态监听
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/10/31/ambari源码解析-告警流程/" data-title="ambari源码解析-告警流程" data-url="http://willcup.com/2017/10/31/ambari源码解析-告警流程/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

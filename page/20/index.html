@@ -1,0 +1,1203 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="左右水色 右手天光">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Will's Blog">
+<meta property="og:url" content="http://willcup.com/page/20/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="左右水色 右手天光">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Will's Blog">
+<meta name="twitter:description" content="左右水色 右手天光">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main">
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/nodejs学习笔记/" title="nodejs学习笔记" itemprop="url">nodejs学习笔记</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:08:17.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>v8的出现，还有commonjs的规范化使得nodejs提供后台服务成为可能。</p>
+<p>两种启动方式：</p>
+<ul>
+<li>node app.js   不自动更新</li>
+<li>supervisor app.js 自动更新，修改后不用重启</li>
+</ul>
+<hr>
+<h2 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h2><ul>
+<li><p>默认全部都是异步操作</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line">fs.readFile(<span class="string">'test.file'</span>, <span class="string">'utf-8'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">err, data</span>)</span>&#123;</div><div class="line">    <span class="keyword">if</span> (err) &#123;</div><div class="line">        <span class="built_in">console</span>.log(err);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="built_in">console</span>.log(data);</div><div class="line">    &#125;</div><div class="line">&#125;);</div><div class="line"><span class="built_in">console</span>.log(<span class="string">'end'</span>); <span class="comment">// 这一行会先被打印出来</span></div></pre></td></tr></table></figure>
+</li>
+<li><p>全部基于事件处理机制，nodejs的所有机制都是围绕事件回调机制完成的。事件的回调函数在执行的过程中，可能会发出IO请求或者emit事件，执行完毕后再返回事件循环</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 声明事件对象</span></div><div class="line"><span class="keyword">var</span> EventEmitter=<span class="built_in">require</span>(<span class="string">'events'</span>).EventEmiiter;</div><div class="line"><span class="keyword">var</span> event = <span class="keyword">new</span> EventEmiiter();</div><div class="line"></div><div class="line"><span class="comment">//注册事件</span></div><div class="line">event.on(<span class="string">'some_event'</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">"this is a custom event"</span>);</div><div class="line">&#125;);</div><div class="line"></div><div class="line"></div><div class="line"><span class="comment">// 3秒钟后触发事件</span></div><div class="line">setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    event.emit(<span class="string">'some_event'</span>);</div><div class="line">&#125;, <span class="number">3000</span>);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<hr>
+<h2 id="module和package"><a href="#module和package" class="headerlink" title="module和package"></a>module和package</h2><p>nodejs的module可以是js、json或者c++扩展。<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> http = <span class="built_in">require</span>(<span class="string">'http'</span>); <span class="comment">// c++的module</span></div></pre></td></tr></table></figure></p>
+<p>exports是模块对外开放的接口<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> name;</div><div class="line">exports.setName = <span class="function"><span class="keyword">function</span>(<span class="params">n</span>)</span>&#123;</div><div class="line">    name = n;</div><div class="line">&#125;</div><div class="line"></div><div class="line">exports.say = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'name is : '</span> + name);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>require是外部引用模块的接口, 只会引入一次<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> modu1=<span class="built_in">require</span>(<span class="string">'./modu'</span>);</div><div class="line">modu1.setName(<span class="string">'will'</span>);</div><div class="line"><span class="keyword">var</span> modu2=<span class="built_in">require</span>(<span class="string">'./modu'</span>);</div><div class="line">modu2.setName(<span class="string">'william'</span>);</div><div class="line">modu2.say(); <span class="comment">// 会输出william</span></div></pre></td></tr></table></figure></p>
+<p>如果我们要每次都弄一个新的对象呢??<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">hello</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> name;</div><div class="line">    <span class="keyword">this</span>.setName = <span class="function"><span class="keyword">function</span>(<span class="params">n</span>)</span>&#123;</div><div class="line">        name = n;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="keyword">this</span>.say = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'name is : '</span> + name);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="built_in">module</span>.exports = hello;</div></pre></td></tr></table></figure></p>
+<p>对应的引入为：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> hello=<span class="built_in">require</span>(<span class="string">'./modu'</span>);</div><div class="line"><span class="keyword">var</span> modu1 = <span class="keyword">new</span> hello();</div><div class="line">modu1.setName(<span class="string">'will'</span>);</div><div class="line"><span class="keyword">var</span> modu2 = <span class="keyword">new</span> hello();</div><div class="line">modu2.setName(<span class="string">'william'</span>);</div><div class="line">modu1.say(); <span class="comment">// 会输出will</span></div><div class="line">modu2.say(); <span class="comment">// 会输出william</span></div></pre></td></tr></table></figure></p>
+<h3 id="pacakge"><a href="#pacakge" class="headerlink" title="pacakge"></a>pacakge</h3><p>commonJS规范后，可以发布在npm上</p>
+<ul>
+<li>package.json在根目录下，没有的话就去找index.js</li>
+<li>二进制文件在bin目录下</li>
+<li>js代码在lib目录下</li>
+<li>测试在test目录</li>
+<li>….</li>
+</ul>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">// package.json</div><div class="line">&#123;</div><div class="line">    "main" : "./lib/index.js", // 入口</div><div class="line">    "name" : "名",</div><div class="line">    "repositories": "仓库托管地址数据，每个元素要包含type、url、path",</div><div class="line">    "dependencies" : "依赖"</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<hr>
+<h2 id="包管理器和代码调试"><a href="#包管理器和代码调试" class="headerlink" title="包管理器和代码调试"></a>包管理器和代码调试</h2><h4 id="包管理器"><a href="#包管理器" class="headerlink" title="包管理器"></a>包管理器</h4><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>介绍</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>npm init</td>
+<td>初始化一个package目录，会自动生成规范目录与package.json</td>
+</tr>
+<tr>
+<td>npm install xxx</td>
+<td>本地模式安装xxx，将package安装到node_modules目录下</td>
+</tr>
+<tr>
+<td>npm list</td>
+<td>查看已经安装的包</td>
+</tr>
+<tr>
+<td>npm help <json></json></td>
+<td>查看json的使用</td>
+</tr>
+<tr>
+<td>npm publish</td>
+<td>进入到package下执行，发布package到公共库（最好是通过npm init生成的目录规范）</td>
+</tr>
+<tr>
+<td>npm unpublish</td>
+<td>取消发布</td>
+</tr>
+</tbody>
+</table>
+<p><strong><em>全局安装的包，不能直接require，不会搜索/usr/local/lib/node_modules。只有需要命令行使用的时候才安装全局模式</em></strong></p>
+<h4 id="代码调试"><a href="#代码调试" class="headerlink" title="代码调试"></a>代码调试</h4><ol>
+<li>node –debug-brk=5858 app.js, 会等待debug连上来</li>
+<li>eclipse插件V8 vm里弄一个debug就行了</li>
+</ol>
+<hr>
+<h2 id="全局对象和全局变量"><a href="#全局对象和全局变量" class="headerlink" title="全局对象和全局变量"></a>全局对象和全局变量</h2><p>global是所有全局变量的宿主。</p>
+<h4 id="console"><a href="#console" class="headerlink" title="console"></a>console</h4><p>log\error\trace</p>
+<h4 id="process"><a href="#process" class="headerlink" title="process"></a>process</h4><p>描述当前进程状态，提供了与os交互的接口。<br>|变量|描述|<br>|—|—|<br>|process.argv|命令行参数，第一个是node，第二是脚本名称，第三个才是参数|<br>|process.stdout|标准输出|<br>|process.stdin|标准输入，需要先process.stdin.resume()|<br>|process.nextTick(callback)|为事件循环设置一个任务|<br>nodejs适合io密集型的应用，而不是计算密集型的应用。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">doSth</span>(<span class="params">args, callback</span>)</span>&#123;</div><div class="line">    sthComplext(args);</div><div class="line">    callback();</div><div class="line">&#125;;</div><div class="line"></div><div class="line">doSth(<span class="string">'123'</span>, <span class="function"><span class="keyword">function</span> <span class="title">onEnd</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    compute();</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>有了process.nextTick后可以写成：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">doSth</span>(<span class="params">args, callback</span>)</span>&#123;</div><div class="line">    sthComplext(args);</div><div class="line">    process.nextTick(callback); <span class="comment">// 把耗时的两个程序拆成两个事件，提高并行度</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="util和EventEmitter"><a href="#util和EventEmitter" class="headerlink" title="util和EventEmitter"></a>util和EventEmitter</h2><h5 id="utilities"><a href="#utilities" class="headerlink" title="utilities"></a>utilities</h5><table>
+<thead>
+<tr>
+<th>api</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>inheris(constructor, superConstructor)</td>
+<td>实现对象间原型继承</td>
+</tr>
+<tr>
+<td>inspect()</td>
+<td>将任意对象以字符串的形式打印出来</td>
+</tr>
+</tbody>
+</table>
+<h5 id="events"><a href="#events" class="headerlink" title="events"></a>events</h5><p>nodejs本身架构就是事件驱动的。<br>EventEmitter的核心就是事件发射与事件监听功能的封装。EventEmitter的每个事件由一个事件或若干个参数组成。对于某个事件，EventEmitter支持若干个事件监听器。事件发生时，事件监听器被依次调用，事件参数作为回调函数的参数传递。<br>|api|描述|<br>|—|—|<br>|EventEmitter.on(event, listener)|为指定事件注册监听器|<br>|EventEmitter.emit()|发射event事件|<br>|EventEmitter.once(event, listener)|监听器只出发一次|<br>|EventEmitter.removeListener(event, listener)|移除监听器|<br>|EventEmitter.removeAllListener(event)|移除所有监听器|</p>
+<p>特殊事件error，出错的时候，EventEmitter没有注册相应的监听器，就当做异常，退出程序，打印调用栈。</p>
+<p>一般继承EventEmitter来使用它。 </p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/celery笔记/" title="celery笔记" itemprop="url">celery笔记</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:07:37.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>需求需要异步调用后台执行时间长的任务，而且任务结束后回写一些status到数据库。</p>
+<p>开始的时候，在django中使用自己的threadpool：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># !/usr/bin/env python</span></div><div class="line"><span class="comment"># -*- coding:utf-8 -*-</span></div><div class="line"><span class="string">'''</span></div><div class="line">created by will </div><div class="line">'''</div><div class="line"><span class="keyword">import</span> Queue</div><div class="line"><span class="keyword">import</span> logging</div><div class="line"><span class="keyword">import</span> subprocess</div><div class="line"><span class="keyword">import</span> threading</div><div class="line"><span class="keyword">import</span> time, os</div><div class="line"><span class="keyword">from</span> django.utils <span class="keyword">import</span> timezone</div><div class="line"><span class="keyword">from</span> subprocess <span class="keyword">import</span> Popen</div><div class="line"></div><div class="line"><span class="keyword">from</span> metamap.models <span class="keyword">import</span> Executions</div><div class="line"></div><div class="line"><span class="keyword">from</span> metamap.utils <span class="keyword">import</span> enums</div><div class="line"></div><div class="line">logger = logging.getLogger(<span class="string">'django'</span>)</div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">WorkManager</span><span class="params">(object)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, work_num=<span class="number">1000</span>, thread_num=<span class="number">2</span>)</span>:</span></div><div class="line">        self.work_queue = Queue.Queue()</div><div class="line">        self.threads = []</div><div class="line">        <span class="comment"># self.__init_work_queue(work_num)</span></div><div class="line">        self.__init_thread_pool(thread_num)</div><div class="line"></div><div class="line">    <span class="string">"""</span></div><div class="line">      初始化线程</div><div class="line">    """</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init_thread_pool</span><span class="params">(self, thread_num)</span>:</span></div><div class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(thread_num):</div><div class="line">            self.threads.append(Work(self.work_queue))</div><div class="line"></div><div class="line">    <span class="string">"""</span></div><div class="line">      初始化工作队列</div><div class="line">    """</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init_work_queue</span><span class="params">(self, jobs_num)</span>:</span></div><div class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(jobs_num):</div><div class="line">            self.add_job(do_job, i)</div><div class="line"></div><div class="line">    <span class="string">"""</span></div><div class="line">      添加一项工作入队</div><div class="line">    """</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_job</span><span class="params">(self, func, *args)</span>:</span></div><div class="line">        self.work_queue.put((func, list(args)))  <span class="comment"># 任务入队，Queue内部实现了同步机制</span></div><div class="line"></div><div class="line">    <span class="string">"""</span></div><div class="line">      检查剩余队列任务</div><div class="line">    """</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">check_queue</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> self.work_queue.qsize()</div><div class="line"></div><div class="line">    <span class="string">"""</span></div><div class="line">      等待所有线程运行完毕</div><div class="line">    """</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">wait_allcomplete</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">for</span> item <span class="keyword">in</span> self.threads:</div><div class="line">            <span class="keyword">if</span> item.isAlive(): item.join()</div><div class="line"></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Work</span><span class="params">(threading.Thread)</span>:</span></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, work_queue)</span>:</span></div><div class="line">        threading.Thread.__init__(self)</div><div class="line">        self.work_queue = work_queue</div><div class="line">        self.start()</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="comment"># 死循环，从而让创建的线程在一定条件下关闭退出</span></div><div class="line">        <span class="keyword">while</span> <span class="keyword">True</span>:</div><div class="line">            location = <span class="string">''</span></div><div class="line">            <span class="keyword">try</span>:</div><div class="line">                do, args = self.work_queue.get_nowait()  <span class="comment"># 任务异步出队，Queue内部实现了同步机制</span></div><div class="line">                logger.info(<span class="string">'%s method '</span> % do)</div><div class="line">                logger.info(<span class="string">'%s find job ....... %s '</span> % (self.getName(), <span class="string">''</span>.join(args[<span class="number">0</span>])))</div><div class="line">                returncode = do(args)</div><div class="line">                self.work_queue.task_done()  <span class="comment"># 通知系统任务完成</span></div><div class="line">                location = <span class="string">''</span>.join(args[<span class="number">1</span>])</div><div class="line">                execution = Executions.objects.get(logLocation=location)</div><div class="line">                execution.end_time = timezone.now()</div><div class="line">                logger.info(<span class="string">'%s return code is %d'</span> % (self.getName(), returncode))</div><div class="line">                <span class="keyword">if</span> returncode == <span class="number">0</span>:</div><div class="line">                    execution.status = enums.EXECUTION_STATUS.DONE</div><div class="line">                <span class="keyword">else</span>:</div><div class="line">                    execution.status = enums.EXECUTION_STATUS.FAILED</div><div class="line">                execution.save()</div><div class="line">            <span class="keyword">except</span> Queue.Empty:</div><div class="line">                time.sleep(<span class="number">3</span>)</div><div class="line">            <span class="keyword">except</span> Executions.DoesNotExist:</div><div class="line">                logger.error(<span class="string">'cannot find execution from db for location %s'</span> % location)</div><div class="line">            <span class="keyword">except</span> Exception, e:</div><div class="line">                logger.error(<span class="string">'got error :%s'</span> % str(e))</div><div class="line">                <span class="keyword">break</span></div><div class="line"></div><div class="line"></div><div class="line"><span class="comment"># 具体要做的任务</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">do_job</span><span class="params">(*args)</span>:</span></div><div class="line">    logger.debug(args)</div><div class="line">    log = args[<span class="number">0</span>][<span class="number">1</span>]</div><div class="line">    command = args[<span class="number">0</span>][<span class="number">0</span>]</div><div class="line">    p = Popen([<span class="string">''</span>.join(command)], stdout=open(log, <span class="string">'a'</span>), stderr=subprocess.STDOUT, shell=<span class="keyword">True</span>, universal_newlines=<span class="keyword">True</span>)</div><div class="line">    p.wait()</div><div class="line">    <span class="keyword">return</span> p.returncode</div><div class="line"></div><div class="line"></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</div><div class="line">    start = time.time()</div><div class="line">    <span class="comment"># work_manager = WorkManager(10, 3)</span></div><div class="line">    <span class="comment"># work_manager.add_job(do_job, "sh /usr/local/metamap/test.sh")</span></div><div class="line">    <span class="comment"># work_manager.add_job(do_job, "sh /usr/local/metamap/test.sh")</span></div><div class="line">    <span class="keyword">print</span> <span class="string">"doneeeeeeeeeeeeee"</span></div><div class="line">    end = time.time()</div><div class="line">    <span class="keyword">print</span> <span class="string">"cost all time: %s"</span> % (end - start)</div></pre></td></tr></table></figure></p>
+<p>遇到两个问题：</p>
+<ul>
+<li>django项目的manage.py运行的时候，连接池会随着view代码的加载而初始化运行，导致命令不退出，一直hang着</li>
+<li>结合gunicorn使用的时候，即便已经完成了django的一次request和response过程，重定向到了任务的状态页面。但是gunicorn任务此次request并未结束，导致worker自认为请求超时自杀，另起worker。比如后台异步任务在连接池中需要执行400s，而gunicorn的请求超时时间是300s，那么到了300s的时候当前worker的进程就被kill，然后另起一个新的worker。那么后台的线程池里执行的这个任务就也随着worker的退出被中止了。</li>
+</ul>
+<p>问了一些大神的意见， 推荐给我celery。尝试django-celery未成功，所以就使用了原生的celery，解决了以上问题。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/django中使用视图/" title="django中使用视图" itemprop="url">django中使用视图</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:06:49.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>最近在做数据地图之类的东西，要对hive的meta库进行一些查询与分析之类的。但是hive的字段表、tbls表、dbs表设计的有些鸡肋。中间隔了sds、cds表，所以查询非常费劲，就考虑搞一个视图，然后利用django的models直接进行orm的只读操作。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">OR</span> <span class="keyword">REPLACE</span> <span class="keyword">VIEW</span> col_tbl_db_view <span class="keyword">AS</span> </div><div class="line"><span class="keyword">SELECT</span></div><div class="line">    <span class="number">1</span> <span class="keyword">as</span> <span class="keyword">id</span>,</div><div class="line">    db.DB_ID <span class="keyword">as</span> db_id,</div><div class="line">    db.<span class="string">`NAME`</span> <span class="keyword">as</span> db_name,</div><div class="line">    a.TBL_ID <span class="keyword">as</span> tbl_id,</div><div class="line">    a.TBL_NAME <span class="keyword">as</span> tbl_name,</div><div class="line">    a.TBL_TYPE <span class="keyword">as</span> tbl_type,</div><div class="line">    d.TYPE_NAME <span class="keyword">as</span> col_type_name,</div><div class="line">    d.<span class="string">`COMMENT`</span> <span class="keyword">as</span> col_comment,</div><div class="line">    d.COLUMN_NAME <span class="keyword">as</span> col_name</div><div class="line"><span class="keyword">FROM</span></div><div class="line">    TBLS a</div><div class="line"><span class="keyword">LEFT</span> <span class="keyword">JOIN</span> SDS b <span class="keyword">ON</span> a.SD_ID = b.SD_ID</div><div class="line"><span class="keyword">LEFT</span> <span class="keyword">JOIN</span> COLUMNS_V2 d <span class="keyword">ON</span> b.CD_ID = d.CD_ID</div><div class="line"><span class="keyword">LEFT</span> <span class="keyword">JOIN</span> DBS db <span class="keyword">ON</span> a.DB_ID = db.DB_ID</div></pre></td></tr></table></figure>
+<p>model代码<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># !/usr/bin/env python</span></div><div class="line"><span class="comment"># -*- coding: utf-8 -*</span></div><div class="line"><span class="string">'''</span></div><div class="line">created by will </div><div class="line">'''</div><div class="line"><span class="keyword">from</span> django.db <span class="keyword">import</span> models</div><div class="line"><span class="keyword">import</span> datetime</div><div class="line"><span class="keyword">from</span> django.utils <span class="keyword">import</span> timezone</div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">DB</span><span class="params">(models.Model)</span>:</span></div><div class="line">    db_id = models.BigIntegerField(max_length=<span class="number">20</span>, primary_key=<span class="keyword">True</span>)</div><div class="line">    desc = models.CharField(max_length=<span class="number">4000</span>)</div><div class="line">    db_location_uri = models.CharField(max_length=<span class="number">4000</span>)</div><div class="line">    name = models.CharField(max_length=<span class="number">128</span>)</div><div class="line">    owner_name = models.CharField(max_length=<span class="number">128</span>)</div><div class="line">    owner_type = models.CharField(max_length=<span class="number">10</span>)</div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Meta</span>:</span></div><div class="line">        managed = <span class="keyword">False</span></div><div class="line">        db_table = <span class="string">'DBS'</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">TBL</span><span class="params">(models.Model)</span>:</span></div><div class="line">    tbl_id = models.BigIntegerField(max_length=<span class="number">20</span>, primary_key=<span class="keyword">True</span>)</div><div class="line">    create_time = models.DateTimeField</div><div class="line">    owner = models.CharField(max_length=<span class="number">767</span>)</div><div class="line">    tbl_name = models.CharField(max_length=<span class="number">128</span>)</div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Meta</span>:</span></div><div class="line">        managed = <span class="keyword">False</span></div><div class="line">        db_table = <span class="string">'TBLS'</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ColMeta</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="string">'''</span></div><div class="line">       字段对应meta</div><div class="line">    '''</div><div class="line">    id = models.IntegerField(primary_key=<span class="keyword">True</span>)</div><div class="line">    db = models.ForeignKey(DB, on_delete=models.DO_NOTHING)</div><div class="line">    tbl = models.ForeignKey(TBL, on_delete=models.DO_NOTHING)</div><div class="line">    tbl_type = models.CharField(max_length=<span class="number">30</span>, null=<span class="keyword">True</span>)</div><div class="line">    col_type_name = models.CharField(max_length=<span class="number">300</span>, null=<span class="keyword">True</span>)</div><div class="line">    col_comment = models.CharField(max_length=<span class="number">300</span>, null=<span class="keyword">True</span>)</div><div class="line">    col_name = models.CharField(max_length=<span class="number">300</span>, null=<span class="keyword">True</span>)</div><div class="line"></div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Meta</span>:</span></div><div class="line">        managed = <span class="keyword">False</span></div><div class="line">        db_table = <span class="string">'col_tbl_db_view'</span></div></pre></td></tr></table></figure></p>
+<p>注意几点：</p>
+<ul>
+<li>由于是只读的model，所以设置了managed=false，这样就不会在migration中对数据库进行任何操作了。</li>
+<li>对于hive的meta库我们只做查询不做修改，也是出于上面的原因，我们把这些代码放在read_models.py里面，这个文件里放置的都是对既有数据库的只读操作的model。</li>
+<li>使用view的时候注意几点<ul>
+<li>django的模板遍历结果的时候会使用到model的主键，当model里面没有指定某个字段是主键的时候，会自动生成一个id字段作为主键。这时，view里并没有id这个字段就会报错了。所以我们需要一个row_number()之类的东西，但是mysql不支持此种东西。所以尝试了一下把所有的id都弄成1，然后在model里面指定primary_key为id，结果成功。以此，推测，django template在遍历context里的变量的时候并不会判断主键是否唯一，也不是以主键为索引去抽取数据。</li>
+<li>在foreignkey的地方，一定要加上on_delete=models.DO_NOTHING。防止对表里的数据有任何的级联影响</li>
+<li>指定db_table为view的名字</li>
+<li>虽然明知会报错，但是不要调用save或者update之类的方法</li>
+<li>在运行makemigrations的时候，并不会包含创建视图的sql语句，因为managed=false。我们需要手动加到0001_initial.py里面去。<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">...</div><div class="line">migrations.RunSQL(</div><div class="line">    <span class="string">"""</span></div><div class="line">    CREATE OR REPLACE VIEW col_tbl_db_view AS </div><div class="line">    SELECT</div><div class="line">        1 as id,</div><div class="line">        db.DB_ID as db_id,</div><div class="line">        db.`NAME` as db_name,</div><div class="line">        a.TBL_ID as tbl_id,</div><div class="line">        a.TBL_NAME as tbl_name,</div><div class="line">        a.TBL_TYPE as tbl_type,</div><div class="line">        d.TYPE_NAME as col_type_name,</div><div class="line">        d.`COMMENT` as col_comment,</div><div class="line">        d.COLUMN_NAME as col_name</div><div class="line">    FROM</div><div class="line">        TBLS a</div><div class="line">    LEFT JOIN SDS b ON a.SD_ID = b.SD_ID</div><div class="line">    LEFT JOIN COLUMNS_V2 d ON b.CD_ID = d.CD_ID</div><div class="line">    LEFT JOIN DBS db ON a.DB_ID = db.DB_ID</div><div class="line">    """</div><div class="line">),</div><div class="line">...</div></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<p>参考： <a href="https://blog.rescale.com/using-database-views-in-django-orm/" target="_blank" rel="external">https://blog.rescale.com/using-database-views-in-django-orm/</a></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/celery数据库事务问题/" title="celery数据库事务问题" itemprop="url">celery数据库事务问题</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:06:27.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>我的场景跟官网的例子基本类似，就是单个事务中需要，先创建一个对象，之后执行异步任务，这个异步任务里又要更新这个新建的对象。</p>
+<p>理论上，如果任何一步出问题的话，就应该回滚全部。但是官网给的解释，目前不是这样的：</p>
+<p>view代码：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> django <span class="keyword">import</span> forms</div><div class="line"><span class="keyword">from</span> django.http <span class="keyword">import</span> HttpResponseRedirect</div><div class="line"><span class="keyword">from</span> django.template.context <span class="keyword">import</span> RequestContext</div><div class="line"><span class="keyword">from</span> django.shortcuts <span class="keyword">import</span> get_object_or_404, render_to_response</div><div class="line"></div><div class="line"><span class="keyword">from</span> blog <span class="keyword">import</span> tasks</div><div class="line"><span class="keyword">from</span> blog.models <span class="keyword">import</span> Comment</div><div class="line"></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">CommentForm</span><span class="params">(forms.ModelForm)</span>:</span></div><div class="line"></div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Meta</span>:</span></div><div class="line">        model = Comment</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">add_comment</span><span class="params">(request, slug, template_name=<span class="string">'comments/create.html'</span>)</span>:</span></div><div class="line">    post = get_object_or_404(Entry, slug=slug)</div><div class="line">    remote_addr = request.META.get(<span class="string">'REMOTE_ADDR'</span>)</div><div class="line"></div><div class="line">    <span class="keyword">if</span> request.method == <span class="string">'post'</span>:</div><div class="line">        form = CommentForm(request.POST, request.FILES)</div><div class="line">        <span class="keyword">if</span> form.is_valid():</div><div class="line">            <span class="comment"># 这里创建对象，对DB有了插入操作</span></div><div class="line">            comment = form.save()</div><div class="line">            <span class="comment"># 异步方法的调用</span></div><div class="line">            tasks.spam_filter.delay(comment_id=comment.id,</div><div class="line">                                    remote_addr=remote_addr)</div><div class="line">            <span class="keyword">return</span> HttpResponseRedirect(post.get_absolute_url())</div><div class="line">    <span class="keyword">else</span>:</div><div class="line">        form = CommentForm()</div><div class="line"></div><div class="line">    context = RequestContext(request, &#123;<span class="string">'form'</span>: form&#125;)</div><div class="line">    <span class="keyword">return</span> render_to_response(template_name, context_instance=context)</div></pre></td></tr></table></figure></p>
+<p>task代码：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> celery <span class="keyword">import</span> Celery</div><div class="line"></div><div class="line"><span class="keyword">from</span> akismet <span class="keyword">import</span> Akismet</div><div class="line"></div><div class="line"><span class="keyword">from</span> django.core.exceptions <span class="keyword">import</span> ImproperlyConfigured</div><div class="line"><span class="keyword">from</span> django.contrib.sites.models <span class="keyword">import</span> Site</div><div class="line"></div><div class="line"><span class="keyword">from</span> blog.models <span class="keyword">import</span> Comment</div><div class="line"></div><div class="line"></div><div class="line">app = Celery(broker=<span class="string">'amqp://'</span>)</div><div class="line"></div><div class="line"></div><div class="line"><span class="meta">@app.task</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">spam_filter</span><span class="params">(comment_id, remote_addr=None)</span>:</span></div><div class="line">    logger = spam_filter.get_logger()</div><div class="line">    logger.info(<span class="string">'Running spam filter for comment %s'</span>, comment_id)</div><div class="line"></div><div class="line">     <span class="comment"># 可以看到异步方法调用依赖于前面对象的创建</span></div><div class="line">    comment = Comment.objects.get(pk=comment_id)</div><div class="line">    current_domain = Site.objects.get_current().domain</div><div class="line">    akismet = Akismet(settings.AKISMET_KEY,</div><div class="line">                      <span class="string">'http://&#123;0&#125;'</span>.format(current_domain))</div><div class="line">    <span class="keyword">if</span> <span class="keyword">not</span> akismet.verify_key():</div><div class="line">        <span class="keyword">raise</span> ImproperlyConfigured(<span class="string">'Invalid AKISMET_KEY'</span>)</div><div class="line"></div><div class="line"></div><div class="line">    is_spam = akismet.comment_check(user_ip=remote_addr,</div><div class="line">                        comment_content=comment.comment,</div><div class="line">                        comment_author=comment.name,</div><div class="line">                        comment_author_email=comment.email_address)</div><div class="line">    <span class="keyword">if</span> is_spam:</div><div class="line">        comment.is_spam = <span class="keyword">True</span></div><div class="line">        <span class="comment"># 异步方法调用完成后，会基于前面创建的对象，再次操作数据库对象</span></div><div class="line">        comment.save()</div><div class="line"></div><div class="line">    <span class="keyword">return</span> is_spam</div></pre></td></tr></table></figure></p>
+<p>这明显是已经破坏了这个事务的原子性的，虽然目前本人的代码也是这样的。</p>
+<p>上面还有一段另外的写法：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@transaction.commit_manually</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">create_article</span><span class="params">(request)</span>:</span></div><div class="line">    <span class="keyword">try</span>:</div><div class="line">        article = Article.objects.create(…)</div><div class="line">    <span class="keyword">except</span>:</div><div class="line">        transaction.rollback()</div><div class="line">        <span class="keyword">raise</span></div><div class="line">    <span class="keyword">else</span>:</div><div class="line">        transaction.commit()</div><div class="line">        expand_abbreviations.delay(article.pk)</div></pre></td></tr></table></figure></p>
+<p>为什么要这样呢？为了避免race condition。也就是异步方法调用先于数据库插入操作的话，异步方法里就直接报错了，所以必须在调用异步方法之前就commit当前的事务。针对性的代码示例如下：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> django.db <span class="keyword">import</span> transaction</div><div class="line"></div><div class="line"><span class="meta">@transaction.commit_on_success</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">create_article</span><span class="params">(request)</span>:</span></div><div class="line">    article = Article.objects.create(…)</div><div class="line">    expand_abbreviations.delay(article.pk)</div></pre></td></tr></table></figure></p>
+<p>理论上来说，调用异步方法的时候这个article就是还没有创建的，因为是分离在两个进程的代码，所以异步方法中查不到这个article，就出现了race condition问题。</p>
+<p>还有一点需要注意的是，在django中调用异步方法的时候，也不要以models里面的对象作为参数。如果需要这些对象，应该每次都去db里去查，否则也有可能面临race condition问题。</p>
+<p><strong>但是事务性怎么办！！！</strong></p>
+<p>参考：<a href="http://docs.celeryproject.org/en/latest/userguide/tasks.html#database-transactions" target="_blank" rel="external">http://docs.celeryproject.org/en/latest/userguide/tasks.html#database-transactions</a></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/djcelery定时任务坑记/" title="djcelery定时任务坑记" itemprop="url">djcelery定时任务坑记</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:05:44.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>celery实现定时任务，原生是通过后台的配置文件settings里配置添加的。形如：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">CELERYBEAT_SCHEDULE = &#123;</div><div class="line">    <span class="string">'add-every-30-seconds'</span>: &#123;</div><div class="line">        <span class="string">'task'</span>: <span class="string">'tasks.add'</span>,</div><div class="line">        <span class="string">'schedule'</span>: timedelta(seconds=<span class="number">30</span>),</div><div class="line">        <span class="string">'args'</span>: (<span class="number">16</span>, <span class="number">16</span>)</div><div class="line">    &#125;,</div><div class="line">    <span class="string">'add-every-30-seconds'</span>: &#123;</div><div class="line">        <span class="string">'task'</span>: <span class="string">'tasks.add'</span>,</div><div class="line">        <span class="string">'schedule'</span>: timedelta(seconds=<span class="number">30</span>),</div><div class="line">        <span class="string">'args'</span>: (<span class="number">16</span>, <span class="number">16</span>)</div><div class="line">    &#125;,</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>每增加或修改或删除都要重新修改这个文件，并且重启beat才能生效。不友好</p>
+<p>djcelery结合mysql，将定时任务的配置放进mysql，然后自己实现了一个beat服务，每次定时扫描mysql里最新的定时任务信息，来调度任务，默认扫描间隔是5s。</p>
+<p>挺好，它还提供了一个admin界面来添加定时任务。</p>
+<p>我们需要的是一个自由增删改查任务的功能，暴露给编写任务并设定任务执行周期的数据分析人员。所以需要在djcelery的基础之上再稍微加一些自定义的实现：为了与现有任务融合，在periodTask模型上添加了一个我们自定义任务WillTask的外键。</p>
+<p>中间遇到问题：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">定义一个定时任务periodTask1，然后修改只修改cron到10分钟以后，结果到了时间竟然没有调度。</div><div class="line"></div><div class="line">到admin界面同样操作了一下，能够触发最新配置的调度。</div></pre></td></tr></table></figure></p>
+<p>观察beat的日志，发现它总是查询djcelery_periodictasks里的内容：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div></pre></td></tr></table></figure></p>
+<p>然后就注意观察了一下，发现在admin里操作更改任务的cron的时候，djcelery_periodictasks里的last_update字段会更新。而我自己修改的话就不会更新。</p>
+<p>修改逻辑，每次对task进行修改都去更新djcelery_periodictasks里的last_update字段为当前时间。 —— 成功。</p>
+<p>找网友@周星星对了一下，他是使用的djcelery的master 3.2.0a分支，不存在这个问题。</p>
+<p>他的代码：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">target_task = PeriodicTask.objects.get(name=<span class="string">'test_1338'</span>)</div><div class="line">crontab = CrontabSchedule.objects.create(minute=<span class="string">'*/2'</span>)</div><div class="line">crontab.save()</div><div class="line">target_task.crontab = crontab</div><div class="line">target_task.args = <span class="string">'[1, 888888888, "1??99999???"]'</span></div><div class="line">result = target_task.save()</div><div class="line"><span class="keyword">return</span> HttpResponse(result, content_type=<span class="string">'text/json'</span>)</div></pre></td></tr></table></figure></p>
+<p>可以看到他是每次都新建的，中间我也尝试了新建cron，但是结果还是同上。鉴于程序严密性，又改回了修改cron。</p>
+<p>我当前的代码：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">task = WillDependencyTask.objects.get(pk=pk)</div><div class="line">httputils.post2obj(task, request.POST, <span class="string">'id'</span>)</div><div class="line">task.save()</div><div class="line"></div><div class="line">cron_task = PeriodicTask.objects.get(willtask_id=pk)</div><div class="line">cron_task.name = task.name</div><div class="line">cron_task.save()</div><div class="line"></div><div class="line">cron = DjceleryCrontabschedule.objects.get(pk=cron_task.crontab_id)</div><div class="line">cron.minute, cron.hour, cron.day_of_month, cron.month_of_year, cron.day_of_week = cronhelper.cron_from_str(</div><div class="line">    request.POST[<span class="string">'cronexp'</span>])</div><div class="line">cron.save()</div><div class="line"></div><div class="line"><span class="comment"># 这里是多出来的地方</span></div><div class="line">tasks = DjceleryPeriodictasks.objects.get(ident=<span class="number">1</span>)</div><div class="line">tasks.last_update = timezone.now()</div><div class="line">tasks.save()</div></pre></td></tr></table></figure></p>
+<p>所以初步确认为版本问题。我使用的是djcelery3.1.17。</p>
+<p>参考：</p>
+<ul>
+<li><a href="http://docs.celeryproject.org/en/latest/userguide/periodic-tasks.html" target="_blank" rel="external">http://docs.celeryproject.org/en/latest/userguide/periodic-tasks.html</a></li>
+<li><a href="https://github.com/celery/django-celery" target="_blank" rel="external">https://github.com/celery/django-celery</a></li>
+<li></li>
+</ul>
+<h2 id="传送长数据串出错"><a href="#传送长数据串出错" class="headerlink" title="传送长数据串出错"></a>传送长数据串出错</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="meta">@transaction.atomic</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">exec_job</span><span class="params">(request, sqoopid)</span>:</span></div><div class="line">    sqoop = SqoopHive2Mysql.objects.get(id=sqoopid)</div><div class="line">    location = AZKABAN_SCRIPT_LOCATION + dateutils.now_datetime() + <span class="string">'-sqoop-'</span> + sqoop.name + <span class="string">'.log'</span></div><div class="line">    command = etlhelper.generate_sqoop_hive2mysql(sqoop)</div><div class="line">    execution = SqoopHive2MysqlExecutions(logLocation=location, job_id=sqoopid, status=<span class="number">0</span>)</div><div class="line">    execution.save()</div><div class="line">    <span class="keyword">from</span> metamap <span class="keyword">import</span> tasks</div><div class="line">    tasks.exec_sqoop.delay(command, location)</div><div class="line">    <span class="keyword">return</span> redirect(<span class="string">'metamap:sqoop_execlog'</span>, execid=execution.id)</div></pre></td></tr></table></figure>
+<p>command再这里打印是：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sqoop export  --connect jdbc:mysql://120.55.176.18:5306/product?useCursorFetch=true&amp;dontTrackOpenResources=true&amp;defaultFetchSize=2000 --driver com.mysql.jdbc.Driver --username xmanread --password LtLUGkNbr84UWXglBFYe4GuMX8EJXeIG  --input-fields-terminated-by &quot;\t&quot;    --update-key  create_date,period,type,channel_id,bank_name,platform,status_id,return_status,channel_id,bank_name,platform,status_id,return_status,number_order,amount_order  --update-mode  allowinsert  --columns  create_date,end_date,period,type,channel_id,bank_name,platform,status_id,return_status,number_order,amount_order  --export-dir  hdfs://namenode01.will.com:8020/apps/hive/warehouse/dim_payment.db/order_detail/log_type=1/log_period=1/log_create_date=2016-12-06  --table  JLC_ORDER_DETAIL_APP  --verbose</div></pre></td></tr></table></figure></p>
+<p>在task执行的时候打印出来是：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sqoop export  --connect jdbc:mysql://120.55.176.18:5306/product?useCursorFetch=true&amp;dontTrackOpenResources=true&amp;defaultFetchSize=2000 --driver com.my xmanread --password LtLUGkNbr84UWXglBFYe4GuMX8EJXeIG  --input-fields-terminated-by &quot;\t&quot;    --update-key  create_date,period,type,channel_id,bank_name,platform,status_id,return_status,channel_id,bank_name,platform,status_id,return_status,number_order,amount_order  --update-mode  allowinsert  --columns  create_date,end_date,period,type,channel_id,bank_name,platform,status_id,return_status,number_order,amount_order  --export-dir  hdfs://namenode01.will.com:8020/apps/hive/warehouse/dim_payment.db/order_detail/log_type=1/log_period=1/log_create_date=2016-12-06  --table  JLC_ORDER_DETAIL_APP  --verbose , location is /var/azkaban-metamap/20161208062420-sqoop-export_JLC_ORDER_DETAIL_APP.log</div></pre></td></tr></table></figure></p>
+<p>driver那里莫名就消失了。</p>
+<p>后来发现是由于windows里的换行符导致的。</p>
+<h2 id="celery-beat不触发定时任务"><a href="#celery-beat不触发定时任务" class="headerlink" title="celery beat不触发定时任务"></a>celery beat不触发定时任务</h2><p><strong>注意时区，妈蛋！！</strong></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/django-celery坑记/" title="django-celery坑记" itemprop="url">django-celery坑记</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:05:43.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>安装django-celery花了好长时间，因为网上一些资料都不是最新版本，缺失一些配置。这里自己再整理一下整体的步骤。</p>
+<h4 id="1-安装："><a href="#1-安装：" class="headerlink" title="1.安装："></a>1.安装：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pip install django-celery</div></pre></td></tr></table></figure>
+<h4 id="2-settings文件"><a href="#2-settings文件" class="headerlink" title="2. settings文件"></a>2. settings文件</h4><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">INSTALLED_APPS = [</div><div class="line">    <span class="string">'metamap'</span>,</div><div class="line">    <span class="string">'django.contrib.admin'</span>,</div><div class="line">    <span class="string">'django.contrib.auth'</span>,</div><div class="line">    <span class="string">'django.contrib.contenttypes'</span>,</div><div class="line">    <span class="string">'django.contrib.sessions'</span>,</div><div class="line">    <span class="string">'django.contrib.messages'</span>,</div><div class="line">    <span class="string">'django.contrib.staticfiles'</span>,</div><div class="line">    <span class="string">'djcelery'</span>,</div><div class="line">]</div><div class="line"></div><div class="line"></div><div class="line"><span class="keyword">import</span> djcelery</div><div class="line">djcelery.setup_loader()</div><div class="line"></div><div class="line"><span class="comment"># 用于存放task</span></div><div class="line">BROKER_URL = <span class="string">'redis://localhost:6379'</span></div><div class="line"></div><div class="line"></div><div class="line"><span class="comment"># Celery Beat 设置</span></div><div class="line">CELERYBEAT_SCHEDULER = <span class="string">'djcelery.schedulers.DatabaseScheduler'</span></div></pre></td></tr></table></figure>
+<p>注意一下，这里的INSTALLED_APPS，在<a href="https://docs.djangoproject.com/en/1.9/intro/tutorial02/" target="_blank" rel="external">django1.9版本的官方文档</a>中，是说写成<code>metamap.apps.MetamapConfig</code>的。但是写成这种的话，下面自动发现task的时候就会找不到。可以理解成是djcelery暂时还没有追上django版本的脚步，好在django兼容了以前版本，我们写成metamap也不会影响django1.9版本的运行。</p>
+<h4 id="3-celery启动"><a href="#3-celery启动" class="headerlink" title="3. celery启动"></a>3. celery启动</h4><p>启动celery的文件，有些博客少了这个主要部分。<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># !/usr/bin/env python</span></div><div class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> absolute_import</div><div class="line"></div><div class="line"><span class="keyword">import</span> os</div><div class="line"></div><div class="line"><span class="keyword">from</span> celery <span class="keyword">import</span> Celery</div><div class="line"></div><div class="line"><span class="comment"># set the default Django settings module for the 'celery' program.</span></div><div class="line">os.environ.setdefault(<span class="string">'DJANGO_SETTINGS_MODULE'</span>, <span class="string">'metamap_django.settings'</span>)</div><div class="line"></div><div class="line"><span class="keyword">from</span> django.conf <span class="keyword">import</span> settings</div><div class="line"></div><div class="line">app = Celery(<span class="string">'metamap_django'</span>)</div><div class="line"></div><div class="line"><span class="comment"># Using a string here means the worker will not have to</span></div><div class="line"><span class="comment"># pickle the object when using Windows.</span></div><div class="line"><span class="comment"># 可以发现，这里有一个自动发现task的配置，就是针对settings里的INSTALLED_APPS，这里我们的目标是metamap</span></div><div class="line"><span class="comment"># 找到metamap后，会自动找下面的tasks.py文件，扫描里面的task</span></div><div class="line">app.config_from_object(<span class="string">'django.conf:settings'</span>)</div><div class="line">app.autodiscover_tasks(<span class="keyword">lambda</span>: settings.INSTALLED_APPS) </div><div class="line"></div><div class="line"></div><div class="line"><span class="meta">@app.task(bind=True)</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">debug_task</span><span class="params">(self)</span>:</span></div><div class="line">    print(<span class="string">'Request: &#123;0!r&#125;'</span>.format(self.request))</div></pre></td></tr></table></figure></p>
+<h4 id="4-启动celery"><a href="#4-启动celery" class="headerlink" title="4. 启动celery"></a>4. 启动celery</h4><p>在metamap/<strong>init</strong>.py里引入celery_app:<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> absolute_import</div><div class="line"></div><div class="line"><span class="comment"># This will make sure the app is always imported when</span></div><div class="line"><span class="comment"># Django starts so that shared_task will use this app.</span></div><div class="line"><span class="keyword">from</span> .celery <span class="keyword">import</span> app <span class="keyword">as</span> celery_app</div></pre></td></tr></table></figure></p>
+<h4 id="5-tasks-py"><a href="#5-tasks-py" class="headerlink" title="5. tasks.py"></a>5. tasks.py</h4><p>放到app的根目录下面，我的是metamap/tasks.py：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># !/usr/bin/env python</span></div><div class="line"><span class="comment"># -*- coding: utf-8 -*</span></div><div class="line"><span class="string">'''</span></div><div class="line">created by will</div><div class="line">'''</div><div class="line"></div><div class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> absolute_import</div><div class="line"></div><div class="line"><span class="keyword">import</span> logging</div><div class="line"><span class="keyword">import</span> subprocess</div><div class="line"></div><div class="line"><span class="keyword">from</span> celery <span class="keyword">import</span> shared_task, task</div><div class="line"><span class="keyword">from</span> django.utils <span class="keyword">import</span> timezone</div><div class="line"></div><div class="line"><span class="keyword">from</span> metamap.models <span class="keyword">import</span> ETL, Executions</div><div class="line"><span class="keyword">from</span> metamap.utils <span class="keyword">import</span> enums</div><div class="line"></div><div class="line"><span class="keyword">from</span> celery.utils.log <span class="keyword">import</span> get_task_logger</div><div class="line"></div><div class="line">logger = get_task_logger(__name__)</div><div class="line"></div><div class="line"><span class="meta">@task</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">xx</span><span class="params">()</span>:</span></div><div class="line">    <span class="keyword">return</span> <span class="string">'sdfsdf'</span></div><div class="line"></div><div class="line"><span class="meta">@shared_task</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">add</span><span class="params">(x, y)</span>:</span></div><div class="line">    <span class="keyword">return</span> x + y</div><div class="line"></div><div class="line"></div><div class="line"><span class="meta">@shared_task</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">mul</span><span class="params">(x, y)</span>:</span></div><div class="line">    <span class="keyword">return</span> x * y</div><div class="line"></div><div class="line"></div><div class="line"><span class="meta">@shared_task</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">xsum</span><span class="params">(numbers)</span>:</span></div><div class="line">    <span class="keyword">return</span> sum(numbers)</div></pre></td></tr></table></figure></p>
+<p>参考：</p>
+<ul>
+<li><a href="http://www.weiguda.com/blog/73/" target="_blank" rel="external">http://www.weiguda.com/blog/73/</a></li>
+<li><a href="https://github.com/hardvic/djcelery_proj" target="_blank" rel="external">https://github.com/hardvic/djcelery_proj</a></li>
+<li><a href="https://github.com/celery/django-celery" target="_blank" rel="external">https://github.com/celery/django-celery</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/git--杂记/" title="git--杂记" itemprop="url">git--杂记</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:05:43.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="配置别名"><a href="#配置别名" class="headerlink" title="配置别名"></a>配置别名</h2><p>编辑~/.gitconfig文件, 添加<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">[alias]</div><div class="line">    last = log -1</div><div class="line">    co = checkout</div><div class="line">    ci = commit</div><div class="line">    br = branch</div><div class="line">    st = status</div><div class="line">    lg = log --color --graph --pretty=format:&apos;%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)&lt;%an&gt;%Creset&apos; --abbrev-commit</div></pre></td></tr></table></figure></p>
+<h2 id="case"><a href="#case" class="headerlink" title="case"></a>case</h2><p>有时本地修改了，然后直接checkout线上的某个branch:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">Your local changes to the following files would be overwritten by checkout:</div><div class="line">   app/models/VO/Request/ServiceSchedulerConfigExt.php</div><div class="line">   app/models/purchase/InvoiceApplyModel.php</div></pre></td></tr></table></figure></p>
+<p>两个方案:</p>
+<ul>
+<li>丢掉本地修改： git reset –hard, 之后重新执行</li>
+<li>保留本地修改：git stash ： Stash the changes in a dirty working directory away。之后git pull,之后 git stash pop</li>
+</ul>
+<p><strong>说明</strong>：git stash是当我们对项目进行了修改，但是想在不丢失当前修改的前提下，到commit的某个版本【HEAD】那儿去。这时候调用这个命令，其实相当于调用了git stash save，它会将当前所有的修改存放到一个stash list里去，可以理解为一个队列。当我们到了【HEAD】那里，然后执行git stash pop，就会从stash list里移除最前面的修改信息，并把这个修改应用到当前情境之中，这个修改必须是前面刚刚git stash save存储的。</p>
+<h2 id="常用操作"><a href="#常用操作" class="headerlink" title="常用操作"></a>常用操作</h2><ul>
+<li>取消对文件的修改。还原到最近的版本，废弃本地做的修改。git checkout – <file></file></li>
+<li>取消已经暂存的文件。即，撤销先前”git add”的操作git reset HEAD <file>…</file></li>
+<li>修改最后一次提交。用于修改上一次的提交信息，或漏提交文件等情况。git commit –amend</li>
+<li>回退所有内容到上一个版本git reset HEAD^</li>
+<li>回退a.py这个文件的版本到上一个版本  git reset HEAD^ a.py  </li>
+<li>向前回退到第3个版本  git reset –soft HEAD~3  </li>
+<li>将本地的状态回退到和远程的一样  git reset –hard origin/master  </li>
+<li>回退到某个版本  git reset 057d  </li>
+<li>回退到上一次提交的状态，按照某一次的commit完全反向的进行一次commit.(代码回滚到上个版本，并提交git)git revert HEAD<br>回复git reset –hard之前的数据</li>
+<li><p>使用git reflog查看所有的提交记录，</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">1d2b028 HEAD@&#123;0&#125;: reset: moving to 1d2b02818e8fa</div><div class="line">9510636 HEAD@&#123;1&#125;: commit: update pci driver and add network stuff</div><div class="line">1d2b028 HEAD@&#123;2&#125;: commit: update pci driver</div><div class="line">e4e042b HEAD@&#123;3&#125;: commit: add infrastructure of Linux pci driver</div><div class="line">eb7ac57 HEAD@&#123;4&#125;: commit: update i2c driver - add at24 device</div><div class="line">034034f HEAD@&#123;5&#125;: commit: update i2c linux driver - example of mini2440</div><div class="line">17e0bfb HEAD@&#123;6&#125;: commit: add some diagram for i2c driver</div><div class="line">1f382d7 HEAD@&#123;7&#125;: commit: update i2c driver - overview</div></pre></td></tr></table></figure>
+<p>  找到对应版本的commit后进行git reset 1d2b028 </p>
+</li>
+<li><p>删除远程分支上的提交</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">git reset --hard HEAD~1 // 在本地回退一次git提交，会提示回退到那个commit上了</div><div class="line">git push --force //将本地回退强制推送到远程</div></pre></td></tr></table></figure>
+</li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/flask笔记1/" title="flask笔记1" itemprop="url">flask笔记1</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:05:28.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="instance文件夹"><a href="#instance文件夹" class="headerlink" title="instance文件夹"></a>instance文件夹</h2><p>有时你需要定义一些不能为人所知的配置变量。为此，你会想要把它们从config.py中的其他变量分离出来，并保持在版本控制之外。 你可能要隐藏类似数据库密码和API密钥的秘密，或定义特定于当前机器的参数。 为了让这更加轻松，Flask提供了一个叫instance文件夹的特性。</p>
+<p>instance文件夹是根目录的一个子文件夹，包括了一个特定于当前应用实例的配置文件。我们不要把它提交到版本控制中。</p>
+<p>以上是copy的别人的代码，引入instance中特定配置文件的方式是<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">app = Flask(__name__)</div><div class="line">app.config.from_object(<span class="string">'config'</span>)</div><div class="line">app.config.from_pyfile(<span class="string">'instance/config.py'</span>)</div></pre></td></tr></table></figure></p>
+<p>这样弄的话，就没有instance的概念了<br>但是至少能找到这个配置文件<br>可是flask本身是内置了又instance的概念的…………</p>
+<p>我参考的网站都让我配置一个instance的相对路径<code>instance_relative_config</code>或者绝对路径<code>instance_path</code>.它们配置后的期望代码是<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">app = Flask(__name__, instance_relative_config=<span class="keyword">True</span>)</div><div class="line">app.config.from_object(<span class="string">'config'</span>)</div><div class="line">app.config.from_pyfile(<span class="string">'config.py'</span>)</div></pre></td></tr></table></figure></p>
+<p>就是会自己把自己置于instance目录下，取相对的config.py文件。</p>
+<p>其实不然，我使用flask版本是0.11.1，看的文档是0.10.1的，不知道是不是版本问题。</p>
+<p>借助instance中的配置，我们可以在根路径下创建给config包，然后下面分别放置global.py、prod.py、dev.py、test.py，看名字就知道了，一个是全局的，flask加载的时候一定要弄进配置里。但是对于后面的prod.py、dev.py、test.py要加载哪一个？</p>
+<p>参考的资料是自己设置一个环境变量APP_CONFIG_FILE，就是在shell环境里去export.<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># yourapp/__init__.py</span></div><div class="line"></div><div class="line">app = Flask(__name__, instance_relative_config=<span class="keyword">True</span>)</div><div class="line">app.config.from_object(<span class="string">'config.default'</span>)</div><div class="line">app.config.from_pyfile(<span class="string">'instance/config.py'</span>) <span class="comment"># 从instance文件夹中加载配置</span></div><div class="line">app.config.from_envvar(<span class="string">'APP_CONFIG_FILE'</span>)</div></pre></td></tr></table></figure></p>
+<p>最后这个<code>app.config.from_envvar</code>是从环境变量所代表的文件里加载配置。<br>然后运行的时候<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">APP_CONFIG_FILE=/var/www/app/config/prod.py</div><div class="line">python run.py</div></pre></td></tr></table></figure></p>
+<p>我认为也直接在instance里进行配置了。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">app = Flask(__name__)</div><div class="line">app.config.from_object(<span class="string">'config'</span>)</div><div class="line">app.config.from_pyfile(<span class="string">'instance/config.py'</span>)</div><div class="line">app.config.from_pyfile(app.config[<span class="string">'APP_CONFIG_FILE'</span>])</div></pre></td></tr></table></figure></p>
+<p>不错的学习网站：</p>
+<ul>
+<li><a href="https://spacewander.github.io/explore-flask-zh/5-configuration.html" target="_blank" rel="external">https://spacewander.github.io/explore-flask-zh/5-configuration.html</a></li>
+<li><a href="http://docs.jinkan.org/docs/flask" target="_blank" rel="external">http://docs.jinkan.org/docs/flask</a></li>
+</ul>
+<h2 id="蓝图"><a href="#蓝图" class="headerlink" title="蓝图"></a>蓝图</h2><p>参考：</p>
+<ul>
+<li><a href="http://docs.jinkan.org/docs/flask/blueprints.html#url" target="_blank" rel="external">http://docs.jinkan.org/docs/flask/blueprints.html#url</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/spring-cloud杂记/" title="spring-cloud杂记" itemprop="url">spring-cloud杂记</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:05:26.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="Eureka"><a href="#Eureka" class="headerlink" title="Eureka"></a>Eureka</h2><p>云应用中，服务通常并不长久运行的。我们也不希望记录每个service的IP和port。它的功能有些类似一个DNS服务。</p>
+<ul>
+<li>发现与定位service</li>
+<li>负载均衡</li>
+<li>中间件容错</li>
+</ul>
+<p>看了一些文章， 跟我以前写的smart agent的master和plugin模式基本雷同，就是想master注册自己，挂掉的时候remove掉，定时发送心跳等等。</p>
+<p>类似功能的还有Consul</p>
+<p><a href="https://github.com/Netflix/eureka/wiki" target="_blank" rel="external">https://github.com/Netflix/eureka/wiki</a></p>
+<h2 id="spring-cloud配置文件"><a href="#spring-cloud配置文件" class="headerlink" title="spring cloud配置文件"></a>spring cloud配置文件</h2><p>默认service都是连接8888端口的configserver，要是想修改的话就需要使用bootstrap.properties外部配置文件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">spring.cloud.config.uri: http://myconfigserver.com</div></pre></td></tr></table></figure>
+<p>bootstrap的优先级高于configserver的application配置。</p>
+<p><a href="https://cloud.spring.io/spring-cloud-config/spring-cloud-config.html" target="_blank" rel="external">https://cloud.spring.io/spring-cloud-config/spring-cloud-config.html</a></p>
+<h2 id="zuul"><a href="#zuul" class="headerlink" title="zuul"></a>zuul</h2><p>地狱的守门怪兽</p>
+<ul>
+<li>安全认证</li>
+<li>动态路由</li>
+<li>监视</li>
+<li>压测</li>
+<li>降载</li>
+<li>静态资源处理</li>
+<li>多区域</li>
+</ul>
+<p><a href="https://github.com/Netflix/zuul/wiki" target="_blank" rel="external">https://github.com/Netflix/zuul/wiki</a></p>
+<h2 id="zipkin"><a href="#zipkin" class="headerlink" title="zipkin"></a>zipkin</h2><p>分布式中的神捕，对分布式调度的追踪，分布式追踪系统。可获取各个微服务接口调用的延时。基于Google论文<a href="http://research.google.com/pubs/pub36356.html" target="_blank" rel="external">dapper</a>设计完成。</p>
+<p>应用的执行耗时数据会保存在zipkin里。zipkin UI也会呈现出每个服务request之间的依赖关系图。特别便于最终错误或者延时问题。</p>
+<p>本质其实跟以前我们在云智慧做的工作一样，在request上打标记。</p>
+<p>存储可以选择内存、JDBC、Cassandra、ES。</p>
+<p><a href="http://zipkin.io/" target="_blank" rel="external">http://zipkin.io/</a><br><a href="http://zipkin.io/pages/architecture.html" target="_blank" rel="external">http://zipkin.io/pages/architecture.html</a></p>
+<h2 id="oauth2"><a href="#oauth2" class="headerlink" title="oauth2"></a>oauth2</h2><p>分布式系统中，client与service是交叉访问的，需要解决一个问题：哪些client有权限访问哪些service？解决的方式就是单点登录：所有的请求某个service都需要一个token，这个token由一个统一的中心认证服务提供。我们这里就使用oauth2来做这个中心认证服务。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>configserver为一切service服务，提供各个服务最新的配置信息。</p>
+<p>eureka-service提供服务注册与发现。所有的client都来它这里找service，然后再执行RPC请求。</p>
+<p>reservation-service是一个服务，通过configserver找到eureka，注册到eureka，提供服务。</p>
+<p>reservation-client是一个客户端，先通过configserver找到eureka，找到要请求的reservation-service，再请求具体路径(整个请求可以通过zuul代理实现)。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/django与gunicorn的关系/" title="django与gunicorn的关系" itemprop="url">django与gunicorn的关系</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:05:24.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>为什么需要有gunicorn呢？</p>
+<p>总的来说很简单：你需要一些东西来执行python，但是python并不是对于所有类型的request都很适合。</p>
+<p>[说明一下: 我是 Gunicorn 的developer]</p>
+<p>稍微复杂点儿解释:<br>不管你用什么样的app server，都会有一些upstream都是你的django app不处理的，比如一些静态资源(images/css/js)</p>
+<p>这就出现了经典的’三层架构’，可以Google一下<a href="https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Overview_of_a_three-tier_application_vectorVersion.svg/2000px-Overview_of_a_three-tier_application_vectorVersion.svg.png" target="_blank" rel="external">‘three tier architecture’</a>。就是webserver(比如nginx)负责处理许多静态资源的request。需要动态处理的request会被发送给app server(比如Gunicorn)。最内层的，也就是第三层就是数据层了。</p>
+<p>纵观历史典型应用，每一层都应该在不同的主机上。（前两层或许还会占用多个主机，负载均衡之类，比如：5个web server分发请求到两个app server上，查询一个数据库）</p>
+<p>最近来说，各种应用形态已经各有各的特点了。小项目其实并非完全用到这三层架构，或者也不用分别运行在很多机器上。也有些方案会把app server与web server集成起来(apache httpd + mod_wsgi, nginx + mod_uwsgi等)。</p>
+<p>对于Gunicorn来说，是从Ruby的Unicorn抽取出来，只利用nginx里的代理功能。如果Gunicorn不会直接从互联网接收request，那么我们就不用担心客户端会比较慢。这意味着Gunicorn的处理模型十分的简单。</p>
+<p>Gunicorn与nginx的功能分离也允许Gunicorn在不影响总体性能的前提下，使用纯python重写。</p>
+<p>具体到底谁处理了HTTP request呢，就是Gunicorn了。其实是Nginx和Gunicorn一起处理的。Nginx接收request，如果他是一个动态的request，就传递给Gunicorn来处理，然后返回一个response给Nginx，然后Nginx再传递给client。</p>
+<p>所以，最好是使用nginx和Gunicorn一起部署django项目。如果你只是想让nginx做代理，那么也可以使用Gunicorn、mod_uwsgi、CherryPy等作为django的依赖server。</p>
+<p>参考：</p>
+<ul>
+<li><a href="http://serverfault.com/questions/331256/why-do-i-need-nginx-and-something-like-gunicorn" target="_blank" rel="external">http://serverfault.com/questions/331256/why-do-i-need-nginx-and-something-like-gunicorn</a></li>
+<li><a href="http://www.cnblogs.com/ArtsCrafts/p/gunicorn.html" target="_blank" rel="external">http://www.cnblogs.com/ArtsCrafts/p/gunicorn.html</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+  <nav id="page-nav" class="clearfix">
+    <a class="extend prev" rel="prev" href="/page/19/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/18/">18</a><a class="page-number" href="/page/19/">19</a><span class="page-number current">20</span><a class="page-number" href="/page/21/">21</a><a class="page-number" href="/page/22/">22</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/21/">Next<span></span></a>
+  </nav>
+
+</div>
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+ </html>

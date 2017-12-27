@@ -1,0 +1,626 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>Quota | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="在mesos上运行多个framework的时候有个问题，就是如果当前没有其他framework接受剩余资源，默认的WDRF分配器可能会把剩余资源分配给已经满足公平共享的framework。并没有把剩余资源留下备用的机制。尽管dynamic reservations允许operator和framework可在指定的mesos agent上动态保留资源，但是并不能从根本上解决问题，因为每个agent都">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Quota">
+<meta property="og:url" content="http://willcup.com/2017/07/28/Quota/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="在mesos上运行多个framework的时候有个问题，就是如果当前没有其他framework接受剩余资源，默认的WDRF分配器可能会把剩余资源分配给已经满足公平共享的framework。并没有把剩余资源留下备用的机制。尽管dynamic reservations允许operator和framework可在指定的mesos agent上动态保留资源，但是并不能从根本上解决问题，因为每个agent都">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.789Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Quota">
+<meta name="twitter:description" content="在mesos上运行多个framework的时候有个问题，就是如果当前没有其他framework接受剩余资源，默认的WDRF分配器可能会把剩余资源分配给已经满足公平共享的framework。并没有把剩余资源留下备用的机制。尽管dynamic reservations允许operator和framework可在指定的mesos agent上动态保留资源，但是并不能从根本上解决问题，因为每个agent都">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/28/Quota/" title="Quota" itemprop="url">Quota</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-28T06:06:28.000Z" itemprop="datePublished"> 发表于 2017-07-28</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Terminology【术语】"><span class="toc-text">Terminology【术语】</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#动力和限制"><span class="toc-text">动力和限制</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#场景1：-贪婪framework"><span class="toc-text">场景1： 贪婪framework</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#场景2：-新framework的资源"><span class="toc-text">场景2： 新framework的资源</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Operator-HTTP终端"><span class="toc-text">Operator HTTP终端</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#工作原理"><span class="toc-text">工作原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#quota请求处理过程"><span class="toc-text">quota请求处理过程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#capacity-heuristic检查"><span class="toc-text">capacity heuristic检查</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#接触outstanding-offer"><span class="toc-text">接触outstanding offer</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#通过wDRF-Allocator实施"><span class="toc-text">通过wDRF Allocator实施</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#容灾"><span class="toc-text">容灾</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#当前不足"><span class="toc-text">当前不足</span></a></li></ol>
+		
+		</div>
+		
+		<p>在mesos上运行多个framework的时候有个问题，就是如果当前没有其他framework接受剩余资源，默认的WDRF分配器可能会把剩余资源分配给已经满足公平共享的framework。并没有把剩余资源留下备用的机制。尽管dynamic reservations允许operator和framework可在指定的mesos agent上动态保留资源，但是并不能从根本上解决问题，因为每个agent都可能挂掉。</p>
+<p>Mesos 0.27提出了quota，用来保证一个role会获取指定大小的最小资源保留。当然，这个role也可以获得比这个quota配置的更多的资源。</p>
+<p>quota有些类似reserved resource，稍有不同。quota资源不能绑定到指定的agent上，就是说一个quota保证一个role会有指定大小的资源，但是可以是在集群的任意位置。然而 reservations是用来指定特定的资源给指定role的特定的agent使用。quota只能让operator通过HTTP终端进行配置，而dynamic reservations则可以通过framework的principal验证后进行控制。</p>
+<p>注意：reserved reservations是用来满足一个role的quota配置的。例如，如果一个role指定定了一个4CPU和一个agent上的2个CPU的reserved reservations。那么这个role有一个4CPU的最小保证，而不是6个。</p>
+<h2 id="Terminology【术语】"><a href="#Terminology【术语】" class="headerlink" title="Terminology【术语】"></a>Terminology【术语】</h2><p>operator是一个管理mesos集群的东西，可以是人，工具，或者脚本。</p>
+<p>在计算机领域，quota通常指下面的事情：</p>
+<ul>
+<li>一个最小保证</li>
+<li>一个最大范围</li>
+<li>以上两者</li>
+</ul>
+<p>在mesos中，quota是一个role即将游泳的资源的最小保证。</p>
+<h2 id="动力和限制"><a href="#动力和限制" class="headerlink" title="动力和限制"></a>动力和限制</h2><p>通过下面场景，进一步了解quota。</p>
+<h4 id="场景1：-贪婪framework"><a href="#场景1：-贪婪framework" class="headerlink" title="场景1： 贪婪framework"></a>场景1： 贪婪framework</h4><p>在一个集群中有两个framework，每个都订阅了自己特有的role，每个role都有相同的权重。frameworkA定于了role RA，frameworkB订阅了role RB。集群中只有一种单一资源：100CPU. fA只需要10个CPU，而FB需要全部的CPU。如果没有Quota的话，FA就会根据默认的公平调度，每个framework都50个CPU，那么就会有40个是浪费的。</p>
+<h4 id="场景2：-新framework的资源"><a href="#场景2：-新framework的资源" class="headerlink" title="场景2： 新framework的资源"></a>场景2： 新framework的资源</h4><p>贪婪framework FB订阅role RB，是当前集群唯一的framework，那么它就都占了100CPU.如果一个fa新加入进来，需要等待FB的任务完成后才能获取属于自己的50CPU资源。</p>
+<p>对于场景2来说，quota自己是不足以解决这个问题的，然而可以一直保持一个资源池作为保留或者或者进行资源抢占。</p>
+<h2 id="Operator-HTTP终端"><a href="#Operator-HTTP终端" class="headerlink" title="Operator HTTP终端"></a>Operator HTTP终端</h2><p>master的/quota HTTP终端使operator可以操控quota。目前是提供一种类REST接口，支持下面的操作：</p>
+<ul>
+<li>POST设置一个新的quota</li>
+<li>DELETE 移除一个已经存在的quota</li>
+<li>GET 查询当前的quota</li>
+</ul>
+<p>目前并不支持更新原有的quota，需要先删除，后添加。</p>
+<h2 id="工作原理"><a href="#工作原理" class="headerlink" title="工作原理"></a>工作原理</h2><p>首先mesos master会处理quota相关的请求，然后allocator来实施quota。</p>
+<p>要注意quota具体怎样被实施是依赖于你所使用的allocator的。还有就是实施过程中，可能会对正在运行的framework造成一些影响，因为要把资源重新分配一下。还有资源是只可扩展的资源，端口号这种不行….</p>
+<h2 id="quota请求处理过程"><a href="#quota请求处理过程" class="headerlink" title="quota请求处理过程"></a>quota请求处理过程</h2><p>添加的过程</p>
+<ol>
+<li>认证</li>
+<li>解析与验证request</li>
+<li>如果开启了授权，就授权认证</li>
+<li>运行capacity heuristic</li>
+<li>存储quota</li>
+<li>解除outstanding offer</li>
+</ol>
+<p>移除的过程</p>
+<ol>
+<li>认证</li>
+<li>确认request有效性</li>
+<li>鉴权</li>
+<li>移除quota</li>
+</ol>
+<h4 id="capacity-heuristic检查"><a href="#capacity-heuristic检查" class="headerlink" title="capacity heuristic检查"></a>capacity heuristic检查</h4><p>配置错误的quota可能会导致所有的framework都分配不到资源。例如假设一个opetaror给不存在的role 设置了100CPU的quota，而当前集群只用100CPU.</p>
+<p>为了防止这种极端情形的出现，mesos master会用一个capacity heuristic来检查quota是不是对于当前集群资源合理。这个heuristic会测试总的quota是不是超过了集群非静态保留的总资源。</p>
+<blockquote>
+<p>总资源 - 静态保留资源 》= 总资源 + quota request</p>
+</blockquote>
+<p>注意即便当前是有足够的资源的，但是agent随时可能挂掉，导致集群不能满足配置的quota的需求。</p>
+<p>使用force标志可以让check通过，通常是因为operator知道后期会有新的资源加进来。</p>
+<h4 id="接触outstanding-offer"><a href="#接触outstanding-offer" class="headerlink" title="接触outstanding offer"></a>接触outstanding offer</h4><p>设置新quota的过程中，master会接触outstanding offer。这避免了当前剩余的没有offer出去，但是很多分配出去给其他framework的资源还没有被使用，造成的资源不足情况。因此，按照下面规则解除outstanding offer：</p>
+<ul>
+<li>解除至少跟quota请求中一样多的资源</li>
+<li>如果一个agent有一个offer需要被解除，那么这个agent的所有offer都会被解除。This is done in order to make the potential offer bigger, which increases the chances that a quota’ed framework will be able to use the offer.</li>
+<li>尽可能多的解除当前quota的role的framework的offer。这会让每个订阅这个role的framework收到一个offer。</li>
+</ul>
+<h4 id="通过wDRF-Allocator实施"><a href="#通过wDRF-Allocator实施" class="headerlink" title="通过wDRF Allocator实施"></a>通过wDRF Allocator实施</h4><p>wDRF Allocator首先会根据quota设置的分配资源给role。如果所有的quota都满足了，就为剩余的role执行标准的wDRF。</p>
+<p>注意： 一个已经quota的role不会会获取到多一些的未被预定的不可撤销的资源。如果这个role中framework没有选择可撤销的资源，那么他们可能会在role满足之后停止获取offer。这时设置任何比这个role的fair share还低的quota值都很可能导致给这个role的总资源降低。</p>
+<p>注意：当前auota保证也是一个quota限制。就是说，一旦一个role的quota满足了，这个role就不会获得更多的资源了。这是为了减轻缺乏quota限制。</p>
+<p>如果有多个framework订阅了一个role，这个role有一个quota，标准的wDRF算法来决定这些framework的offer比例。</p>
+<p>默认的wDRF allocator认为只有不可撤销的资源才是quota可用的。</p>
+<h2 id="容灾"><a href="#容灾" class="headerlink" title="容灾"></a>容灾</h2><p>如果一个role里有quota，master容灾恢复就很重要。在恢复过程中会有一段时间并不是所有的agent都向master注册了自己。因此不可能所有的quota都被满足。</p>
+<p>为了定位这个问题，如果恢复的时候任何前面的quota被探测到后，allocator就进入recovery模式，在这个过程中，allocator并不保证offer。只有满足下面任何一个条件的时候才退出这个模式</p>
+<ul>
+<li>指定数量的agent重新注册自己(默认80%)</li>
+<li>一个超时时间(默认10分钟)</li>
+</ul>
+<h2 id="当前不足"><a href="#当前不足" class="headerlink" title="当前不足"></a>当前不足</h2><ul>
+<li>quota不允许指定详细资源粒度(例如每个节点上10个CPU)</li>
+<li>不允许指定约束条件(比如，在互斥节点上分配2 * 5个CPU，形成HA)</li>
+<li>不能为默认的role *设置quota</li>
+<li>目前不支持更新</li>
+</ul>
+<p>参考： <a href="http://mesos.apache.org/documentation/latest/quota/" target="_blank" rel="external">http://mesos.apache.org/documentation/latest/quota/</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/07/28/Quota/" data-title="Quota | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/08/18/prometheus自定义exporter/" title="prometheus自定义exporter">
+  <strong>上一篇：</strong><br/>
+  <span>
+  prometheus自定义exporter</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/07/27/阿里中间件笔记/"  title="阿里中间件笔记">
+ <strong>下一篇：</strong><br/> 
+ <span>阿里中间件笔记
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/07/28/Quota/" data-title="Quota" data-url="http://willcup.com/2017/07/28/Quota/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Terminology【术语】"><span class="toc-number">1.</span> <span class="toc-text">Terminology【术语】</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#动力和限制"><span class="toc-number">2.</span> <span class="toc-text">动力和限制</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#场景1：-贪婪framework"><span class="toc-number">2.0.1.</span> <span class="toc-text">场景1： 贪婪framework</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#场景2：-新framework的资源"><span class="toc-number">2.0.2.</span> <span class="toc-text">场景2： 新framework的资源</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Operator-HTTP终端"><span class="toc-number">3.</span> <span class="toc-text">Operator HTTP终端</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#工作原理"><span class="toc-number">4.</span> <span class="toc-text">工作原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#quota请求处理过程"><span class="toc-number">5.</span> <span class="toc-text">quota请求处理过程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#capacity-heuristic检查"><span class="toc-number">5.0.1.</span> <span class="toc-text">capacity heuristic检查</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#接触outstanding-offer"><span class="toc-number">5.0.2.</span> <span class="toc-text">接触outstanding offer</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#通过wDRF-Allocator实施"><span class="toc-number">5.0.3.</span> <span class="toc-text">通过wDRF Allocator实施</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#容灾"><span class="toc-number">6.</span> <span class="toc-text">容灾</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#当前不足"><span class="toc-number">7.</span> <span class="toc-text">当前不足</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

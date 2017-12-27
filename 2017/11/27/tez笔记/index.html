@@ -1,0 +1,680 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>tez笔记 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="部署hadoop2.7以上版本
+构建tezmvn clean package -DskipTests=true -Dmaven.javadoc.skip=true
+JDK8, MAVEN 3
+protocol buffer 2.5.0
+如果使用单元测试，把skipTests去掉就行
+如果使用eclipse，可以使用import maven project引入。
+
+
+把对应的tez包copy到HD">
+<meta property="og:type" content="article">
+<meta property="og:title" content="tez笔记">
+<meta property="og:url" content="http://willcup.com/2017/11/27/tez笔记/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="部署hadoop2.7以上版本
+构建tezmvn clean package -DskipTests=true -Dmaven.javadoc.skip=true
+JDK8, MAVEN 3
+protocol buffer 2.5.0
+如果使用单元测试，把skipTests去掉就行
+如果使用eclipse，可以使用import maven project引入。
+
+
+把对应的tez包copy到HD">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.793Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="tez笔记">
+<meta name="twitter:description" content="部署hadoop2.7以上版本
+构建tezmvn clean package -DskipTests=true -Dmaven.javadoc.skip=true
+JDK8, MAVEN 3
+protocol buffer 2.5.0
+如果使用单元测试，把skipTests去掉就行
+如果使用eclipse，可以使用import maven project引入。
+
+
+把对应的tez包copy到HD">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/11/27/tez笔记/" title="tez笔记" itemprop="url">tez笔记</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-11-27T10:47:27.000Z" itemprop="datePublished"> 发表于 2017-11-27</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#指定tez-lib-uris的几种方式"><span class="toc-text">指定tez.lib.uris的几种方式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#hadoop依赖安装"><span class="toc-text">hadoop依赖安装</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#对于模式A：通过yarn-application-classpath使用集群已有的hadoop类库"><span class="toc-text">对于模式A：通过yarn.application.classpath使用集群已有的hadoop类库</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#对于模式B：带有hadoo-tar包的tez-tar包"><span class="toc-text">对于模式B：带有hadoo tar包的tez  tar包</span></a></li></ol>
+		
+		</div>
+		
+		<ol>
+<li>部署hadoop2.7以上版本</li>
+<li>构建tez<code>mvn clean package -DskipTests=true -Dmaven.javadoc.skip=true</code><ul>
+<li>JDK8, MAVEN 3</li>
+<li>protocol buffer 2.5.0</li>
+<li>如果使用单元测试，把skipTests去掉就行</li>
+<li>如果使用eclipse，可以使用import maven project引入。</li>
+</ul>
+</li>
+<li>把对应的tez包copy到HDFS，配置tez-site.xml</li>
+</ol>
+<ul>
+<li>tez包包含tez和hadoop的类库，tez-dist/tez-x.y.z-SNAPSHOT.tar.gz</li>
+<li><p>假设tez放在了HDFS的/apps下，命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">hadoop fs -mkdir /apps/tez-x.y.z-SNAPSHOT</div><div class="line">hadoop fs -copyFromLocal tez-dist/target/tez-x.y.z-SNAPSHOT.tar.gz /apps/tez-x.y.z-SNAPSHOT</div></pre></td></tr></table></figure>
+</li>
+<li><p>tez-site.xml配置</p>
+<ul>
+<li>设置<code>tez.lib.uris</code>指定HDFS上的tar.gz的位置。假设是上面的话，就设置成<code>${fs.defaultFS}/apps/tez-x.y.z-SNAPSHOT/tez-x.y.z-SNAPSHOT.tar.gz</code></li>
+<li>确认<code>tez.cluster.hadoop-libs</code>没有在tez-site.xml中设置，这个值应该是false</li>
+</ul>
+</li>
+<li>注意tar包版本应该与用来提交tez job的客户端版本一致。</li>
+</ul>
+<ol>
+<li>可选的：如果在tez上运行已经存在的MR任务，修改mapred-site.xml，修改mapreduce.framework.name, 从yarn修改为yarn-tez.</li>
+<li>配置client节点，把tez类库加入到hadoop类库中。</li>
+</ol>
+<ul>
+<li>抽取tez最小的tar包到本地目录</li>
+<li>设置TEZ_CONF_DIR为tez-site.xml的位置</li>
+<li><p>添加$TEZ_CONF_DIR，${TEZ_JARS}/<em>和${TEZ_JARS}/lib/</em>到app的classpath。例如通过标准hadoop工具链设置的话：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">export HADOOP_CLASSPATH=$&#123;TEZ_CONF_DIR&#125;:$&#123;TEZ_JARS&#125;/*:$&#123;TEZ_JARS&#125;/lib/*</div></pre></td></tr></table></figure>
+</li>
+<li><p>注意 <code>*</code>是必须的</p>
+</li>
+</ul>
+<ol>
+<li>下面是一个提交MR任务的例子：<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$HADOOP_PREFIX/bin/hadoop jar tez-examples.jar orderedwordcount &lt;input&gt; &lt;output&gt;</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>这个会使用tez dag ApplicationMaster来运行wordcount job。这个wordcount相比简单的，多了个按照词频顺序输出。</p>
+<p>Tez DAG可以分别运行在不同的app上，使用同一个TEZ session就可以了。tez-tests中有一个odrderedwordcount是支持session的使用的，同时处理多个input-output pairs。可以在不同的input/output上连续运行多个DAG。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$HADOOP_PREFIX/bin/hadoop jar tez-tests.jar testorderedwordcount &lt;input1&gt; &lt;output1&gt; &lt;input2&gt; &lt;output2&gt; &lt;input3&gt; &lt;output3&gt; ...</div></pre></td></tr></table></figure>
+<p>上面的例子就会为每个input-output pair运行多个DAG了。</p>
+<p>要使用tez session的话，设置 -DUSE_TEZ_SESSION=true<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$HADOOP_PREFIX/bin/hadoop jar tez-tests.jar testorderedwordcount -DUSE_TEZ_SESSION=true &lt;input1&gt; &lt;output1&gt; &lt;input2&gt; &lt;output2&gt;</div></pre></td></tr></table></figure></p>
+<ol>
+<li>像平时一样提交一个MR任务<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$HADOOP_PREFIX/bin/hadoop jar hadoop-mapreduce-client-jobclient-3.0.0-SNAPSHOT-tests.jar sleep -mt 1 -rt 1 -m 1 -r 1</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>这会使用TEZ DAG ApplicationMaster来运行MR job。可以通过查看YARN UI上的AM的log来验证一下。记住，mapred-site.xml里的mapreduce.framework.name需要设置成yarn-tez。</p>
+<h4 id="指定tez-lib-uris的几种方式"><a href="#指定tez-lib-uris的几种方式" class="headerlink" title="指定tez.lib.uris的几种方式"></a>指定tez.lib.uris的几种方式</h4><p>tez.lib.uris属性支持逗号分隔的多个值，可以是单个文件，一个目录，压缩包(tar,zip等)。</p>
+<p>对于文件和目录，tez会把第一层的文件放到tez运行时的工作目录中，然后放入classpath。对于压缩文件，会被解压到工作目录中。</p>
+<h4 id="hadoop依赖安装"><a href="#hadoop依赖安装" class="headerlink" title="hadoop依赖安装"></a>hadoop依赖安装</h4><p>上面的使用tez的方式，也就是预装在hadoop类库中是我们推荐的方式。带有所有依赖的完整的tar包是一个更好的方式，可以保证已经存在的job在集群回滚或者升级的时候继续正常运行。</p>
+<p>尽管<code>tez.lib.uris</code>配置项有很广泛的使用模型，但是还有两个主要的可选模式:</p>
+<ul>
+<li>A： 在hadoop类库可用的集群上使用tez tar包</li>
+<li><p>B： 与hadoop tar包一起使用tez tar包</p>
+<p>这两个模式需要一个没有hadoop依赖而编译地的tez，可以是tez-dist/target/tez-x.y.z-minimal.tar.gz。</p>
+<h4 id="对于模式A：通过yarn-application-classpath使用集群已有的hadoop类库"><a href="#对于模式A：通过yarn-application-classpath使用集群已有的hadoop类库" class="headerlink" title="对于模式A：通过yarn.application.classpath使用集群已有的hadoop类库"></a>对于模式A：通过yarn.application.classpath使用集群已有的hadoop类库</h4><p>对于使用rolling  upgrade的集群不推荐这种方式。另外，用户需要负责保证tez版本与正在运行集群的hadoop的兼容性。对于上面的第三个步骤，也需要修改。后续的步骤应该使用tez-dist/target/tez-x.y.z-minimal.tar.gz而不是tez-dist/target/tez-x.y.z.tar.gz。</p>
+<ul>
+<li><p>如果tez jar已经放在了HDFS的/apps里，那么minimal的tez就可以运行了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"> &quot;hadoop fs -mkdir /apps/tez-x.y.z&quot;</div><div class="line">&quot;hadoop fs -copyFromLocal tez-dist/target/tez-x.y.z-minimal.tar.gz /apps/tez-x.y.z&quot;</div></pre></td></tr></table></figure>
+</li>
+<li><p>tez-site.xml配置</p>
+<ul>
+<li>设置tez.lib.uris为hdfs包含tez jar的位置。</li>
+<li>设置tez.use.cluster.hadoop-libs为true</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="对于模式B：带有hadoo-tar包的tez-tar包"><a href="#对于模式B：带有hadoo-tar包的tez-tar包" class="headerlink" title="对于模式B：带有hadoo tar包的tez  tar包"></a>对于模式B：带有hadoo tar包的tez  tar包</h4><p>这个模式是支持rolling upgrade的。但是用户需要确认自己选择的tez和hadoop版本兼容。也需要修改第三步：</p>
+<ul>
+<li><p>假设tez的压缩包在HDFS的/apps下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">hadoop fs -mkdir /apps/tez-x.y.z </div><div class="line">hadoop fs -copyFromLocal tez-dist/target/tez-x.y.z-minimal.tar.gz /apps/tez-x.y.z</div></pre></td></tr></table></figure>
+</li>
+<li><p>或者，可以把minimal目录直接放到HDFS，然后再把每个jar包放进去。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">hadoop fs -copyFromLocal tez-dist/target/tez-x.y.z-minimal/* /apps/tez-x.y.z</div></pre></td></tr></table></figure>
+</li>
+<li><p>构建完hadoop之后，hadoop tar包在hadoop/hadoop-dist/target/hadoop-x.y.z-SNAPSHOT.tar.gz</p>
+</li>
+<li><p>假设hadoop jar包放在了HDFS上的/apps里</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">hadoop fs -mkdir /apps/hadoop-x.y.z</div><div class="line">hadoop fs -copyFromLocal hadoop-dist/target/hadoop-x.y.z-SNAPSHOT.tar.gz /apps/hadoop-x.y.z</div></pre></td></tr></table></figure>
+</li>
+<li><p>tez-site.xml的配置</p>
+<ul>
+<li>tez.lib.uris只想tez/hadoop需要的jar或者归档文件所在位置</li>
+<li>例子：当时用tez和hadoop归档文件时，设置tez.lib.uris为<code>${fs.defaultFS}/apps/tez-x.y.z/tez-x.y.z-minimal.tar.gz#tez,${fs.defaultFS}/apps/hadoop-x.y.z/hadoop-x.y.z-SNAPSHOT.tar.gz#hadoop-mapreduce</code></li>
+<li>例子：当时用带有hadoop归档文件的tezjar的时候，设置tez.lib.uris为<code>${fs.defaultFS}/apps/tez-x.y.z,${fs.defaultFS}/apps/tez-x.y.z/lib,${fs.defaultFS}/apps/hadoop-x.y.z/hadoop-x.y.z-SNAPSHOT.tar.gz#hadoop-mapreduce</code></li>
+<li>在tez.lib.uris中，跟在<code>#</code>后面的文档会自动创建对应的fragment 链接。如果没有给出fragment，那么链接就被设置为归档的名字。fragment不应该是目录或者jar</li>
+<li>如果在tez.lib.uris中指定了任何归档，就也要设置tez.lib.uris.classpath，定义好这些归档文件的classpath，因为归档文件结构是未知的。</li>
+<li><p>例子：当使用tez和hadoop归档时，设置tez.lib.uris.classpath：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">./tez/*:./tez/lib/*:./hadoop-mapreduce/hadoop-x.y.z-SNAPSHOT/share/hadoop/common/*:./hadoop-mapreduce/hadoop-x.y.z-SNAPSHOT/share/hadoop/common/lib/*:./hadoop-mapreduce/hadoop-x.y.z-SNAPSHOT/share/hadoop/hdfs/*:./hadoop-mapreduce/hadoop-x.y.z-SNAPSHOT/share/hadoop/hdfs/lib/*:./hadoop-mapreduce/hadoop-x.y.z-SNAPSHOT/share/hadoop/yarn/*:./hadoop-mapreduce/hadoop-x.y.z-SNAPSHOT/share/hadoop/yarn/lib/*:./hadoop-mapreduce/hadoop-x.y.z-SNAPSHOT/share/hadoop/mapreduce/*:./hadoop-mapreduce/hadoop-x.y.z-SNAPSHOT/share/hadoop/mapreduce/lib/*</div></pre></td></tr></table></figure>
+</li>
+<li><p>例子：当使用tez jar和hadoop归档文件时，设置tez.lib.uris.classpath为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">./hadoop-mapreduce/hadoop-x.y.z-SNAPSHOT/share/hadoop/common/*:./hadoop-mapreduce/hadoop-x.y.z-SNAPSHOT/share/hadoop/common/lib/*:./hadoop-mapreduce/hadoop-x.y.z-SNAPSHOT/share/hadoop/hdfs/*:./hadoop-mapreduce/hadoop-x.y.z-SNAPSHOT/share/hadoop/hdfs/lib/*:./hadoop-mapreduce/hadoop-x.y.z-SNAPSHOT/share/hadoop/yarn/*:./hadoop-mapreduce/hadoop-x.y.z-SNAPSHOT/share/hadoop/yarn/lib/*:./hadoop-mapreduce/hadoop-x.y.z-SNAPSHOT/share/hadoop/mapreduce/*:./hadoop-mapreduce/hadoop-x.y.z-SNAPSHOT/share/hadoop/mapreduce/lib/*</div></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/11/27/tez笔记/" data-title="tez笔记 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/12/04/在yarn上安装presto/" title="在yarn上安装presto">
+  <strong>上一篇：</strong><br/>
+  <span>
+  在yarn上安装presto</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/11/27/hive-llap笔记/"  title="hive-llap笔记">
+ <strong>下一篇：</strong><br/> 
+ <span>hive-llap笔记
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/11/27/tez笔记/" data-title="tez笔记" data-url="http://willcup.com/2017/11/27/tez笔记/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#指定tez-lib-uris的几种方式"><span class="toc-number">1.</span> <span class="toc-text">指定tez.lib.uris的几种方式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#hadoop依赖安装"><span class="toc-number">2.</span> <span class="toc-text">hadoop依赖安装</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#对于模式A：通过yarn-application-classpath使用集群已有的hadoop类库"><span class="toc-number">3.</span> <span class="toc-text">对于模式A：通过yarn.application.classpath使用集群已有的hadoop类库</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#对于模式B：带有hadoo-tar包的tez-tar包"><span class="toc-number">4.</span> <span class="toc-text">对于模式B：带有hadoo tar包的tez  tar包</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,1172 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="左右水色 右手天光">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Will's Blog">
+<meta property="og:url" content="http://willcup.com/page/11/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="左右水色 右手天光">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Will's Blog">
+<meta name="twitter:description" content="左右水色 右手天光">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main">
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/14/使用portainer监控docker容器/" title="使用portainer监控docker容器" itemprop="url">使用portainer监控docker容器</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-14T06:57:22.000Z" itemprop="datePublished"> 发表于 2017-07-14</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>我们先监控一个远程的docker daemon，那么这个docker daemon先要允许远程访问才行。</p>
+<p>修改113的配置文件/etc/docker/daemon.json<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;registry-mirrors&quot;: [&quot;https://docker.mirrors.ustc.edu.cn&quot;,&quot;http://3a35aff6.m.daocloud.io&quot;,&quot;http://ethanzhu.m.tenxcloud.net&quot;],</div><div class="line">  &quot;hosts&quot;: [&quot;tcp://0.0.0.0:2375&quot;]</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>注意，启用hosts，也就是远程接口之后，本地的命令行就不能用了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">[root@etl03 ~]# docker images</div><div class="line">Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?</div><div class="line">[root@etl03 ~]# docker -H 0.0.0.0:2375 images</div><div class="line">REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE</div><div class="line">sso                 latest              f8fdedf3edca        13 hours ago        246MB</div><div class="line">centos              7.3.1611            67591570dd29        7 months ago        192MB</div></pre></td></tr></table></figure></p>
+<p>在112上启动portainer<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker run -d -p 9000:9000 --rm -v /var/run/docker.sock:/var/run/docker.sock portainer/portainer</div></pre></td></tr></table></figure></p>
+<p>如果要持久化一些配置文件的话，可以参考以下命令：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker run -d -p 9000:9000 -v /path/on/host/data:/data portainer/portainer</div></pre></td></tr></table></figure></p>
+<p>配置初始密码，然后</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://docs.docker.com/engine/reference/commandline/dockerd/#extended-description" target="_blank" rel="external">https://docs.docker.com/engine/reference/commandline/dockerd/#extended-description</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/14/docker问题整理/" title="docker问题整理" itemprop="url">docker问题整理</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-14T06:15:37.000Z" itemprop="datePublished"> 发表于 2017-07-14</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="容器内ping不同外部宿主机"><a href="#容器内ping不同外部宿主机" class="headerlink" title="容器内ping不同外部宿主机"></a>容器内ping不同外部宿主机</h2><p>默认使用bridge网络，应该是通畅的。通常就是简单的防火墙导致，需要注意的是：<strong>调整防火墙之后，需要重启docker engine才能生效</strong>，仅仅重启docker容器是不会起作用的。。。。</p>
+<h2 id="loopback-devices的告警"><a href="#loopback-devices的告警" class="headerlink" title="loopback devices的告警"></a>loopback devices的告警</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">WARNING: devicemapper: usage of loopback devices is strongly discouraged for production use.</div><div class="line">         Use `--storage-opt dm.thinpooldev` to specify a custom block storage device.</div><div class="line">WARNING: IPv4 forwarding is disabled</div><div class="line">WARNING: bridge-nf-call-iptables is disabled</div><div class="line">WARNING: bridge-nf-call-ip6tables is disabled</div></pre></td></tr></table></figure>
+<p>参考</p>
+<ul>
+<li><a href="http://www.dockerinfo.net/2182.html" target="_blank" rel="external">http://www.dockerinfo.net/2182.html</a></li>
+</ul>
+<h2 id="容器名称变化"><a href="#容器名称变化" class="headerlink" title="容器名称变化"></a>容器名称变化</h2><p>主要是对于代理层，比如有三个backend服务节点，只要一重启，这三个容器的host和ip有可能都会变。</p>
+<p>方案：</p>
+<ul>
+<li>代理 + 动态服务发现。nginx/haproxy + consul/etcd</li>
+<li>traefix，专为此种场景提供了定制接口配置。</li>
+</ul>
+<p>参考： </p>
+<ul>
+<li><a href="http://blog.hypriot.com/post/microservices-bliss-with-docker-and-traefik/" target="_blank" rel="external">http://blog.hypriot.com/post/microservices-bliss-with-docker-and-traefik/</a></li>
+<li><a href="https://www.consul.io/intro/getting-started/install.html" target="_blank" rel="external">https://www.consul.io/intro/getting-started/install.html</a></li>
+</ul>
+<h2 id="devicemapper-Can’t-set-cookie-dm-task-set-cookie-failed"><a href="#devicemapper-Can’t-set-cookie-dm-task-set-cookie-failed" class="headerlink" title="devicemapper: Can’t set cookie dm_task_set_cookie failed"></a>devicemapper: Can’t set cookie dm_task_set_cookie failed</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker: failed to register layer: devmapper: Error activating devmapper device for &apos;24ea1e709520627a2862d2b9130b6aff77dde03fef39cc0169568cde5883b013&apos;: devicemapper: Can&apos;t set cookie dm_task_set_cookie failed.</div></pre></td></tr></table></figure>
+<p>问题貌似是在我重新启动</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Error response from daemon: driver &quot;devicemapper&quot; failed to remove root filesystem for 1d7c4b287c27ef61fd0d9ac37c401c5da213b81b31dcc42448b1864b6b838f14: failed to remove device f45fd625ac4cdaccddfdd0ea02ac97f9e529a13594a4cfc92a883b8674d2658a: devicemapper: Can not set cookie: dm_task_set_cookie failed</div></pre></td></tr></table></figure>
+<p>临时方案：echo ‘y’ | sudo dmsetup udevcomplete_all<br><a href="https://github.com/kubevirt/kubevirt/issues/321" target="_blank" rel="external">https://github.com/kubevirt/kubevirt/issues/321</a></p>
+<h2 id="动态配置"><a href="#动态配置" class="headerlink" title="动态配置"></a>动态配置</h2><p>一共有三个方案可以支持</p>
+<h4 id="使用自定义的DNS服务器"><a href="#使用自定义的DNS服务器" class="headerlink" title="使用自定义的DNS服务器"></a>使用自定义的DNS服务器</h4><p>这个方案仅仅是应对容器内需要访问容器外的其他机器的host时起作用，如果还需要变化其他配置，那么可以忽略掉</p>
+<h4 id="使用env或者env文件"><a href="#使用env或者env文件" class="headerlink" title="使用env或者env文件"></a>使用env或者env文件</h4><ol>
+<li>首先要把应用依赖的外部配置从代码里面抽出来，做成配置文件</li>
+<li>容器启动的时候，执行一个自定义脚本，脚本内容就是从容器系统环境变量里面读取环境变量，然后用sed替换配置文件里面的配置</li>
+<li>那么在docker run启动容器的阶段，通过-e选项传递你的配置值到容器的环境变量，就能修改容器内应用的配置</li>
+<li>迁移到其他环境，修改docker run -e的环境变量配置就OK</li>
+</ol>
+<h4 id="直接使用-v挂载不同环境的配置文件"><a href="#直接使用-v挂载不同环境的配置文件" class="headerlink" title="直接使用-v挂载不同环境的配置文件"></a>直接使用-v挂载不同环境的配置文件</h4><p>这种与第二种本质上没有太大区别。但是关键在于env或者env文件是在client端的，而-v挂载目录是需要在server端的。也就是是说每个server都需要有那个目录或者文件才行，而env方式的话，就只需要client端有就可以了。</p>
+<p>鉴于server端一般是多于client端的，所以选用env的会相对多一些。</p>
+<h2 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h2><p>docker attach容器后，退出的时候ctrl + q</p>
+<h4 id="docker默认的docker0"><a href="#docker默认的docker0" class="headerlink" title="docker默认的docker0"></a>docker默认的docker0</h4><p>bridge是不支持服务发现的，也就在这个网络里的docker容器相互之间并不能通过名称通信。<br>要支持服务发现的话，需要自定义一个bridge网络。</p>
+<p>只有swarm service可以连到overylay网络，独立的容器是连不上的。</p>
+<p>docker是会动态修改宿主机的iptables规则的。</p>
+<p>参考： <a href="https://docs.docker.com/engine/userguide/networking/" target="_blank" rel="external">https://docs.docker.com/engine/userguide/networking/</a></p>
+<h2 id="关闭防火墙引起的问题"><a href="#关闭防火墙引起的问题" class="headerlink" title="关闭防火墙引起的问题"></a>关闭防火墙引起的问题</h2><p>在dockerd运行的时候，关闭防火墙的话，会清空iptables里的docker相关规则，导致docker容器启动失败。</p>
+<p>centos7, docker ce17</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">iptables: No chain/target/match by that name</div></pre></td></tr></table></figure>
+<p>解决办法，在关闭防火墙之后再启动dockerd，或者重启dockerd，它会自己根据现有docker网络和容器重建iptables相关规则。</p>
+<h2 id="devicemapper-Can-not-set-cookie-dm-task-set-cookie-failed"><a href="#devicemapper-Can-not-set-cookie-dm-task-set-cookie-failed" class="headerlink" title="devicemapper: Can not set cookie: dm_task_set_cookie failed"></a>devicemapper: Can not set cookie: dm_task_set_cookie failed</h2><p>重命名container名称导致。</p>
+<p>解决：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">echo &apos;y&apos; | sudo dmsetup udevcomplete_all</div></pre></td></tr></table></figure></p>
+<p>最好能执行<code>docker rm $(docker ps -a -q)</code>把现有container都移除。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/12/centos7-搭建DNS服务器/" title="centos7-搭建DNS服务器" itemprop="url">centos7-搭建DNS服务器</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-12T03:29:47.000Z" itemprop="datePublished"> 发表于 2017-07-12</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="主服务器"><a href="#主服务器" class="headerlink" title="主服务器"></a>主服务器</h2><h4 id="安装bind9"><a href="#安装bind9" class="headerlink" title="安装bind9"></a>安装bind9</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">yum install bind bind-utils -y</div></pre></td></tr></table></figure>
+<h4 id="编辑-etc-named-conf"><a href="#编辑-etc-named-conf" class="headerlink" title="编辑/etc/named.conf"></a>编辑/etc/named.conf</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">options &#123;</div><div class="line">    listen-on port 53 &#123; any; &#125;;</div><div class="line">	listen-on-v6 port 53 &#123; ::1; &#125;;</div><div class="line">	directory 	&quot;/var/named&quot;;</div><div class="line">	dump-file 	&quot;/var/named/data/cache_dump.db&quot;;</div><div class="line">	statistics-file &quot;/var/named/data/named_stats.txt&quot;;</div><div class="line">	memstatistics-file &quot;/var/named/data/named_mem_stats.txt&quot;;</div><div class="line">	allow-query     &#123; any; &#125;;</div><div class="line">	allow-transfer&#123; localhost; 10.2.19.113; &#125;;</div><div class="line"></div><div class="line">......</div><div class="line">...</div><div class="line"></div><div class="line">zone &quot;will.com&quot; IN &#123;</div><div class="line">type master;</div><div class="line">file &quot;forward.unixmen&quot;;</div><div class="line">allow-update &#123; none; &#125;;</div><div class="line">&#125;;</div><div class="line"></div><div class="line">zone &quot;19.2.10.in-addr.arpa&quot; IN &#123;</div><div class="line">type master;</div><div class="line">file &quot;reverse.unixmen&quot;;</div><div class="line">allow-update &#123; none; &#125;;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<h4 id="创建上面我们配置的zone文件"><a href="#创建上面我们配置的zone文件" class="headerlink" title="创建上面我们配置的zone文件"></a>创建上面我们配置的zone文件</h4><p>vi /var/named/forward.unixmen<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">$TTL 86400</div><div class="line">@   IN  SOA     etl02.will.com. root.will.com. (</div><div class="line">        2017071001  ;Serial</div><div class="line">        3600        ;Refresh</div><div class="line">        1800        ;Retry</div><div class="line">        604800      ;Expire</div><div class="line">        86400       ;Minimum TTL</div><div class="line">)</div><div class="line">@       IN  NS          etl02.will.com.</div><div class="line">@       IN  NS          etl03.will.com.</div><div class="line">@       IN  NS          schedule.will.com.</div><div class="line">@       IN  A           10.2.19.112</div><div class="line">@       IN  A           10.2.19.113</div><div class="line">@       IN  A           10.2.19.62</div><div class="line">etl02       IN  A   10.2.19.112</div><div class="line">etl03    IN  A   10.2.19.113</div><div class="line">schedule    IN  A   10.2.19.62</div></pre></td></tr></table></figure></p>
+<p>检查配置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[root@etl02 ~]# named-checkzone will.com /var/named/forward.unixmen</div><div class="line">zone will.com/IN: loaded serial 2017071001</div><div class="line">OK</div></pre></td></tr></table></figure></p>
+<p>vi /var/named/reverse.unixmen<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">$TTL 86400</div><div class="line">@   IN  SOA     etl02.will.com. root.will.com. (</div><div class="line">        2017071001  ;Serial</div><div class="line">        3600        ;Refresh</div><div class="line">        1800        ;Retry</div><div class="line">        604800      ;Expire</div><div class="line">        86400       ;Minimum TTL</div><div class="line">)</div><div class="line">@       IN  NS          etl02.will.com.</div><div class="line">@       IN  NS          etl03.will.com.</div><div class="line">@       IN  NS          schedule.will.com.</div><div class="line">@       IN  PTR         will.com.</div><div class="line">etl02       IN  A   10.2.19.112</div><div class="line">etl03    IN  A   10.2.19.113</div><div class="line">schedule    IN  A   10.2.19.62</div><div class="line">62     IN  PTR         schedule.will.com.</div><div class="line">112     IN  PTR         etl02.will.com.</div><div class="line">113     IN  PTR         etl03.will.com.</div></pre></td></tr></table></figure></p>
+<p>同样检查一下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[root@etl02 ~]# named-checkzone will.com /var/named/reverse.unixmen </div><div class="line">zone will.com/IN: loaded serial 2017071001</div><div class="line">OK</div></pre></td></tr></table></figure></p>
+<h2 id="启动DNS服务"><a href="#启动DNS服务" class="headerlink" title="启动DNS服务"></a>启动DNS服务</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">systemctl enable named</div><div class="line">systemctl start named</div></pre></td></tr></table></figure>
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><ol>
+<li>编辑/etc/resolv.conf文件, 修改nameserver为etl02.will.com</li>
+<li>编辑网卡配置文件/etc/sysconfig/network-scripts/ifcfg-eth0, 修改DNS为我们的DNS服务器地址10.2.19.112</li>
+<li>重启网络服务：systemctl restart network</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line">[root@etl02 ~]# dig etl02.will.com</div><div class="line"></div><div class="line">; &lt;&lt;&gt;&gt; DiG 9.9.4-RedHat-9.9.4-50.el7_3.1 &lt;&lt;&gt;&gt; etl02.will.com</div><div class="line">;; global options: +cmd</div><div class="line">;; Got answer:</div><div class="line">;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, status: NOERROR, id: 48492</div><div class="line">;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 3, ADDITIONAL: 3</div><div class="line"></div><div class="line">;; OPT PSEUDOSECTION:</div><div class="line">; EDNS: version: 0, flags:; udp: 4096</div><div class="line">;; QUESTION SECTION:</div><div class="line">;etl02.will.com.		IN	A</div><div class="line"></div><div class="line">;; ANSWER SECTION:</div><div class="line">etl02.will.com.	86400	IN	A	10.2.19.112</div><div class="line"></div><div class="line">;; AUTHORITY SECTION:</div><div class="line">will.com.		86400	IN	NS	etl02.will.com.</div><div class="line">will.com.		86400	IN	NS	schedule.will.com.</div><div class="line">will.com.		86400	IN	NS	etl03.will.com.</div><div class="line"></div><div class="line">;; ADDITIONAL SECTION:</div><div class="line">etl03.will.com.	86400	IN	A	10.2.19.113</div><div class="line">schedule.will.com.	86400	IN	A	10.2.19.62</div><div class="line"></div><div class="line">;; Query time: 0 msec</div><div class="line">;; SERVER: 127.0.0.1#53(127.0.0.1)</div><div class="line">;; WHEN: Fri Jul 14 11:52:31 EDT 2017</div><div class="line">;; MSG SIZE  rcvd: 150</div></pre></td></tr></table></figure>
+<p>参考：<a href="https://www.unixmen.com/setting-dns-server-centos-7/" target="_blank" rel="external">https://www.unixmen.com/setting-dns-server-centos-7/</a></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/04/自如爬虫/" title="自如爬虫" itemprop="url">自如爬虫</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-04T08:08:37.000Z" itemprop="datePublished"> 发表于 2017-07-04</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>筛选房源的URL</p>
+<p>筛选的是北土城的房子：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">https://phoenix.ziroom.com/v7/room/list.json?uid=0&amp;os=android%3A4.2.2&amp;suggestion_type=3&amp;model=HTC+One+X+-+4.2.2+-+API+17+-+720x1280&amp;sort=2&amp;suggestion_value=%E5%8C%97%E5%9C%9F%E5%9F%8E&amp;imei=000000000000000&amp;app_version=5.2.7&amp;network=WIFI&amp;ip=10.0.3.15&amp;size=10&amp;sign=fed60ace709254dbe7ca5b471ea8bb62&amp;timestamp=1499155383&amp;price=%2C&amp;page=1&amp;sign_open=1&amp;city_code=110000</div><div class="line"></div><div class="line">-- 下拉一页面</div><div class="line">https://phoenix.ziroom.com/v7/room/list.json?uid=0&amp;os=android%3A4.2.2&amp;suggestion_type=3&amp;model=HTC+One+X+-+4.2.2+-+API+17+-+720x1280&amp;sort=2&amp;suggestion_value=%E5%8C%97%E5%9C%9F%E5%9F%8E&amp;imei=000000000000000&amp;app_version=5.2.7&amp;network=WIFI&amp;ip=10.0.3.15&amp;size=10&amp;sign=924565090bc8a24dfd8f9dd07e04f4af&amp;timestamp=1499155456&amp;price=%2C&amp;page=2&amp;sign_open=1&amp;city_code=110000</div><div class="line"></div><div class="line">-- 下拉一页面</div><div class="line">https://phoenix.ziroom.com/v7/room/list.json?uid=0&amp;os=android%3A4.2.2&amp;suggestion_type=3&amp;model=HTC+One+X+-+4.2.2+-+API+17+-+720x1280&amp;sort=2&amp;suggestion_value=%E5%8C%97%E5%9C%9F%E5%9F%8E&amp;imei=000000000000000&amp;app_version=5.2.7&amp;network=WIFI&amp;ip=10.0.3.15&amp;size=10&amp;sign=2d87dcd80f06daf1b967b9b445fb302e&amp;timestamp=1499155491&amp;price=%2C&amp;page=3&amp;sign_open=1&amp;city_code=110000</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">uid	0</div><div class="line">os	android:4.2.2</div><div class="line">suggestion_type	3</div><div class="line">model	HTC One X - 4.2.2 - API 17 - 720x1280</div><div class="line">sort	2</div><div class="line">suggestion_value	北土城</div><div class="line">imei	000000000000000</div><div class="line">app_version	5.2.7</div><div class="line">network	WIFI</div><div class="line">ip	10.0.3.15</div><div class="line">size	10</div><div class="line">sign	fed60ace709254dbe7ca5b471ea8bb62</div><div class="line">timestamp	1499155383</div><div class="line">price	,</div><div class="line">page	1</div><div class="line">sign_open	1</div><div class="line">city_code	110000</div></pre></td></tr></table></figure>
+<p>房子详情页<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">https://phoenix.ziroom.com/v7/room/detail.json?sign=a97bdae17004d4c9bc535068316b2185&amp;uid=0&amp;timestamp=1499155557&amp;id=146610&amp;os=android%3A4.2.2&amp;model=HTC+One+X+-+4.2.2+-+API+17+-+720x1280&amp;imei=000000000000000&amp;app_version=5.2.7&amp;sign_open=1&amp;city_code=110000&amp;house_id=20624&amp;network=WIFI&amp;ip=10.0.3.15</div></pre></td></tr></table></figure></p>
+<p>可视化一下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">sign	a97bdae17004d4c9bc535068316b2185</div><div class="line">uid	0</div><div class="line">timestamp	1499155557</div><div class="line">id	146610</div><div class="line">os	android:4.2.2</div><div class="line">model	HTC One X - 4.2.2 - API 17 - 720x1280</div><div class="line">imei	000000000000000</div><div class="line">app_version	5.2.7</div><div class="line">sign_open	1</div><div class="line">city_code	110000</div><div class="line">house_id	20624</div><div class="line">network	WIFI</div><div class="line">ip	10.0.3.15</div></pre></td></tr></table></figure></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/04/pyenv多版本安装/" title="pyenv多版本安装" itemprop="url">pyenv多版本安装</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-04T03:18:32.000Z" itemprop="datePublished"> 发表于 2017-07-04</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">yum install -y git python-pip</div><div class="line">git clone https://github.com/pyenv/pyenv.git ~/.pyenv</div><div class="line">echo &apos;export PYENV_ROOT=&quot;$HOME/.pyenv&quot;&apos; &gt;&gt; ~/.bash_profile</div><div class="line">echo &apos;export PATH=&quot;$PYENV_ROOT/bin:$PATH&quot;&apos; &gt;&gt; ~/.bash_profile</div><div class="line">echo &apos;eval &quot;$(pyenv init -)&quot;&apos; &gt;&gt; ~/.bash_profile</div><div class="line"> yum install readline readline-devel readline-static openssl openssl-devel openssl-static sqlite-devel bzip2-devel bzip2-libs -y</div><div class="line"> pyenv install 3.6.1</div><div class="line"> git clone https://github.com/pyenv/pyenv-virtualenv.git $(pyenv root)/plugins/pyenv-virtualenv</div><div class="line"> pyenv shell 3.6.1</div><div class="line"> echo &apos;eval &quot;$(pyenv virtualenv-init -)&quot;&apos; &gt;&gt; ~/.bash_profile</div><div class="line"> pyenv virtualenv 3.6.1 will_3.6.1</div></pre></td></tr></table></figure>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">pyenv versions</div><div class="line"></div><div class="line">pyenv activate  will_3.6.1</div></pre></td></tr></table></figure>
+<p> 安装加速: 提前下载好对应python版本的tar.zx包，放到~/.pyenv/cache/下，然后再运行 pyenv install 3.6.1</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/03/RunningData执行用户迁移计划/" title="RunningData执行用户迁移计划" itemprop="url">RunningData执行用户迁移计划</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-03T06:41:20.000Z" itemprop="datePublished"> 发表于 2017-07-03</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="超级用户准备"><a href="#超级用户准备" class="headerlink" title="超级用户准备"></a>超级用户准备</h2><ul>
+<li>jlc</li>
+<li>wplan</li>
+<li>xiaov</li>
+</ul>
+<h2 id="文件权限"><a href="#文件权限" class="headerlink" title="文件权限"></a>文件权限</h2><h4 id="HDFS"><a href="#HDFS" class="headerlink" title="HDFS"></a>HDFS</h4><ul>
+<li>所有数仓调整owner为所在事业部的超级用户<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">hdfs dfs -chown jlc:jlc -R /log/statistics</div><div class="line"></div><div class="line"></div><div class="line">hdfs dfs -ls /apps/hive/warehouse/ | awk &apos;&#123;print(&quot;hdfs dfs -chown -R &quot;, $4, &quot;:&quot;,$4, $8)&#125;&apos;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="本地"><a href="#本地" class="headerlink" title="本地"></a>本地</h4><table>
+<thead>
+<tr>
+<th>名称</th>
+<th>位置</th>
+<th>操作q</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sqoop目录权限</td>
+<td>/server/app/sqoop</td>
+<td>rm -vfr /server/app/sqoop/vo</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>/server/metamap/metamap_django</td>
+<td>/server/metamap/metamap_django/*.java</td>
+</tr>
+</tbody>
+</table>
+<h2 id="azkaban执行用户"><a href="#azkaban执行用户" class="headerlink" title="azkaban执行用户"></a>azkaban执行用户</h2><ul>
+<li>sqoop</li>
+<li>hive</li>
+</ul>
+<p>需要修改M2H，H2H，H2M以及新版本的generate_job_file里的执行用户，包含两个地方</p>
+<ul>
+<li>生成执行脚本</li>
+<li>生成命令【测试执行】</li>
+</ul>
+<p>在settings文件中添加参数USE_ROOT</p>
+<h2 id="jenkins调度"><a href="#jenkins调度" class="headerlink" title="jenkins调度"></a>jenkins调度</h2><p>资产匹配问题: 62远程调用106上的脚步任务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">Message from syslogd@datanode17 at Jul  3 15:50:52 ...</div><div class="line"> kernel:BUG: soft lockup - CPU#7 stuck for 67s! [python:2708]</div></pre></td></tr></table></figure></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/06/26/关于kylin分时段merge之后体积变小/" title="关于kylin分时段merge之后体积变小" itemprop="url">关于kylin分时段merge之后体积变小</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-06-26T11:01:24.000Z" itemprop="datePublished"> 发表于 2017-06-26</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>我们设置了一个cube，指定的mandatory dimension为create_year，问了一下，说是因为有按照年去查询指标的需求。</p>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>mandatory dimension: create_year</p>
+<p>自动merge : 7天、28天</p>
+<h2 id="现象"><a href="#现象" class="headerlink" title="现象"></a>现象</h2><p>merge之前单天的数据大小平均为3G，而单周的数据大小平均为11G。</p>
+<p>就是说： <strong>merge完之后数据变小了</strong>！</p>
+<p>那么为什么呢？</p>
+<p>几个人想了好半天，终于有个同事想到了….就是因为对于不包含merge时间【一般是天】的所有其他维度的组合，都减少了6倍的大小。</p>
+<p>那么，由此延伸，我们是可以将create_day设置为mandatory dimension的，这样每天的cube就会减少很多大小，merge以后也不会有对应的压缩。这样对于单天记录的体积会有很大压缩提升。。。</p>
+<p>那么对于年指标的查询应该怎样处理呢？由于这种比较少，建议可以前端解决。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/06/25/hbase频繁挂掉/" title="hbase频繁挂掉" itemprop="url">hbase频繁挂掉</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-06-25T01:57:58.000Z" itemprop="datePublished"> 发表于 2017-06-25</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">2017-06-25 09:42:34,262 ERROR [RS_OPEN_REGION-datanode20:16020-0] coprocessor.CoprocessorHost: The coprocessor org.apache.kylin.stora</div><div class="line">ge.hbase.cube.v2.coprocessor.endpoint.CubeVisitService threw org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.ipc.StandbyExcep</div><div class="line">tion): Operation category READ is not supported in state standby</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div></pre></td><td class="code"><pre><div class="line">2017-06-25 09:42:34,336 FATAL [RS_OPEN_REGION-datanode20:16020-2] regionserver.HRegionServer: ABORTING region server datanode20.yinke</div><div class="line">r.com,16020,1498354685968: The coprocessor org.apache.kylin.storage.hbase.cube.v1.coprocessor.observer.AggregateRegionObserver threw </div><div class="line">org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.ipc.StandbyException): Operation category READ is not supported in state stan</div><div class="line">dby</div><div class="line"></div><div class="line"></div><div class="line">2017-06-25 09:42:34,336 FATAL [RS_OPEN_REGION-datanode20:16020-2] regionserver.HRegionServer: RegionServer abort: loaded coprocessors are: [org.apache.hadoop.hbase.security.access.SecureBulkLoadEndpoint]</div><div class="line"></div><div class="line"></div><div class="line">2017-06-25 09:42:34,338 FATAL [RS_OPEN_REGION-datanode20:16020-0] regionserver.HRegionServer: ABORTING region server datanode20.will.com,16020,1498354685968: The coprocessor org.apache.kylin.storage.hbase.cube.v1.coprocessor.observer.AggregateRegionObserver threw org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.ipc.StandbyException): Operation category READ is not supported in state standby</div><div class="line"></div><div class="line"></div><div class="line">2017-06-25 09:42:34,370 INFO  [RS_OPEN_REGION-datanode20:16020-1] regionserver.RegionCoprocessorHost: Loaded coprocessor org.apache.k</div><div class="line">ylin.storage.hbase.cube.v2.coprocessor.endpoint.CubeVisitService from HTD of KYLIN_4L40B34P11 successfully.</div><div class="line">2017-06-25 09:42:34,379 ERROR [RS_OPEN_REGION-datanode20:16020-2] handler.OpenRegionHandler: Failed open of region=KYLIN_HBWCQ5ZQR1,\</div><div class="line">x001,1494915979852.71f4a908f1e460ac95dfadcf5ab8ecfd., starting to roll back the global memstore size.</div><div class="line">2017-06-25 09:42:34,381 INFO  [RS_OPEN_REGION-datanode20:16020-2] coordination.ZkOpenRegionCoordination: Opening of region &#123;ENCODED =</div><div class="line">&gt; 71f4a908f1e460ac95dfadcf5ab8ecfd, NAME =&gt; &apos;KYLIN_HBWCQ5ZQR1,\x001,1494915979852.71f4a908f1e460ac95dfadcf5ab8ecfd.&apos;, STARTKEY =&gt; &apos;\x</div><div class="line">001&apos;, ENDKEY =&gt; &apos;\x002&apos;&#125; failed, transitioning from OPENING to FAILED_OPEN in ZK, expecting version 3</div><div class="line">2017-06-25 09:42:34,382 ERROR [RS_OPEN_REGION-datanode20:16020-0] handler.OpenRegionHandler: Failed open of region=KYLIN_HBWCQ5ZQR1,\</div><div class="line">x00\x15,1494915979852.c4940efcc8efa3f3a9b7c2a546a1d1f5., starting to roll back the global memstore size.</div><div class="line">org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.ipc.StandbyException): Operation category READ is not supported in state stan</div><div class="line">dby</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">java.io.IOException: Cannot append; log is closed</div><div class="line">        at org.apache.hadoop.hbase.regionserver.wal.FSHLog.append(FSHLog.java:1223)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.wal.WALUtil.writeRegionEventMarker(WALUtil.java:95)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.HRegion.writeRegionOpenMarker(HRegion.java:978)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.HRegion.openHRegion(HRegion.java:6335)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.HRegion.openHRegion(HRegion.java:6289)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.HRegion.openHRegion(HRegion.java:6260)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.HRegion.openHRegion(HRegion.java:6216)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.HRegion.openHRegion(HRegion.java:6167)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.handler.OpenRegionHandler.openRegion(OpenRegionHandler.java:362)</div><div class="line">        ...............</div><div class="line">2017-06-25 09:42:44,168 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020.logRoller] regionserver.LogRoller: LogRoller exit</div><div class="line">ing.</div><div class="line">2017-06-25 09:42:44,168 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020] regionserver.CompactSplitThread: Waiting for Spl</div><div class="line">it Thread to finish...</div><div class="line">2017-06-25 09:42:44,168 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020] regionserver.CompactSplitThread: Waiting for Mer</div><div class="line">ge Thread to finish...</div><div class="line">2017-06-25 09:42:44,168 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020] regionserver.CompactSplitThread: Waiting for Lar</div><div class="line">ge Compaction Thread to finish...</div><div class="line">2017-06-25 09:42:44,168 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020] regionserver.CompactSplitThread: Waiting for Sma</div><div class="line">ll Compaction Thread to finish...</div><div class="line">2017-06-25 09:42:44,170 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020.leaseChecker] regionserver.Leases: regionserver/d</div><div class="line">atanode20.will.com/10.2.19.109:16020.leaseChecker closing leases</div><div class="line">2017-06-25 09:42:44,171 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020.leaseChecker] regionserver.Leases: regionserver/d</div><div class="line">atanode20.will.com/10.2.19.109:16020.leaseChecker closed leases</div><div class="line">2017-06-25 09:42:44,183 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020] ipc.RpcServer: Stopping server on 16020</div></pre></td></tr></table></figure>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/06/22/NN-HA后引发的问题/" title="NN-HA后引发的问题" itemprop="url">NN-HA后引发的问题</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-06-22T03:19:07.000Z" itemprop="datePublished"> 发表于 2017-06-22</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h6 id="最表面问题"><a href="#最表面问题" class="headerlink" title="最表面问题:"></a>最表面问题:</h6><p>几乎所有用户执行权限都出现问题。</p>
+<h6 id="问题原因："><a href="#问题原因：" class="headerlink" title="问题原因："></a>问题原因：</h6><ul>
+<li>所有HDFS之上的应用都是使用linux的posix文件权限控制</li>
+<li>当Active NN是DN17的时候，DN17本机并没有这些用户的相关权限信息。<h6 id="解决方法："><a href="#解决方法：" class="headerlink" title="解决方法："></a>解决方法：</h6></li>
+<li>尝试copyNN01的用户以及组信息到DN17<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">/etc/passwd</div><div class="line">/etc/shadow</div><div class="line"></div><div class="line"></div><div class="line">/etc/group</div><div class="line">/etc/gshadow</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">[root@namenode01 hdfs]# cat /etc/group | grep xiaov</div><div class="line">xiaov:x:1015:zhoujian,wangchenqi,zhangyuntao,wangxu,wanghao_fengkong,linzhixin,yangqiankun,tianye,zhaoyanchao,tinyv,wangyin,lihaoyue,zhuxiuwei,yangluan,qizhenpeng,zhanglining,xiaovtest,yanghuanyuzi,zhanghaigang,shichengjie,luanzhiwei,wangyasen,kangyimin,luiyahui,liuyahui,liulinyuan,caoyunqing,tianyang,chengyao,gezhao,hehaojun,hujunjie,liuwei,xiongpeng</div><div class="line">xiaovtest:x:1040:</div><div class="line">metastoremanager:x:1041:xiaovtest,wangchenqi</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>将上面所有的用户保存到另一台的xiaov文件中，然后执行下面的逻辑：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">for name in `cat xiaov | awk &apos;&#123;split($0, atr,&quot;,&quot;);   </div><div class="line"> </div><div class="line"> for (i=0;i&lt;length(atr);i++) &#123;</div><div class="line"> print(atr[i])</div><div class="line"> &#125;</div><div class="line"> &#125;&apos;`;</div><div class="line">do</div><div class="line">useradd $name -G xiaov</div><div class="line">done</div></pre></td></tr></table></figure></p>
+<ul>
+<li>使用fabric维护用户权限相关信息，每次都同时操作两台NN。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line">-- fabric.py</div><div class="line"></div><div class="line">nns=(&apos;namenode01.will.com&apos;, &apos;datanode17.will.com&apos;)</div><div class="line"></div><div class="line">env.roledefs = &#123;</div><div class="line">    &apos;services&apos;: services,</div><div class="line">    &apos;datanodes&apos;: datanodes,</div><div class="line">    &apos;tmp&apos;: tmpnodes,</div><div class="line">    &apos;nns&apos;: nns</div><div class="line">&#125;</div><div class="line"></div><div class="line">------------------</div><div class="line"></div><div class="line">[root@datanode21 ~]# fab cmd:roles=nns,cmd=&quot;echo hello from `hostname`&quot;</div><div class="line">This text is green!</div><div class="line">This sentence is red, except for these words, which are green.</div><div class="line">[namenode01.will.com] Executing task &apos;cmd&apos;</div><div class="line">[namenode01.will.com] run: echo hello from datanode21.will.com</div><div class="line">[namenode01.will.com] out: hello from datanode21.will.com</div><div class="line">[namenode01.will.com] out: </div><div class="line"></div><div class="line">[datanode17.will.com] Executing task &apos;cmd&apos;</div><div class="line">[datanode17.will.com] run: echo hello from datanode21.will.com</div><div class="line">[datanode17.will.com] out: hello from datanode21.will.com</div><div class="line">[datanode17.will.com] out: </div><div class="line"></div><div class="line"></div><div class="line">Done.</div><div class="line">Disconnecting from datanode17.will.com... done.</div><div class="line">Disconnecting from namenode01.will.com... done</div></pre></td></tr></table></figure>
+<h4 id="NN切换的相关日志"><a href="#NN切换的相关日志" class="headerlink" title="NN切换的相关日志"></a>NN切换的相关日志</h4><p>NN01的log。</p>
+<p>出现这个错误后，NN自己直接shutdown<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line">2017-06-15 22:35:35,329 WARN  client.QuorumJournalManager (QuorumCall.java:waitFor(134)) - Waited 18014 ms (timeout=20000 ms) for a r</div><div class="line">esponse for sendEdits. Succeeded so far: [10.2.19.121:8485]</div><div class="line">2017-06-15 22:35:36,331 WARN  client.QuorumJournalManager (QuorumCall.java:waitFor(134)) - Waited 19015 ms (timeout=20000 ms) for a r</div><div class="line">esponse for sendEdits. Succeeded so far: [10.2.19.121:8485]</div><div class="line">2017-06-15 22:35:37,317 FATAL namenode.FSEditLog (JournalSet.java:mapJournalsAndReportErrors(398)) - Error: flush failed for required</div><div class="line"> journal (JournalAndStream(mgr=QJM to [10.2.19.123:8485, 10.2.19.127:8485, 10.2.19.121:8485], stream=QuorumOutputStream starting at t</div><div class="line">xid 118442295))</div><div class="line">java.io.IOException: Timed out waiting 20000ms for a quorum of nodes to respond.</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.client.AsyncLoggerSet.waitForWriteQuorum(AsyncLoggerSet.java:137)</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.client.QuorumOutputStream.flushAndSync(QuorumOutputStream.java:107)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream.flush(EditLogOutputStream.java:113)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream.flush(EditLogOutputStream.java:107)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.JournalSet$JournalSetOutputStream$8.apply(JournalSet.java:533)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.JournalSet.mapJournalsAndReportErrors(JournalSet.java:393)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.JournalSet.access$100(JournalSet.java:57)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.JournalSet$JournalSetOutputStream.flush(JournalSet.java:529)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.FSEditLog.logSync(FSEditLog.java:647)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.FSNamesystem.startFileInt(FSNamesystem.java:2512)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.FSNamesystem.startFile(FSNamesystem.java:2377)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.create(NameNodeRpcServer.java:708)</div><div class="line">        at org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolServerSideTranslatorPB.create(ClientNamenodeProtocolServerSideTran</div><div class="line">slatorPB.java:405)</div><div class="line">        at org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$ClientNamenodeProtocol$2.callBlockingMethod(ClientNamen</div><div class="line">odeProtocolProtos.java)</div><div class="line">        at org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:616)</div><div class="line">        at org.apache.hadoop.ipc.RPC$Server.call(RPC.java:969)</div><div class="line">        at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2206)</div><div class="line">        at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2202)</div><div class="line">        at java.security.AccessController.doPrivileged(Native Method)</div><div class="line">        at javax.security.auth.Subject.doAs(Subject.java:422)</div><div class="line">        at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1709)</div><div class="line">        at org.apache.hadoop.ipc.Server$Handler.run(Server.java:2200)</div><div class="line">2017-06-15 22:35:37,318 WARN  client.QuorumJournalManager (QuorumOutputStream.java:abort(72)) - Aborting QuorumOutputStream starting </div><div class="line">at txid 118442295</div><div class="line">2017-06-15 22:35:37,337 INFO  BlockStateChange (BlockManager.java:computeReplicationWorkForBlocks(1531)) - BLOCK* neededReplications </div><div class="line">= 0, pendingReplications = 0.</div><div class="line">2017-06-15 22:35:37,342 INFO  util.ExitUtil (ExitUtil.java:terminate(124)) - Exiting with status 1</div><div class="line">2017-06-15 22:35:37,396 INFO  namenode.NameNode (LogAdapter.java:info(47)) - SHUTDOWN_MSG: </div><div class="line">/************************************************************</div><div class="line">SHUTDOWN_MSG: Shutting down NameNode at namenode01.will.com/10.2.19.72</div></pre></td></tr></table></figure></p>
+<p>DN17的log<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">2017-06-19 16:34:39,682 WARN  client.QuorumJournalManager (QuorumCall.java:waitFor(134)) - Waited 27324 ms (timeout=20000 ms) for a r</div><div class="line">esponse for selectInputStreams. No responses yet.</div><div class="line"></div><div class="line">.........</div><div class="line">2017-06-19 16:34:46,859 INFO  util.JvmPauseMonitor (JvmPauseMonitor.java:run(196)) - Detected pause in JVM or host machine (eg GC): p</div><div class="line">ause of approximately 6029ms</div><div class="line">No GCs detected</div><div class="line">2017-06-19 16:34:49,739 INFO  util.JvmPauseMonitor (JvmPauseMonitor.java:run(196)) - Detected pause in JVM or host machine (eg GC): p</div><div class="line">ause of approximately 2380ms</div><div class="line">No GCs detected</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">2017-06-26 13:39:04,029 INFO  ipc.Server (Server.java:doRead(891)) - Socket Reader #1 for port 8020: readAndProcess from client 10.2.</div><div class="line">19.83 threw exception [java.io.IOException: Connection reset by peer]</div><div class="line">java.io.IOException: Connection reset by peer</div><div class="line">        at sun.nio.ch.FileDispatcherImpl.read0(Native Method)</div><div class="line">        at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:39)</div><div class="line">        at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:223)</div><div class="line">        at sun.nio.ch.IOUtil.read(IOUtil.java:197)</div><div class="line">        at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:380)</div><div class="line">        at org.apache.hadoop.ipc.Server.channelRead(Server.java:2773)</div><div class="line">        at org.apache.hadoop.ipc.Server.access$2800(Server.java:136)</div><div class="line">        at org.apache.hadoop.ipc.Server$Connection.readAndProcess(Server.java:1606)</div><div class="line">        at org.apache.hadoop.ipc.Server$Listener.doRead(Server.java:880)</div><div class="line">        at org.apache.hadoop.ipc.Server$Listener$Reader.doRunLoop(Server.java:746)</div><div class="line">        at org.apache.hadoop.ipc.Server$Listener$Reader.run(Server.java:717)</div><div class="line">2017-06-26 13:39:04,066 INFO  ipc.Server (Server.java:doRead(891)) - Socket Reader #1 for port 8020: readAndProcess from client 10.2.</div><div class="line">19.110 threw exception [java.io.IOException: Connection reset by peer]</div><div class="line">java.io.IOException: Connection reset by peer</div><div class="line">        at sun.nio.ch.FileDispatcherImpl.read0(Native Method)</div><div class="line">        at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:39)</div><div class="line">        at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:223)</div><div class="line">        at sun.nio.ch.IOUtil.read(IOUtil.java:197)</div><div class="line"></div><div class="line">.......</div><div class="line"></div><div class="line"></div><div class="line">2017-06-26 13:39:08,310 WARN  client.QuorumJournalManager (IPCLoggerChannel.java:call(406)) - Took 4136ms to send a batch of 3 edits (262 bytes) to remote journal 10.2.19.121:8485</div><div class="line">2017-06-26 13:39:08,310 WARN  client.QuorumJournalManager (IPCLoggerChannel.java:call(406)) - Took 4130ms to send a batch of 3 edits (262 bytes) to remote journal 10.2.19.123:8485</div><div class="line">2017-06-26 13:39:08,310 WARN  client.QuorumJournalManager (IPCLoggerChannel.java:call(388)) - Remote journal 10.2.19.127:8485 failed to write txns 134233020-134233022. Will try to write to this JN again after the next log roll.</div><div class="line">org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC&apos;s epoch 15 is less than the last promised epoch 16</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:418)</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.server.Journal.checkWriteRequest(Journal.java:446)</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.server.Journal.journal(Journal.java:341)</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.journal(JournalNodeRpcServer.java:148)</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.protocolPB.QJournalProtocolServerSideTranslatorPB.journal(QJournalProtocolServerSideTranslatorPB.java:158)</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.protocol.QJournalProtocolProtos$QJournalProtocolService$2.callBlockingMethod(QJournalProto</div><div class="line">colProtos.java:25421)</div><div class="line">        at org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:616)</div><div class="line">        at org.apache.hadoop.ipc.RPC$Server.call(RPC.java:969)</div><div class="line">        at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2206)</div><div class="line">        at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2202)</div><div class="line">        at java.security.AccessController.doPrivileged(Native Method)</div><div class="line">        at javax.security.auth.Subject.doAs(Subject.java:422)</div><div class="line">        at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1709)</div><div class="line">        at org.apache.hadoop.ipc.Server$Handler.run(Server.java:2200)</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">..........</div><div class="line"></div><div class="line">org.apache.hadoop.hdfs.qjournal.client.QuorumException: Got too many exceptions to achieve quorum size 2/3. 3 exceptions thrown:</div><div class="line">10.2.19.127:8485: IPC&apos;s epoch 15 is less than the last promised epoch 16</div></pre></td></tr></table></figure>
+<p>又一次<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">2017-06-28 10:05:21,397 INFO  namenode.FSNamesystem (FSNamesystem.java:stopStandbyServices(1297)) - Stopping services started for standby state</div><div class="line">2017-06-28 10:05:21,398 WARN  ha.EditLogTailer (EditLogTailer.java:doWork(349)) - Edit log tailer interrupted</div><div class="line">java.lang.InterruptedException: sleep interrupted</div><div class="line">        at java.lang.Thread.sleep(Native Method)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.ha.EditLogTailer$EditLogTailerThread.doWork(EditLogTailer.java:347)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.ha.EditLogTailer$EditLogTailerThread.access$200(EditLogTailer.java:284)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.ha.EditLogTailer$EditLogTailerThread$1.run(EditLogTailer.java:301)</div><div class="line">        at org.apache.hadoop.security.SecurityUtil.doAsLoginUserOrFatal(SecurityUtil.java:449)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.ha.EditLogTailer$EditLogTailerThread.run(EditLogTailer.java:297)</div><div class="line">2017-06-28 10:05:21,403 INFO  namenode.FSNamesystem (FSNamesystem.java:startActiveServices(1098)) - Starting services required for active state</div></pre></td></tr></table></figure></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/06/13/RunningDataV2版本迁移计划/" title="runningdatav2版本迁移计划" itemprop="url">runningdatav2版本迁移计划</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-06-13T08:45:17.000Z" itemprop="datePublished"> 发表于 2017-06-13</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h4 id="注意点"><a href="#注意点" class="headerlink" title="注意点"></a>注意点</h4><ul>
+<li>编辑、更新<ul>
+<li>各类ETL自动创建与之对应的ExecObj对象【重载save方法实现】</li>
+<li>个别自动分析依赖的ETL同时新建或更新相关ExecBlood【H2H, H2M】</li>
+<li>个别需要输入产出的ETL类型需要添加outputs字段，并在save的时候自创创建对应的NullETL对象【JAR】</li>
+<li>根据自身特性创建自身的rel_name 【save的时候分析并添加上】</li>
+</ul>
+</li>
+<li>调度相关<ul>
+<li>(日月周)日常调度【完成依赖解析与任务文件生成，测试通过】</li>
+<li>定时调度【执行部分使用既有方案】</li>
+<li>临时调度【使用既有方案】</li>
+<li>新建调度时，针对的对象应该是修改为ExecObj</li>
+</ul>
+</li>
+</ul>
+<h4 id="影响范围"><a href="#影响范围" class="headerlink" title="影响范围"></a>影响范围</h4><ul>
+<li>整体过程中xstorm新建、编辑不可用</li>
+<li>任务调度中间可能出现失败</li>
+</ul>
+<h4 id="实施步骤"><a href="#实施步骤" class="headerlink" title="实施步骤"></a>实施步骤</h4><ol>
+<li>向各事业部发送不可用通知</li>
+<li>数据库备份</li>
+<li>确保新的save方法都已经注释掉,否则会影响清洗过程。</li>
+<li>将数据库对应model字段全部添加上<blockquote>
+<p>./manage.py migrate metamap 0052 –settings=metamap.config</p>
+</blockquote>
+</li>
+</ol>
+<p>可能需要手动添加exec_obj_id字段…【历史原因】<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line"><span class="comment">--</span></div><div class="line"><span class="comment">-- Add field exec_obj to anaetl</span></div><div class="line"><span class="comment">--</span></div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_anaetl`</span> <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="built_in">integer</span> <span class="literal">NULL</span>;</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_anaetl`</span> <span class="keyword">ALTER</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="keyword">DROP</span> <span class="keyword">DEFAULT</span>;</div><div class="line"><span class="comment">--</span></div><div class="line"><span class="comment">-- Add field exec_obj to etl</span></div><div class="line"><span class="comment">--</span></div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_etl`</span> <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="built_in">integer</span> <span class="literal">NULL</span>;</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_etl`</span> <span class="keyword">ALTER</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="keyword">DROP</span> <span class="keyword">DEFAULT</span>;</div><div class="line"><span class="comment">--</span></div><div class="line"><span class="comment">-- Add field exec_obj to jarapp</span></div><div class="line"><span class="comment">--</span></div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_jarapp`</span> <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="built_in">integer</span> <span class="literal">NULL</span>;</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_jarapp`</span> <span class="keyword">ALTER</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="keyword">DROP</span> <span class="keyword">DEFAULT</span>;</div><div class="line"><span class="comment">--</span></div><div class="line"><span class="comment">-- Add field exec_obj to sqoophive2mysql</span></div><div class="line"><span class="comment">--</span></div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_sqoophive2mysql`</span> <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="built_in">integer</span> <span class="literal">NULL</span>;</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_sqoophive2mysql`</span> <span class="keyword">ALTER</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="keyword">DROP</span> <span class="keyword">DEFAULT</span>;</div><div class="line"><span class="comment">--</span></div><div class="line"><span class="comment">-- Add field exec_obj to sqoopmysql2hive</span></div><div class="line"><span class="comment">--</span></div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_sqoopmysql2hive`</span> <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="built_in">integer</span> <span class="literal">NULL</span>;</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_sqoopmysql2hive`</span> <span class="keyword">ALTER</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="keyword">DROP</span> <span class="keyword">DEFAULT</span>;</div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> <span class="string">`metamap_anaetl_30a76f4d`</span> <span class="keyword">ON</span> <span class="string">`metamap_anaetl`</span> (<span class="string">`exec_obj_id`</span>);</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_anaetl`</span> <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> <span class="string">`metamap_anaetl_exec_obj_id_1bac03db_fk_metamap_execobj_id`</span> FOREIGN <span class="keyword">KEY</span> (<span class="string">`exec_obj_id`</span>) <span class="keyword">REFERENCES</span> <span class="string">`metamap_execobj`</span> (<span class="string">`id`</span>);</div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> <span class="string">`metamap_etl_30a76f4d`</span> <span class="keyword">ON</span> <span class="string">`metamap_etl`</span> (<span class="string">`exec_obj_id`</span>);</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_etl`</span> <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> <span class="string">`metamap_etl_exec_obj_id_8c6a086a_fk_metamap_execobj_id`</span> FOREIGN <span class="keyword">KEY</span> (<span class="string">`exec_obj_id`</span>) <span class="keyword">REFERENCES</span> <span class="string">`metamap_execobj`</span> (<span class="string">`id`</span>);</div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> <span class="string">`metamap_jarapp_30a76f4d`</span> <span class="keyword">ON</span> <span class="string">`metamap_jarapp`</span> (<span class="string">`exec_obj_id`</span>);</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_jarapp`</span> <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> <span class="string">`metamap_jarapp_exec_obj_id_6340f92e_fk_metamap_execobj_id`</span> FOREIGN <span class="keyword">KEY</span> (<span class="string">`exec_obj_id`</span>) <span class="keyword">REFERENCES</span> <span class="string">`metamap_execobj`</span> (<span class="string">`id`</span>);</div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> <span class="string">`metamap_sqoophive2mysql_30a76f4d`</span> <span class="keyword">ON</span> <span class="string">`metamap_sqoophive2mysql`</span> (<span class="string">`exec_obj_id`</span>);</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_sqoophive2mysql`</span> <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> <span class="string">`metamap_sqoophive2mys_exec_obj_id_ee2cb5c2_fk_metamap_execobj_id`</span> FOREIGN <span class="keyword">KEY</span> (<span class="string">`exec_obj_id`</span>) <span class="keyword">REFERENCES</span> <span class="string">`metamap_execobj`</span> (<span class="string">`id`</span>);</div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> <span class="string">`metamap_sqoopmysql2hive_30a76f4d`</span> <span class="keyword">ON</span> <span class="string">`metamap_sqoopmysql2hive`</span> (<span class="string">`exec_obj_id`</span>);</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_sqoopmysql2hive`</span> <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> <span class="string">`metamap_sqoopmysql2hi_exec_obj_id_9d61c4ff_fk_metamap_execobj_id`</span> FOREIGN <span class="keyword">KEY</span> (<span class="string">`exec_obj_id`</span>) <span class="keyword">REFERENCES</span> <span class="string">`metamap_execobj`</span> (<span class="string">`id`</span>);</div></pre></td></tr></table></figure></p>
+<ol>
+<li>按照以下顺序开始清洗</li>
+</ol>
+<ul>
+<li><p>clean_etl </p>
+<p>  生成对应ETL的ExecObj</p>
+</li>
+<li><p>clean_rel </p>
+<p>  清洗H2M,M2H中不规范的name，规范化hive表名到rel_name字段中</p>
+</li>
+<li><p>clean_m2h </p>
+<p>  清洗M2H任务，生成对应的ExecObj。另外找到所有TBLBlood中父表是此表rel_name的记录，新建与之对应的ExecBlood记录</p>
+</li>
+<li><p>before_clean_blood</p>
+<p>  过滤一下TblBlood中的parent，对于不存在于H2H和M2好的父表，临时创建为之创建NULLETL，并创建对应ExecObj，然后再创建ExecBlood。 </p>
+<p>  <strong>==注意==</strong>：由于NULLETL的特殊性，需要在此创建ExecObj的deptask的日月周调度【在save方法中已实现】</p>
+</li>
+<li><p>clean_blood</p>
+<p>  清洗TblBlood到对应ExecBlood，因为前面已经处理了所有情况，不该出现任务child或者parent不存在的问题。</p>
+<p>  自检sql</p>
+  <figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">SELECT</span> <span class="keyword">name</span> <span class="keyword">from</span> metamap_execobj <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="keyword">name</span> <span class="keyword">HAVING</span> <span class="keyword">count</span>(<span class="number">1</span>) &gt; <span class="number">1</span>;</div><div class="line"></div><div class="line"><span class="keyword">SELECT</span> * <span class="keyword">from</span> metamap_execobj <span class="keyword">where</span> <span class="keyword">name</span> = <span class="string">'w_data_platform@drop_d_regula_stock'</span>;</div><div class="line"></div><div class="line"><span class="keyword">SELECT</span> * <span class="keyword">from</span> metamap_execobj <span class="keyword">where</span> <span class="keyword">name</span> = <span class="string">'app_jlc@jlc_life_accumulative'</span>;</div></pre></td></tr></table></figure>
+</li>
+<li><p>clean_h2m</p>
+<p>  清洗H2M到ExecObj对象，获取依赖ETL的H2H ExecObj对象，添加对应ExecBlood。<br>  如果是JAR产生的表，暂不支持，需要额外处理【JAR添加自身的output】。</p>
+<p>  <strong>==注意==</strong>：<br>  H2M中的个别现象，多个周期的数据存放在同一个表中：<br>  SELECT * from metamap_sqoophive2mysql where id in (71,72,73,74,75,76)<br>  需要额外手动维护execblood</p>
+</li>
+<li><p>clean_jar</p>
+<p>  清洗JAR到ExecObj对象</p>
+</li>
+<li><p>clean_email</p>
+<p>  清洗ANAETL到ExecObj对象</p>
+</li>
+<li><p>clean_task</p>
+<p>  分别执行clean， type=4, type=1等(1,2,3,4,6)</p>
+  <figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">--- 这些都是ana_etl本身的valid是0</span></div><div class="line"><span class="keyword">SELECT</span> * <span class="keyword">from</span> metamap_willdependencytask <span class="keyword">where</span> <span class="keyword">id</span> <span class="keyword">in</span> (<span class="number">864</span>, <span class="number">870</span>, <span class="number">759</span>, <span class="number">643</span>, <span class="number">164</span>, <span class="number">143</span>, <span class="number">85</span>)</div></pre></td></tr></table></figure>
+</li>
+<li><p>clean_ptask</p>
+<p>  更新定时任务的task参数，由原来的will_deptask的id，更新为type为100的最新清洗完的task id.</p>
+</li>
+<li><p>clean_null</p>
+<p>  为所有的NULLETL对象创建日月周的task调度</p>
+</li>
+</ul>
+<ol>
+<li>测试各种任务调度【日常调度、定时调度、即时调度】</li>
+<li><p>clean_exec_id</p>
+<p> 清洗原有的ETL对象的exec_obj_id字段</p>
+</li>
+<li><p>放开ETL对象的save方法注释</p>
+</li>
+<li>恢复线上使用，开启beta测试，随时解决未发现的新生bug</li>
+<li>修改日调度脚本中的url到新版本</li>
+<li>添加调度的页面覆盖回来[sche/edit_new.html， /views/sche_etl_v2.py]</li>
+</ol>
+<p>稳定运行一周，将dep task中旧的task全部删除</p>
+<p>TODO</p>
+<ol>
+<li>H2M的依赖手动添加以下。SELECT * from metamap_sqoophive2mysql where id in (71,72,73,74,75,76)</li>
+<li>测试各种ETL的save方法</li>
+</ol>
+<p>新增逻辑：</p>
+<ol>
+<li></li>
+</ol>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+  <nav id="page-nav" class="clearfix">
+    <a class="extend prev" rel="prev" href="/page/10/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="page-number" href="/page/10/">10</a><span class="page-number current">11</span><a class="page-number" href="/page/12/">12</a><a class="page-number" href="/page/13/">13</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/12/">Next<span></span></a>
+  </nav>
+
+</div>
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+ </html>

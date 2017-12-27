@@ -1,0 +1,662 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>ambari添加异构OS | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="首先声明，HDFS集群中肯定是最好不要有异构机器存在的，会造成很多兼容性问题。
+背景
+
+
+系统
+作用
+数量
+
+
+
+
+centos6
+yarn/HDFS等服务的选定集群，主要用来运行日常任务
+50
+
+
+centos7
+marathon/docker所在的小集群，预想用来调度任务
+5
+
+
+
+其实我们已经基于centos6.8 final有了一个比较稳定的集群，上面通过ambari安装并稳健运行着HDF">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ambari添加异构OS">
+<meta property="og:url" content="http://willcup.com/2017/10/26/ambari添加异构OS/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="首先声明，HDFS集群中肯定是最好不要有异构机器存在的，会造成很多兼容性问题。
+背景
+
+
+系统
+作用
+数量
+
+
+
+
+centos6
+yarn/HDFS等服务的选定集群，主要用来运行日常任务
+50
+
+
+centos7
+marathon/docker所在的小集群，预想用来调度任务
+5
+
+
+
+其实我们已经基于centos6.8 final有了一个比较稳定的集群，上面通过ambari安装并稳健运行着HDF">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.773Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ambari添加异构OS">
+<meta name="twitter:description" content="首先声明，HDFS集群中肯定是最好不要有异构机器存在的，会造成很多兼容性问题。
+背景
+
+
+系统
+作用
+数量
+
+
+
+
+centos6
+yarn/HDFS等服务的选定集群，主要用来运行日常任务
+50
+
+
+centos7
+marathon/docker所在的小集群，预想用来调度任务
+5
+
+
+
+其实我们已经基于centos6.8 final有了一个比较稳定的集群，上面通过ambari安装并稳健运行着HDF">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/10/26/ambari添加异构OS/" title="ambari添加异构OS" itemprop="url">ambari添加异构OS</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-10-26T07:35:13.000Z" itemprop="datePublished"> 发表于 2017-10-26</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#背景"><span class="toc-text">背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题"><span class="toc-text">问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#处理"><span class="toc-text">处理</span></a></li></ol>
+		
+		</div>
+		
+		<p>首先声明，HDFS集群中肯定是最好不要有异构机器存在的，会造成很多兼容性问题。</p>
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><table>
+<thead>
+<tr>
+<th>系统</th>
+<th>作用</th>
+<th>数量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>centos6</td>
+<td>yarn/HDFS等服务的选定集群，主要用来运行日常任务</td>
+<td>50</td>
+</tr>
+<tr>
+<td>centos7</td>
+<td>marathon/docker所在的小集群，预想用来调度任务</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+<p>其实我们已经基于centos6.8 final有了一个比较稳定的集群，上面通过ambari安装并稳健运行着HDFS、MR、Yarn、Spark、HBase等大数据服务。但是我们想要将spark streaming、hive等ETL工作的客户端放置在mesos上运行，因为当这些工作比较多的时候，也同样需要资源管理工作。鉴于mesos的资源管理相对yarn来说更加可定制化、而且已经有很多开源且稳定的framework可用，我们就选用mesos来做这个客户端集群的工作。对于long time的spark streaming，我们期望使用marathon来管理。一段时间的hive ETL任务，可以使用docker或者chronos来执行。</p>
+<p>鉴于以上计划，我们需要在mesos的agent机器上安装spark、hive等客户端配置文件。考虑到易操作性和软件的版本统一兼容问题，决定继续使用ambari在mesos agent上安装这些软件的client端，然后就可以直接调用了。</p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>在添加新host的过程中，ambari会比较智能的告诉我们，新的OS与既有的集群OS可能存在不兼容的问题，并阻止我们进一步执行。</p>
+<h2 id="处理"><a href="#处理" class="headerlink" title="处理"></a>处理</h2><p>考虑到我们只是使用客户端，而且我们的程序客户端是基于java的，具有可移植性。所以我就去找到ambari-server在新增机器的时候，对于OS的检测脚本，暂时注释掉，添加完新的host之后，再放开。</p>
+<p>2.2.2.0的脚本位置:<code>/usr/lib/python2.6/site-packages/ambari_server/bootstrap.py</code>：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">def run(self):</div><div class="line">    &quot;&quot;&quot; Copy files and run commands on remote host &quot;&quot;&quot;</div><div class="line">    self.status[&quot;start_time&quot;] = time.time()</div><div class="line">    # Population of action queue</div><div class="line">    action_queue = [self.createTargetDir,</div><div class="line">                    self.copyCommonFunctions,</div><div class="line">                    self.copyOsCheckScript,</div><div class="line">                    self.runOsCheckScript,</div><div class="line">                    self.checkSudoPackage</div><div class="line">    ]</div><div class="line">    if self.hasPassword():</div><div class="line">      action_queue.extend([self.copyPasswordFile,</div><div class="line">                           self.changePasswordFileModeOnHost])</div><div class="line">    action_queue.extend([</div><div class="line">      self.copyNeededFiles,</div><div class="line">      self.runSetupAgent,</div><div class="line">    ])</div><div class="line">    ....</div></pre></td></tr></table></figure></p>
+<p>把action_queue里的OSCheck相关的暂时注释掉就可以了。然后去添加host的界面上点击retry failed。只要注册成功就可以了。</p>
+<p>install过程跳过去了，但是注册的时候出现了问题。</p>
+<p>报错：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">INFO 2017-10-26 16:14:42,747 NetUtil.py:60 - Connecting to https://namenode01.will.com:8440/ca</div><div class="line">ERROR 2017-10-26 16:14:42,848 NetUtil.py:84 - [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:579)</div><div class="line">ERROR 2017-10-26 16:14:42,848 NetUtil.py:85 - SSLError: Failed to connect. Please check openssl library versions. </div><div class="line">Refer to: https://bugzilla.redhat.com/show_bug.cgi?id=1022468 for more details.</div><div class="line">WARNING 2017-10-26 16:14:42,850 NetUtil.py:112 - Server at https://namenode01.will.com:8440 is not reachable, sleeping for 10 seconds...</div><div class="line">&apos;, None)</div></pre></td></tr></table></figure></p>
+<p>在新的host上找到ambari-agent相关代码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">def checkURL(self, url):</div><div class="line">  &quot;&quot;&quot;Try to connect to a given url. Result is True if url returns HTTP code 200, in any other case</div><div class="line">  (like unreachable server or wrong HTTP code) result will be False.</div><div class="line"></div><div class="line">     Additionally returns body of request, if available</div><div class="line">  &quot;&quot;&quot;</div><div class="line">  logger.info(&quot;Connecting to &quot; + url)</div><div class="line">  responseBody = &quot;&quot;</div><div class="line"></div><div class="line">  try:</div><div class="line">    parsedurl = urlparse(url)</div><div class="line"></div><div class="line">    if sys.version_info &gt;= (2,7,9):</div><div class="line">        import ssl</div><div class="line">        ca_connection = httplib.HTTPSConnection(parsedurl[1], context=ssl._create_unverified_context())</div><div class="line">    else:</div><div class="line">        ca_connection = httplib.HTTPSConnection(parsedurl[1])</div><div class="line">    ...</div><div class="line">  except SSLError as slerror:</div><div class="line">    logger.error(str(slerror))</div><div class="line">    logger.error(ERROR_SSL_WRONG_VERSION)</div><div class="line">    return False, responseBody</div><div class="line"></div><div class="line">  except Exception, e:</div><div class="line">    logger.warning(&quot;Failed to connect to &quot; + str(url) + &quot; due to &quot; + str(e) + &quot;  &quot;)</div><div class="line">    return False, responseBody</div></pre></td></tr></table></figure></p>
+<p>从报错来看，是出现了SSLError，好像是SSL的兼容问题。对比看一下ssl的版本：</p>
+<ul>
+<li>centos7 openssl-1.0.2k-8.el7.x86_64</li>
+<li>centos6 openssl-1.0.1e-57.el6.x86_64</li>
+</ul>
+<p>考虑到既有集群的稳定性，失败告终。配置同步问题转由rsync、nfs之类的方案解决吧。</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://community.hortonworks.com/questions/4324/hdp-support-for-mix-of-os-releases-within-a-cluste.html" target="_blank" rel="external">https://community.hortonworks.com/questions/4324/hdp-support-for-mix-of-os-releases-within-a-cluste.html</a></li>
+<li><a href="https://community.hortonworks.com/questions/18479/how-to-register-host-with-different-os-to-ambari.html" target="_blank" rel="external">https://community.hortonworks.com/questions/18479/how-to-register-host-with-different-os-to-ambari.html</a></li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/10/26/ambari添加异构OS/" data-title="ambari添加异构OS | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/10/26/对于spark-streaming通过runningdata运行的简单规划/" title="对于spark-streaming通过runningdata运行的简单规划">
+  <strong>上一篇：</strong><br/>
+  <span>
+  对于spark-streaming通过runningdata运行的简单规划</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/10/25/主从备份问题/"  title="主从备份问题">
+ <strong>下一篇：</strong><br/> 
+ <span>主从备份问题
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/10/26/ambari添加异构OS/" data-title="ambari添加异构OS" data-url="http://willcup.com/2017/10/26/ambari添加异构OS/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#背景"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题"><span class="toc-number">2.</span> <span class="toc-text">问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#处理"><span class="toc-number">3.</span> <span class="toc-text">处理</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

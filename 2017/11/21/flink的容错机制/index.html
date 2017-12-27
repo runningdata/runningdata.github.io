@@ -1,0 +1,609 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>flink的容错机制 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="简介Flink容错机制保证了，即便出现失败，程序的state也最终reflect每条记录exactly once，也可以降级到at least once。
+这个容错机制持续的描绘出分布式数据流的snapshot。对于少有state的流式应用来说，这些snapshot是非常轻量的，可以在不影响到性能的前提下快速完成。流式应用的state会被存储在配置好的地方(比如master节点、hdfs等)。
+如">
+<meta property="og:type" content="article">
+<meta property="og:title" content="flink的容错机制">
+<meta property="og:url" content="http://willcup.com/2017/11/21/flink的容错机制/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="简介Flink容错机制保证了，即便出现失败，程序的state也最终reflect每条记录exactly once，也可以降级到at least once。
+这个容错机制持续的描绘出分布式数据流的snapshot。对于少有state的流式应用来说，这些snapshot是非常轻量的，可以在不影响到性能的前提下快速完成。流式应用的state会被存储在配置好的地方(比如master节点、hdfs等)。
+如">
+<meta property="og:image" content="https://ci.apache.org/projects/flink/flink-docs-release-1.3/fig/stream_barriers.svg">
+<meta property="og:image" content="https://ci.apache.org/projects/flink/flink-docs-release-1.3/fig/stream_aligning.svg">
+<meta property="og:image" content="https://ci.apache.org/projects/flink/flink-docs-release-1.3/fig/checkpointing.svg">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.781Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="flink的容错机制">
+<meta name="twitter:description" content="简介Flink容错机制保证了，即便出现失败，程序的state也最终reflect每条记录exactly once，也可以降级到at least once。
+这个容错机制持续的描绘出分布式数据流的snapshot。对于少有state的流式应用来说，这些snapshot是非常轻量的，可以在不影响到性能的前提下快速完成。流式应用的state会被存储在配置好的地方(比如master节点、hdfs等)。
+如">
+<meta name="twitter:image" content="https://ci.apache.org/projects/flink/flink-docs-release-1.3/fig/stream_barriers.svg">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/11/21/flink的容错机制/" title="flink的容错机制" itemprop="url">flink的容错机制</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-11-21T08:44:02.000Z" itemprop="datePublished"> 发表于 2017-11-21</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#简介"><span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#checkpoint"><span class="toc-text">checkpoint</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Barrier栅栏"><span class="toc-text">Barrier栅栏</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#state"><span class="toc-text">state</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Exactly-Once还是At-least-once"><span class="toc-text">Exactly Once还是At least once</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#异步state-snapshot"><span class="toc-text">异步state snapshot</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#recovery"><span class="toc-text">recovery</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#operator-snapshot的实现"><span class="toc-text">operator snapshot的实现</span></a></li></ol>
+		
+		</div>
+		
+		<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Flink容错机制保证了，即便出现失败，程序的state也最终reflect每条记录exactly once，也可以降级到at least once。</p>
+<p>这个容错机制持续的描绘出分布式数据流的snapshot。对于少有state的流式应用来说，这些snapshot是非常轻量的，可以在不影响到性能的前提下快速完成。流式应用的state会被存储在配置好的地方(比如master节点、hdfs等)。</p>
+<p>如果程序失败了(机器原因、网络原因、软件问题等)，Flink会踢掉分布式数据流。然后系统会重启所有的operator，然后把他们重置到最近的成功的checkpoint。输入流也被重置到这个state snapshot的点。作为重新启动的并行dataflow的一部分，已经处理过的所有的记录都保证不属于前一个checkpoint state里的一部分。</p>
+<p>注意：默认checkpoint是未启用的。</p>
+<p>注意：要完全保证这个机制，需要数据流的source(一般是消息队列或者broker)能够支持重置位移。例如kafka就可以重置位移。</p>
+<p>注意：以你为Flink的checkpoints是通过分布式snapshot实现的，我们可以交换使用snapshot和checkpoint这两个词语。</p>
+<h2 id="checkpoint"><a href="#checkpoint" class="headerlink" title="checkpoint"></a>checkpoint</h2><p>Flinke容错机制的核心就是为分布式的数据流和操作状态进行snapshot。这些snapshot作为一致性的checkpoint供错误恢复使用。Flink执行snapshot的机制在<a href="http://arxiv.org/abs/1506.08603" target="_blank" rel="external"> “Lightweight Asynchronous Snapshots for Distributed Dataflows”.</a>有介绍。是由<a href="http://research.microsoft.com/en-us/um/people/lamport/pubs/chandy.pdf" target="_blank" rel="external">Chandy-Lamport algorithm</a>实现的，这是一种分布式snapshot方法，而且兼容Flink的执行模型。</p>
+<h4 id="Barrier栅栏"><a href="#Barrier栅栏" class="headerlink" title="Barrier栅栏"></a>Barrier栅栏</h4><p>Flink分布式snapshot的核心元素是stream barrier。这些栅栏被注入到data stream和flow当中作为data stream的一部分存在。barrier永远不会超过记录，flow是严格线性的。barrier负责把data stream中的数据进行切分，切分为两部分，一部分到当前的snapshot中，然后另外一部分是下一个snapshot里的。Each barrier carries the ID of the snapshot whose records it pushed in front of it. barrier并不会中断数据流处理，十分轻量。不同snampshot的多个barrier可能同时存在于stream中，这就是说可能会多个snapshot并发执行。</p>
+<p><img src="https://ci.apache.org/projects/flink/flink-docs-release-1.3/fig/stream_barriers.svg" alt=""></p>
+<p>Stream barrier在stream source被注入到并发的data flow中。snapshot n的barrier的点Sn被注入的位置是source stream知道覆盖到数据的snapshot【The point where the barriers for snapshot n are injected (let’s call it Sn) is the position in the source stream up to which the snapshot covers the data】。例如在kafka中，这个位置就是当前分区上一次访问的记录的offset。这个位置Sn就被汇报给checkpoint coordinator(Flink里就是JobManager)。</p>
+<p>然后barrier继续向下执行。当一个中间oerator抽取到snapshot n的barrier时，它发射一个snapshot n的barrier给它所有的outgoing stream。一旦一个sink operator(DAG的最后)收到barrier n的时候，它就向checkpoint coordinator确认ack snapshot n。所有的sink都ack了这个snapshot的时候，它就被认为已经成功了。</p>
+<p>snapshot n完成之后，job再也不会请求Sn之前的数据记录了，因为这些数据记录已经通过了整个数据流处理拓扑。</p>
+<p><img src="https://ci.apache.org/projects/flink/flink-docs-release-1.3/fig/stream_aligning.svg" alt=""></p>
+<p>接收多个input stream的operator必须排列多个input stream的snapshot barriers。上图内容</p>
+<ul>
+<li>operator接到单个input stream的snapshot barrier n的时候，不能立即处理这个stream的数据，需要等着其他input stream的barrier n也到达的时候才行。否则，它会把snapshot n的数据记录和snapshot n+1的数据记录弄混了。</li>
+<li>已经汇报barrier n的input stream暂时被搁置。收到的数据记录暂时不处理，而是放进一个input buffer</li>
+<li>最后一个stream也收到barrier n的时候，这个operator就发射所有pending的outing 记录，然后自己也发射snapshot n的barrier。</li>
+<li>最后，它恢复处理所有input stream的数据记录，处理在此之前的input buffer里的数据记录，然后处理stream的记录。</li>
+</ul>
+<h4 id="state"><a href="#state" class="headerlink" title="state"></a>state</h4><p>如果operator包含任意形式的state，这个state就必须成为snapshot的一部分。operator statue可能是下面的几种：</p>
+<ul>
+<li>user-defined state。通过转化方法(例如map、filter)直接创建与修改的state。</li>
+<li>system state。例如operator计算的一部分，数据缓存等。典型的例子是window buffer，在window buffer中通常收集聚合数据记录，直到window的计算或者被清空。</li>
+</ul>
+<p>operator在收到了它所有input stream的barrier n，并且没有发送barrier n给它的所有output stream之前，snapshot它的state。在这个时间点，barrier之前的所有的数据记录导致的state更新已经完成，并且没有根据已经执行的的barrier之后的数据记录进行任何更新。因为snapshot 的state可能会很大，它可以被存储在一个可配置的<a href="https://ci.apache.org/projects/flink/flink-docs-release-1.3/ops/state_backends.html" target="_blank" rel="external">后端</a>。默认情况下，是放在JobManager的内存里，对于生产环境，最好放在可靠的存储介质上，例如HDFS。在state被存储之后，operator ack这个checkpoint，发送这个snapshot barrier到output stream中。</p>
+<p>现在snapshot包含了：</p>
+<ul>
+<li>对于每个并行的stream data source，snapshot开始的时候stream中的位置信息或者offset</li>
+<li>对于每个operator，一个指向snapshot state仓库的pointer</li>
+</ul>
+<p><img src="https://ci.apache.org/projects/flink/flink-docs-release-1.3/fig/checkpointing.svg" alt="checkpoint流程图"></p>
+<h2 id="Exactly-Once还是At-least-once"><a href="#Exactly-Once还是At-least-once" class="headerlink" title="Exactly Once还是At least once"></a>Exactly Once还是At least once</h2><p>对于streaming program来说alignment操作可能会造成一些延迟。通差，这部分延迟是早毫秒级的，但是我们见过一些非常突出的延迟。对于那些坚持要求低延迟的应用，Flink有一个开关可以关闭checkpoint过程中的alignment操作。checkpoint snapshot仍然很快。</p>
+<p>当alignment被跳过后，即便一些checkpoint barrier n已经到了，operator也要继续处理所有的输入。这样的话，在snapshot n完结之前，operator也会处理属于 snapshot n+1的数据。再回复的时候，这些记录就会被重复处理，因为他们都被记录在了snapshot n的state snapshot里，所以也会作为checkpoint n之后的数据被replay。</p>
+<p>注意：alignment只会发生在具有多个前辈(join)，或者多个sender(在一个stream被repartition/shuffle)的operator。因此，对于只包含并行处理操作(map, flatmap, filter等)的dataflow来说，at least once模式下其实也是exactly once的。</p>
+<h2 id="异步state-snapshot"><a href="#异步state-snapshot" class="headerlink" title="异步state snapshot"></a>异步state snapshot</h2><p>注意上面描述的机制意味着operator在奥村他们的snapshot state到state backend的时候，需要停止处理输入的记录。这个同步的state snapshot操作会造成一个小的时间延迟。</p>
+<p>如果让这个存储操作异步执行的话，就能让operator继续执行下面的步骤了。要这样的话，operator必循能够生成一个state对象，这个state 对象能够被存储，而且后面operator state的更新不会影响到它。例如，copy-on-write数据结构，rocksdb里有这种操作。</p>
+<p>接收到所有input stream的checkpoint barrier后，operator开始异步snapshot，copy他的state。它会马上发送barrier到它的output，然后继续下面的数据流处理。一旦后台的copy进程完成后，它就会向checkpoint coordinator(JobManager) ack这个checkpoint。 这个checkpoint现在只在所有的sink都收到barrier后，所有的statefule operator都ack他们完成了backup后(这个可能比barrier到达sink还要慢)才算完成。</p>
+<h2 id="recovery"><a href="#recovery" class="headerlink" title="recovery"></a>recovery</h2><p>在这个机制下的recovery很直接：一旦发生失败，Flink选择最新的完成的checkpoint k。然后这个system重新部署整个的分布式数据流，然后给每个operator这个snapshot k对应的state，因为这也是checkpoint k的一部分。而且需要从数据源的Sk的位置开始读取数据流。如果是kafka的话，就是从offset为Sk的地方开始抽取数据。</p>
+<p>如果state是增量snapshot的，那么operator要使用最新full snapshot的state，然后把后续的更新操作应用到这个state上。</p>
+<p><a href="https://ci.apache.org/projects/flink/flink-docs-release-1.3/dev/restart_strategies.html" target="_blank" rel="external">更多</a></p>
+<h2 id="operator-snapshot的实现"><a href="#operator-snapshot的实现" class="headerlink" title="operator snapshot的实现"></a>operator snapshot的实现</h2><p>当operator执行snapshot的时候，有两个部分：同步的和异步的。</p>
+<p>operator和state backend是以java FutureTask的形式提供他们的snapshot的。这个task包含了同步部分已完成的state，但是异步部分可能还在pending状态。异步部分后面会被这个checkpoint的一个后台线程执行。</p>
+<p>使用纯同步方式的operator checkpint会返回一个已经完成了的FutrueTask。如果异步操作需要被执行，就执行FutrueTask的run方法。</p>
+<p>这些task是可以被cancel的，这样stream和其他的资源消费句柄就可以被release了。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/11/21/flink的容错机制/" data-title="flink的容错机制 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/11/22/Flink特性/" title="Flink特性">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Flink特性</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/11/21/flink的window/"  title="flink的window">
+ <strong>下一篇：</strong><br/> 
+ <span>flink的window
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/11/21/flink的容错机制/" data-title="flink的容错机制" data-url="http://willcup.com/2017/11/21/flink的容错机制/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#简介"><span class="toc-number">1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#checkpoint"><span class="toc-number">2.</span> <span class="toc-text">checkpoint</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Barrier栅栏"><span class="toc-number">2.0.1.</span> <span class="toc-text">Barrier栅栏</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#state"><span class="toc-number">2.0.2.</span> <span class="toc-text">state</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Exactly-Once还是At-least-once"><span class="toc-number">3.</span> <span class="toc-text">Exactly Once还是At least once</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#异步state-snapshot"><span class="toc-number">4.</span> <span class="toc-text">异步state snapshot</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#recovery"><span class="toc-number">5.</span> <span class="toc-text">recovery</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#operator-snapshot的实现"><span class="toc-number">6.</span> <span class="toc-text">operator snapshot的实现</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

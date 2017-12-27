@@ -1,0 +1,647 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>ambari中启用hive-ACID事务 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="场景
+
+数据重新执行
+数据流重新执行
+逐渐改变的维度
+维度历史变更
+
+标准sql通过insert、update、delete、事务还有最近出现的merge方式来提供acid操作。这些已经被证明足够使用的了。
+概念
+事务表。hive支持单表事务，但是目标表必须需要声明是支持事务的。
+分区表。hive支持表分区，把数据分开以提供快速查询。分区与ACID是相互独立的概念。通常大表都是有分区的。
+ACID">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ambari中启用hive-ACID事务">
+<meta property="og:url" content="http://willcup.com/2017/04/20/ambari中启用hive-ACID事务/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="场景
+
+数据重新执行
+数据流重新执行
+逐渐改变的维度
+维度历史变更
+
+标准sql通过insert、update、delete、事务还有最近出现的merge方式来提供acid操作。这些已经被证明足够使用的了。
+概念
+事务表。hive支持单表事务，但是目标表必须需要声明是支持事务的。
+分区表。hive支持表分区，把数据分开以提供快速查询。分区与ACID是相互独立的概念。通常大表都是有分区的。
+ACID">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.777Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ambari中启用hive-ACID事务">
+<meta name="twitter:description" content="场景
+
+数据重新执行
+数据流重新执行
+逐渐改变的维度
+维度历史变更
+
+标准sql通过insert、update、delete、事务还有最近出现的merge方式来提供acid操作。这些已经被证明足够使用的了。
+概念
+事务表。hive支持单表事务，但是目标表必须需要声明是支持事务的。
+分区表。hive支持表分区，把数据分开以提供快速查询。分区与ACID是相互独立的概念。通常大表都是有分区的。
+ACID">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/20/ambari中启用hive-ACID事务/" title="ambari中启用hive-ACID事务" itemprop="url">ambari中启用hive-ACID事务</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-20T12:21:45.000Z" itemprop="datePublished"> 发表于 2017-04-20</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#概念"><span class="toc-text">概念</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#启用ACID事务"><span class="toc-text">启用ACID事务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#hello"><span class="toc-text">hello</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Streaming-Data-Ingestion"><span class="toc-text">Streaming Data Ingestion</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-实践"><span class="toc-text">4. 实践</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#4-1-searched-updates"><span class="toc-text">4.1 searched updates</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-2-searched-deletes"><span class="toc-text">4.2 searched deletes</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-批量覆盖更新"><span class="toc-text">5. 批量覆盖更新</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-ACID工具"><span class="toc-text">6. ACID工具</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#6-1-查看事务"><span class="toc-text">6.1 查看事务</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-1-查看锁"><span class="toc-text">6.1 查看锁</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-1-终止事务"><span class="toc-text">6.1 终止事务</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-性能考虑"><span class="toc-text">7. 性能考虑</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-深入探究"><span class="toc-text">8. 深入探究</span></a></li></ol>
+		
+		</div>
+		
+		<p>场景</p>
+<ul>
+<li>数据重新执行</li>
+<li>数据流重新执行</li>
+<li>逐渐改变的维度</li>
+<li>维度历史变更</li>
+</ul>
+<p>标准sql通过insert、update、delete、事务还有最近出现的merge方式来提供acid操作。这些已经被证明足够使用的了。</p>
+<h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><ul>
+<li>事务表。hive支持单表事务，但是目标表必须需要声明是支持事务的。</li>
+<li>分区表。hive支持表分区，把数据分开以提供快速查询。分区与ACID是相互独立的概念。通常大表都是有分区的。</li>
+<li>ACID操作（insert/update/delete）。</li>
+<li>主键</li>
+<li>流式数据。数据可以通过storm、flume等流式进入hive的事务表中</li>
+<li>优化并发。</li>
+<li>压缩。数据必须时段性的被压缩一下，节省空间，优化数据访问。最好让系统自动处理这件事情。，不过也可以设置外部的调度器。</li>
+</ul>
+<h4 id="启用ACID事务"><a href="#启用ACID事务" class="headerlink" title="启用ACID事务"></a>启用ACID事务</h4><h4 id="hello"><a href="#hello" class="headerlink" title="hello"></a>hello</h4><p>创建一个事务表，并插入一些数据<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">drop</span> <span class="keyword">table</span> <span class="keyword">if</span> <span class="keyword">exists</span> hello_acid;</div><div class="line"><span class="keyword">create</span> <span class="keyword">table</span> hello_acid (<span class="keyword">key</span> <span class="built_in">int</span>, <span class="keyword">value</span> <span class="built_in">int</span>)</div><div class="line">partitioned <span class="keyword">by</span> (load_date <span class="built_in">date</span>)</div><div class="line">clustered <span class="keyword">by</span>(<span class="keyword">key</span>) <span class="keyword">into</span> <span class="number">3</span> buckets</div><div class="line"><span class="keyword">stored</span> <span class="keyword">as</span> orc tblproperties (<span class="string">'transactional'</span>=<span class="string">'true'</span>);</div></pre></td></tr></table></figure></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> hello_acid <span class="keyword">partition</span> (load_date=<span class="string">'2016-03-01'</span>) <span class="keyword">values</span> (<span class="number">1</span>, <span class="number">1</span>);</div><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> hello_acid <span class="keyword">partition</span> (load_date=<span class="string">'2016-03-02'</span>) <span class="keyword">values</span> (<span class="number">2</span>, <span class="number">2</span>);</div><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> hello_acid <span class="keyword">partition</span> (load_date=<span class="string">'2016-03-03'</span>) <span class="keyword">values</span> (<span class="number">3</span>, <span class="number">3</span>);</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> hello_acid;</div></pre></td></tr></table></figure>
+<p>删除数据：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">delete</span> <span class="keyword">from</span> hello_acid <span class="keyword">where</span> <span class="keyword">key</span> = <span class="number">2</span>;</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> hello_acid;</div></pre></td></tr></table></figure></p>
+<p>更新数据：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">update</span> hello_acid <span class="keyword">set</span> <span class="keyword">value</span> = <span class="number">10</span> <span class="keyword">where</span> <span class="keyword">key</span> = <span class="number">3</span>;</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> hello_acid;</div></pre></td></tr></table></figure></p>
+<p>这些DML语句意在在大数据中执行少量修改，应该是记录级别的数据管理。如果你有小的多个批量修改，应该使用streaming data ingestion。</p>
+<h4 id="Streaming-Data-Ingestion"><a href="#Streaming-Data-Ingestion" class="headerlink" title="Streaming Data Ingestion"></a>Streaming Data Ingestion</h4><p>许多时候我们需要处理连续的实时数据流，想要更方便的操作这些数据。hive可以自动把流式数据加入hive表中，也支持实时的数据抽取与查询。</p>
+<p>现在hive提供两种：</p>
+<ul>
+<li>已经存在是<a href="https://github.com/apache/storm/tree/master/external/storm-hive" target="_blank" rel="external">storm hive bolt</a>方案，<a href="https://flume.apache.org/FlumeUserGuide.html#hive-sink" target="_blank" rel="external">flume hive sink</a>方案。这些工具对数据有较少的操作，重在转移数据</li>
+<li>直接使用低级的<a href="https://cwiki.apache.org/confluence/display/Hive/Streaming+Data+Ingest" target="_blank" rel="external">Streaming Ingest API</a>.</li>
+</ul>
+<p>在使用streaming api之前，需要先创建好分区事务表。从查询角度来看，一切应该都是确定好的。</p>
+<h4 id="4-实践"><a href="#4-实践" class="headerlink" title="4. 实践"></a>4. 实践</h4><p>插入几条数据对我们测试起来很简单，但是实际环境中，我们需要一次性处理几千或者几百万的数据。下面我们通过几个通用场景讨论一下怎样处理数据批次。</p>
+<p>这些模型需要你建立一个主键。hive并不强制主键唯一，所以你必须在你app中控制一下。虽然hive2.1介绍了non-validating 外键，但是这东西目前还并没有被完整全面的验证过。</p>
+<h5 id="4-1-searched-updates"><a href="#4-1-searched-updates" class="headerlink" title="4.1 searched updates"></a>4.1 searched updates</h5><p>hive  ACID支持searched updates，这是一种常见的更新方式。注意，基于hive ACID的架构，更新必须通过批处理的方式执行。一次更新一行这种事情在实际使用中是行不通的。如果想通过某种方式一次性更新大量数据，那么searched updates就可以帮你了。</p>
+<p>假设有一个维度表，包含的一个flag，指示当前记录是不是最新的值。这样我们就可以沿时间追踪维度变更情况。当维度表发生更新的时候，我们就把已经存在记录的设置成old。<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">drop</span> <span class="keyword">table</span> <span class="keyword">if</span> <span class="keyword">exists</span> mydim;</div><div class="line"><span class="keyword">create</span> <span class="keyword">table</span> mydim (<span class="keyword">key</span> <span class="built_in">int</span>, <span class="keyword">name</span> <span class="keyword">string</span>, zip <span class="keyword">string</span>, is_current <span class="built_in">boolean</span>)</div><div class="line">clustered <span class="keyword">by</span>(<span class="keyword">key</span>) <span class="keyword">into</span> <span class="number">3</span> buckets</div><div class="line"><span class="keyword">stored</span> <span class="keyword">as</span> orc tblproperties (<span class="string">'transactional'</span>=<span class="string">'true'</span>);</div></pre></td></tr></table></figure></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> mydim <span class="keyword">values</span></div><div class="line">  (<span class="number">1</span>, <span class="string">'bob'</span>,   <span class="string">'95136'</span>, <span class="literal">true</span>),</div><div class="line">  (<span class="number">2</span>, <span class="string">'joe'</span>,   <span class="string">'70068'</span>, <span class="literal">true</span>),</div><div class="line">  (<span class="number">3</span>, <span class="string">'steve'</span>, <span class="string">'22150'</span>, <span class="literal">true</span>);</div></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">drop</span> <span class="keyword">table</span> <span class="keyword">if</span> <span class="keyword">exists</span> updates_staging_table;</div><div class="line"><span class="keyword">create</span> <span class="keyword">table</span> updates_staging_table (<span class="keyword">key</span> <span class="built_in">int</span>, newzip <span class="keyword">string</span>);</div><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> updates_staging_table <span class="keyword">values</span> (<span class="number">1</span>, <span class="number">87102</span>), (<span class="number">3</span>, <span class="number">45220</span>);</div></pre></td></tr></table></figure>
+<p>执行更新,执行前后可以看一下维度表的数据变化，其实就是更新了flag而已。<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">update</span> mydim <span class="keyword">set</span> is_current=<span class="literal">false</span></div><div class="line">  <span class="keyword">where</span> mydim.key <span class="keyword">in</span> (<span class="keyword">select</span> <span class="keyword">key</span> <span class="keyword">from</span> updates_staging_table);</div></pre></td></tr></table></figure></p>
+<h5 id="4-2-searched-deletes"><a href="#4-2-searched-deletes" class="headerlink" title="4.2 searched deletes"></a>4.2 searched deletes</h5><p>批量删除也可以使用staging table轻松搞定。但是需要你在表之间放置一个公共key，有些类似RDBMS中的主键。<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">delete</span> <span class="keyword">from</span> mydim</div><div class="line"><span class="keyword">where</span> mydim.key <span class="keyword">in</span> (<span class="keyword">select</span> <span class="keyword">key</span> <span class="keyword">from</span> updates_staging_table);</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> mydim;</div></pre></td></tr></table></figure></p>
+<h4 id="5-批量覆盖更新"><a href="#5-批量覆盖更新" class="headerlink" title="5. 批量覆盖更新"></a>5. 批量覆盖更新</h4><p>有的时候我们需要批量更新一些数据。例如第一种SCD更新或者数据重导。hive目前还不支持merge操作，在支持之前，我们只能考虑使用先删除后插入的方式，但这样可能会造成查询客户端脏读。或者也可以在重新清洗的时候临时停掉查询。</p>
+<h4 id="6-ACID工具"><a href="#6-ACID工具" class="headerlink" title="6. ACID工具"></a>6. ACID工具</h4><p>ACID事务执行过程中会创建一系列的锁。事务和他们的事务锁可以通过hive的一些工具来查看。</p>
+<h5 id="6-1-查看事务"><a href="#6-1-查看事务" class="headerlink" title="6.1 查看事务"></a>6.1 查看事务</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">show transactions</div></pre></td></tr></table></figure>
+<h5 id="6-1-查看锁"><a href="#6-1-查看锁" class="headerlink" title="6.1 查看锁"></a>6.1 查看锁</h5><p>有read, update，X lock。update锁与update操作互斥，但是与read兼容。X锁，与所有锁都互斥，属于独占。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">show locks</div></pre></td></tr></table></figure></p>
+<h5 id="6-1-终止事务"><a href="#6-1-终止事务" class="headerlink" title="6.1 终止事务"></a>6.1 终止事务</h5><p>注意这并不会马上kill掉所有相关查询。ACID查询是周期性执行的，默认是2.5分钟，如果他们检测到自己的事务被kill，就会执行自动退出。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">abort transactions T1 T2 T3</div></pre></td></tr></table></figure></p>
+<h4 id="7-性能考虑"><a href="#7-性能考虑" class="headerlink" title="7. 性能考虑"></a>7. 性能考虑</h4><ul>
+<li>创建分区</li>
+<li>insert快，update和delete都会比较慢一些，因为要扫描整个分区。</li>
+<li>如果你们的工作里需要大量更新数据，那么请周期行执行compaction操作。不然数据大小会越来越大，查询也会越来越慢。</li>
+</ul>
+<h4 id="8-深入探究"><a href="#8-深入探究" class="headerlink" title="8. 深入探究"></a>8. 深入探究</h4><p>在使用之前一定要深入了解这套系统的工作原理，并且在你的可以容忍丢失的数据上执行测试。过程中也注意备份数据。</p>
+<p>ACID表有一个隐藏字段<code>row__id</code>。这个系统内置的字段名称有可能会变。你应该构建一个基于这个字段的长远的方案。</p>
+<p>这个字段记录的内容有：</p>
+<ul>
+<li>数据被insert或者update的active的事务id</li>
+<li>数据所在bucket的bucketid</li>
+<li>此次事务或者bucket中的rowid</li>
+</ul>
+<p>看一下<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">hive&gt; select row__id from hello_acid;</div><div class="line">OK</div><div class="line">&#123;"transactionid":12,"bucketid":0,"rowid":0&#125;</div><div class="line">&#123;"transactionid":10,"bucketid":1,"rowid":0&#125;</div></pre></td></tr></table></figure></p>
+<p>常用场景就是确认所有的数据都load进来了。假设上游数据provider认为hive里的持久化数据丢失了，那么你的provider(storm Bolt比如)就会告诉你插入这些数据的事务ID。然后我们可以使用这个事务id计算一下实际的记录数。查询的时候使用X替换掉你的事务ID<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">set</span> hive.optimize.ppd=<span class="literal">false</span>;</div><div class="line"><span class="keyword">select</span> <span class="keyword">count</span>(*) <span class="keyword">from</span> hello_acid <span class="keyword">where</span> row__id.transactionid = X;</div></pre></td></tr></table></figure></p>
+<p>记牢，事务中插入的数据有可能会被后续的update或者delete语句影响到，所以如果count数并不符合，那就可能是这些因素造成的。</p>
+<p>参考：</p>
+<p><a href="https://hortonworks.com/hadoop-tutorial/using-hive-acid-transactions-insert-update-delete-data/" target="_blank" rel="external">https://hortonworks.com/hadoop-tutorial/using-hive-acid-transactions-insert-update-delete-data/</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/04/20/ambari中启用hive-ACID事务/" data-title="ambari中启用hive-ACID事务 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/04/21/集群service配置相关/" title="集群service配置相关">
+  <strong>上一篇：</strong><br/>
+  <span>
+  集群service配置相关</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/04/20/HIVE创建bucketed表/"  title="HIVE创建bucketed表">
+ <strong>下一篇：</strong><br/> 
+ <span>HIVE创建bucketed表
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/04/20/ambari中启用hive-ACID事务/" data-title="ambari中启用hive-ACID事务" data-url="http://willcup.com/2017/04/20/ambari中启用hive-ACID事务/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#概念"><span class="toc-number">1.</span> <span class="toc-text">概念</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#启用ACID事务"><span class="toc-number">2.</span> <span class="toc-text">启用ACID事务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#hello"><span class="toc-number">3.</span> <span class="toc-text">hello</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Streaming-Data-Ingestion"><span class="toc-number">4.</span> <span class="toc-text">Streaming Data Ingestion</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-实践"><span class="toc-number">5.</span> <span class="toc-text">4. 实践</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#4-1-searched-updates"><span class="toc-number">5.1.</span> <span class="toc-text">4.1 searched updates</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-2-searched-deletes"><span class="toc-number">5.2.</span> <span class="toc-text">4.2 searched deletes</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-批量覆盖更新"><span class="toc-number">6.</span> <span class="toc-text">5. 批量覆盖更新</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-ACID工具"><span class="toc-number">7.</span> <span class="toc-text">6. ACID工具</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#6-1-查看事务"><span class="toc-number">7.1.</span> <span class="toc-text">6.1 查看事务</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-1-查看锁"><span class="toc-number">7.2.</span> <span class="toc-text">6.1 查看锁</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-1-终止事务"><span class="toc-number">7.3.</span> <span class="toc-text">6.1 终止事务</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-性能考虑"><span class="toc-number">8.</span> <span class="toc-text">7. 性能考虑</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-深入探究"><span class="toc-number">9.</span> <span class="toc-text">8. 深入探究</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

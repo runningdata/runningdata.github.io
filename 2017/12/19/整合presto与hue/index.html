@@ -1,0 +1,615 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>整合presto与hue | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="传说是因为hue里没有直接对于presto的支持，所以大家都通过RDBMS间接的在hue上执行presto的查询。
+可行方案一共找到两种方案：
+
+借助postgresql创建中间的字典表，然后转化SQL进行执行。具体参考
+presto jdbc
+
+第一种方案部署相对复杂很多，选用了第二种方案。不过过程中发现了一些不错的项目，回头来看其实都是presto官网推荐的，可以看一下这些resource
+实">
+<meta property="og:type" content="article">
+<meta property="og:title" content="整合presto与hue">
+<meta property="og:url" content="http://willcup.com/2017/12/19/整合presto与hue/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="传说是因为hue里没有直接对于presto的支持，所以大家都通过RDBMS间接的在hue上执行presto的查询。
+可行方案一共找到两种方案：
+
+借助postgresql创建中间的字典表，然后转化SQL进行执行。具体参考
+presto jdbc
+
+第一种方案部署相对复杂很多，选用了第二种方案。不过过程中发现了一些不错的项目，回头来看其实都是presto官网推荐的，可以看一下这些resource
+实">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.797Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="整合presto与hue">
+<meta name="twitter:description" content="传说是因为hue里没有直接对于presto的支持，所以大家都通过RDBMS间接的在hue上执行presto的查询。
+可行方案一共找到两种方案：
+
+借助postgresql创建中间的字典表，然后转化SQL进行执行。具体参考
+presto jdbc
+
+第一种方案部署相对复杂很多，选用了第二种方案。不过过程中发现了一些不错的项目，回头来看其实都是presto官网推荐的，可以看一下这些resource
+实">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/12/19/整合presto与hue/" title="整合presto与hue" itemprop="url">整合presto与hue</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-12-19T11:12:10.000Z" itemprop="datePublished"> 发表于 2017-12-19</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#可行方案"><span class="toc-text">可行方案</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#实际方案"><span class="toc-text">实际方案</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-下载对应presto版本的jdbc包"><span class="toc-text">1. 下载对应presto版本的jdbc包</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-修改本地java环境变量CLASSPATH"><span class="toc-text">2. 修改本地java环境变量CLASSPATH</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-在hue-ini里配置interpreter"><span class="toc-text">3.在hue.ini里配置interpreter</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-改jdbc-py源码"><span class="toc-text">4. 改jdbc.py源码</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#升级"><span class="toc-text">升级</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#进一步思考"><span class="toc-text">进一步思考</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#参考"><span class="toc-text">参考</span></a></li></ol>
+		
+		</div>
+		
+		<p>传说是因为hue里没有直接对于presto的支持，所以大家都通过RDBMS间接的在hue上执行presto的查询。</p>
+<h4 id="可行方案"><a href="#可行方案" class="headerlink" title="可行方案"></a>可行方案</h4><p>一共找到两种方案：</p>
+<ul>
+<li>借助postgresql创建中间的字典表，然后转化SQL进行执行。具体<a href="https://medium.com/@ilkkaturunen/integrating-presto-with-hue-61702b244839" target="_blank" rel="external">参考</a></li>
+<li>presto jdbc</li>
+</ul>
+<p>第一种方案部署相对复杂很多，选用了第二种方案。不过过程中发现了一些不错的项目，回头来看其实都是presto官网推荐的，可以看一下<a href="https://prestodb.io/resources.html" target="_blank" rel="external">这些resource</a></p>
+<h4 id="实际方案"><a href="#实际方案" class="headerlink" title="实际方案"></a>实际方案</h4><p>最后确认的方案，是使用官方提供的<a href="https://prestodb.io/docs/0.184/installation/jdbc.html" target="_blank" rel="external">jdbc连接方式</a>。这种相对简单，架构也更清晰一些。</p>
+<p>主要包含以下几个步骤</p>
+<h5 id="1-下载对应presto版本的jdbc包"><a href="#1-下载对应presto版本的jdbc包" class="headerlink" title="1. 下载对应presto版本的jdbc包"></a>1. 下载对应presto版本的jdbc包</h5><h5 id="2-修改本地java环境变量CLASSPATH"><a href="#2-修改本地java环境变量CLASSPATH" class="headerlink" title="2. 修改本地java环境变量CLASSPATH"></a>2. 修改本地java环境变量CLASSPATH</h5><p>否则会报classNotFound<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">export CLASSPATH=$CLASSPATH:/server/todo/presto-jdbc-0.184.jar</div></pre></td></tr></table></figure></p>
+<p>其实个人感觉不太方便，所以在hue的启动脚本<code>build/env/bin/hue</code>里添加了一下环境变量的设置，算是高内聚一下hue相关<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</div><div class="line">    <span class="comment"># 添加环境变量设置</span></div><div class="line">    os.putenv(<span class="string">'CLASSPATH'</span>, <span class="string">'/server/todo/presto-jdbc-0.184.jar:'</span> + os.getenv(<span class="string">'CLASSPATH'</span>, <span class="string">''</span>))</div><div class="line">    <span class="keyword">print</span> os.getenv(<span class="string">'CLASSPATH'</span>)</div><div class="line"></div><div class="line">    sys.argv[<span class="number">0</span>] = re.sub(<span class="string">r'(-script\.pyw?|\.exe)?$'</span>, <span class="string">''</span>, sys.argv[<span class="number">0</span>])</div><div class="line">    sys.exit(</div><div class="line">        load_entry_point(<span class="string">'desktop'</span>, <span class="string">'console_scripts'</span>, <span class="string">'hue'</span>)()</div><div class="line">    )</div></pre></td></tr></table></figure></p>
+<h5 id="3-在hue-ini里配置interpreter"><a href="#3-在hue-ini里配置interpreter" class="headerlink" title="3.在hue.ini里配置interpreter"></a>3.在hue.ini里配置interpreter</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">[[interpreters]]</div><div class="line">  # Define the name and how to connect and execute the language.</div><div class="line">  [[[presto]]]</div><div class="line">    name=Presto JDBC</div><div class="line">    interface=jdbc</div><div class="line">    options=&apos;&#123;&quot;user&quot;: &quot;root&quot;, &quot;password&quot;: &quot;***empty***&quot;, &quot;url&quot;: &quot;jdbc:presto://datanode36.will.com:8099/hive/&quot;, &quot;driver&quot;: &quot;com.facebook.presto.jdbc.PrestoDriver&quot;&#125;&apos;</div></pre></td></tr></table></figure>
+<p>这里有一个比较坑的地方，就是我们一般不会在presto server的接口做https，甚至不需要用户名密码验证。最开始的时候我配置成了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">options=&apos;&#123;&quot;user&quot;: &quot;root&quot;, &quot;password&quot;: &quot;&quot;, &quot;url&quot;: &quot;jdbc:presto://datanode36.will.com:8099/hive/&quot;, &quot;driver&quot;: &quot;com.facebook.presto.jdbc.PrestoDriver&quot;&#125;&apos;</div></pre></td></tr></table></figure></p>
+<p>或者<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">options=&apos;&#123; &quot;url&quot;: &quot;jdbc:presto://datanode36.will.com:8099/hive/&quot;, &quot;driver&quot;: &quot;com.facebook.presto.jdbc.PrestoDriver&quot;&#125;&apos;</div></pre></td></tr></table></figure></p>
+<p>就都会报不一样的错误, 看了一下presto jdbc的<a href="https://github.com/prestodb/presto/blob/master/presto-jdbc/src/main/java/com/facebook/presto/jdbc/PrestoDriverUri.java" target="_blank" rel="external">相关源码</a>：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">...</div><div class="line"> <span class="comment">// <span class="doctag">TODO:</span> fix Tempto to allow empty passwords</span></div><div class="line">String password = PASSWORD.getValue(properties).orElse(<span class="string">""</span>);</div><div class="line"><span class="comment">// 如果密码不为空，就走这里</span></div><div class="line"><span class="keyword">if</span> (!password.isEmpty() &amp;&amp; !password.equals(<span class="string">"***empty***"</span>)) &#123;</div><div class="line">    <span class="keyword">if</span> (!useSecureConnection) &#123;</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> SQLException(<span class="string">"Authentication using username/password requires SSL to be enabled"</span>);</div><div class="line">    &#125;</div><div class="line">    builder.addInterceptor(basicAuth(getUser(), password));</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">if</span> (useSecureConnection) &#123;</div><div class="line">    setupSsl(</div><div class="line">            builder,</div><div class="line">            SSL_KEY_STORE_PATH.getValue(properties),</div><div class="line">            SSL_KEY_STORE_PASSWORD.getValue(properties),</div><div class="line">            SSL_TRUST_STORE_PATH.getValue(properties),</div><div class="line">            SSL_TRUST_STORE_PASSWORD.getValue(properties));</div><div class="line">&#125;</div><div class="line">...</div></pre></td></tr></table></figure></p>
+<p>如果密码不为空的话，java.sql.DriverManager会报错，没有提供密码…</p>
+<p>还有就是url里一定要执行catalog，不然报错<code>Catalog must be specified when session catalog</code></p>
+<h5 id="4-改jdbc-py源码"><a href="#4-改jdbc-py源码" class="headerlink" title="4. 改jdbc.py源码"></a>4. 改jdbc.py源码</h5><p>最后一个是相对最麻烦的，就是hue的通用的获取数据库元数据的方式，对于presto来说并不适用，需要自己修改hue的<a href="https://github.com/cloudera/hue/blob/release-4.1.0/desktop/libs/notebook/src/notebook/connectors/jdbc.py" target="_blank" rel="external">python代码</a>。</p>
+<p>可以看到下面这个类里的各种获取元数据的sql，其实都是不适用于我们的presto 0.184的，所以需要针对性的修改。</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line">...</div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Assist</span><span class="params">()</span>:</span></div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, db)</span>:</span></div><div class="line">    self.db = db</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">get_databases</span><span class="params">(self)</span>:</span></div><div class="line">    <span class="comment">#dbs, description = query_and_fetch(self.db, 'SELECT DatabaseName FROM DBC.Databases')</span></div><div class="line">    dbs, description = query_and_fetch(self.db, <span class="string">'show schemas'</span>)</div><div class="line">    <span class="keyword">return</span> [db[<span class="number">0</span>] <span class="keyword">and</span> db[<span class="number">0</span>].strip() <span class="keyword">for</span> db <span class="keyword">in</span> dbs]</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">get_tables</span><span class="params">(self, database, table_names=[])</span>:</span></div><div class="line">    <span class="comment">#tables, description = query_and_fetch(self.db, "SELECT * FROM dbc.tables WHERE tablekind = 'T' and databasename='%s'" % database)</span></div><div class="line">    tables, description = query_and_fetch(self.db, <span class="string">"show tables from %s"</span> % database)</div><div class="line">    <span class="keyword">return</span> [&#123;<span class="string">"comment"</span>: <span class="string">"will ff"</span>, <span class="string">"type"</span>: <span class="string">"Table"</span>, <span class="string">"name"</span>: table[<span class="number">0</span>] <span class="keyword">and</span> table[<span class="number">0</span>].strip()&#125; <span class="keyword">for</span> table <span class="keyword">in</span> tables]</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">get_columns</span><span class="params">(self, database, table)</span>:</span></div><div class="line">    <span class="comment">#columns, description = query_and_fetch(self.db, "SELECT ColumnName, ColumnType, CommentString FROM DBC.Columns WHERE DatabaseName='%s' AND TableName='%s'" % (database, table))</span></div><div class="line">    columns, description = query_and_fetch(self.db, <span class="string">"desc %s.%s"</span> % (database, table))</div><div class="line">    <span class="keyword">return</span> [[col[<span class="number">0</span>] <span class="keyword">and</span> col[<span class="number">0</span>].strip(), self._type_converter(col[<span class="number">1</span>]), <span class="string">''</span>, <span class="string">''</span>, col[<span class="number">3</span>], <span class="string">''</span>] <span class="keyword">for</span> col <span class="keyword">in</span> columns]</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">get_sample_data</span><span class="params">(self, database, table, column=None)</span>:</span></div><div class="line">    column = column <span class="keyword">or</span> <span class="string">'*'</span></div><div class="line">    <span class="keyword">return</span> query_and_fetch(self.db, <span class="string">'SELECT %s FROM %s.%s'</span> % (column, database, table))</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">_type_converter</span><span class="params">(self, name)</span>:</span></div><div class="line">    <span class="keyword">return</span> &#123;</div><div class="line">        <span class="string">"I"</span>: <span class="string">"INT_TYPE"</span>,</div><div class="line">        <span class="string">"I2"</span>: <span class="string">"SMALLINT_TYPE"</span>,</div><div class="line">        <span class="string">"CF"</span>: <span class="string">"STRING_TYPE"</span>,</div><div class="line">        <span class="string">"CV"</span>: <span class="string">"CHAR_TYPE"</span>,</div><div class="line">        <span class="string">"DA"</span>: <span class="string">"DATE_TYPE"</span>,</div><div class="line">      &#125;.get(name, <span class="string">'STRING_TYPE'</span>)</div></pre></td></tr></table></figure>
+<p>当然直接修改这个通用接口类对于架构来说肯定是不好的，甚至是破坏性的。我测试了一下，这个类只对hue不能支持的(也就是mysql、oracle、postgresql、hive等)之外的自定义的jdbc起作用，所以并不会影响到其他数据库和引擎的使用，我们应该也没有需要其他自定义数据源了。所以，暂时这样，后面要TODO优化。</p>
+<p>另外，我发现还有一个问题。presto的执行user是固定的，并不像hiveserver那样，执行时使用真正的用户名去hive提交。这样就不能保证ACL的很多特性了。这方面其实可以找到hue相关部分的源码（应该也在jdbc.py）里进行改进。<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">JdbcApi</span><span class="params">(Api)</span>:</span></div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, user, interpreter=None)</span>:</span></div><div class="line">    <span class="keyword">global</span> API_CACHE</div><div class="line">    Api.__init__(self, user, interpreter=interpreter)</div><div class="line"></div><div class="line">    self.db = <span class="keyword">None</span></div><div class="line">    self.options = interpreter[<span class="string">'options'</span>]</div><div class="line"></div><div class="line">    <span class="keyword">if</span> self.cache_key <span class="keyword">in</span> API_CACHE:</div><div class="line">      self.db = API_CACHE[self.cache_key]</div><div class="line">    <span class="keyword">elif</span> <span class="string">'password'</span> <span class="keyword">in</span> self.options:</div><div class="line">      <span class="comment"># 主要在于这个地方，看代码可以发现，实际建立JDBC连接的时候</span></div><div class="line">      <span class="comment"># 会先去获取option里的user配置项，如果没有这个配置项的话，</span></div><div class="line">      <span class="comment"># 就会使用当前的用户名去创建JDBC连接了。这样也就实现了hiveserver的</span></div><div class="line">      <span class="comment"># doAs类似的功能，即以真实执行用户的身份执行最终查询</span></div><div class="line">      username = self.options.get(<span class="string">'user'</span>) <span class="keyword">or</span> user.username</div><div class="line">      <span class="comment">#username = self.user</span></div><div class="line">      print(<span class="string">'-------------------got  username --------------------------------- %s'</span> % username)</div><div class="line">      self.db = API_CACHE[self.cache_key] = Jdbc(self.options[<span class="string">'driver'</span>], self.options[<span class="string">'url'</span>], username, self.options[<span class="string">'password'</span>])</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">create_session</span><span class="params">(self, lang=None, properties=None)</span>:</span></div><div class="line">    ...</div><div class="line">    <span class="keyword">if</span> self.db <span class="keyword">is</span> <span class="keyword">None</span>:</div><div class="line">      <span class="keyword">if</span> <span class="string">'password'</span> <span class="keyword">in</span> properties:</div><div class="line">        user = properties.get(<span class="string">'user'</span>) <span class="keyword">or</span> self.options.get(<span class="string">'user'</span>)</div><div class="line">        props[<span class="string">'properties'</span>] = &#123;<span class="string">'user'</span>: user&#125;</div><div class="line">        self.db = API_CACHE[self.cache_key] = Jdbc(self.options[<span class="string">'driver'</span>], self.options[<span class="string">'url'</span>], user, properties.pop(<span class="string">'password'</span>))</div><div class="line">    ...</div><div class="line">    <span class="keyword">return</span> props</div></pre></td></tr></table></figure></p>
+<p>从上面的代码分析可得，我们只要在option里不配置user信息，就可以了。。。（结果让我相对崩溃…..）</p>
+<h4 id="升级"><a href="#升级" class="headerlink" title="升级"></a>升级</h4><p>从3.10到4.1，压根儿不知道应该怎样升级数据库里的数据。搜了很多文档都没有找到，最后到github上找到cdh/hue的源码，看到有个commit的comment是关于upgrade的，点进去发现了一篇文档：<a href="https://github.com/cloudera/hue/tree/master/dist。里面提到以下三个步骤" target="_blank" rel="external">https://github.com/cloudera/hue/tree/master/dist。里面提到以下三个步骤</a>:</p>
+<ul>
+<li>备份原有数据库</li>
+<li>./build/env/bin/hue syncdb</li>
+<li>./build/env/bin/hue migrate</li>
+</ul>
+<p>其实在第二个步骤的时候，就会进行数据库比对。而第三个数据库则会把所有4.1多余3.10的migrations进行执行。因为hue是基于django的，所以利用了django的migrate的特性。</p>
+<p>不知道为什么一直没有搜到这个hue的文档，可能还是关键字有问题吧。</p>
+<h4 id="进一步思考"><a href="#进一步思考" class="headerlink" title="进一步思考"></a>进一步思考</h4><p>其实现在presto是可用了，但是依照规范的话，我们是可以自己依照hive、mysql的数据查询类实现presto查询类的。而且难度也基本是很低的，hue这么长时间都没有presto的兼容，不知道是不是官网别有用心[impala]。</p>
+<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><ul>
+<li><a href="https://github.com/skame/docker-prestogres" target="_blank" rel="external">https://github.com/skame/docker-prestogres</a></li>
+<li><a href="https://github.com/treasure-data/prestogres" target="_blank" rel="external">https://github.com/treasure-data/prestogres</a></li>
+<li><a href="https://medium.com/@ilkkaturunen/integrating-presto-with-hue-61702b244839" target="_blank" rel="external">https://medium.com/@ilkkaturunen/integrating-presto-with-hue-61702b244839</a></li>
+<li><a href="https://prestodb.io/docs/0.184/installation/jdbc.html" target="_blank" rel="external">https://prestodb.io/docs/0.184/installation/jdbc.html</a></li>
+<li><a href="https://groups.google.com/forum/#!topic/presto-users/24MMrfLKdu0" target="_blank" rel="external">https://groups.google.com/forum/#!topic/presto-users/24MMrfLKdu0</a></li>
+<li><a href="https://github.com/cloudera/hue/blob/release-4.1.0/desktop/libs/notebook/src/notebook/connectors/jdbc.py" target="_blank" rel="external">https://github.com/cloudera/hue/blob/release-4.1.0/desktop/libs/notebook/src/notebook/connectors/jdbc.py</a></li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/12/19/整合presto与hue/" data-title="整合presto与hue | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/12/22/slider配置相关/" title="slider配置相关">
+  <strong>上一篇：</strong><br/>
+  <span>
+  slider配置相关</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/12/19/presto手札/"  title="presto手札">
+ <strong>下一篇：</strong><br/> 
+ <span>presto手札
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/12/19/整合presto与hue/" data-title="整合presto与hue" data-url="http://willcup.com/2017/12/19/整合presto与hue/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#可行方案"><span class="toc-number">1.</span> <span class="toc-text">可行方案</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#实际方案"><span class="toc-number">2.</span> <span class="toc-text">实际方案</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-下载对应presto版本的jdbc包"><span class="toc-number">2.1.</span> <span class="toc-text">1. 下载对应presto版本的jdbc包</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-修改本地java环境变量CLASSPATH"><span class="toc-number">2.2.</span> <span class="toc-text">2. 修改本地java环境变量CLASSPATH</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-在hue-ini里配置interpreter"><span class="toc-number">2.3.</span> <span class="toc-text">3.在hue.ini里配置interpreter</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-改jdbc-py源码"><span class="toc-number">2.4.</span> <span class="toc-text">4. 改jdbc.py源码</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#升级"><span class="toc-number">3.</span> <span class="toc-text">升级</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#进一步思考"><span class="toc-number">4.</span> <span class="toc-text">进一步思考</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#参考"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,1280 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="左右水色 右手天光">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Will's Blog">
+<meta property="og:url" content="http://willcup.com/page/19/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="左右水色 右手天光">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Will's Blog">
+<meta name="twitter:description" content="左右水色 右手天光">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main">
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/Ember-data-定制化adapter/" title="Ember-data-定制化adapter" itemprop="url">Ember-data-定制化adapter</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:09:13.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>adapter在Ember Data中决定数据怎样被持久化到后端数据存储层。比如处理URL格式、REST API的header等。(数据格式决定于<br><a href="../customizing-serializers/">serializer</a>.)Ember Data的默认adapter有一些内置的假设规范，参看：REST API should look。如果你的后端不满足这些规范，就集成默认的adapter，修改一下它的方法。</p>
+<p>一些典型的应用场景是在你的urls中使用<br><code>underscores_case</code> , 使用中介而不是直接使用你后端的server，甚至直接使用<br><a href="https://github.com/locks/ember-localstorage-adapter" target="_blank" rel="external">local storage backend</a>.</p>
+<p>继承adapter在Ember Data中是很轻松的过程。</p>
+<p>如果你的后端你有一致性要求，你可以定义一个<br><code>adapter:application</code>.  <code>adapter:application</code> 的优先级高于所有其他的默认Adapter, 但是低于model内指定的Adapters.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  // Application specific overrides go here</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>如果你有一个model相对于其他的model在与后台沟通的时候需要额外的规则，那么你就可以创建一个Model指定的<br>Adapter：<code>ember generate adapter adapter-name</code>.<br>例如，运行<code>ember generate adapter post</code> 会创建下面的文件:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  namespace: &apos;api/v1&apos;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>Ember Data默认有几个内置的adapter。</p>
+<ul>
+<li><p><a href="http://emberjs.com/api/data/classes/DS.Adapter.html" target="_blank" rel="external">Adapter</a> 是最基础的adapter，不好喊任何功能。如果你要创建一个不同于其他的adapter功能的adapter，通常它是要给不错的起点。</p>
+</li>
+<li><p><a href="http://emberjs.com/api/data/classes/DS.JSONAPIAdapter.html" target="_blank" rel="external">JSONAPIAdapter</a><br><code>JSONAPIAdapter</code>是遵循默认JSON API规范的adapter，负责通过XHR传递JSON与http server沟通。</p>
+</li>
+<li><p><a href="http://emberjs.com/api/data/classes/DS.RESTAdapter.html" target="_blank" rel="external">RESTAdapter</a><br><code>RESTAdapter</code> 通过XHR传递JSON允许你的store与http server直接沟通。2.0版本之前，这个是默认的adapter。</p>
+</li>
+</ul>
+<h2 id="定制化JSONAPIAdapter"><a href="#定制化JSONAPIAdapter" class="headerlink" title="定制化JSONAPIAdapter"></a>定制化JSONAPIAdapter</h2><p><a href="http://emberjs.com/api/data/classes/DS.JSONAPIAdapter.html" target="_blank" rel="external">JSONAPIAdapter</a><br>有一些很好用的hooks来适应非标准的后台。</p>
+<h3 id="URL规范"><a href="#URL规范" class="headerlink" title="URL规范"></a>URL规范</h3><p><code>JSONAPIAdapter</code>可以通过mode的名字来判断 URLs.比如，如果你通过ID查询<code>Post</code>:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">store.findRecord(<span class="string">'post'</span>, <span class="number">1</span>).then(<span class="function"><span class="keyword">function</span>(<span class="params">post</span>) </span>&#123;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>JSON API adapter会自动发送一个<code>GET</code> 请求到<code>/posts/1</code>.</p>
+<p>JSON API adapter中的操作与url对应如下:</p>
+<table><br>  <thead><br>    <tr><th>Action</th><th>HTTP Verb</th><th>URL</th></tr><br>  </thead><br>  <tbody><br>    <tr><th>Find</th><td>GET</td><td>/posts/123</td></tr><br>    <tr><th>Find All</th><td>GET</td><td>/posts</td></tr><br>    <tr><th>Update</th><td>PATCH</td><td>/posts/123</td></tr><br>    <tr><th>Create</th><td>POST</td><td>/posts</td></tr><br>    <tr><th>Delete</th><td>DELETE</td><td>/posts/123</td></tr><br>  </tbody><br></table>
+
+<h4 id="Pluralization-Customization"><a href="#Pluralization-Customization" class="headerlink" title="Pluralization Customization"></a>Pluralization Customization</h4><p>To facilitate pluralizing model names when generating route urls Ember<br>Data comes bundled with<br><a href="https://github.com/stefanpenner/ember-inflector" target="_blank" rel="external">Ember Inflector</a>, a<br>ActiveSupport::Inflector compatible library for inflecting words<br>between plural and singular forms. Irregular or uncountable<br>pluralizations can be specified via <code>Ember.Inflector.inflector</code>.<br>A common way to do this is<br>（上面的没咋看懂，就是url中处理model负数问题的）<br>:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">// sets up Ember.Inflector</div><div class="line">import &apos;./models/custom-inflector-rules&apos;;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">import Inflector from &apos;ember-inflector&apos;;</div><div class="line"></div><div class="line">const inflector = Inflector.inflector;</div><div class="line"></div><div class="line">inflector.irregular(&apos;formula&apos;, &apos;formulae&apos;);</div><div class="line">inflector.uncountable(&apos;advice&apos;);</div><div class="line"></div><div class="line">// Meet Ember Inspector&apos;s expectation of an export</div><div class="line">export default &#123;&#125;;</div></pre></td></tr></table></figure>
+<p>这告诉JSON API adapter对于<code>formula</code>的请求应该去<code>/formulae/1</code> 而不是 <code>/formulas/1</code>, 对于<code>advice</code>的请求应该去 <code>/advice/1</code> 而不是 <code>/advices/1</code>.</p>
+<h4 id="Endpoint-Path-Customization"><a href="#Endpoint-Path-Customization" class="headerlink" title="Endpoint Path Customization"></a>Endpoint Path Customization</h4><p><code>namespace</code> 属性可以作为指定url的前缀.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  namespace: &apos;api/1&apos;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>请求<code>person</code> 被指向 <code>http://emberjs.com/api/1/people/1</code>.</p>
+<h4 id="Host-Customization"><a href="#Host-Customization" class="headerlink" title="Host Customization"></a>Host Customization</h4><p>默认adapter会向当前域发送请求。如果要指定新的域名需要设置adapter的<code>host</code>属性。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  host: &apos;https://api.example.com&apos;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>请求<code>person</code> 会指向 <code>https://api.example.com/people/1</code>.</p>
+<h4 id="Path-Customization"><a href="#Path-Customization" class="headerlink" title="Path Customization"></a>Path Customization</h4><p>默认 <code>JSONAPIAdapter</code>会处理model的名字为复数，生成path。如果这并不适用于你的后台，那就override <code>pathForType</code> 方法.</p>
+<p>例如，如果你不想复数化你的model名称，而是要把你的model名字从驼峰转为下滑线，你可以这边写<br><code>pathForType</code> 方法:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  pathForType: function(type) &#123;</div><div class="line">    return Ember.String.underscore(type);</div><div class="line">  &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>请求 <code>person</code> 被定向到 <code>/person/1</code>.<br>请求 <code>user-profile</code>定向到 <code>/user_profile/1</code>.</p>
+<h4 id="Headers-customization"><a href="#Headers-customization" class="headerlink" title="Headers customization"></a>Headers customization</h4><p>又的API必须要有一些header才行，如果提供一个key。在<code>JSONAPIAdapter</code>的 <code>headers</code>对象中我们可以设置任意的header信息。Ember Data会在发送每个ajax 请求的时候带上它们.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  headers: &#123;</div><div class="line">    &apos;API_KEY&apos;: &apos;secret key&apos;,</div><div class="line">    &apos;ANOTHER_HEADER&apos;: &apos;Some header value&apos;</div><div class="line">  &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p><code>headers</code>也可以使用 computed property来支持动态header. 下面例子中是基于<code>session</code>service中的<code>authToken</code>属性的.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  session: Ember.inject.service(&apos;session&apos;),</div><div class="line">  headers: Ember.computed(&apos;session.authToken&apos;, function() &#123;</div><div class="line">    return &#123;</div><div class="line">      &apos;API_KEY&apos;: this.get(&apos;session.authToken&apos;),</div><div class="line">      &apos;ANOTHER_HEADER&apos;: &apos;Some header value&apos;</div><div class="line">    &#125;;</div><div class="line">  &#125;)</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>In some cases, your dynamic headers may require data from some<br>object outside of Ember’s observer system (for example<br><code>document.cookie</code>). You can use the<br><a href="http://emberjs.com/api/classes/Ember.ComputedProperty.html#method_volatile" target="_blank" rel="external">volatile</a><br>function to set the property into a non-cached mode causing the headers to<br>be recomputed with every request.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  headers: Ember.computed(function() &#123;</div><div class="line">    return &#123;</div><div class="line">      &apos;API_KEY&apos;: Ember.get(document.cookie.match(/apiKey\=([^;]*)/), &apos;1&apos;),</div><div class="line">      &apos;ANOTHER_HEADER&apos;: &apos;Some header value&apos;</div><div class="line">    &#125;;</div><div class="line">  &#125;).volatile()</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h4 id="Authoring-Adapters"><a href="#Authoring-Adapters" class="headerlink" title="Authoring Adapters"></a>Authoring Adapters</h4><p><code>defaultSerializer</code> 可以用来指定adapter的serializer. 只有model需要指定的serializer或者么有定义<code>serializer:application</code>的时候才会用到。</p>
+<p>在app中, 指定<br><code>serializer:application</code>通常很容易. 但是，如果你是一个社区adapter的作者，记住一定要设置这个属性，以免你的用户忘记没有指定这个属性，Ember就报错了。.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  defaultSerializer: &apos;-default&apos;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h2 id="社区的Adapters"><a href="#社区的Adapters" class="headerlink" title="社区的Adapters"></a>社区的Adapters</h2><p>可以从下面的地址中找到社区贡献的adapter，或许有适合你的哦:</p>
+<ul>
+<li><a href="http://emberobserver.com/categories/data" target="_blank" rel="external">Ember Observer</a></li>
+<li><a href="https://github.com/search?q=ember+data+adapter&amp;ref=cmdform" target="_blank" rel="external">GitHub</a></li>
+<li><a href="http://bower.io/search/?q=ember-data-" target="_blank" rel="external">Bower</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/jenkins/" title="jenkins" itemprop="url">jenkins</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:09:07.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="安装插件"><a href="#安装插件" class="headerlink" title=" 安装插件"></a> 安装插件</h2><p> <code>问题</code>：每次在线安装插件的时候，Jenkins默认都是使用www.google.com去验证网络是否通畅，如果不通畅下面指定的插件还是会去下载，但是根本就不会安装。(比较让人费解的是，都下了还不安，要么就别下了也)</p>
+<p> <code>期望</code>：使用www.baidu.com来验证网络，或者跳过验证。</p>
+<p> <code>方案</code>: 修改/var/lib/jenkins/updates/default.json里的connectionCheckUrl，这个文件特别大， 但是这个connectionCheckUrl一般都在最开始的地方。</p>
+<h2 id="启用用户验证"><a href="#启用用户验证" class="headerlink" title="启用用户验证"></a>启用用户验证</h2><p>系统管理-&gt; Configure Global Security</p>
+<h2 id="maven相关"><a href="#maven相关" class="headerlink" title="maven相关"></a>maven相关</h2><p>安装maven插件</p>
+<h4 id="maven仓库"><a href="#maven仓库" class="headerlink" title="maven仓库"></a>maven仓库</h4><p>主要是为了能够让每个maven项目build的时候都使用一个公共的maven地址，而又不想去默认的~/.m2/repository(我们这边/的硬盘不是很大).</p>
+<p>安装一个插件：config file provider plugin<br>在系统管理-&gt;Managed files里添加一个maven的settings文件，可以把自己线上的maven配置信息弄过来。</p>
+<h4 id="maven构建"><a href="#maven构建" class="headerlink" title="maven构建"></a>maven构建</h4><p>maven项目配置的时候，记得以下几点</p>
+<ul>
+<li>在goals和options里指定maven构建目标，反正我是二逼的忘掉了。这一条只为二逼的自己</li>
+<li>root pom指定相对根目录的pom.xml的位置。</li>
+<li>修改config file provider plugin的settings.xml指定的localRepository对于Jenkins用户的可读可写可执行的权限，懒货如我，直接整个repo都777了。</li>
+</ul>
+<h4 id="发布到tomcat"><a href="#发布到tomcat" class="headerlink" title="发布到tomcat"></a>发布到tomcat</h4><p><code>期望</code>：<br>build成功后直接使用shell将war包发布到tomcat，并重启之，等待一段时间后，测试一系列接口，确认后台正常服务。</p>
+<p><code>问题</code>：<br>jenkins的job进程创建的、包括调用脚本创建的进程都会随着Jenkins job进程的退出而退出。</p>
+<p>参考：<a href="https://wiki.jenkins-ci.org/display/JENKINS/ProcessTreeKiller" target="_blank" rel="external">ProcessTreeKiller</a></p>
+<p><code>方案</code>：<br>下载Deploy to container Plugin，在指定project下配置构建完成后操作，配置好tomcat的相关信息之后，尝试build。</p>
+<p>发现报错:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div></pre></td><td class="code"><pre><div class="line">Deploying /var/lib/jenkins/jobs/metamap/workspace/metamap_java/target/metamap.war to container Tomcat 7.x Remote</div><div class="line">ERROR: Build step failed with exception</div><div class="line">org.codehaus.cargo.container.ContainerException: Failed to redeploy [/var/lib/jenkins/jobs/metamap/workspace/metamap_java/target/metamap.war]</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.AbstractTomcatManagerDeployer.redeploy(AbstractTomcatManagerDeployer.java:189)</div><div class="line">	at hudson.plugins.deploy.CargoContainerAdapter.deploy(CargoContainerAdapter.java:73)</div><div class="line">	at hudson.plugins.deploy.CargoContainerAdapter$1.invoke(CargoContainerAdapter.java:116)</div><div class="line">	at hudson.plugins.deploy.CargoContainerAdapter$1.invoke(CargoContainerAdapter.java:103)</div><div class="line">	at hudson.FilePath.act(FilePath.java:990)</div><div class="line">	at hudson.FilePath.act(FilePath.java:968)</div><div class="line">	at hudson.plugins.deploy.CargoContainerAdapter.redeploy(CargoContainerAdapter.java:103)</div><div class="line">	at hudson.plugins.deploy.DeployPublisher.perform(DeployPublisher.java:61)</div><div class="line">	at hudson.tasks.BuildStepMonitor$3.perform(BuildStepMonitor.java:45)</div><div class="line">	at hudson.model.AbstractBuild$AbstractBuildExecution.perform(AbstractBuild.java:782)</div><div class="line">	at hudson.model.AbstractBuild$AbstractBuildExecution.performAllBuildSteps(AbstractBuild.java:723)</div><div class="line">	at hudson.maven.MavenModuleSetBuild$MavenModuleSetBuildExecution.post2(MavenModuleSetBuild.java:1037)</div><div class="line">	at hudson.model.AbstractBuild$AbstractBuildExecution.post(AbstractBuild.java:668)</div><div class="line">	at hudson.model.Run.execute(Run.java:1763)</div><div class="line">	at hudson.maven.MavenModuleSetBuild.run(MavenModuleSetBuild.java:529)</div><div class="line">	at hudson.model.ResourceController.execute(ResourceController.java:98)</div><div class="line">	at hudson.model.Executor.run(Executor.java:410)</div><div class="line">Caused by: org.codehaus.cargo.container.tomcat.internal.TomcatManagerException: The username you provided is not allowed to use the text-based Tomcat Manager (error 403)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.TomcatManager.invoke(TomcatManager.java:555)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.TomcatManager.list(TomcatManager.java:686)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.TomcatManager.getStatus(TomcatManager.java:699)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.AbstractTomcatManagerDeployer.redeploy(AbstractTomcatManagerDeployer.java:174)</div><div class="line">	... 16 more</div><div class="line">Caused by: java.io.IOException: Server returned HTTP response code: 403 for URL: http://10.0.1.62:8080//manager/text/list</div><div class="line">	at sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1839)</div><div class="line">	at sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1440)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.TomcatManager.invoke(TomcatManager.java:544)</div><div class="line">	... 19 more</div><div class="line">org.codehaus.cargo.container.tomcat.internal.TomcatManagerException: The username you provided is not allowed to use the text-based Tomcat Manager (error 403)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.TomcatManager.invoke(TomcatManager.java:555)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.TomcatManager.list(TomcatManager.java:686)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.TomcatManager.getStatus(TomcatManager.java:699)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.AbstractTomcatManagerDeployer.redeploy(AbstractTomcatManagerDeployer.java:174)</div><div class="line">	at hudson.plugins.deploy.CargoContainerAdapter.deploy(CargoContainerAdapter.java:73)</div><div class="line">	at hudson.plugins.deploy.CargoContainerAdapter$1.invoke(CargoContainerAdapter.java:116)</div><div class="line">	at hudson.plugins.deploy.CargoContainerAdapter$1.invoke(CargoContainerAdapter.java:103)</div><div class="line">	at hudson.FilePath.act(FilePath.java:990)</div><div class="line">	at hudson.FilePath.act(FilePath.java:968)</div><div class="line">	at hudson.plugins.deploy.CargoContainerAdapter.redeploy(CargoContainerAdapter.java:103)</div><div class="line">	at hudson.plugins.deploy.DeployPublisher.perform(DeployPublisher.java:61)</div><div class="line">	at hudson.tasks.BuildStepMonitor$3.perform(BuildStepMonitor.java:45)</div><div class="line">	at hudson.model.AbstractBuild$AbstractBuildExecution.perform(AbstractBuild.java:782)</div><div class="line">	at hudson.model.AbstractBuild$AbstractBuildExecution.performAllBuildSteps(AbstractBuild.java:723)</div><div class="line">	at hudson.maven.MavenModuleSetBuild$MavenModuleSetBuildExecution.post2(MavenModuleSetBuild.java:1037)</div><div class="line">	at hudson.model.AbstractBuild$AbstractBuildExecution.post(AbstractBuild.java:668)</div><div class="line">	at hudson.model.Run.execute(Run.java:1763)</div><div class="line">	at hudson.maven.MavenModuleSetBuild.run(MavenModuleSetBuild.java:529)</div><div class="line">	at hudson.model.ResourceController.execute(ResourceController.java:98)</div><div class="line">	at hudson.model.Executor.run(Executor.java:410)</div><div class="line">Caused by: java.io.IOException: Server returned HTTP response code: 403 for URL: http://10.0.1.62:8080//manager/text/list</div><div class="line">	at sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1839)</div><div class="line">	at sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1440)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.TomcatManager.invoke(TomcatManager.java:544)</div><div class="line">	... 19 more</div><div class="line">Build step &apos;Deploy war/ear to a container&apos; marked build as failure</div></pre></td></tr></table></figure></p>
+<p>修改对应tomcat的conf/tomcat-users.xml，添加tomcat-script角色，并赋予给当前的tomcat管理员用户。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">build pom done.....</div><div class="line">Deploying /var/lib/jenkins/jobs/metamap/workspace/metamap_java/target/metamap.war to container Tomcat 7.x Remote</div><div class="line">  Redeploying [/var/lib/jenkins/jobs/metamap/workspace/metamap_java/target/metamap.war]</div><div class="line">  Undeploying [/var/lib/jenkins/jobs/metamap/workspace/metamap_java/target/metamap.war]</div><div class="line">  Deploying [/var/lib/jenkins/jobs/metamap/workspace/metamap_java/target/metamap.war]</div><div class="line">Finished: SUCCESS</div></pre></td></tr></table></figure>
+<h2 id="使用root用户"><a href="#使用root用户" class="headerlink" title="使用root用户"></a>使用root用户</h2><p>因为会部署很多任务放在jenkins上，而各个任务都有自己的权限目录，使用jenkins用户执行任务会有些不方便，总是遇到权限问题。</p>
+<p>结合我们既有环境考虑，使用root用户执行jenkins任务并不会造成额外的危险。（操作jenksin 的人很有限，而且各自有账户）</p>
+<p>具体步骤:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">vim /etc/sysconfig/jenkins</div><div class="line">$JENKINS_USER=&quot;root&quot;</div><div class="line"></div><div class="line">chown -R root:root /var/lib/jenkins</div><div class="line">chown -R root:root /var/cache/jenkins</div><div class="line">chown -R root:root /var/log/jenkins</div><div class="line"></div><div class="line">service jenkins restart</div></pre></td></tr></table></figure></p>
+<p>先在jenkins配置文件里指定jenkins系统执行任务的用户，之后修改jenkins既有目录的权限，重启服务。</p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>python脚本不及时输出，最后一股子出来。<br>在执行python命令前，先添加环境变量：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">export PYTHONUNBUFFERED=1</div></pre></td></tr></table></figure></p>
+<ul>
+<li><a href="https://stackoverflow.com/questions/11631951/jenkins-console-output-not-in-realtime" target="_blank" rel="external">https://stackoverflow.com/questions/11631951/jenkins-console-output-not-in-realtime</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/mondrian架构/" title="mondrian架构" itemprop="url">mondrian架构</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:09:02.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="1-mondrain系统的层次"><a href="#1-mondrain系统的层次" class="headerlink" title="1 mondrain系统的层次"></a>1 mondrain系统的层次</h2><ul>
+<li>表现层(the presentation layer)</li>
+<li>维度层(the dimensional layer)</li>
+<li>聚合层(the star layer)</li>
+<li>存储层(the storage layer)</li>
+</ul>
+<h4 id="1-1-表现层-the-presentation-layer"><a href="#1-1-表现层-the-presentation-layer" class="headerlink" title="1.1 表现层(the presentation layer)"></a>1.1 表现层(the presentation layer)</h4><p>表现层决定了最终用户将在他们的显示器上看到什么, 及他们如何同系统产生交互。<br>有许多方法可以用来向用户显示多维数据集, 有 pivot 表 (一种交互式的表), pie, line 和图表(bar charts)。它们可以用Swing 或 JSP来实现。<br>表现层以多维”文法(grammar)(维、度量、单元)”的形式发出查询，然后OLAP服务器返回结果。</p>
+<h4 id="1-2-维度层-the-dimensional-layer"><a href="#1-2-维度层-the-dimensional-layer" class="headerlink" title="1.2 维度层(the dimensional layer)"></a>1.2 维度层(the dimensional layer)</h4><p>维度层用来解析、验证和执行MDX查询请求。<br>一个MDX查询要通过几个阶段来完成：首先是计算坐标轴（axes），再者计算坐标轴axes 中cell的值。<br> 为了提高效率，维度层把要求查询的单元成批发送到集合层，查询转换器接受操作现有查询的请求，而不是对每个请求都建立一个MDX 声明。</p>
+<h4 id="1-3-聚合层-the-star-layer"><a href="#1-3-聚合层-the-star-layer" class="headerlink" title="1.3 聚合层(the star layer)"></a>1.3 聚合层(the star layer)</h4><p>集合层负责维护和创建聚合缓存，一个聚合是在内存中缓存一组单元值， 这些单元值由一组维的值来确定。<br>维度层对这些单元发出查询请求，如果所查询的单元值不在缓存中，则聚合管理器(aggregation manager)会向存储层发出查询请求</p>
+<h4 id="1-4-存储层-the-storage-layer"><a href="#1-4-存储层-the-storage-layer" class="headerlink" title="1.4 存储层(the storage layer)"></a>1.4 存储层(the storage layer)</h4><p>存储层是一个关系型数据库(RDBMS)。它负责创建集合的单元数据，和提供维表的成员。在后面后说一下直接使用RDBMS而不另外开发存储的原因。</p>
+<p>这些层次组件可以都在同一个机器上，也可以分布开。第二层和第三层组成mondrian server，他俩必须在一个机器上。</p>
+<h2 id="2-存储与聚合策略"><a href="#2-存储与聚合策略" class="headerlink" title="2 存储与聚合策略"></a>2 存储与聚合策略</h2><p>OLAP server通常都基于他们存储数据的方式被归为以下两类：</p>
+<ul>
+<li>MOLAP（multidimensional OLAP） server。为了便于多维访问，它将所有的数据结构化存储在磁盘上。一般数据都是存储在稠密的数据中，每个cell只需要4或8个字节</li>
+<li>ROLAP(relational OLAP) server。直接将数据存在RDBMS中。事实表里的每一行的字段都同时包含了维度和指标。</li>
+</ul>
+<p>我们需要存储三种数据：事实表数据（事务记录）、聚合数据、维度。</p>
+<p>MOLAP数据库是以多维格式存储事实数据的，但是如果维度很多的话，数据就会稀疏，这种存储格式表现就不太好了。 HOLAP (hybrid OLAP)系统的解决了这个问题，它在关系数据库中存储到最细粒度的数据，把聚合结果存在多维格式下。</p>
+<p>对于大数据集来说，否则有些查询可能会需要遍历事实表里的所有数据。 MOLAP的聚合表通常是内存数据结构的一个快照，存储在磁盘上。ROLAP 聚合表是存在表里的。在一些 ROLAP 系统中，这些都需要OLAP server详细管理。对其他系统来说，这些表只是物化视图而已，只有在OLAP server被访问到指定查询时才会用到。</p>
+<p>最极端的聚合策略就是缓存了，存在内存里。如果缓存里数据集在比较低的聚合level上，还可以上卷。</p>
+<p>缓存可能是聚合策略中最重要的部分了，因为他是可以适配的。很难在不适用大量磁盘的前提下，选择聚合维度并预计算。要是维度较多，或者用户提交了某些一些不可预测的查询就更糟糕了。在数据实时变化的系统中，维护预计算聚合几乎是不可实现的。一个缓存的合理大小应该能够允许系统执行一些不可预估的查询，不适用任何聚合。</p>
+<p>Mondrian的聚合策略如下：</p>
+<ul>
+<li>事实数据存在RDBMS中。我们没必要自己再开发一个存储了</li>
+<li>通过提交group by查询，将聚合数据读取进入缓存。既然RDBMS有了聚合操作，我们也直接使用</li>
+<li>如果RDBMS支持物化视图，数据库管理员为某些聚合创建了物化视图，然后mondrian就可以使用它们咯。理想情况下，mondrian的聚合管理员应该知道这些物化视图是否存在，知道怎样高效计算，甚至能够给数据库管理员一些调优建议。</li>
+</ul>
+<p>总的原则就是能委托给数据库的就给数据库做。数据库的负载虽然增加了一些，但是数据库的客户端获益很大。多维存储应该减少IO，才能更快。</p>
+<p>另外，因为mondrian并不需要什么存储，所以只要把jar文件加入classpath就可以运行它了。没有多余的数据管理，数据加载过程也很简单，mondrian很适合数据实时变化的OLAP。</p>
+<h2 id="3-API"><a href="#3-API" class="headerlink" title="3 API"></a>3 API</h2><p>mondrian为app提供了客户端api。</p>
+<p>因为对于执行OLAP查询并没有统一规范，所以mondrian也是自己独有的API，但是熟悉jdbc的朋友们都会很容易上手。主要区别在于查询语言是MDX(‘Multi-Dimensional eXpressions’)，而JDBC是使用标准SQL的。</p>
+<p>下面的java代码是连接mondrian，执行查询，然后打印结果：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> mondrian.olap.*;</div><div class="line"><span class="keyword">import</span> java.io.PrintWriter;</div><div class="line"></div><div class="line">Connection connection = DriverManager.getConnection(</div><div class="line">    <span class="string">"Provider=mondrian;"</span> +</div><div class="line">    <span class="string">"Jdbc=jdbc:odbc:MondrianFoodMart;"</span> +</div><div class="line">    <span class="string">"Catalog=/WEB-INF/FoodMart.xml;"</span>,</div><div class="line">    <span class="keyword">null</span>,</div><div class="line">    <span class="keyword">false</span>);</div><div class="line">Query query = connection.parseQuery(</div><div class="line">    <span class="string">"SELECT &#123;[Measures].[Unit Sales], [Measures].[Store Sales]&#125; on columns,"</span> +</div><div class="line">    <span class="string">" &#123;[Product].children&#125; on rows "</span> +</div><div class="line">    <span class="string">"FROM [Sales] "</span> +</div><div class="line">    <span class="string">"WHERE ([Time].[1997].[Q1], [Store].[CA].[San Francisco])"</span>);</div><div class="line">Result result = connection.execute(query);</div><div class="line">result.print(<span class="keyword">new</span> PrintWriter(System.out));</div></pre></td></tr></table></figure></p>
+<p>使用DriverManger创建Connection。Query对应于jdbc的Statement，通过解析MDX字符串创建。 Result对应于jdbc的ResultSet。既然我们这里处理的是多维数据，这个结果里就包含了坐标轴axes和单元格cell，而不是行row和列column了。还有，OLAP是用于数据探查的，你可以执行一些类似下钻drillDown、排序sort的操作修改parse tree，然后重新执行查询。</p>
+<p>还有一些对象： Schema, Cube, Dimension, Hierarchy, Level, Member. 可以看一下mondrian的API了解详情。</p>
+<h2 id="4-MDX"><a href="#4-MDX" class="headerlink" title="4 MDX "></a>4 MDX </h2><h4 id="4-1-参数"><a href="#4-1-参数" class="headerlink" title="4.1 参数"></a>4.1 参数</h4><p>参数是在MDX查询中内嵌的一个变量。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Parameter(&lt;name&gt;, &lt;type&gt;, &lt;defaultValue&gt;[, &lt;description&gt;])</div></pre></td></tr></table></figure></p>
+<ul>
+<li>name ,在query中唯一</li>
+<li>type， NUMERIC, STRING或者层次名称之一</li>
+<li>defaultValue。 默认值，是一个表达式，应该跟type类型一致，如果是层次，就得是层次的某个成员</li>
+<li>desc。 </li>
+</ul>
+<p>要是想在同一个query中使用某个参数多次，就使用：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ParamRef(&lt;name&gt;)</div></pre></td></tr></table></figure></p>
+<p>下面的查询会查出California的前10名品牌，我们可以修改Count参数为前5名，或者修改Region参数为西雅图：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">SELECT &#123;[Measures].[Unit Sales]&#125; on columns,</div><div class="line">   TopCount([Product].[Brand].members,</div><div class="line">     Parameter(&quot;Count&quot;, NUMERIC, 10, &quot;Number of products to show&quot;),</div><div class="line">     (Parameter(&quot;Region&quot;, [Store], [Store].[USA].[CA]),</div><div class="line">     [Measures].[Unit Sales])) on rows</div><div class="line">FROM Sales</div></pre></td></tr></table></figure></p>
+<p>可以调用Query.getParameters()来获取某个查询的所有参数，然后调用Query.setParameter(String name, String value)修改参数值。</p>
+<h4 id="4-2-内置函数"><a href="#4-2-内置函数" class="headerlink" title="4.2 内置函数"></a>4.2 内置函数</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">StrToSet(&lt;String Expression&gt;[, &lt;Hierarchy&gt;])</div><div class="line">StrToTuple(&lt;String Expression&gt;[, &lt;Hierarchy&gt;])</div></pre></td></tr></table></figure>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/ember异常记录/" title="ember异常记录" itemprop="url">ember异常记录</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:09:02.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h4 id="ember-mermaid"><a href="#ember-mermaid" class="headerlink" title="ember-mermaid"></a>ember-mermaid</h4><p>要画流程图，对比了一下，决定使用ember-mermaid，但是github里说的安装方式运行的话，会报错：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/<span class="built_in">local</span>/metamap/metamap_js<span class="comment"># ember install ember-mermaid</span></div><div class="line">DEPRECATION: Overriding init without calling this._super is deprecated. Please call this._super(), addon: `ember-mermaid`</div><div class="line">    at Function.Addon.lookup (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:896:27)</div><div class="line">The addon `ember-cli-htmlbars` requires an Ember CLI version of 0.1.2 or above, but you are running null.</div><div class="line">Error: The addon `ember-cli-htmlbars` requires an Ember CLI version of 0.1.2 or above, but you are running null.</div><div class="line">    at Function.deprecatedAssertAbove [as assertAbove] (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli-htmlbars/node_modules/ember-cli-version-checker/index.js:143:18)</div><div class="line">    at CoreObject.module.exports.init (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli-htmlbars/ember-addon-main.js:13:13)</div><div class="line">    at CoreObject.superWrapper [as init] (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/node_modules/core-object/lib/assign-properties.js:32:18)</div><div class="line">    at CoreObject.Class (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/node_modules/core-object/core-object.js:33:38)</div><div class="line">    at /usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/models/addons-factory.js:48:21</div><div class="line">    at visit (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/utilities/DAG.js:23:3)</div><div class="line">    at DAG.topsort (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/utilities/DAG.js:82:7)</div><div class="line">    at CoreObject.extend.initializeAddons (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/models/addons-factory.js:44:11)</div><div class="line">    at CoreObject.extend.initializeAddons (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:226:38)</div><div class="line">    at setupRegistryForEachAddon (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/node_modules/ember-cli-preprocess-registry/preprocessors.js:18:10)</div></pre></td></tr></table></figure></p>
+<p>搜了一下没找到相关资料，索性直接暴力解决,修改报错文件里检查版本的部分/usr/local/metamap/metamap_js/node_modules/ember-cli-htmlbars/node_modules/ember-cli-version-checker/index.js:143:18。看到上面是验证版本的地方出了问题<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> (!dependencyChecker.satisfies(comparison)) &#123;</div><div class="line">  <span class="keyword">var</span> error  = <span class="keyword">new</span> <span class="built_in">Error</span>(message);</div><div class="line"></div><div class="line">  error.suppressStacktrace = <span class="literal">true</span>;</div><div class="line">  <span class="keyword">throw</span> error;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>注释掉上面这些代码后成功安装。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# ember install ember-mermaid</div><div class="line">DEPRECATION: Overriding init without calling this._super is deprecated. Please call this._super(), addon: `ember-mermaid`</div><div class="line">    at Function.Addon.lookup (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:896:27)</div><div class="line">DEPRECATION: Node v0.10.45 is no longer supported by Ember CLI. Please update to a more recent version of Node</div><div class="line">Could not start watchman; falling back to NodeWatcher for file system events.</div><div class="line">Visit http://ember-cli.com/user-guide/#watchman for more info.</div><div class="line">Installed packages for tooling via npm.</div><div class="line">DEPRECATION: Overriding init without calling this._super is deprecated. Please call this._super(), addon: `ember-mermaid`</div><div class="line">    at Function.Addon.lookup (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:896:27)</div><div class="line">installing ember-mermaid</div><div class="line">  install bower package mermaid</div><div class="line">  not-cached https://github.com/knsv/mermaid.git#^0.5.8</div><div class="line">  progress 接收对象中:  26% (58/222)</div><div class="line">  progress 接收对象中:  67% (149/222), 1.98 MiB | 166.00 KiB/s</div><div class="line">  progress 接收对象中:  68% (151/222), 1.98 MiB | 166.00 KiB/s</div><div class="line">  resolved https://github.com/knsv/mermaid.git#0.5.8</div><div class="line">  conflict Unable to find suitable version for mermaid</div><div class="line">    1) mermaid ^0.5.8</div><div class="line">    2) mermaid ^6.0.0</div><div class="line">? Answer 2</div><div class="line">Installed browser packages via Bower.</div><div class="line">Installed addon package.</div></pre></td></tr></table></figure></p>
+<p>既然成功安装了，为防有其他差错，就把这个检查版本的文件恢复回去了。<br>然后启动ember server又出现了这个问题<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# ember serve</div><div class="line">DEPRECATION: Overriding init without calling this._super is deprecated. Please call this._super(), addon: `ember-mermaid`</div><div class="line">    at Function.Addon.lookup (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:896:27)</div><div class="line">The addon `ember-cli-htmlbars` requires an Ember CLI version of 0.1.2 or above, but you are running null.</div><div class="line">Error: The addon `ember-cli-htmlbars` requires an Ember CLI version of 0.1.2 or above, but you are running null.</div><div class="line">    at Function.deprecatedAssertAbove [as assertAbove] (/usr/local/metamap/metamap_js/node_modules/ember-cli-htmlbars/node_modules/ember-cli-version-checker/index.js:143:18)</div><div class="line">    at CoreObject.module.exports.init (/usr/local/metamap/metamap_js/node_modules/ember-cli-htmlbars/ember-addon-main.js:13:13)</div><div class="line">    at CoreObject.superWrapper [as init] (/usr/local/metamap/metamap_js/node_modules/ember-cli/node_modules/core-object/lib/assign-properties.js:32:18)</div><div class="line">    at CoreObject.Class (/usr/local/metamap/metamap_js/node_modules/ember-cli/node_modules/core-object/core-object.js:33:38)</div><div class="line">    at /usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addons-factory.js:48:21</div><div class="line">    at visit (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/utilities/DAG.js:23:3)</div><div class="line">    at DAG.topsort (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/utilities/DAG.js:82:7)</div><div class="line">    at CoreObject.extend.initializeAddons (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addons-factory.js:44:11)</div><div class="line">    at CoreObject.extend.initializeAddons (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:226:38)</div><div class="line">    at setupRegistryForEachAddon (/usr/local/metamap/metamap_js/node_modules/ember-cli/node_modules/ember-cli-preprocess-registry/preprocessors.js:18:10)</div></pre></td></tr></table></figure></p>
+<p>仔细看了一下官方github上给出的解释，说是要把ember-font-awesome升级到2.1.1就可以了。查了一下，压根就没有安装这个东西<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# find . -name &apos;ember-font-awesome&apos;</div><div class="line">root@will-vm:/usr/local/metamap/metamap_js#</div></pre></td></tr></table></figure></p>
+<p>看一下ember-mermaid的官网吧，到ember addon仓库搜索了一把<a href="https://emberobserver.com/addons/ember-mermaid，发现人家的ember-cli的版本是2.4.1，最近支持的是2.5.0.群里很多人都说2.6不稳定，所以一直没有升级。。" target="_blank" rel="external">https://emberobserver.com/addons/ember-mermaid，发现人家的ember-cli的版本是2.4.1，最近支持的是2.5.0.群里很多人都说2.6不稳定，所以一直没有升级。。</a><br>索性我就降级吧。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">npm rm -g ember-cli</div><div class="line">npm install -g ember-cli@2.5</div><div class="line">ember -v</div><div class="line">ember new testPro</div></pre></td></tr></table></figure></p>
+<p>上面使用ember 2.5版本生成了一个临时项目，为了把依赖的版本copy到现有的2.6的项目里去，覆盖掉2.6的那些版本依赖。主要针对bower.json和package.json两个文件里与ember-xxx相关的版本配置。</p>
+<p>之后就成功启动了，也能够使用mermaid了，再删掉临时项目就可以了。</p>
+<p><code>参考</code> ：</p>
+<ul>
+<li><a href="https://github.com/crodriguez1a/ember-mermaid" target="_blank" rel="external">https://github.com/crodriguez1a/ember-mermaid</a></li>
+<li><a href="https://knsv.github.io/mermaid/#usage" target="_blank" rel="external">https://knsv.github.io/mermaid/#usage</a></li>
+<li><a href="http://www.jqueryscript.net/chart-graph/Simple-SVG-Flow-Chart-Plugin-with-jQuery-flowSVG.html" target="_blank" rel="external">http://www.jqueryscript.net/chart-graph/Simple-SVG-Flow-Chart-Plugin-with-jQuery-flowSVG.html</a></li>
+<li><a href="https://jsplumbtoolkit.com/community/demo/flowchart/index.html" target="_blank" rel="external">https://jsplumbtoolkit.com/community/demo/flowchart/index.html</a></li>
+<li><a href="https://www.erp5.com/javascript-10.Flow.Chart" target="_blank" rel="external">https://www.erp5.com/javascript-10.Flow.Chart</a></li>
+<li><a href="https://github.com/ember-cli/ember-cli/issues/5973" target="_blank" rel="external">https://github.com/ember-cli/ember-cli/issues/5973</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/antlr简记/" title="antlr简记" itemprop="url">antlr简记</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:08:59.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="要素"><a href="#要素" class="headerlink" title="要素"></a>要素</h2><ul>
+<li>source code：面向编程人员的语言代码；</li>
+<li>Lexical Analyser ：词汇解析。将source code解析成为某个语言能理解的有意义的形式；</li>
+<li>Syntax Analyser: 语法解析，检查语言的正确性。</li>
+<li>Semantic Analyser: 语义解析；</li>
+<li>Generate/Improve Code: 生成机器能够读懂的执行代码。</li>
+</ul>
+<p><img src="C:\Users\will\Pictures\general_phrases_of_compiler.png" alt=""></p>
+<p>参考：<a href="https://www.youtube.com/watch?v=PooQrbFrd_U" target="_blank" rel="external">https://www.youtube.com/watch?v=PooQrbFrd_U</a></p>
+<h2 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h2><h4 id="环境准备-1"><a href="#环境准备-1" class="headerlink" title="环境准备"></a>环境准备</h4><p>使用eclipse进行开发。</p>
+<ul>
+<li>IDE环境准备：eclipse classic 3.5.0</li>
+<li>eclipse 插件<ul>
+<li>GEF-ALL-3.8.2</li>
+<li>dltk-core-S-3.0.1-201108261011</li>
+<li>antlr3. <a href="http://antlrv3ide.sourceforge.net/updates" target="_blank" rel="external">http://antlrv3ide.sourceforge.net/updates</a></li>
+</ul>
+</li>
+</ul>
+<h4 id="插件设置"><a href="#插件设置" class="headerlink" title="插件设置"></a>插件设置</h4><p>主要就是preferences里的antlr-&gt;builder里添加一个installed package，只需要一个jar包即可，但是规范是把这个jar包放到某个文件夹里。</p>
+<p>我的地址是：E:\tools\antlr3.2。里面放置了antlr-3.2.jar文件。<br><img src="C:\Users\will\Pictures\antlr-install-package-eclipse.png" alt="添加antlr的jar包给插件调用"><br>还可以在code generator配置一下代码产生的位置。<br><img src="C:\Users\will\Pictures\antlr-code-generator-eclipse.png" alt="代码产生位置"></p>
+<h4 id="IDE简介"><a href="#IDE简介" class="headerlink" title="IDE简介"></a>IDE简介</h4><h5 id="grammer编辑界面"><a href="#grammer编辑界面" class="headerlink" title="grammer编辑界面"></a>grammer编辑界面</h5><p>有些自动提示啥的，保存后会自动编译，并在前面指定位置生成lexer和parser代码。<br><img src="C:\Users\will\Pictures\antlr-editor-eclipse.png" alt="antlr编辑器"></p>
+<h5 id="测试执行界面"><a href="#测试执行界面" class="headerlink" title="测试执行界面"></a>测试执行界面</h5><p>完成gramemr的编辑之后，可以编辑一些测试脚本，验证grammer的正确性。跟测试连接的真紧密啊，貌似antlr想不测试驱动开发都难，哈哈~<br><img src="C:\Users\will\Pictures\antlr-intercepter-eclipse.png" alt="antlr Intercepter"><br><strong>注意</strong> : 有的时候直接点击右上角的执行按钮，并不能成功解析。可以再试一下执行的下来按钮里的Run(java)的方式，它等同于执行以下代码：<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line">```</div><div class="line"></div><div class="line">##### RailRoad 视图</div><div class="line">展示每个rule的路线图。点击左边的rule，右边就自动呈现出来了。可以形象化的展示我们定义的每个rule。</div><div class="line">![antlr RailRoad界面](C:\Users\will\Pictures\antlr-railroad-eclipse.png)</div><div class="line">  </div><div class="line">  </div><div class="line">  </div><div class="line">  </div><div class="line">#### 创建项目</div><div class="line">创建普通java项目，之后转为antlr项目，.project：</div><div class="line">```xml</div><div class="line">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</div><div class="line">&lt;projectDescription&gt;</div><div class="line">	&lt;name&gt;anltr-learning&lt;/name&gt;</div><div class="line">	&lt;comment&gt;&lt;/comment&gt;</div><div class="line">	&lt;projects&gt;</div><div class="line">	&lt;/projects&gt;</div><div class="line">	&lt;buildSpec&gt;</div><div class="line">		&lt;buildCommand&gt;</div><div class="line">			&lt;name&gt;org.eclipse.dltk.core.scriptbuilder&lt;/name&gt;</div><div class="line">			&lt;arguments&gt;</div><div class="line">			&lt;/arguments&gt;</div><div class="line">		&lt;/buildCommand&gt;</div><div class="line">		&lt;buildCommand&gt;</div><div class="line">			&lt;name&gt;org.eclipse.jdt.core.javabuilder&lt;/name&gt;</div><div class="line">			&lt;arguments&gt;</div><div class="line">			&lt;/arguments&gt;</div><div class="line">		&lt;/buildCommand&gt;</div><div class="line">	&lt;/buildSpec&gt;</div><div class="line">	&lt;natures&gt;</div><div class="line">		&lt;nature&gt;org.eclipse.jdt.core.javanature&lt;/nature&gt;</div><div class="line">		&lt;nature&gt;org.deved.antlride.core.nature&lt;/nature&gt;</div><div class="line">	&lt;/natures&gt;</div><div class="line">&lt;/projectDescription&gt;</div></pre></td></tr></table></figure></p>
+<p>在根目录创建一个lib文件夹，然后把刚才那个install package里的jar包copy到lib里来，加入当前project的build path。</p>
+<h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><p>逻辑流程图<br><img src="C:\Users\will\Pictures\antlr-process-concepts.png" alt="逻辑流程"><br>物理流程图<br><img src="C:\Users\will\Pictures\antlr-process-code.png" alt="物理流程"></p>
+<ul>
+<li>Lexer解析出重要的Token发送给Parser</li>
+<li>Parser生成AST Tree，</li>
+<li>TreeParser负责结合AST Tree里的context生成代码</li>
+</ul>
+<h4 id="创建antlr文件"><a href="#创建antlr文件" class="headerlink" title="创建antlr文件"></a>创建antlr文件</h4><p>创建Sample.g文件，开始真正编辑antlr文件。经测试，.g文件并不支持中文注释，会报某种NullPointer的错误。下面的注释只为解释，如果copy的话，自行注意去除。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div></pre></td><td class="code"><pre><div class="line">grammar Sample;// 类似类名似的，必须跟文件同名</div><div class="line"></div><div class="line">options &#123;</div><div class="line">  language = Java;</div><div class="line">&#125;</div><div class="line"></div><div class="line">@header &#123;</div><div class="line">    package com.will;</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line">@lexer::header &#123;</div><div class="line">    package com.will;</div><div class="line">&#125;</div><div class="line"></div><div class="line">// 以下这些在antlr里都是rule了。就是定义一些语法规则。</div><div class="line">// IDENT其实也可以看成rule，只是只包含常量的rule而已。</div><div class="line">// 这个program是最外层的rule了，其实也可以叫pppp，随便。</div><div class="line">program</div><div class="line">    : &apos;program&apos; IDENT &apos;=&apos;</div><div class="line">        (constrant | variable)*</div><div class="line">        &apos;begin&apos;</div><div class="line">        statement*</div><div class="line">        &apos;end&apos; IDENT &apos;.&apos;</div><div class="line">    ;</div><div class="line"></div><div class="line">constrant</div><div class="line">    : &apos;constrant&apos; IDENT &apos;:&apos; type &apos;:=&apos; Integer &apos;;&apos;</div><div class="line">    ;</div><div class="line">    </div><div class="line">type</div><div class="line">    : &apos;Integer&apos;</div><div class="line">    ;</div><div class="line">    </div><div class="line">variable</div><div class="line">    : &apos;var&apos; IDENT (&apos;,&apos; IDENT)* &apos;:&apos; type &apos;;&apos;</div><div class="line">    ;</div><div class="line">    </div><div class="line">    </div><div class="line">// fun time</div><div class="line">// 运算符优先级设计实现，低优先级expression调用高优先级的expression</div><div class="line">term</div><div class="line">    : Integer</div><div class="line">    | &apos;(&apos; expression &apos;)&apos;</div><div class="line">    | IDENT</div><div class="line">    ;</div><div class="line"></div><div class="line">negation</div><div class="line">    : &apos;not&apos;* term</div><div class="line">    ;</div><div class="line">    </div><div class="line">unary</div><div class="line">    : (&apos;+&apos; |&apos;-&apos;)* negation</div><div class="line">    ;</div><div class="line"></div><div class="line">mult</div><div class="line">    : unary ((&apos;*&apos; | &apos;/&apos; | &apos;mode&apos;) unary)*</div><div class="line">    ;</div><div class="line">    </div><div class="line">add</div><div class="line">    : mult ((&apos;+&apos; | &apos;-&apos;) mult)*</div><div class="line">    ;</div><div class="line">    </div><div class="line">relation</div><div class="line">    : add ((&apos;=&apos; | &apos;/=&apos; | &apos;&lt;&apos; | &apos;&lt;=&apos; | &apos;&gt;&apos; | &apos;&gt;=&apos;) add)*</div><div class="line">    ;</div><div class="line"></div><div class="line">expression</div><div class="line">    : relation ((&apos;and&apos; | &apos;or&apos;) relation)*</div><div class="line">    ;</div><div class="line"></div><div class="line">statement</div><div class="line">    : assignmentStatement</div><div class="line">    | ifStatement</div><div class="line">    | loopStatement</div><div class="line">    ;</div><div class="line">exitStatement</div><div class="line">    : &apos;exit&apos; &apos;when&apos; expression</div><div class="line">    ;</div><div class="line"></div><div class="line">assignmentStatement</div><div class="line">    : IDENT &apos;:=&apos; expression &apos;;&apos;</div><div class="line">    ;</div><div class="line">    </div><div class="line">ifStatement</div><div class="line">    : &apos;if&apos; expression &apos;then&apos; statement+</div><div class="line">    (&apos;elif&apos; expression &apos;then&apos; statement+)*</div><div class="line">    (&apos;else&apos; statement+)?</div><div class="line">    &apos;end&apos; &apos;if&apos; &apos;;&apos;</div><div class="line">    ;</div><div class="line">    </div><div class="line">loopStatement</div><div class="line">    : &apos;loop&apos; statement* </div><div class="line">    exitStatement</div><div class="line">    &apos;end&apos; &apos;loop&apos; &apos;;&apos;</div><div class="line">    ;</div><div class="line"> </div><div class="line"></div><div class="line">// 静态常量rule</div><div class="line">Integer: &apos;0&apos;..&apos;9&apos;+;</div><div class="line"></div><div class="line">IDENT  : (&apos;a&apos;..&apos;z&apos; | &apos;A&apos;..&apos;Z&apos; | &apos;0&apos;..&apos;9&apos;)+;</div><div class="line">WS:(&apos; &apos; | &apos;\t&apos; |&apos;\n&apos;|&apos;\r&apos;|&apos;\f&apos;)+ &#123;$channel = HIDDEN;&#125;;</div><div class="line"></div><div class="line">// comment</div><div class="line">COMMENT: &apos;//&apos; .* (&apos;\n&apos; | &apos;\r&apos;) &#123;$channel = HIDDEN;&#125;;</div><div class="line">MUTICOMMENT: &apos;/*&apos; .* &apos;*/&apos; &#123;$channel = HIDDEN;&#125;;</div></pre></td></tr></table></figure></p>
+<p>上面的文件中有个要提示的地方，就是优先级设置：<br><img src="C:\Users\will\Pictures\antlr-exec-level.png" alt="优先级定义"><br>直接copy的人家的图，大概就是从上到下优先级递减。在grammer中的实现就是低优先级的expression调用高优先级的expression，这样在调用某个expression的时候，就先执行位于叶子节点的最高优先级的expression了。</p>
+<p>对应的测试代码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line">program XLSample1 = </div><div class="line">constrant one:Integer :=1;</div><div class="line">constrant two:Integer :=2;</div><div class="line">var x, y, z:Integer;</div><div class="line">begin</div><div class="line">x := 30 + 2 * 9 -10;</div><div class="line">y := 10;</div><div class="line">	if x=2 then</div><div class="line">		y:= 9 * 7 -1;</div><div class="line">		if 9 &gt; d then</div><div class="line">			x:= 90;</div><div class="line">		else</div><div class="line">			x:=0;</div><div class="line">		end if;</div><div class="line">	elif x&gt;9 and 8 &lt; 2 then</div><div class="line">//		x:=90;</div><div class="line">		y:=100;</div><div class="line">	else</div><div class="line">		x:= 99;</div><div class="line">		z:=100;</div><div class="line">		y:=100;</div><div class="line">	end if;</div><div class="line"></div><div class="line">loop</div><div class="line">	x:=0;</div><div class="line">	y:=99;</div><div class="line">	exit when x =0</div><div class="line">end loop;</div><div class="line">end XLSample1.</div></pre></td></tr></table></figure></p>
+<p>虽然就这么几个简单的句子，但是跑出来的AST简直是太大了，就不截图了，感兴趣自己运行了看吧。</p>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p>动态的rule使用小写，静态常量rule就只用大写字母。</p>
+<h5 id="表达式"><a href="#表达式" class="headerlink" title="表达式"></a>表达式</h5><p>基本跟正则差不太多。<br>表达式 | 解释<br>—|—<br>(a | b)| 就是a和b可以以任意次序出现，不严格限定a先于b,或者b先于a。<br>(a | b)<em> | 两者都可以有0或多个<br>(a | b)+ | 两者至少有一个，多个的话，次序可乱<br>| | 或者<br>‘0’..’9’ | 从’0’至’9’，字母也一样，生成的java代码都是直接使用&gt;  &lt;啥的限定范围的<br>‘not’? term | ‘not’可有可无，但是有的话只能有一个，多个就+或者</em><br>{$channel = HIDDEN;} | 设置当前元素在AST中不可见。应该有待挖掘，可能更多个性化的东西，都可以在这里处理</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/yarn-timeline-server/" title="yarn-timeline-server" itemprop="url">yarn-timeline-server</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:08:58.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <blockquote>
+<p>timeline server主要是为yarn管理应用的当前运行状态以及历史状态的，以前也叫history server。</p>
+</blockquote>
+<p>负责管理以下两个事情：</p>
+<h4 id="已运行完成的应用基本信息"><a href="#已运行完成的应用基本信息" class="headerlink" title="已运行完成的应用基本信息"></a>已运行完成的应用基本信息</h4><p>这些信息包括ApplicationSubmissionContext中的队列名称、用户信息等。<br>启动一个应用经历过的尝试次数，每次尝试的信息，每次尝试启用的container都有哪些，每个container的基本信息。<br>这些基本信息被ResourceManager春出道了一个history-store(默认是一个文件系统)然后提供给web-UI来展示这些已完成的应用的这些基本信息。</p>
+<h4 id="正在运行或者已完成的应用的Per-framework-information"><a href="#正在运行或者已完成的应用的Per-framework-information" class="headerlink" title="正在运行或者已完成的应用的Per-framework information"></a>正在运行或者已完成的应用的Per-framework information</h4><p>Per-framework information是指针一个框架或者应用特有的信息。例如，Hadoop mapreduce框架会包含一些类似map task数量、reduce task数量、counter等信息。开发者可以自己通过TimeLineClient定制这些信息。这些信息可以通过rest api查询，也可以直接提供给某些特定UI进行渲染。</p>
+<hr>
+<h2 id="1-当前状态"><a href="#1-当前状态" class="headerlink" title="1. 当前状态"></a>1. 当前状态</h2><p>Timeline sever 还正在开发中.基本信息和框架特定信息已经可以满足了基本的存储于查询，但是目前timeline server还不能在secure模式下正常工作。<br>基本信息与框架指定信息是分别进行收集与呈现的，并没有很好的整合在一起。<br>框架指定信息目前只能通过restful api访问，使用json形式，目前还不支持在yarn里安装框架。</p>
+<h2 id="2-基本配置Basic-Configuration"><a href="#2-基本配置Basic-Configuration" class="headerlink" title="2. 基本配置Basic Configuration"></a>2. 基本配置Basic Configuration</h2><p>用户必须先配置才能启动，下面是一个简单的示例，在yarn-site.xml里设置timeline server的主机名:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>The hostname of the Timeline service web application.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.timeline-service.hostname<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>0.0.0.0<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div></pre></td></tr></table></figure>
+<h2 id="3-高级配置"><a href="#3-高级配置" class="headerlink" title="3. 高级配置"></a>3. 高级配置</h2><p>In addition to the hostname, admins can also configure whether the service is enabled or not, the ports of the RPC and the web interfaces, and the number of RPC handler threads.<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>Address for the Timeline server to start the RPC server.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.timeline-service.address<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>$&#123;yarn.timeline-service.hostname&#125;:10200<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>The http address of the Timeline service web application.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.timeline-service.webapp.address<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>$&#123;yarn.timeline-service.hostname&#125;:8188<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>The https address of the Timeline service web application.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.timeline-service.webapp.https.address<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>$&#123;yarn.timeline-service.hostname&#125;:8190<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>Handler thread count to serve the client RPC requests.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.timeline-service.handler-thread-count<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>10<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<h2 id="4-基本信息相关的配置"><a href="#4-基本信息相关的配置" class="headerlink" title="4. 基本信息相关的配置"></a>4. 基本信息相关的配置</h2><p>Users can specify whether the generic data collection is enabled or not, and also choose the storage-implementation class for the generic data. There are more configurations related to generic data collection, and users can refer to yarn-default.xml for all of them.</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>Indicate to ResourceManager as well as clients whether</div><div class="line">  history-service is enabled or not. If enabled, ResourceManager starts</div><div class="line">  recording historical data that Timelien service can consume. Similarly,</div><div class="line">  clients can redirect to the history service when applications</div><div class="line">  finish if this is enabled.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.timeline-service.generic-application-history.enabled<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>false<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>Store class name for history store, defaulting to file system</div><div class="line">  store<span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.timeline-service.generic-application-history.store-class<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>org.apache.hadoop.yarn.server.applicationhistoryservice.FileSystemApplicationHistoryStore<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div></pre></td></tr></table></figure>
+<h2 id="5-框架特有信息的相关配置"><a href="#5-框架特有信息的相关配置" class="headerlink" title="5. 框架特有信息的相关配置"></a>5. 框架特有信息的相关配置</h2><p>Users can specify whether per-framework data service is enabled or not, choose the store implementation for the per-framework data, and tune the retention of the per-framework data. There are more configurations related to per-framework data service, and users can refer to yarn-default.xml for all of them.</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>Indicate to clients whether Timeline service is enabled or not.</div><div class="line">  If enabled, the TimelineClient library used by end-users will post entities</div><div class="line">  and events to the Timeline server.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.timeline-service.enabled<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>true<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>Store class name for timeline store.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.timeline-service.store-class<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>org.apache.hadoop.yarn.server.applicationhistoryservice.timeline.LeveldbTimelineStore<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>Enable age off of timeline store data.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.timeline-service.ttl-enable<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>true<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>Time to live for timeline store data in milliseconds.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.timeline-service.ttl-ms<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>604800000<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div></pre></td></tr></table></figure>
+<h2 id="6-启动timeline-server"><a href="#6-启动timeline-server" class="headerlink" title="6. 启动timeline server"></a>6. 启动timeline server</h2><p>Assuming all the aforementioned configurations are set properly, admins can start the Timeline server/history service with the following command:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ yarn historyserver</div></pre></td></tr></table></figure></p>
+<p>Or users can start the Timeline server / history service as a daemon:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ yarn-daemon.sh start historyserver</div></pre></td></tr></table></figure></p>
+<p>Accessing generic-data via command-line</p>
+<p>Users can access applications’ generic historic data via the command line as below. Note that the same commands are usable to obtain the corresponding information about running applications.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">$ yarn application -status &lt;Application ID&gt;</div><div class="line">$ yarn applicationattempt -list &lt;Application ID&gt;</div><div class="line">$ yarn applicationattempt -status &lt;Application Attempt ID&gt;</div><div class="line">$ yarn container -list &lt;Application Attempt ID&gt;</div><div class="line">$ yarn container -status &lt;Container ID&gt;</div></pre></td></tr></table></figure></p>
+<p>Publishing of per-framework data by applications</p>
+<p>Developers can define what information they want to record for their applications by composing TimelineEntity and TimelineEvent objects, and put the entities and events to the Timeline server via TimelineClient. Below is an example:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Create and start the Timeline client</span></div><div class="line">TimelineClient client = TimelineClient.createTimelineClient();</div><div class="line">client.init(conf);</div><div class="line">client.start();</div><div class="line"></div><div class="line">TimelineEntity entity = <span class="keyword">null</span>;</div><div class="line"><span class="comment">// Compose the entity</span></div><div class="line"><span class="keyword">try</span> &#123;</div><div class="line">  TimelinePutResponse response = client.putEntities(entity);</div><div class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</div><div class="line">  <span class="comment">// Handle the exception</span></div><div class="line">&#125; <span class="keyword">catch</span> (YarnException e) &#123;</div><div class="line">  <span class="comment">// Handle the exception</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Stop the Timeline client</span></div><div class="line">client.stop();</div></pre></td></tr></table></figure>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/JPARepository札记/" title="JPARepository札记" itemprop="url">JPARepository札记</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:08:54.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="join时报错"><a href="#join时报错" class="headerlink" title="join时报错"></a>join时报错</h2><p>报错<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">QuerySyntaxException: expecting IDENT, found &apos;*&apos; near line 1</div></pre></td></tr></table></figure></p>
+<p>原始sql<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">hql:<span class="keyword">select</span> a.* <span class="keyword">from</span> <span class="keyword">Archive</span> a,Employee e,Department d <span class="keyword">where</span> a.contractEndDate = :<span class="built_in">date</span> <span class="keyword">and</span> a.status = <span class="string">'A'</span> <span class="keyword">and</span> a.empId = e.id <span class="keyword">and</span> e.status = <span class="string">'A'</span> <span class="keyword">and</span> e.type = <span class="string">'A'</span></div></pre></td></tr></table></figure></p>
+<p>改成<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">select</span> a <span class="keyword">from</span> <span class="keyword">Archive</span> a,Employee e,Department d <span class="keyword">where</span> a.contractEndDate = :<span class="built_in">date</span> <span class="keyword">and</span> a.status = <span class="string">'A'</span> <span class="keyword">and</span> a.empId = e.id <span class="keyword">and</span> e.status = <span class="string">'A'</span> <span class="keyword">and</span> e.type = <span class="string">'A'</span></div></pre></td></tr></table></figure></p>
+<p>select 后面为对象 a .而非 a.*</p>
+<p>参考：<br><a href="http://blog.sina.com.cn/s/blog_4bf2e5550100n2gh.html" target="_blank" rel="external">http://blog.sina.com.cn/s/blog_4bf2e5550100n2gh.html</a></p>
+<h2 id="SQL面向Entity"><a href="#SQL面向Entity" class="headerlink" title="SQL面向Entity"></a>SQL面向Entity</h2><p>指的是在JPARepository的子类中自定义的函数<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">TblBloodRepository</span> <span class="keyword">extends</span> <span class="title">JpaRepository</span>&lt;<span class="title">TblBlood</span>, <span class="title">Integer</span>&gt;</span>&#123;</div><div class="line">    <span class="function">TblBlood <span class="title">findByTblName</span><span class="params">(String tblName)</span></span>;</div><div class="line"></div><div class="line">    <span class="meta">@Query</span>(<span class="string">"select a from "</span></div><div class="line">            + <span class="string">"(select blood from TblBlood blood where valid = 1) a"</span></div><div class="line">            + <span class="string">" left outer join "</span></div><div class="line">            + <span class="string">"(select distinct parentTbl from TblBlood where valid = 1) b"</span></div><div class="line">            + <span class="string">" on a.tblName = b.parentTbl"</span></div><div class="line">            + <span class="string">" where b.parentTbl is null"</span>)</div><div class="line">    <span class="function">List&lt;TblBlood&gt; <span class="title">selectAllLeaf</span><span class="params">()</span></span>;</div><div class="line"></div><div class="line">    <span class="meta">@Modifying</span></div><div class="line">    <span class="meta">@Query</span>(<span class="string">"update TblBlood set valid = 0 where tblName=:tblName"</span>)</div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">makePreviousInvalid</span><span class="params">(@Param(<span class="string">"tblName"</span>)</span>String tblName)</span>;</div><div class="line"></div><div class="line">    <span class="meta">@Query</span>(<span class="string">"select b from"</span></div><div class="line">            + <span class="string">" TblBlood a join TblBlood b"</span></div><div class="line">            + <span class="string">" on a.parentTbl = b.tblName and b.valid = 1"</span></div><div class="line">            + <span class="string">" where a.valid = 1 and a.tblName = :tblName"</span>)</div><div class="line">    <span class="function">List&lt;TblBlood&gt; <span class="title">selectParentByTblName</span><span class="params">(@Param(<span class="string">"tblName"</span>)</span>String tblName)</span>;</div><div class="line"></div><div class="line">    <span class="meta">@Query</span>(<span class="string">"from TblBlood where valid = 1 and parentTbl=:tblName"</span>)</div><div class="line">    <span class="function"><span class="keyword">public</span> List&lt;TblBlood&gt; <span class="title">selectByParentTblName</span><span class="params">(@Param(<span class="string">"tblName"</span>)</span>String tblName)</span>;</div><div class="line"></div><div class="line">    <span class="meta">@Query</span>(<span class="string">"from TblBlood where valid = 1 and tblName=:tblName"</span>)</div><div class="line">    <span class="function">List&lt;TblBlood&gt; <span class="title">selectByTblName</span><span class="params">(@Param(<span class="string">"tblName"</span>)</span>String tblName)</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>TblBlood就是对象的类名，而不是真正的表名。</p>
+<h2 id="自join"><a href="#自join" class="headerlink" title="自join"></a>自join</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Query</span>(<span class="string">"select b from"</span></div><div class="line">            + <span class="string">" TblBlood a join TblBlood b"</span></div><div class="line">            + <span class="string">" on a.parentTbl = b.tblName and b.valid = 1"</span></div><div class="line">            + <span class="string">" where a.valid = 1 and a.tblName = ?1"</span>)</div><div class="line">    <span class="function">List&lt;TblBlood&gt; <span class="title">selectParentByTblName</span><span class="params">(String tblName)</span></span>;</div></pre></td></tr></table></figure>
+<p>报错<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">  Path expected for join!</div><div class="line">	at org.hibernate.hql.internal.ast.HqlSqlWalker.createFromJoinElement(HqlSqlWalker.java:378)</div><div class="line">	at org.hibernate.hql.internal.antlr.HqlSqlBaseWalker.joinElement(HqlSqlBaseWalker.java:3858)</div><div class="line">	at org.hibernate.hql.internal.antlr.HqlSqlBaseWalker.fromElement(HqlSqlBaseWalker.java:3644)</div><div class="line">	at org.hibernate.hql.internal.antlr.HqlSqlBaseWalker.fromElementList(HqlSqlBaseWalker.java:3522)</div><div class="line"> </div><div class="line"> org.springframework.beans.factory.BeanCreationException: Error creating bean with name &apos;tblBloodRepository&apos;: Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Validation failed for query for method public abstract java.util.List com.will.hivesolver.repositories.TblBloodRepository.selectParentByTblName(java.lang.String)!</div><div class="line">	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1574)</div><div class="line">	...</div><div class="line">Caused by: java.lang.IllegalArgumentException: Validation failed for query for method public abstract java.util.List com.will.hivesolver.repositories.TblBloodRepository.selectParentByTblName(java.lang.String)!</div><div class="line">	at org.springframework.data.jpa.repository.query.SimpleJpaQuery.validateQuery(SimpleJpaQuery.java:84)</div><div class="line">	.....</div><div class="line">Caused by: java.lang.IllegalStateException: No data type for node: org.hibernate.hql.internal.ast.tree.IdentNode </div><div class="line"> \-[IDENT] IdentNode: &apos;b&apos; &#123;originalText=b&#125;</div><div class="line"></div><div class="line">	at org.hibernate.hql.internal.ast.tree.SelectClause.initializeExplicitSelectClause(SelectClause.java:174)</div><div class="line">	at org.hibernate.hql.internal.ast.HqlSqlWalker.useSelectClause(HqlSqlWalker.java:923)</div><div class="line">	...</div></pre></td></tr></table></figure></p>
+<h2 id="不能更新"><a href="#不能更新" class="headerlink" title="不能更新"></a>不能更新</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">严重: Servlet.service() for servlet [api] in context with path [/metamap] threw exception [Request processing failed; nested exception is org.springframework.dao.InvalidDataAccessApiUsageException: Executing an update/delete query; nested exception is javax.persistence.TransactionRequiredException: Executing an update/delete query] with root cause</div><div class="line">javax.persistence.TransactionRequiredException: Executing an update/delete query</div></pre></td></tr></table></figure>
+<p>Spring Data JPA，事务导致的异常</p>
+<p>需要在springMVC的xml里添加,这里只扫描Controller所在的位置里的Controller<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">context:component-scan</span> <span class="attr">base-package</span>=<span class="string">"com.will.hivesolver.controller"</span> <span class="attr">use-default-filters</span>=<span class="string">"false"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">context:include-filter</span> <span class="attr">type</span>=<span class="string">"annotation"</span> <span class="attr">expression</span>=<span class="string">"org.springframework.stereotype.Controller"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">context:include-filter</span> <span class="attr">type</span>=<span class="string">"annotation"</span> <span class="attr">expression</span>=<span class="string">"org.springframework.web.bind.annotation.ControllerAdvice"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">context:component-scan</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>在applicationContext.xml中添加，这里必须不能扫描上面扫描过的Controller：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">context:component-scan</span> <span class="attr">base-package</span>=<span class="string">"com.will.hivesolver"</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">context:exclude-filter</span> <span class="attr">type</span>=<span class="string">"annotation"</span> <span class="attr">expression</span>=<span class="string">"org.springframework.stereotype.Controller"</span>/&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">context:exclude-filter</span> <span class="attr">type</span>=<span class="string">"annotation"</span> <span class="attr">expression</span>=<span class="string">"org.springframework.web.bind.annotation.ControllerAdvice"</span>/&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">context:component-scan</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>参考：<a href="https://github.com/springside/springside4/wiki/Spring-MVC" target="_blank" rel="external">https://github.com/springside/springside4/wiki/Spring-MVC</a></p>
+<h2 id="No-property-jobId-found-for-type-Execution-惨案"><a href="#No-property-jobId-found-for-type-Execution-惨案" class="headerlink" title=" No property jobId found for type Execution!惨案"></a> No property jobId found for type Execution!惨案</h2><p>Could not determine type for  at table</p>
+<p>紧接着Could not determine type for: java.util.Set</p>
+<p>参考：</p>
+<ul>
+<li><a href="http://stackoverflow.com/questions/15845030/no-property-u-found-for-type-com-models-entities-orderentity" target="_blank" rel="external">http://stackoverflow.com/questions/15845030/no-property-u-found-for-type-com-models-entities-orderentity</a></li>
+<li><a href="http://stackoverflow.com/questions/15849278/org-hibernate-mappingexception-could-not-determine-type-for-java-util-set-at" target="_blank" rel="external">http://stackoverflow.com/questions/15849278/org-hibernate-mappingexception-could-not-determine-type-for-java-util-set-at</a></li>
+</ul>
+<h2 id="failed-to-lazily-initialize-a-collection-of-role-could-not-initialize-proxy-no-Session"><a href="#failed-to-lazily-initialize-a-collection-of-role-could-not-initialize-proxy-no-Session" class="headerlink" title="failed to lazily initialize a collection of role: , could not initialize proxy - no Session"></a>failed to lazily initialize a collection of role: , could not initialize proxy - no Session</h2><p>著名的延迟加载问题。<br>原因是One加载完之后，session就已经关闭了，此时再去请求many，就么有session了。<br>最终采用的方案是：在web.xml里添加spring的OpenSessionInViewFilter。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">filter</span>&gt;</span>  </div><div class="line">       <span class="tag">&lt;<span class="name">filter-name</span>&gt;</span>OpenSessionInViewFilter<span class="tag">&lt;/<span class="name">filter-name</span>&gt;</span>  </div><div class="line">       <span class="tag">&lt;<span class="name">filter-class</span>&gt;</span>  </div><div class="line">           org.springframework.orm.hibernate3.support.OpenSessionInViewFilter</div><div class="line">       <span class="tag">&lt;/<span class="name">filter-class</span>&gt;</span></div><div class="line">       <span class="tag">&lt;<span class="name">init-param</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">param-name</span>&gt;</span>sessionFactoryBeanName<span class="tag">&lt;/<span class="name">param-name</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">param-value</span>&gt;</span>sessionfactory<span class="tag">&lt;/<span class="name">param-value</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">init-param</span>&gt;</span> </div><div class="line">    <span class="tag">&lt;/<span class="name">filter</span>&gt;</span>  </div><div class="line">    <span class="tag">&lt;<span class="name">filter-mapping</span>&gt;</span>  </div><div class="line">       <span class="tag">&lt;<span class="name">filter-name</span>&gt;</span>OpenSessionInViewFilter<span class="tag">&lt;/<span class="name">filter-name</span>&gt;</span>  </div><div class="line">       <span class="tag">&lt;<span class="name">url-pattern</span>&gt;</span>/*<span class="tag">&lt;/<span class="name">url-pattern</span>&gt;</span> </div><div class="line"><span class="tag">&lt;/<span class="name">filter-mapping</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>No persistence units parsed from {classpath*:META-INF/persistence.xml</p>
+<p>参考：</p>
+<ul>
+<li><a href="http://blog.csdn.net/elfenliedef/article/details/6011892" target="_blank" rel="external">http://blog.csdn.net/elfenliedef/article/details/6011892</a></li>
+<li><a href="http://lazycat0102.blog.51cto.com/8938702/1584779" target="_blank" rel="external">http://lazycat0102.blog.51cto.com/8938702/1584779</a></li>
+<li><a href="http://www.cnblogs.com/luxh/archive/2012/05/24/2516282.html" target="_blank" rel="external">http://www.cnblogs.com/luxh/archive/2012/05/24/2516282.html</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/hive中的权限-SQL-Standard-Based-Hive-Authorization/" title="hive中的权限-SQL-Standard-Based-Hive-Authorization" itemprop="url">hive中的权限-SQL-Standard-Based-Hive-Authorization</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:08:48.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="hive-0-13之前"><a href="#hive-0-13之前" class="headerlink" title="hive 0.13之前"></a>hive 0.13之前</h2><p>默认hive的权限机制并不是为了防止一些恶意用户访问一些他们不该看的东西的，只是为了防止用户误操作。这套机制很不完善，甚至对于grant这种语句也不会做权限检查。权限检查是在hive query的编译阶段进行的。由于用户能够操作dfs、执行自定义函数、还能操作shell，跳过客户端的安全检查也不是不可能的。</p>
+<p>hive还支持存储层的权限验证，主要用来给metastore server api添加权限验证（参考 Storage Based Authorization in the Metastore Server）。0.12版本之后，在client端也可以使用了。这样metastore就被保护起来了，但是对于细粒度访问权限还是控制不了（例如行、列）。</p>
+<p>一般通过创建view来解决这个问题，只让用户访问到view层。</p>
+<h2 id="0-13之后"><a href="#0-13之后" class="headerlink" title="0.13之后"></a>0.13之后</h2><p>基于sql标准的检查机制,推荐使用此种方式。<br>这种认证方式可以在metastore server上结合storage based authorization一起使用。和目前目前hive的默认认证机制一样也算在hive query的编译阶段进行验证的。为了保证安全性，我们需要确认client端是安全的，让用户通过hiveserver2来访问数据，约束用户代码和非法sql命令。检查是针对提交query给hive server2的用户的，但是实际执行查询的时候使用hive server2用户执行，目录和文件也都只对hive server2的用户开放。对于不需要进行检查约束的用户，则可以直接开放给他们hive命令行执行权限，也就是查询的时候就使用提交的那个用户。</p>
+<p>这项工作是尽量像SQL标准看齐的，不过也有一些有差异的地方。出发点一般都是为了让既有用户能够平滑的迁移到认证机制，或者考虑到易用性。</p>
+<p>在这种认证机制下，所有可以访问到hive命令行、HDFS命令行、pig命令行、Hadoop jar等的用户都被认为是特权用户。团队中只有做ETL工作的人才能拥有这些权利。这些工具都不通过hive server访问数据，也就是说他们不会被检查认证情况。对于通过hive 客户端、pig、MR等访问hive table的用户可以控制他们启用metastore server的storage based authorization。</p>
+<p>类似数据分析等使用sql或者jdbc通过hive server2访问数据的用户可以使用此套认证机制。</p>
+<h3 id="hive-命令和语句的限制"><a href="#hive-命令和语句的限制" class="headerlink" title="hive 命令和语句的限制"></a>hive 命令和语句的限制</h3><p>启用此认证机制后</p>
+<ul>
+<li>dfs\add\delete\compile\reset等命令都不可用。</li>
+<li>hive运行时的set的配置参数只有少数能够被设置， hive.security.authorization.sqlstd.confwhitelist 控制这个东西，这里面是可以配置的参数的白名单。</li>
+<li>只有admin角色才能添加和删除function和macro。admin角色需要为普通用户添加permanent function，这样其他用户才能使用自定义的一些function。</li>
+<li>transform clause不可用</li>
+</ul>
+<h3 id="权限"><a href="#权限" class="headerlink" title="权限"></a>权限</h3><ul>
+<li>select </li>
+<li>insert</li>
+<li>update</li>
+<li>delete</li>
+<li>all</li>
+</ul>
+<h3 id="对象"><a href="#对象" class="headerlink" title="对象"></a>对象</h3><ul>
+<li>table和view。不支持database</li>
+<li>database所有权只对应部分动作</li>
+<li>hive里还有特殊的对象URI。上面的权限对URI不适用，URI是指向系统的某个文件的。认证机制是通过用户的文件权限进行认证的。</li>
+</ul>
+<h3 id="对象所有权"><a href="#对象所有权" class="headerlink" title="对象所有权"></a>对象所有权</h3><p>针对每个操作，都会检查当前用户对于当前对象是否有权限。创建的人就是owner。对于table和view来说owner有所有权限。某个role也可以是一个database的owner，通过alter database来修改database的owner。</p>
+<h3 id="user-和-role"><a href="#user-和-role" class="headerlink" title="user 和 role"></a>user 和 role</h3><p>权限可以给user，也可以给role。一个user可以有一个或多个role。<br>两个特殊的role：public以及admin。所有的user都是public role。You use this role in your grant statement to grant a privilege to all users.</p>
+<p>当一个user运行hive命令的时候，就会检查这个用户的role以及它目前拥有的所有权限。使用”show current roles;”命令来查看当前用户的role。除了admin其他用户都可以在current role里查到，而且可以使用”set role xxx”命令来给当前用户设置一个role。</p>
+<p>database的管理者应该使用admin role。这些用户可以执行类似”create role””drop role”等命令，也可以访问一切资源。但是，这些用户在成为admin role之前，必须先执行”set role admin”，因为admin默认是不再current roles里的。</p>
+<h3 id="role相关命令"><a href="#role相关命令" class="headerlink" title="role相关命令"></a>role相关命令</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="comment">-- 只有admin角色才能执行的命令</span></div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">ROLE</span> role_name;</div><div class="line"><span class="keyword">DROP</span> <span class="keyword">ROLE</span> role_name;</div><div class="line"><span class="keyword">SHOW</span> <span class="keyword">ROLES</span>;</div><div class="line"><span class="comment">-- Show Principals 查看role的权限</span></div><div class="line"><span class="keyword">SHOW</span> PRINCIPALS role_name;</div><div class="line"></div><div class="line"><span class="keyword">SHOW</span> <span class="keyword">CURRENT</span> <span class="keyword">ROLES</span>;</div><div class="line"><span class="keyword">SET</span> <span class="keyword">ROLE</span> (role_name|ALL|<span class="keyword">NONE</span>);</div><div class="line"><span class="comment">--All 是当有新的role被赋予给当前user的时候，刷新一下current roles</span></div><div class="line"><span class="comment">--None 移除所有的current roles</span></div><div class="line"></div><div class="line"><span class="comment">-- Grant role</span></div><div class="line"><span class="keyword">GRANT</span> role_name [, role_name] ...</div><div class="line"><span class="keyword">TO</span> principal_specification [, principal_specification] ...</div><div class="line">[ <span class="keyword">WITH</span> <span class="keyword">ADMIN</span> <span class="keyword">OPTION</span> ];</div><div class="line"> </div><div class="line">principal_specification</div><div class="line">  : USER user</div><div class="line">  | ROLE role</div><div class="line"></div><div class="line"><span class="comment">-- 如果指定了'with admin option',那么这个用户就也能将这个role赋予其他user/role。如果出现role之间grant循环，就会直接报错。 </span></div><div class="line"></div><div class="line"><span class="comment">-- Revoke Role</span></div><div class="line"><span class="keyword">REVOKE</span> [<span class="keyword">ADMIN</span> <span class="keyword">OPTION</span> <span class="keyword">FOR</span>] role_name [, role_name] ...</div><div class="line"><span class="keyword">FROM</span> principal_specification [, principal_specification] ... ;</div><div class="line"> </div><div class="line">principal_specification</div><div class="line">  : USER user</div><div class="line">  | ROLE role</div><div class="line"></div><div class="line"><span class="comment">-- Show Role Grant 只能查看自己的role的权限</span></div><div class="line"><span class="keyword">SHOW</span> <span class="keyword">ROLE</span> <span class="keyword">GRANT</span> (<span class="keyword">USER</span>|<span class="keyword">ROLE</span>) principal_name;</div></pre></td></tr></table></figure>
+<h3 id="管理对象权限"><a href="#管理对象权限" class="headerlink" title="管理对象权限"></a>管理对象权限</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="comment">-- 授予权限</span></div><div class="line"><span class="keyword">GRANT</span></div><div class="line">    priv_type [, priv_type ] ...</div><div class="line">    <span class="keyword">ON</span> table_or_view_name</div><div class="line">    <span class="keyword">TO</span> principal_specification [, principal_specification] ...</div><div class="line">    [<span class="keyword">WITH</span> <span class="keyword">GRANT</span> <span class="keyword">OPTION</span>];</div><div class="line">    </div><div class="line"><span class="comment">-- 收回权限</span></div><div class="line"><span class="keyword">REVOKE</span> [<span class="keyword">GRANT</span> <span class="keyword">OPTION</span> <span class="keyword">FOR</span>]</div><div class="line">    priv_type [, priv_type ] ...</div><div class="line">    <span class="keyword">ON</span> table_or_view_name</div><div class="line">    <span class="keyword">FROM</span> principal_specification [, principal_specification] ... ;</div><div class="line"> </div><div class="line">principal_specification</div><div class="line">  : USER user</div><div class="line">  | ROLE role</div><div class="line"> </div><div class="line">priv_type</div><div class="line">  : <span class="keyword">INSERT</span> | <span class="keyword">SELECT</span> | <span class="keyword">UPDATE</span> | <span class="keyword">DELETE</span> | ALL</div><div class="line">  </div><div class="line"><span class="comment">-- Show Grant</span></div><div class="line"><span class="keyword">SHOW</span> <span class="keyword">GRANT</span> [principal_name] <span class="keyword">ON</span> (ALL| ([<span class="keyword">TABLE</span>] table_or_view_name)</div><div class="line"><span class="keyword">show</span> <span class="keyword">grant</span> <span class="keyword">user</span> hive <span class="keyword">on</span> all</div></pre></td></tr></table></figure>
+<p>注意revoke语句不能drop任何有依赖的权限。详见Postgres revoke documentation.</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li>SQL Standards Based Authorization in HiveServer2</li>
+<li><a href="https://cwiki.apache.org/confluence/display/Hive/SQL+Standard+Based+Hive+Authorization" target="_blank" rel="external">https://cwiki.apache.org/confluence/display/Hive/SQL+Standard+Based+Hive+Authorization</a></li>
+<li><a href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Authorization#LanguageManualAuthorization-2SQLStandardsBasedAuthorizationinHiveServer2" target="_blank" rel="external">https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Authorization#LanguageManualAuthorization-2SQLStandardsBasedAuthorizationinHiveServer2</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/ambari-hive-storage-based-authorization/" title="ambari-hive-storage-based-authorization" itemprop="url">ambari-hive-storage-based-authorization</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:08:35.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h4 id="概要"><a href="#概要" class="headerlink" title="概要"></a>概要</h4><p>hive使用hdfs的文件系统权限来约束用户对database/table/partition的访问权限，可以让用户属于多个group，不同权限的数据属于不同group就可以随意组合用户的权限了。</p>
+<h4 id="ambari配置参数"><a href="#ambari配置参数" class="headerlink" title="ambari配置参数"></a>ambari配置参数</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>hive.security.metastore.authorization.manager<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>org.apache.hadoop.hive.ql.security.authorization.DefaultHiveMetastoreAuthorizationProvider<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>authorization manager class name to be used in the metastore for authorization.</div><div class="line">  The user defined authorization class should implement interface</div><div class="line">  org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider.</div><div class="line">  <span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line"> <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>hive.security.metastore.authenticator.manager<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>authenticator manager class name to be used in the metastore for authentication.</div><div class="line">  The user defined authenticator should implement interface </div><div class="line">  org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider.</div><div class="line">  <span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>hive.metastore.pre.event.listeners<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span> <span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>pre-event listener classes to be loaded on the metastore side to run code</div><div class="line">  whenever databases, tables, and partitions are created, altered, or dropped.</div><div class="line">  Set to org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener</div><div class="line">  if metastore-side authorization is desired.</div><div class="line">  <span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div></pre></td></tr></table></figure>
+<h4 id="测试时间"><a href="#测试时间" class="headerlink" title="测试时间"></a>测试时间</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">hive&gt; create database willtest;</div><div class="line"></div><div class="line">hive&gt; CREATE TABLE `batting`(</div><div class="line">    &gt;   `id` int, </div><div class="line">    &gt;   `dtdontquery` string, </div><div class="line">    &gt;   `name` string)</div><div class="line">    &gt; PARTITIONED BY ( </div><div class="line">    &gt;   `dt` string);</div><div class="line">    </div><div class="line">hive&gt; insert into willtest.batting partition(dt=&apos;20150409&apos;) values(12, &apos;will test string&apos;, &apos;will&apos;);</div></pre></td></tr></table></figure>
+<ol>
+<li>创建测试库willtest</li>
+<li>创建测试表willtest.batting</li>
+<li>插入一条测试数据，使用ambari用户maming到hive view查询此表，正常。</li>
+<li>观察一下hdfs上的文件.<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">[hdfs@data-test02 root]$ hdfs dfs -ls /apps/hive/warehouse</div><div class="line">drwxrwxrwx   - hive hdfs          0 2016-05-27 15:22 /apps/hive/warehouse/willtest.db</div><div class="line"></div><div class="line">[hdfs@data-test02 root]$ hdfs dfs -ls /apps/hive/warehouse/willtest.db</div><div class="line">drwxrwxrwx   - hive hdfs          0 2016-05-27 15:23 /apps/hive/warehouse/willtest.db/batting</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>现在这个库和表的权限都是谁都可以随便操作的，而且owner是hive，group是hdfs。</p>
+<ol>
+<li>修改batting表的权限，期望我们的ambari用户maming不能查询；<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[hdfs@data-test02 root]$ hdfs dfs -chmod -R 770 /apps/hive/warehouse/willtest.db/batting</div><div class="line">[hdfs@data-test02 root]$ hdfs dfs -ls /apps/hive/warehouse/willtest.db</div><div class="line">drwxrwx---   - hive hdfs          0 2016-05-27 15:23 /apps/hive/warehouse/willtest.db/batting</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>先把group和all的权限约束一下，这里因为maming本来就不是hdfs group的，所以就暂时不用修改group了。</p>
+<ol>
+<li><p>再使用ambari用户amming查询willtest.batting，报错：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"> org.apache.ambari.view.hive.client.HiveErrorStatusException: H110 Unable to submit statement. Error while compiling statement: FAILED: SemanticException Unable to fetch table batting. java.security.AccessControlException: Permission denied: user=maming, access=READ, inode=&quot;/apps/hive/warehouse/willtest.db/batting&quot;:hive:hdfs:drwxrwx---</div><div class="line">...</div></pre></td></tr></table></figure>
+</li>
+<li><p>补充一下maming等几个用户的权限</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">[hdfs@data-test02 root]$ hdfs groups maming</div><div class="line">maming : maming</div><div class="line">[hdfs@data-test02 root]$ hdfs groups sqoop</div><div class="line">sqoop : hadoop</div><div class="line">[hdfs@data-test02 root]$ hdfs groups hdfs</div><div class="line">hdfs : hadoop hdfs</div></pre></td></tr></table></figure>
+</li>
+<li><p>将maming暂时加入hdfs这个group之后再试一下，成功</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>测试成功。</p>
+<h4 id="延伸"><a href="#延伸" class="headerlink" title="延伸"></a>延伸</h4><p>好，基本需求能够实现。那么如果我们为某个group分配了某个db的权限。如果我们新增一个表batting2呢，再看一下文件属性<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[hdfs@data-test02 root]$ hdfs dfs -ls /apps/hive/warehouse/willtest.db</div><div class="line">drwxrwx---   - hive hdfs          0 2016-05-27 15:23 /apps/hive/warehouse/willtest.db/batting</div><div class="line">drwxrwxrwx   - hive hdfs          0 2016-05-27 15:51 /apps/hive/warehouse/willtest.db/batting2</div></pre></td></tr></table></figure></p>
+<p>问题出现，我们需要修改创建数据仓库文件的默认权限才行，不然我们就需要每次增加新库都得改一下table文件权限。</p>
+<p>找到两个相关参数<br>|参数 |含义 |<br>|—|—|<br>| hive.warehouse.subdir.inherit.perms |true/false 是否 <strong>继承上级文件夹的umask</strong> |<br>| hive.files.umask.value | 0770 解释说是被上面那个参数替换了 |<br>那就设置hive.warehouse.subdir.inherit.perms为true，重启一下hive，再去创建表看一下文件夹的权限。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">[hdfs@data-test02 root]$ hdfs dfs -chmod -R 770 /apps/hive/warehouse/</div><div class="line">[hdfs@data-test02 root]$ hdfs dfs -ls /apps/hive/warehouse/</div><div class="line">Found 2 items</div><div class="line">drwxrwx---   - hive hdfs          0 2016-05-27 15:10 /apps/hive/warehouse/batting</div><div class="line">drwxrwx---   - hive hdfs          0 2016-05-27 16:26 /apps/hive/warehouse/willtest.db</div><div class="line">[hdfs@data-test02 root]$ hdfs dfs -ls /apps/hive/warehouse/willtest.db</div><div class="line">Found 4 items</div><div class="line">drwxrwx---   - hive hdfs          0 2016-05-27 15:23 /apps/hive/warehouse/willtest.db/batting</div><div class="line">drwxrwx---   - hive hdfs          0 2016-05-27 15:51 /apps/hive/warehouse/willtest.db/batting2</div><div class="line">drwxrwx---   - hive hdfs          0 2016-05-27 16:27 /apps/hive/warehouse/willtest.db/batting4</div></pre></td></tr></table></figure></p>
+<p>先把willtest.db的文件夹权限改成了770，然后在willtest库里创建了一个新的表batting4，可以看到hdfs里的权限已经跟父目录保持一致了。<br>这样我们给指定了某个db的文件夹权限之后，下面的table的新增与变化，权限都会稍微固定一些。</p>
+<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><p><a href="https://cwiki.apache.org/confluence/display/Hive/Storage+Based+Authorization+in+the+Metastore+Server" target="_blank" rel="external">https://cwiki.apache.org/confluence/display/Hive/Storage+Based+Authorization+in+the+Metastore+Server</a><br><a href="https://cwiki.apache.org/confluence/display/Hive/HCatalog+Authorization" target="_blank" rel="external">https://cwiki.apache.org/confluence/display/Hive/HCatalog+Authorization</a></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/django模板语言/" title="django模板语言" itemprop="url">django模板语言</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:08:33.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>本文从技术角度解释一下Django template系统，看一下它是怎样运行的，以及怎样继承它。</p>
+<p>希望你已经看了前面的文章。</p>
+<h2 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h2><p>在python中使用template系统包含三个步骤：</p>
+<ol>
+<li>配置一个<a href="https://docs.djangoproject.com/en/1.9/ref/templates/api/#django.template.Engine" target="_blank" rel="external">Engine</a>；</li>
+<li>把template代码编译成<a href="https://docs.djangoproject.com/en/1.9/ref/templates/api/#django.template.Template" target="_blank" rel="external">Template</a>；</li>
+<li>在<a href="https://docs.djangoproject.com/en/1.9/ref/templates/api/#django.template.Context" target="_blank" rel="external">Context</a>中渲染这个Template</li>
+</ol>
+<p>Django项目一般都是使用<a href="https://docs.djangoproject.com/en/1.9/topics/templates/#template-engines" target="_blank" rel="external">高级API</a>来实现上面的步骤。</p>
+<ol>
+<li>对于<a href="https://docs.djangoproject.com/en/1.9/ref/settings/#std:setting-TEMPLATES" target="_blank" rel="external">TEMPLATES</a>配置的每个<a href="https://docs.djangoproject.com/en/1.9/topics/templates/#django.template.backends.django.DjangoTemplates" target="_blank" rel="external"> DjangoTemplates</a>，Django都实例化一个<code>Engine</code>. DjangoTemplates包装了一个<code>Engine</code>，使它能够适配后台的通用模板API。</li>
+<li><a href="https://docs.djangoproject.com/en/1.9/topics/templates/#module-django.template.loader" target="_blank" rel="external">django.template.loader</a> moduel有一个<code>get_template()</code>方法用来加载template。返回一个包装了<a href="https://docs.djangoproject.com/en/1.9/ref/templates/api/#django.template.Template" target="_blank" rel="external">django.template.Template</a>的<code>django.template.backends.django.Template</code>.</li>
+<li>上一步骤中的<code>Template</code>有一个<code>render()</code>方法，它又包含一个context，有时也包含一个针对<code>Context</code>的request，负责在指定Template进行渲染。</li>
+</ol>
+<h2 id="配置engine"><a href="#配置engine" class="headerlink" title="配置engine"></a>配置engine</h2><p><strong>class Engine(dirs=None, app_dirs=False, allowed_include_roots=None, context_processors=None, debug=False, loaders=None, string_if_invalid=’’, file_charset=’utf-8’, libraries=None, builtins=None)<a href="https://docs.djangoproject.com/en/1.9/_modules/django/template/engine/#Engine" target="_blank" rel="external">source</a></strong></p>
+<ul>
+<li><strong>dirs</strong> template文件所在的文件夹们，默认是空</li>
+<li><strong>loaders</strong> 多个template loader类。<a href="https://docs.djangoproject.com/en/1.9/ref/templates/api/#template-loaders" target="_blank" rel="external">详见</a></li>
+<li><strong>app_dirs</strong> 只在<strong>loaders</strong>里配置了’django.template.loaders.app_directories.Loader’ 才有效果</li>
+<li><strong>libraries</strong></li>
+</ul>
+<h2 id="加载Template"><a href="#加载Template" class="headerlink" title="加载Template"></a>加载Template</h2><p>创建<code>Template</code>的推荐方式是调用<code>Engine</code>的<code>get_template()</code>, <code>select_template()</code>或者<code>from_string()</code>.</p>
+<p>在django项目里是只能配置一个Template的，但我们也可以脱离配置直接使用Template。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> django.template <span class="keyword">import</span> Template</div><div class="line"></div><div class="line">template = Template(<span class="string">"My name is &#123;&#123; my_name &#125;&#125;."</span>)</div></pre></td></tr></table></figure></p>
+<h2 id="渲染context"><a href="#渲染context" class="headerlink" title="渲染context"></a>渲染context</h2><p>编译好Template之后，就可以用它来渲染任意的context了。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> django.template <span class="keyword">import</span> Context, Template</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>template = Template(<span class="string">"My name is &#123;&#123; my_name &#125;&#125;."</span>)</div><div class="line"></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>context = Context(&#123;<span class="string">"my_name"</span>: <span class="string">"Adrian"</span>&#125;)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>template.render(context)</div><div class="line"><span class="string">"My name is Adrian."</span></div><div class="line"></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>context = Context(&#123;<span class="string">"my_name"</span>: <span class="string">"Dolores"</span>&#125;)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>template.render(context)</div><div class="line"><span class="string">"My name is Dolores."</span></div></pre></td></tr></table></figure></p>
+<p>调用Template的render方法来渲染context。</p>
+<h2 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h2><p>变量只能是字母、数字、下划线、点。<br>点有个特殊的含义，叫做lookup。每次遇到点的时候，template系统就会按照以下此次序进行lookup：</p>
+<ul>
+<li>字典lookup。例子：foo[‘sdf’]</li>
+<li>属性lookup。例子：foo.bar</li>
+<li>数组索引lookup。例子：frr[sdf]<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> django.template <span class="keyword">import</span> Context, Template</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>t = Template(<span class="string">"My name is &#123;&#123; person.first_name &#125;&#125;."</span>)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>d = &#123;<span class="string">"person"</span>: &#123;<span class="string">"first_name"</span>: <span class="string">"Joe"</span>, <span class="string">"last_name"</span>: <span class="string">"Johnson"</span>&#125;&#125;</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>t.render(Context(d))</div><div class="line"><span class="string">"My name is Joe."</span></div><div class="line"></div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="class"><span class="keyword">class</span> <span class="title">PersonClass</span>:</span> <span class="keyword">pass</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>p = PersonClass()</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>p.first_name = <span class="string">"Ron"</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>p.last_name = <span class="string">"Nasty"</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>t.render(Context(&#123;<span class="string">"person"</span>: p&#125;))</div><div class="line"><span class="string">"My name is Ron."</span></div><div class="line"></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>t = Template(<span class="string">"The first stooge in the list is &#123;&#123; stooges.0 &#125;&#125;."</span>)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>c = Context(&#123;<span class="string">"stooges"</span>: [<span class="string">"Larry"</span>, <span class="string">"Curly"</span>, <span class="string">"Moe"</span>]&#125;)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>t.render(c)</div><div class="line"><span class="string">"The first stooge in the list is Larry."</span></div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>当某个变量可以被调用的时候，都会被尝试调用。例如<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="class"><span class="keyword">class</span> <span class="title">PersonClass2</span>:</span></div><div class="line"><span class="meta">... </span>    <span class="function"><span class="keyword">def</span> <span class="title">name</span><span class="params">(self)</span>:</span></div><div class="line"><span class="meta">... </span>        <span class="keyword">return</span> <span class="string">"Samantha"</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>t = Template(<span class="string">"My name is &#123;&#123; person.name &#125;&#125;."</span>)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>t.render(Context(&#123;<span class="string">"person"</span>: PersonClass2&#125;))</div><div class="line"><span class="string">"My name is Samantha."</span></div></pre></td></tr></table></figure></p>
+<p>可以被调用的变量比直接查找lookup的变量稍微复杂点儿。记住下面几条</p>
+<ul>
+<li><p>如果返回异常的话，会被传递上去，除非设置了<code>silent_variable_failure</code>为True，设置这个属性的话，当异常发生时，就会使用engine配置的<code>string_if_invalid</code>选项；</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span>t = Template(<span class="string">"My name is &#123;&#123; person.first_name &#125;&#125;."</span>)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="class"><span class="keyword">class</span> <span class="title">PersonClass3</span>:</span></div><div class="line"><span class="meta">... </span>    <span class="function"><span class="keyword">def</span> <span class="title">first_name</span><span class="params">(self)</span>:</span></div><div class="line"><span class="meta">... </span>        <span class="keyword">raise</span> AssertionError(<span class="string">"foo"</span>)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>p = PersonClass3()</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>t.render(Context(&#123;<span class="string">"person"</span>: p&#125;))</div><div class="line">Traceback (most recent call last):</div><div class="line">...</div><div class="line">AssertionError: foo</div><div class="line"></div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="class"><span class="keyword">class</span> <span class="title">SilentAssertionError</span><span class="params">(Exception)</span>:</span></div><div class="line"><span class="meta">... </span>    silent_variable_failure = <span class="keyword">True</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="class"><span class="keyword">class</span> <span class="title">PersonClass4</span>:</span></div><div class="line"><span class="meta">... </span>    <span class="function"><span class="keyword">def</span> <span class="title">first_name</span><span class="params">(self)</span>:</span></div><div class="line"><span class="meta">... </span>        <span class="keyword">raise</span> SilentAssertionError</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>p = PersonClass4()</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>t.render(Context(&#123;<span class="string">"person"</span>: p&#125;))</div><div class="line"><span class="string">"My name is ."</span></div></pre></td></tr></table></figure>
+</li>
+<li><p>只能调用无参函数</p>
+</li>
+<li>显然如果前端能调用的话，就可能发生side effect，所以要确保措施。比如</li>
+</ul>
+<p>要解决这个问题，就需要在敏感方法上加上<code>alters_data</code>属性，django默认动态生成的model对象都自动设置了这个属性<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">sensitive_function</span><span class="params">(self)</span>:</span></div><div class="line">    self.database_record.delete()</div><div class="line">sensitive_function.alters_data = <span class="keyword">True</span></div></pre></td></tr></table></figure></p>
+<ul>
+<li>有时我们想关闭这个属性，那么久告诉template系统不要调用。在这个属性上设置<code>do_not_call_in_templates</code>为True。跟上面的区别是，上面会直接返回<code>string_if_invalid</code>，而这个还是可以访问，但是不能调用，也就是当变量而不是当方法使用。</li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+  <nav id="page-nav" class="clearfix">
+    <a class="extend prev" rel="prev" href="/page/18/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/17/">17</a><a class="page-number" href="/page/18/">18</a><span class="page-number current">19</span><a class="page-number" href="/page/20/">20</a><a class="page-number" href="/page/21/">21</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/20/">Next<span></span></a>
+  </nav>
+
+</div>
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+ </html>

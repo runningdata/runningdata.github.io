@@ -1,0 +1,610 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>自制python的安装包 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="起步名字
+小写
+pypi中没有重复的
+
+目录结构1234funniest/    funniest/        __init__.py    setup.py
+在init.py中添加123def joke():    return (u&apos;Wenn ist das Nunst\u00fcck git und Slotermeyer? Ja! ... &apos;            u&apos;Beiherhu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="自制python的安装包">
+<meta property="og:url" content="http://willcup.com/2017/09/28/自制python的安装包/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="起步名字
+小写
+pypi中没有重复的
+
+目录结构1234funniest/    funniest/        __init__.py    setup.py
+在init.py中添加123def joke():    return (u&apos;Wenn ist das Nunst\u00fcck git und Slotermeyer? Ja! ... &apos;            u&apos;Beiherhu">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.797Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="自制python的安装包">
+<meta name="twitter:description" content="起步名字
+小写
+pypi中没有重复的
+
+目录结构1234funniest/    funniest/        __init__.py    setup.py
+在init.py中添加123def joke():    return (u&apos;Wenn ist das Nunst\u00fcck git und Slotermeyer? Ja! ... &apos;            u&apos;Beiherhu">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/09/28/自制python的安装包/" title="自制python的安装包" itemprop="url">自制python的安装包</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-09-28T06:15:09.000Z" itemprop="datePublished"> 发表于 2017-09-28</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#起步"><span class="toc-text">起步</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#名字"><span class="toc-text">名字</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#目录结构"><span class="toc-text">目录结构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#发布到pypi"><span class="toc-text">发布到pypi</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#打包："><span class="toc-text">打包：</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#wheels"><span class="toc-text">wheels</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#universal-wheel"><span class="toc-text">universal wheel</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#pure-python-wheel"><span class="toc-text">pure python wheel</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#platform-wheel"><span class="toc-text">platform wheel</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#上传到PYPI"><span class="toc-text">上传到PYPI</span></a></li></ol></li></ol></li></ol></li></ol>
+		
+		</div>
+		
+		<h2 id="起步"><a href="#起步" class="headerlink" title="起步"></a>起步</h2><h4 id="名字"><a href="#名字" class="headerlink" title="名字"></a>名字</h4><ul>
+<li>小写</li>
+<li>pypi中没有重复的</li>
+</ul>
+<h4 id="目录结构"><a href="#目录结构" class="headerlink" title="目录结构"></a>目录结构</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">funniest/</div><div class="line">    funniest/</div><div class="line">        __init__.py</div><div class="line">    setup.py</div></pre></td></tr></table></figure>
+<p>在<strong>init</strong>.py中添加<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">joke</span><span class="params">()</span>:</span></div><div class="line">    <span class="keyword">return</span> (<span class="string">u'Wenn ist das Nunst\u00fcck git und Slotermeyer? Ja! ... '</span></div><div class="line">            <span class="string">u'Beiherhund das Oder die Flipperwaldt gersput.'</span>)</div></pre></td></tr></table></figure></p>
+<p>setup.py里应该包含一个方法setuptools.setup():<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">from setuptools import setup</div><div class="line"></div><div class="line">setup(name=&apos;funniest&apos;,</div><div class="line">      version=&apos;0.1&apos;,</div><div class="line">      description=&apos;The funniest joke in the world&apos;,</div><div class="line">      url=&apos;http://github.com/storborg/funniest&apos;,</div><div class="line">      author=&apos;Flying Circus&apos;,</div><div class="line">      author_email=&apos;flyingcircus@example.com&apos;,</div><div class="line">      license=&apos;MIT&apos;,</div><div class="line">      packages=[&apos;funniest&apos;],</div><div class="line">      zip_safe=False)</div></pre></td></tr></table></figure></p>
+<p>然后就可以本地安装一下了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pip install .</div></pre></td></tr></table></figure></p>
+<p>用下面命令的话，可以让这个module的使用者实时更新变化<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">root@will-vm:~/gitLearning/funiest# pip install -e .</div><div class="line">Obtaining file:///root/gitLearning/funiest</div><div class="line">Installing collected packages: funiest</div><div class="line">  Running setup.py develop for funiest</div><div class="line">Successfully installed funiest</div></pre></td></tr></table></figure></p>
+<p>引用：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&gt;&gt;&gt; import funiest</div><div class="line">&gt;&gt;&gt; print funiest.joke()</div><div class="line">Wenn ist das Nunstück git und Slotermeyer? Ja! ... Beiherhund das Oder die Flipperwaldt gersput.</div></pre></td></tr></table></figure></p>
+<h4 id="发布到pypi"><a href="#发布到pypi" class="headerlink" title="发布到pypi"></a>发布到pypi</h4><p>setup.py同样也是我们在PYPI上注册包名，并上传源码的入口。</p>
+<h5 id="打包："><a href="#打包：" class="headerlink" title="打包："></a>打包：</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">root@will-vm:~/gitLearning/funiest# python setup.py sdist</div><div class="line">running sdist</div><div class="line">running egg_info</div><div class="line">writing funiest.egg-info/PKG-INFO</div><div class="line">writing top-level names to funiest.egg-info/top_level.txt</div><div class="line">writing dependency_links to funiest.egg-info/dependency_links.txt</div><div class="line">reading manifest file &apos;funiest.egg-info/SOURCES.txt&apos;</div><div class="line">writing manifest file &apos;funiest.egg-info/SOURCES.txt&apos;</div><div class="line">warning: sdist: standard file not found: should have one of README, README.rst, README.txt</div><div class="line"></div><div class="line">running check</div><div class="line">creating funiest-0.1</div><div class="line">creating funiest-0.1/funiest</div><div class="line">creating funiest-0.1/funiest.egg-info</div><div class="line">making hard links in funiest-0.1...</div><div class="line">hard linking setup.py -&gt; funiest-0.1</div><div class="line">hard linking funiest/__init__.py -&gt; funiest-0.1/funiest</div><div class="line">hard linking funiest.egg-info/PKG-INFO -&gt; funiest-0.1/funiest.egg-info</div><div class="line">hard linking funiest.egg-info/SOURCES.txt -&gt; funiest-0.1/funiest.egg-info</div><div class="line">hard linking funiest.egg-info/dependency_links.txt -&gt; funiest-0.1/funiest.egg-info</div><div class="line">hard linking funiest.egg-info/not-zip-safe -&gt; funiest-0.1/funiest.egg-info</div><div class="line">hard linking funiest.egg-info/top_level.txt -&gt; funiest-0.1/funiest.egg-info</div><div class="line">Writing funiest-0.1/setup.cfg</div><div class="line">creating dist</div><div class="line">Creating tar archive</div><div class="line">removing &apos;funiest-0.1&apos; (and everything under it)</div><div class="line">root@will-vm:~/gitLearning/funiest# ll dist/</div><div class="line">总用量 12</div><div class="line">drwxr-xr-x 2 root root 4096 9月  28 14:35 ./</div><div class="line">drwxr-xr-x 5 root root 4096 9月  28 14:35 ../</div><div class="line">-rw-r--r-- 1 root root  912 9月  28 14:35 funiest-0.1.tar.gz</div></pre></td></tr></table></figure>
+<p>这个包并没有经过build，在使用pip安装的时候需要再执行个build的步骤，尽管是纯python的也要有这个步骤。</p>
+<h5 id="wheels"><a href="#wheels" class="headerlink" title="wheels"></a>wheels</h5><p>wheel是一个已经build过的包，安装的时候不用走build步骤了，相对终端用户安装过程会快一些。</p>
+<ul>
+<li>如果我们的项目是纯python(不包含编译的扩展)，本身就支持python2和python3，那么就叫做universal wheel</li>
+<li>如果是纯python，但是不是原生支持python2和3，就叫做pure python wheel</li>
+<li>如果包含便宜扩展，就叫 platform wheel</li>
+</ul>
+<p>在把我们的project构建wheel之前，先安装wheel<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pip install wheel</div></pre></td></tr></table></figure></p>
+<h6 id="universal-wheel"><a href="#universal-wheel" class="headerlink" title="universal wheel"></a>universal wheel</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">python setup.py bdist_wheel --universal</div></pre></td></tr></table></figure>
+<p>可以在setup.cfg中指定参数<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">[bdist_wheel]</div><div class="line">universal=1</div></pre></td></tr></table></figure></p>
+<p>只有在你的project对于python2和python3都支持，而且不包含c扩展的时候才能用universal。</p>
+<h6 id="pure-python-wheel"><a href="#pure-python-wheel" class="headerlink" title="pure python wheel"></a>pure python wheel</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">python setup.py bdist_wheel</div></pre></td></tr></table></figure>
+<p>bdist_wheel会检测是不是纯python，会生成一个与当前python版本兼容的结果。要是想支持多个版本，就需要在2、3的版本python环境下分别构建。</p>
+<h6 id="platform-wheel"><a href="#platform-wheel" class="headerlink" title="platform wheel"></a>platform wheel</h6><p>用来指定运行平台：linux, windows等，通常都带着C扩展<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">python setup.py bdist_wheel</div></pre></td></tr></table></figure></p>
+<h5 id="上传到PYPI"><a href="#上传到PYPI" class="headerlink" title="上传到PYPI"></a>上传到PYPI</h5><p>因为我还没有过pypi的用户，所以要根据提示先注册账户。</p>
+<p>可以把注册信息加入~/.pypirc中：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[pypi]</div><div class="line">username = &lt;username&gt;</div><div class="line">password = &lt;password&gt;</div></pre></td></tr></table></figure></p>
+<p>上传：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pip install twine</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">root@will-vm:~/gitLearning/funiest# twine upload dist/*</div><div class="line">Uploading distributions to https://upload.pypi.org/legacy/</div><div class="line">Enter your username: willcup</div><div class="line">Enter your password: </div><div class="line">Uploading funiest-0.1-py2.py3-none-any.whl</div><div class="line">Uploading funiest-0.1.tar.gz</div></pre></td></tr></table></figure>
+<p>然后就可以看到了 <a href="https://pypi.python.org/pypi/funiest/0.1" target="_blank" rel="external">https://pypi.python.org/pypi/funiest/0.1</a></p>
+<p>至此，已经可以到别的机器上下载并使用了</p>
+<p>参考：</p>
+<ul>
+<li><p><a href="https://packaging.python.org/tutorials/distributing-packages/#setup-py" target="_blank" rel="external">https://packaging.python.org/tutorials/distributing-packages/#setup-py</a></p>
+</li>
+<li><p><a href="https://github.com/pypa/sampleproject/blob/master/setup.py" target="_blank" rel="external">https://github.com/pypa/sampleproject/blob/master/setup.py</a></p>
+</li>
+<li><p><a href="https://python-packaging.readthedocs.io/en/latest/" target="_blank" rel="external">https://python-packaging.readthedocs.io/en/latest/</a></p>
+</li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/09/28/自制python的安装包/" data-title="自制python的安装包 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/09/29/基础设施代码化/" title="基础设施代码化">
+  <strong>上一篇：</strong><br/>
+  <span>
+  基础设施代码化</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/09/22/prometheus：理解告警的几个延迟点/"  title="prometheus：理解告警的几个延迟点">
+ <strong>下一篇：</strong><br/> 
+ <span>prometheus：理解告警的几个延迟点
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/09/28/自制python的安装包/" data-title="自制python的安装包" data-url="http://willcup.com/2017/09/28/自制python的安装包/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#起步"><span class="toc-number">1.</span> <span class="toc-text">起步</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#名字"><span class="toc-number">1.0.1.</span> <span class="toc-text">名字</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#目录结构"><span class="toc-number">1.0.2.</span> <span class="toc-text">目录结构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#发布到pypi"><span class="toc-number">1.0.3.</span> <span class="toc-text">发布到pypi</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#打包："><span class="toc-number">1.0.3.1.</span> <span class="toc-text">打包：</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#wheels"><span class="toc-number">1.0.3.2.</span> <span class="toc-text">wheels</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#universal-wheel"><span class="toc-number">1.0.3.2.1.</span> <span class="toc-text">universal wheel</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#pure-python-wheel"><span class="toc-number">1.0.3.2.2.</span> <span class="toc-text">pure python wheel</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#platform-wheel"><span class="toc-number">1.0.3.2.3.</span> <span class="toc-text">platform wheel</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#上传到PYPI"><span class="toc-number">1.0.3.3.</span> <span class="toc-text">上传到PYPI</span></a></li></ol></li></ol></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,612 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>hive-on-spark配置 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="安装sparkhive on spark默认也是支持spark on yarn的模式的。
+配置YARN不能使用capacity scheduler，必须使用fair scheduler【….看到这里就想放弃了】
+yarn.resourcemanager.scheduler.class=org.apache.hadoop.yarn.server.resourcemanager.scheduler.f">
+<meta property="og:type" content="article">
+<meta property="og:title" content="hive-on-spark配置">
+<meta property="og:url" content="http://willcup.com/2017/12/12/hive-on-spark配置/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="安装sparkhive on spark默认也是支持spark on yarn的模式的。
+配置YARN不能使用capacity scheduler，必须使用fair scheduler【….看到这里就想放弃了】
+yarn.resourcemanager.scheduler.class=org.apache.hadoop.yarn.server.resourcemanager.scheduler.f">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.785Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="hive-on-spark配置">
+<meta name="twitter:description" content="安装sparkhive on spark默认也是支持spark on yarn的模式的。
+配置YARN不能使用capacity scheduler，必须使用fair scheduler【….看到这里就想放弃了】
+yarn.resourcemanager.scheduler.class=org.apache.hadoop.yarn.server.resourcemanager.scheduler.f">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/12/12/hive-on-spark配置/" title="hive-on-spark配置" itemprop="url">hive-on-spark配置</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-12-12T10:15:55.000Z" itemprop="datePublished"> 发表于 2017-12-12</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#安装spark"><span class="toc-text">安装spark</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#配置YARN"><span class="toc-text">配置YARN</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#配置Hive"><span class="toc-text">配置Hive</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#添加spark依赖："><span class="toc-text">添加spark依赖：</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#配置hive的执行引擎"><span class="toc-text">配置hive的执行引擎</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#配置spark相关的参数"><span class="toc-text">配置spark相关的参数</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#配置spark"><span class="toc-text">配置spark</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#推荐配置"><span class="toc-text">推荐配置</span></a></li></ol>
+		
+		</div>
+		
+		<h4 id="安装spark"><a href="#安装spark" class="headerlink" title="安装spark"></a>安装spark</h4><p>hive on spark默认也是支持spark on yarn的模式的。</p>
+<h4 id="配置YARN"><a href="#配置YARN" class="headerlink" title="配置YARN"></a>配置YARN</h4><p>不能使用capacity scheduler，必须使用fair scheduler【….看到这里就想放弃了】</p>
+<p>yarn.resourcemanager.scheduler.class=org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler</p>
+<h4 id="配置Hive"><a href="#配置Hive" class="headerlink" title="配置Hive"></a>配置Hive</h4><h5 id="添加spark依赖："><a href="#添加spark依赖：" class="headerlink" title="添加spark依赖："></a>添加spark依赖：</h5><ul>
+<li>hive2.2.0之前，把spark-assembly jar链接到HIVE_HOME/lib中</li>
+<li>2.2.0之后，hive on spark需要运行在spark 2.0.0以上的版本，没有assembly jar包 <ul>
+<li>要运行YARN模式的话，添加下面的包到HIVE_HOME/lib<ul>
+<li>scala-library</li>
+<li>spark-core</li>
+<li>spark-network-common</li>
+</ul>
+</li>
+<li>运行local模式的话，添加下面包的链接到hive_home/lib中<ul>
+<li>chill-java  chill  jackson-module-paranamer  jackson-module-scala  jersey-container-servlet-core</li>
+<li>jersey-server  json4s-ast  kryo-shaded  minlog  scala-xml  spark-launcher</li>
+<li>spark-network-shuffle  spark-unsafe  xbean-asm5-shaded</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h5 id="配置hive的执行引擎"><a href="#配置hive的执行引擎" class="headerlink" title="配置hive的执行引擎"></a>配置hive的执行引擎</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">set hive.execution.engine=spark;</div></pre></td></tr></table></figure>
+<h5 id="配置spark相关的参数"><a href="#配置spark相关的参数" class="headerlink" title="配置spark相关的参数"></a>配置spark相关的参数</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">set spark.master=&lt;Spark Master URL&gt;</div><div class="line">set spark.eventLog.enabled=true;</div><div class="line">set spark.eventLog.dir=&lt;Spark event log folder (must exist)&gt;</div><div class="line">set spark.executor.memory=512m;             </div><div class="line">set spark.serializer=org.apache.spark.serializer.KryoSerializer;</div></pre></td></tr></table></figure>
+<p>hive 2.2.0以前，要把spark-assembly jar到HDS中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&lt;property&gt;</div><div class="line">  &lt;name&gt;spark.yarn.jar&lt;/name&gt;</div><div class="line">  &lt;value&gt;hdfs://xxxx:8020/spark-assembly.jar&lt;/value&gt;</div><div class="line">&lt;/property&gt;</div></pre></td></tr></table></figure></p>
+<p>2.2.0以上版本后, 把$SPARK_HOME/jars中的所有jar都上传到hdfs指定文件夹中：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">&lt;property&gt;</div><div class="line">  &lt;name&gt;spark.yarn.jars&lt;/name&gt;</div><div class="line">  &lt;value&gt;hdfs://xxxx:8020/spark-jars/*&lt;/value&gt;</div><div class="line">&lt;/property&gt;</div></pre></td></tr></table></figure></p>
+<h4 id="配置spark"><a href="#配置spark" class="headerlink" title="配置spark"></a>配置spark</h4><table>
+<thead>
+<tr>
+<th>属性</th>
+<th>推荐设置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>spark.executor.cores</td>
+<td>Between 5-7, See tuning details section</td>
+</tr>
+<tr>
+<td>spark.executor.memory</td>
+<td>yarn.nodemanager.resource.memory-mb * (spark.executor.cores / yarn.nodemanager.resource.cpu-vcores) </td>
+</tr>
+<tr>
+<td>spark.yarn.executor.memoryOverhead</td>
+<td>15-20% of spark.executor.memory</td>
+</tr>
+<tr>
+<td>spark.executor.instances</td>
+<td>Depends on spark.executor.memory + spark.yarn.executor.memoryOverhead, see tuning details section.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="推荐配置"><a href="#推荐配置" class="headerlink" title="推荐配置"></a>推荐配置</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line">mapreduce.input.fileinputformat.split.maxsize=750000000</div><div class="line">hive.vectorized.execution.enabled=true</div><div class="line"></div><div class="line">hive.cbo.enable=true</div><div class="line">hive.optimize.reducededuplication.min.reducer=4</div><div class="line">hive.optimize.reducededuplication=true</div><div class="line">hive.orc.splits.include.file.footer=false</div><div class="line">hive.merge.mapfiles=true</div><div class="line">hive.merge.sparkfiles=false</div><div class="line">hive.merge.smallfiles.avgsize=16000000</div><div class="line">hive.merge.size.per.task=256000000</div><div class="line">hive.merge.orcfile.stripe.level=true</div><div class="line">hive.auto.convert.join=true</div><div class="line">hive.auto.convert.join.noconditionaltask=true</div><div class="line">hive.auto.convert.join.noconditionaltask.size=894435328</div><div class="line">hive.optimize.bucketmapjoin.sortedmerge=false</div><div class="line">hive.map.aggr.hash.percentmemory=0.5</div><div class="line">hive.map.aggr=true</div><div class="line">hive.optimize.sort.dynamic.partition=false</div><div class="line">hive.stats.autogather=true</div><div class="line">hive.stats.fetch.column.stats=true</div><div class="line">hive.vectorized.execution.reduce.enabled=false</div><div class="line">hive.vectorized.groupby.checkinterval=4096</div><div class="line">hive.vectorized.groupby.flush.percent=0.1</div><div class="line">hive.compute.query.using.stats=true</div><div class="line">hive.limit.pushdown.memory.usage=0.4</div><div class="line">hive.optimize.index.filter=true</div><div class="line">hive.exec.reducers.bytes.per.reducer=67108864</div><div class="line">hive.smbjoin.cache.rows=10000</div><div class="line">hive.exec.orc.default.stripe.size=67108864</div><div class="line">hive.fetch.task.conversion=more</div><div class="line">hive.fetch.task.conversion.threshold=1073741824</div><div class="line">hive.fetch.task.aggr=false</div><div class="line">mapreduce.input.fileinputformat.list-status.num-threads=5</div><div class="line">spark.kryo.referenceTracking=false</div><div class="line">spark.kryo.classesToRegister=org.apache.hadoop.hive.ql.io.HiveKey,org.apache.hadoop.io.BytesWritable,org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch</div></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/12/12/hive-on-spark配置/" data-title="hive-on-spark配置 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/12/14/slider源码走读1/" title="slider源码走读1">
+  <strong>上一篇：</strong><br/>
+  <span>
+  slider源码走读1</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/12/12/docker容器的时间同步/"  title="docker容器的时间同步">
+ <strong>下一篇：</strong><br/> 
+ <span>docker容器的时间同步
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/12/12/hive-on-spark配置/" data-title="hive-on-spark配置" data-url="http://willcup.com/2017/12/12/hive-on-spark配置/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#安装spark"><span class="toc-number">1.</span> <span class="toc-text">安装spark</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#配置YARN"><span class="toc-number">2.</span> <span class="toc-text">配置YARN</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#配置Hive"><span class="toc-number">3.</span> <span class="toc-text">配置Hive</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#添加spark依赖："><span class="toc-number">3.1.</span> <span class="toc-text">添加spark依赖：</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#配置hive的执行引擎"><span class="toc-number">3.2.</span> <span class="toc-text">配置hive的执行引擎</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#配置spark相关的参数"><span class="toc-number">3.3.</span> <span class="toc-text">配置spark相关的参数</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#配置spark"><span class="toc-number">4.</span> <span class="toc-text">配置spark</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#推荐配置"><span class="toc-number">5.</span> <span class="toc-text">推荐配置</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

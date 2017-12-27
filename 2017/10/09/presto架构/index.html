@@ -1,0 +1,577 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>presto架构 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="server 类型CoordinatorWorker数据源Connector用来适配presto到类似hive的RDBMS。可以把connector当成database的driver。是Presto的SPI的一个实现，允许presto使用标准API与资源进行交互。
+Presto包含几个内置的connectors：JMX, HIVE, System connector用来提供访问内部系统表的访问方式">
+<meta property="og:type" content="article">
+<meta property="og:title" content="presto架构">
+<meta property="og:url" content="http://willcup.com/2017/10/09/presto架构/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="server 类型CoordinatorWorker数据源Connector用来适配presto到类似hive的RDBMS。可以把connector当成database的driver。是Presto的SPI的一个实现，允许presto使用标准API与资源进行交互。
+Presto包含几个内置的connectors：JMX, HIVE, System connector用来提供访问内部系统表的访问方式">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.789Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="presto架构">
+<meta name="twitter:description" content="server 类型CoordinatorWorker数据源Connector用来适配presto到类似hive的RDBMS。可以把connector当成database的driver。是Presto的SPI的一个实现，允许presto使用标准API与资源进行交互。
+Presto包含几个内置的connectors：JMX, HIVE, System connector用来提供访问内部系统表的访问方式">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/10/09/presto架构/" title="presto架构" itemprop="url">presto架构</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-10-09T09:18:53.000Z" itemprop="datePublished"> 发表于 2017-10-09</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#server-类型"><span class="toc-text">server 类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Coordinator"><span class="toc-text">Coordinator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Worker"><span class="toc-text">Worker</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数据源"><span class="toc-text">数据源</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Connector"><span class="toc-text">Connector</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#catalog"><span class="toc-text">catalog</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#schema"><span class="toc-text">schema</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Table"><span class="toc-text">Table</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查询模型"><span class="toc-text">查询模型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Statement"><span class="toc-text">Statement</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Query"><span class="toc-text">Query</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Stage"><span class="toc-text">Stage</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Task"><span class="toc-text">Task</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Split"><span class="toc-text">Split</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Driver"><span class="toc-text">Driver</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Operator"><span class="toc-text">Operator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Exchange"><span class="toc-text">Exchange</span></a></li></ol></li></ol></li></ol>
+		
+		</div>
+		
+		<h2 id="server-类型"><a href="#server-类型" class="headerlink" title="server 类型"></a>server 类型</h2><h4 id="Coordinator"><a href="#Coordinator" class="headerlink" title="Coordinator"></a>Coordinator</h4><h4 id="Worker"><a href="#Worker" class="headerlink" title="Worker"></a>Worker</h4><h2 id="数据源"><a href="#数据源" class="headerlink" title="数据源"></a>数据源</h2><h4 id="Connector"><a href="#Connector" class="headerlink" title="Connector"></a>Connector</h4><p>用来适配presto到类似hive的RDBMS。可以把connector当成database的driver。是Presto的SPI的一个实现，允许presto使用标准API与资源进行交互。</p>
+<p>Presto包含几个内置的connectors：JMX, HIVE, System connector用来提供访问内部系统表的访问方式， TPCH connector用来提供TPC-H benchmark数据。还有一些第三方的connector。</p>
+<p>每个catalog是与一个指定的connector进行协作的。如果你看过catalog的配置文件，你会发现每个都必须包含一个connector.name属性，catalog manager用这个来为指定catalog创建对应的connector。可以多个catalog共用同一个connector来连接两个相同数据库的不同实例。例如，假设我们有两个hive集群，我们就配置两个catalog实例，都用hive connector，这样甚至能在同一个SQL查询中查询到两个hive集群中的数据。</p>
+<h4 id="catalog"><a href="#catalog" class="headerlink" title="catalog"></a>catalog</h4><p>一个catalog包含多个数据库schema和通过一个connector关联的数据源。在运行sql语句的时候，可以在一个或多个catalog中进行数据查询。</p>
+<p>在presto中，数据表的全名是catalog的根部。例如hive.test.data.test就是hive catalog中的test_data数据库中的test表。</p>
+<p>catalog是通过presto配置目录中的properties文件定义的。</p>
+<h4 id="schema"><a href="#schema" class="headerlink" title="schema"></a>schema</h4><p>schema是用来组织table的。catalog和schema用来定义一组可供查询的数据表。在prestor查询hive或者mysql等关系型数据库的时候，schema就对应于数据库名。其他类型的connector也可以根据具体场景进行对应</p>
+<h4 id="Table"><a href="#Table" class="headerlink" title="Table"></a>Table</h4><p>未排序的数据行的组合，每个列都有自己的类型。与关系型数据库定义一样。</p>
+<h2 id="查询模型"><a href="#查询模型" class="headerlink" title="查询模型"></a>查询模型</h2><h4 id="Statement"><a href="#Statement" class="headerlink" title="Statement"></a>Statement</h4><p>Presto执行ANSI兼容的SQL语句。当一个statement被执行的时候，presto创建一个query和一个query plan，然后这个plan被分布到presto worker中执行。</p>
+<h4 id="Query"><a href="#Query" class="headerlink" title="Query"></a>Query</h4><p>Presto解析statement的时候，把statement转化成一个query，创建一个分布式的query plan，然后形成一系列相互关联的stage，运行到不同的presto worker上。当我们抽取一个查询的信息的时候，我们会获取到对应于这个satement的每个组件的状态快照。</p>
+<p>statement和query的区别很简单，statement可以看作传递给presto的SQL语句，一个query则对应于执行这个statement的配置与实例化的组件。一个query包含了stage、task、split、connector、数据源以及其他组件。</p>
+<h4 id="Stage"><a href="#Stage" class="headerlink" title="Stage"></a>Stage</h4><p>presto执行query时，会把query plan打成一系列有层级的stage。例如，如果presto需要聚合hive里的一亿行数据，他需要创建一个root stage来对其他stage的output执行聚合操作，这些其他stage负责query plan中的不同部分。</p>
+<p>这些stage可以使用tree来表示。每个query都有一个root stage来执行其他stage的聚合操作。coordinator 是coordinator用来模型化分布式query plan的，但是stage本身并不运行在presto worker上。</p>
+<h4 id="Task"><a href="#Task" class="headerlink" title="Task"></a>Task</h4><p>前面提到，stage只是模型化分布式查询计划的一个特定部分，而不在presto worker上执行。一个stage其实又被一系列task实现，分布式运行在presto worker上。</p>
+<p>presto task是有多个input和output的，可以与一系列driver并行执行。</p>
+<h4 id="Split"><a href="#Split" class="headerlink" title="Split"></a>Split</h4><p>stage是通过connector从数据源以split为单位抽取数据的，然后中间的stage或高层stage又从其他stage中抽取数据。</p>
+<p>prestor执行query时，coordinator会从一个connector查到指定table的所有的split。coordinator追踪哪些机器在运行哪些task，哪些split在被哪些task处理。</p>
+<h4 id="Driver"><a href="#Driver" class="headerlink" title="Driver"></a>Driver</h4><p>task包含一个或多个并行的driver，一个driver只有一个input和output。dirver整合operator来生成output，这个output会被task聚合，再传递给其他stage的一个task。一个driver是一个operator实例的序列，可以把他看成内存中的一系列operator集合。它是presto并发执行的最低层单元了。</p>
+<h4 id="Operator"><a href="#Operator" class="headerlink" title="Operator"></a>Operator</h4><p>operator消费、转换、生产数据。例如，一个table scan从connector中抽取数据，然后生产可以被其他operator消费的数据。一个filter operator消费数据，生产已经过滤掉的一个数据子集。</p>
+<h4 id="Exchange"><a href="#Exchange" class="headerlink" title="Exchange"></a>Exchange</h4><p>Exchange负责在Presto节点间传递同一个query的不同stage的数据。task把数据生成进一个output buffer，并使用exchange client消费其他task生成的数据。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/10/09/presto架构/" data-title="presto架构 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/10/10/mesos框架概览：-mesos-master,-mesosframework,-kibana,-minimesos/" title="mesos框架概览：-mesos-master,-mesosframework,-kibana,-minimesos">
+  <strong>上一篇：</strong><br/>
+  <span>
+  mesos框架概览：-mesos-master,-mesosframework,-kibana,-minimesos</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/10/09/impala架构/"  title="impala架构">
+ <strong>下一篇：</strong><br/> 
+ <span>impala架构
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/10/09/presto架构/" data-title="presto架构" data-url="http://willcup.com/2017/10/09/presto架构/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#server-类型"><span class="toc-number">1.</span> <span class="toc-text">server 类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Coordinator"><span class="toc-number">1.0.1.</span> <span class="toc-text">Coordinator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Worker"><span class="toc-number">1.0.2.</span> <span class="toc-text">Worker</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数据源"><span class="toc-number">2.</span> <span class="toc-text">数据源</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Connector"><span class="toc-number">2.0.1.</span> <span class="toc-text">Connector</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#catalog"><span class="toc-number">2.0.2.</span> <span class="toc-text">catalog</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#schema"><span class="toc-number">2.0.3.</span> <span class="toc-text">schema</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Table"><span class="toc-number">2.0.4.</span> <span class="toc-text">Table</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查询模型"><span class="toc-number">3.</span> <span class="toc-text">查询模型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Statement"><span class="toc-number">3.0.1.</span> <span class="toc-text">Statement</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Query"><span class="toc-number">3.0.2.</span> <span class="toc-text">Query</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Stage"><span class="toc-number">3.0.3.</span> <span class="toc-text">Stage</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Task"><span class="toc-number">3.0.4.</span> <span class="toc-text">Task</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Split"><span class="toc-number">3.0.5.</span> <span class="toc-text">Split</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Driver"><span class="toc-number">3.0.6.</span> <span class="toc-text">Driver</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Operator"><span class="toc-number">3.0.7.</span> <span class="toc-text">Operator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Exchange"><span class="toc-number">3.0.8.</span> <span class="toc-text">Exchange</span></a></li></ol></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

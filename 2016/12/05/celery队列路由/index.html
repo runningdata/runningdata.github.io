@@ -1,0 +1,630 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>celery队列路由 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="同一个app里如果有多种不同的任务，也就是分由不同的task进行处理。假设只有一个worker的话，task1耗时特别长，有可能会阻塞短平快的task2、task3、task4的执行，也就是面临着小任务饿死的情况。
+这时候我们就需要使用队列路由，将不同类型的任务路由至不同的queue，并且启动多个worker，分别负责消费指定queue的任务。这样，长少慢的任务就不会影响短频快的小任务的执行了。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="celery队列路由">
+<meta property="og:url" content="http://willcup.com/2016/12/05/celery队列路由/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="同一个app里如果有多种不同的任务，也就是分由不同的task进行处理。假设只有一个worker的话，task1耗时特别长，有可能会阻塞短平快的task2、task3、task4的执行，也就是面临着小任务饿死的情况。
+这时候我们就需要使用队列路由，将不同类型的任务路由至不同的queue，并且启动多个worker，分别负责消费指定queue的任务。这样，长少慢的任务就不会影响短频快的小任务的执行了。">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.781Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="celery队列路由">
+<meta name="twitter:description" content="同一个app里如果有多种不同的任务，也就是分由不同的task进行处理。假设只有一个worker的话，task1耗时特别长，有可能会阻塞短平快的task2、task3、task4的执行，也就是面临着小任务饿死的情况。
+这时候我们就需要使用队列路由，将不同类型的任务路由至不同的queue，并且启动多个worker，分别负责消费指定queue的任务。这样，长少慢的任务就不会影响短频快的小任务的执行了。">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/celery队列路由/" title="celery队列路由" itemprop="url">celery队列路由</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:10:27.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#自动路由"><span class="toc-text">自动路由</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#修改默认队列的名称"><span class="toc-text">修改默认队列的名称</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#队列定义"><span class="toc-text">队列定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#手动配置"><span class="toc-text">手动配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#初识AMQP"><span class="toc-text">初识AMQP</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#message"><span class="toc-text">message</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Producers-consumers，-brokers"><span class="toc-text">Producers, consumers， brokers</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Exchanges-queues，-routing-keys"><span class="toc-text">Exchanges, queues， routing keys</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Exchange类型"><span class="toc-text">Exchange类型</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#direct"><span class="toc-text">direct</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#topc"><span class="toc-text">topc</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#相关API"><span class="toc-text">相关API</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#使用API"><span class="toc-text">使用API</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Routing-Tasks"><span class="toc-text">Routing Tasks</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#定义队列"><span class="toc-text">定义队列</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#指定task目的地"><span class="toc-text">指定task目的地</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Routers"><span class="toc-text">Routers</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#广播"><span class="toc-text">广播</span></a></li></ol></li></ol></li></ol>
+		
+		</div>
+		
+		<p>同一个app里如果有多种不同的任务，也就是分由不同的task进行处理。假设只有一个worker的话，task1耗时特别长，有可能会阻塞短平快的task2、task3、task4的执行，也就是面临着小任务饿死的情况。</p>
+<p>这时候我们就需要使用队列路由，将不同类型的任务路由至不同的queue，并且启动多个worker，分别负责消费指定queue的任务。这样，长少慢的任务就不会影响短频快的小任务的执行了。</p>
+<h2 id="自动路由"><a href="#自动路由" class="headerlink" title="自动路由"></a>自动路由</h2><p>CELERY_CREATE_MISSING_QUEUES开启后，如果queue没有在CELERY_QUEUES中的话会自动创建。</p>
+<p>假设我们有两个server：x y。他俩负责普通的task。然后z server只处理特定的跟种子有关的task，那么可以这样配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">CELERY_ROUTES = &#123;&apos;feed.tasks.import_feed&apos;: &#123;&apos;queue&apos;: &apos;feeds&apos;&#125;&#125;</div></pre></td></tr></table></figure></p>
+<p>所有feed.tasks.import_feed的任务都会被放进feeds队列，其他的就放进默认的队列【celery】。</p>
+<p>然后启动z server的时候指定一下队列名称：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">user@z:/$ celery -A proj worker -Q feeds</div></pre></td></tr></table></figure></p>
+<h2 id="修改默认队列的名称"><a href="#修改默认队列的名称" class="headerlink" title="修改默认队列的名称"></a>修改默认队列的名称</h2><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> kombu <span class="keyword">import</span> Exchange, Queue</div><div class="line"></div><div class="line">CELERY_DEFAULT_QUEUE = <span class="string">'default'</span></div><div class="line">CELERY_QUEUES = (</div><div class="line">    Queue(<span class="string">'default'</span>, Exchange(<span class="string">'default'</span>), routing_key=<span class="string">'default'</span>),</div><div class="line">)</div></pre></td></tr></table></figure>
+<h2 id="队列定义"><a href="#队列定义" class="headerlink" title="队列定义"></a>队列定义</h2><p>celery隐藏了后面负责的AMQP协议，但是有人也想知道怎样声明队列。</p>
+<p>下面是创建一个video队列：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&#123;&apos;exchange&apos;: &apos;video&apos;,</div><div class="line"> &apos;exchange_type&apos;: &apos;direct&apos;,</div><div class="line"> &apos;routing_key&apos;: &apos;video&apos;&#125;</div></pre></td></tr></table></figure></p>
+<p>非AMQP协议的后端不支持exchange。</p>
+<h2 id="手动配置"><a href="#手动配置" class="headerlink" title="手动配置"></a>手动配置</h2><p>还是上面一样，xy处理普通任务，z处理feed相关任务：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> kombu <span class="keyword">import</span> Queue</div><div class="line"></div><div class="line">CELERY_DEFAULT_QUEUE = <span class="string">'default'</span></div><div class="line">CELERY_QUEUES = (</div><div class="line">    Queue(<span class="string">'default'</span>,    routing_key=<span class="string">'task.#'</span>),</div><div class="line">    Queue(<span class="string">'feed_tasks'</span>, routing_key=<span class="string">'feed.#'</span>),</div><div class="line">)</div><div class="line">CELERY_DEFAULT_EXCHANGE = <span class="string">'tasks'</span></div><div class="line">CELERY_DEFAULT_EXCHANGE_TYPE = <span class="string">'topic'</span></div><div class="line">CELERY_DEFAULT_ROUTING_KEY = <span class="string">'task.default'</span></div></pre></td></tr></table></figure></p>
+<p>CELERY_QUEUES里定义了一串队列的实例。如果没有设置exchange或者没给key设置exchange类型，会按照默认的CELERY_DEFAULT_EXCHANGE、CELERY_DEFAULT_EXCHANGE_TYPE。</p>
+<p>要指定某个task的路由，需要在CELERY_ROUTES里添加一个入口<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">CELERY_ROUTES = &#123;</div><div class="line">        <span class="string">'feeds.tasks.import_feed'</span>: &#123;</div><div class="line">            <span class="string">'queue'</span>: <span class="string">'feed_tasks'</span>,</div><div class="line">            <span class="string">'routing_key'</span>: <span class="string">'feed.import'</span>,</div><div class="line">        &#125;,</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>也可以在代码调用的时候指定：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> feeds.tasks <span class="keyword">import</span> import_feed</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>import_feed.apply_async(args=[<span class="string">'http://cnn.com/rss'</span>],</div><div class="line"><span class="meta">... </span>                        queue=<span class="string">'feed_tasks'</span>,</div><div class="line"><span class="meta">... </span>                        routing_key=<span class="string">'feed.import'</span>)</div></pre></td></tr></table></figure></p>
+<p>启动z：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">user@z:/$ celery -A proj worker -Q feed_tasks --hostname=z@%h</div></pre></td></tr></table></figure></p>
+<p>还要配置x y启动的时候只消费默认队列default：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">user@x:/$ celery -A proj worker -Q default --hostname=x@%h</div><div class="line">user@y:/$ celery -A proj worker -Q default --hostname=y@%h</div></pre></td></tr></table></figure></p>
+<p>这些队列也可以混搭在一起，如果你的server都能处理的话，也可以这么做：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">user@z:/$ celery -A proj worker -Q feed_tasks,default --hostname=z@%h</div></pre></td></tr></table></figure></p>
+<p>要是想添加一个在其他exchange上的队列，自己定义好exchange以及exchange类型就行：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> kombu <span class="keyword">import</span> Exchange, Queue</div><div class="line"></div><div class="line">CELERY_QUEUES = (</div><div class="line">    Queue(<span class="string">'feed_tasks'</span>,    routing_key=<span class="string">'feed.#'</span>),</div><div class="line">    Queue(<span class="string">'regular_tasks'</span>, routing_key=<span class="string">'task.#'</span>),</div><div class="line">    Queue(<span class="string">'image_tasks'</span>,   exchange=Exchange(<span class="string">'mediatasks'</span>, type=<span class="string">'direct'</span>),</div><div class="line">                           routing_key=<span class="string">'image.compress'</span>),</div><div class="line">)</div></pre></td></tr></table></figure></p>
+<p>要是对这部分内容有疑问，可以自行查阅一下AMQP。</p>
+<h2 id="初识AMQP"><a href="#初识AMQP" class="headerlink" title="初识AMQP"></a>初识AMQP</h2><h4 id="message"><a href="#message" class="headerlink" title="message"></a>message</h4><p>message包含header和body。celery使用head来存储内容类型和内容编码。内容类型用来序列化message。body中是要执行的task的name，id，参数以及其他元数据信息。</p>
+<p>下面是一个例子：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&#123;<span class="string">'task'</span>: <span class="string">'myapp.tasks.add'</span>,</div><div class="line"> <span class="string">'id'</span>: <span class="string">'54086c5e-6193-4575-8308-dbab76798756'</span>,</div><div class="line"> <span class="string">'args'</span>: [<span class="number">4</span>, <span class="number">4</span>],</div><div class="line"> <span class="string">'kwargs'</span>: &#123;&#125;&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="Producers-consumers，-brokers"><a href="#Producers-consumers，-brokers" class="headerlink" title="Producers, consumers， brokers"></a>Producers, consumers， brokers</h4><p>发送message的客户端叫做publisher，也叫producer。收到message的就叫做consumer。</p>
+<p>broker是message所在的server，把message从producer路由到consumer。</p>
+<h4 id="Exchanges-queues，-routing-keys"><a href="#Exchanges-queues，-routing-keys" class="headerlink" title="Exchanges, queues， routing keys"></a>Exchanges, queues， routing keys</h4><ol>
+<li>message被发送给exchange</li>
+<li>exchange路由message到一或多个队列。有多种exchange类型，提供不同的路由方式，实现不同的消息场景</li>
+<li>message在队列中等着consumer消费</li>
+<li>当message被ack之后就会从队列中移除</li>
+</ol>
+<p>下面是发送与接收message的必要步骤：</p>
+<ol>
+<li>创建一个exchange</li>
+<li>创建一个队列</li>
+<li>把队列绑定到exchange上</li>
+</ol>
+<p>celery自动为CELERY_QUEUES创建了以上这些对象【除非你关闭了自动创建不存在队列的配置】。</p>
+<p>下面是一个包含三个队列的配置，一个video，一个image，还一个默认的：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> kombu <span class="keyword">import</span> Exchange, Queue</div><div class="line"></div><div class="line">CELERY_QUEUES = (</div><div class="line">    Queue(<span class="string">'default'</span>, Exchange(<span class="string">'default'</span>), routing_key=<span class="string">'default'</span>),</div><div class="line">    Queue(<span class="string">'videos'</span>,  Exchange(<span class="string">'media'</span>),   routing_key=<span class="string">'media.video'</span>),</div><div class="line">    Queue(<span class="string">'images'</span>,  Exchange(<span class="string">'media'</span>),   routing_key=<span class="string">'media.image'</span>),</div><div class="line">)</div><div class="line">CELERY_DEFAULT_QUEUE = <span class="string">'default'</span></div><div class="line">CELERY_DEFAULT_EXCHANGE_TYPE = <span class="string">'direct'</span></div><div class="line">CELERY_DEFAULT_ROUTING_KEY = <span class="string">'default'</span></div></pre></td></tr></table></figure></p>
+<h4 id="Exchange类型"><a href="#Exchange类型" class="headerlink" title="Exchange类型"></a>Exchange类型</h4><p>标准的有：direct, topic, fanout, headers。非标准的就是一些rabbitMQ的插件了。</p>
+<h5 id="direct"><a href="#direct" class="headerlink" title="direct"></a>direct</h5><p>匹配精确的routing key，绑定到routing key video的队列只会接收带有video routing key的message。</p>
+<h5 id="topc"><a href="#topc" class="headerlink" title="topc"></a>topc</h5><p>支持对号隔开、带有通配符的routing key。</p>
+<h4 id="相关API"><a href="#相关API" class="headerlink" title="相关API"></a>相关API</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line">exchange.declare(exchange_name, type, passive,</div><div class="line">durable, auto_delete, internal)</div><div class="line">Declares an exchange by name.</div><div class="line"></div><div class="line">See amqp:Channel.exchange_declare.</div><div class="line"></div><div class="line">Parameters:	</div><div class="line">    passive – Passive means the exchange won’t be created, but you can use this to check if the exchange already exists.</div><div class="line">    durable – Durable exchanges are persistent. That is - they survive a broker restart.</div><div class="line">    auto_delete – This means the queue will be deleted by the broker when there are no more queues using it.</div><div class="line">    queue.declare(queue_name, passive, durable, exclusive, auto_delete)</div><div class="line">    Declares a queue by name.</div><div class="line"></div><div class="line">See amqp:Channel.queue_declare</div><div class="line"></div><div class="line">Exclusive queues can only be consumed from by the current connection. Exclusive also implies auto_delete.</div><div class="line"></div><div class="line">queue.bind(queue_name, exchange_name, routing_key)</div><div class="line">Binds a queue to an exchange with a routing key.</div><div class="line"></div><div class="line">Unbound queues will not receive messages, so this is necessary.</div><div class="line"></div><div class="line">See amqp:Channel.queue_bind</div><div class="line"></div><div class="line">queue.delete(name, if_unused=False, if_empty=False)</div><div class="line">Deletes a queue and its binding.</div><div class="line"></div><div class="line">See amqp:Channel.queue_delete</div><div class="line"></div><div class="line">exchange.delete(name, if_unused=False)¶</div><div class="line">Deletes an exchange.</div><div class="line"></div><div class="line">See amqp:Channel.exchange_delete</div></pre></td></tr></table></figure>
+<h4 id="使用API"><a href="#使用API" class="headerlink" title="使用API"></a>使用API</h4><p>自带了一个工具 celery amqp，用来在命令行访问AMQP API，执行创建/删除队列或exchange的，清空队列或者正在发送的message。也能在没有AMQP broker的上面使用。</p>
+<p>可以在celery amap后面指定参数来调用API, 或者不指定参数，就进入了shell模式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">$ celery -A proj amqp</div><div class="line">-&gt; connecting to amqp://guest@localhost:5672/.</div><div class="line">-&gt; connected.</div><div class="line">1&gt;</div></pre></td></tr></table></figure></p>
+<p>这里的1是你执行命令个数的编号。可以输入help，这个模式也支持自动补全。</p>
+<p>下面是创建队列的例子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">$ celery -A proj amqp</div><div class="line">1&gt; exchange.declare testexchange direct</div><div class="line">ok.</div><div class="line">2&gt; queue.declare testqueue</div><div class="line">ok. queue:testqueue messages:0 consumers:0.</div><div class="line">3&gt; queue.bind testqueue testexchange testkey</div><div class="line">ok.</div></pre></td></tr></table></figure></p>
+<p>这里队列名称是testqueue，使用routing key testkey绑定了exchange为testexchange。</p>
+<p>现在开始所有发送到exchange  testchange的message，只要她的routing key是testkey，那么他就会进入testqueue这个队列。我们可以使用basic.publish来发送一个message:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">4&gt; basic.publish &apos;This is a message!&apos; testexchange testkey</div><div class="line">ok.</div></pre></td></tr></table></figure></p>
+<p>现在message已经发送出去了，你可以使用basic.get命令抽取它了(这个命令指示用来维护task的，正常服务应该使用basic.consume替代)。</p>
+<p>从队列中pop出一条message：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">5&gt; basic.get testqueue</div><div class="line">&#123;&apos;body&apos;: &apos;This is a message!&apos;,</div><div class="line"> &apos;delivery_info&apos;: &#123;&apos;delivery_tag&apos;: 1,</div><div class="line">                   &apos;exchange&apos;: u&apos;testexchange&apos;,</div><div class="line">                   &apos;message_count&apos;: 0,</div><div class="line">                   &apos;redelivered&apos;: False,</div><div class="line">                   &apos;routing_key&apos;: u&apos;testkey&apos;&#125;,</div><div class="line"> &apos;properties&apos;: &#123;&#125;&#125;</div></pre></td></tr></table></figure></p>
+<p>AMQP使用ack来确认某个message被消费并且成功执行。如果message还没有被ack，consumer channel就关闭了，那么这个message就会被传递给其他的consumer。</p>
+<p>注意传递的tag在上面结构中已经有了。在一个连接channel内，每个接收到的message都有唯一的传递tag，这个tag用来ack这个message。还要注意，传递tag在多个连接之中并不是唯一的，也就是说连接1中的连接tag为1的message是A，连接2中的连接tag为1的message有可能就是B。</p>
+<p>使用basic.ack来加上这个标记：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">6&gt; basic.ack 1</div><div class="line">ok.</div></pre></td></tr></table></figure></p>
+<p>记得要在测试会话完成后清空刚才创建的message：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">7&gt; queue.delete testqueue</div><div class="line">ok. 0 messages deleted.</div><div class="line">8&gt; exchange.delete testexchange</div><div class="line">ok.</div></pre></td></tr></table></figure></p>
+<h2 id="Routing-Tasks"><a href="#Routing-Tasks" class="headerlink" title="Routing Tasks"></a>Routing Tasks</h2><h4 id="定义队列"><a href="#定义队列" class="headerlink" title="定义队列"></a>定义队列</h4><p>下面是一个包含三个队列定义的例子，一个是video，一个是images还有一个默认的队列<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">default_exchange = Exchange(<span class="string">'default'</span>, type=<span class="string">'direct'</span>)</div><div class="line">media_exchange = Exchange(<span class="string">'media'</span>, type=<span class="string">'direct'</span>)</div><div class="line"></div><div class="line">CELERY_QUEUES = (</div><div class="line">    Queue(<span class="string">'default'</span>, default_exchange, routing_key=<span class="string">'default'</span>),</div><div class="line">    Queue(<span class="string">'videos'</span>, media_exchange, routing_key=<span class="string">'media.video'</span>),</div><div class="line">    Queue(<span class="string">'images'</span>, media_exchange, routing_key=<span class="string">'media.image'</span>)</div><div class="line">)</div><div class="line">CELERY_DEFAULT_QUEUE = <span class="string">'default'</span></div><div class="line">CELERY_DEFAULT_EXCHANGE = <span class="string">'default'</span></div><div class="line">CELERY_DEFAULT_ROUTING_KEY = <span class="string">'default'</span></div></pre></td></tr></table></figure></p>
+<p>若没有指定特定路由就都进入CELERY_DEFAULT_QUEUE里。</p>
+<h4 id="指定task目的地"><a href="#指定task目的地" class="headerlink" title="指定task目的地"></a>指定task目的地</h4><p>按照如下顺序决定message的目的地：</p>
+<ol>
+<li>在CELERY_ROUTES中定义的路由</li>
+<li>Task.apply_async()中指定的路由参数</li>
+<li>在Task自身中定义的相关属性</li>
+</ol>
+<p>最好不要硬编码这些配置，使用 Routers来读取配置，这是最灵活的方式。但是一些敏感的默认值还是可以被设置为任务属性。</p>
+<h4 id="Routers"><a href="#Routers" class="headerlink" title="Routers"></a>Routers</h4><p>Router类是用来决定某个task的路由选项的。</p>
+<p>我们只需要创建一个新的路由类，带有一个route_for_task方法：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyRouter</span><span class="params">(object)</span>:</span></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">route_for_task</span><span class="params">(self, task, args=None, kwargs=None)</span>:</span></div><div class="line">        <span class="keyword">if</span> task == <span class="string">'myapp.tasks.compress_video'</span>:</div><div class="line">            <span class="keyword">return</span> &#123;<span class="string">'exchange'</span>: <span class="string">'video'</span>,</div><div class="line">                    <span class="string">'exchange_type'</span>: <span class="string">'topic'</span>,</div><div class="line">                    <span class="string">'routing_key'</span>: <span class="string">'video.compress'</span>&#125;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">None</span></div></pre></td></tr></table></figure></p>
+<p>如果返回值中包含了 queue，那么会在CELERY_QUEUES里定义的配置上扩展，也就是会继承既有的配置。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&#123;&apos;queue&apos;: &apos;video&apos;, &apos;routing_key&apos;: &apos;video.compress&apos;&#125;</div></pre></td></tr></table></figure></p>
+<p>就变成了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&#123;&apos;queue&apos;: &apos;video&apos;,</div><div class="line"> &apos;exchange&apos;: &apos;video&apos;,</div><div class="line"> &apos;exchange_type&apos;: &apos;topic&apos;,</div><div class="line"> &apos;routing_key&apos;: &apos;video.compress&apos;&#125;</div></pre></td></tr></table></figure></p>
+<p>完事儿后把Router放进CELERY_ROUTES配置信息里就好了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">CELERY_ROUTES = (MyRouter(), )</div></pre></td></tr></table></figure></p>
+<p>或者<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">CELERY_ROUTES = (&apos;myapp.routers.MyRouter&apos;, )</div></pre></td></tr></table></figure></p>
+<p>其实对于上面那种简单的路由规则， 也可以直接写在配置里：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">CELERY_ROUTES = (&#123;&apos;myapp.tasks.compress_video&apos;: &#123;</div><div class="line">                        &apos;queue&apos;: &apos;video&apos;,</div><div class="line">                        &apos;routing_key&apos;: &apos;video.compress&apos;</div><div class="line">                 &#125;&#125;, )</div></pre></td></tr></table></figure></p>
+<h4 id="广播"><a href="#广播" class="headerlink" title="广播"></a>广播</h4><p>Celery也支持广播路由。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">from kombu.common import Broadcast</div><div class="line"></div><div class="line">CELERY_QUEUES = (Broadcast(&apos;broadcast_tasks&apos;), )</div><div class="line"></div><div class="line">CELERY_ROUTES = &#123;&apos;tasks.reload_cache&apos;: &#123;&apos;queue&apos;: &apos;broadcast_tasks&apos;&#125;&#125;</div></pre></td></tr></table></figure></p>
+<p>这样，tasks.reload_cache任务就可以发送给每个消费这个队列的worker了。</p>
+<p>注意celery的结果并没有定义如果两个任务都有同一个task_id。如果同样的task被分发给多个worker，那么state历史可能也不会被保存。</p>
+<p>这样的话，设置task.ignore_result是一个不错的选择。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/12/05/celery队列路由/" data-title="celery队列路由 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/12/05/metamap部署/" title="metamap部署">
+  <strong>上一篇：</strong><br/>
+  <span>
+  metamap部署</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/12/05/Ember-data---record操作/"  title="Ember-data---record操作">
+ <strong>下一篇：</strong><br/> 
+ <span>Ember-data---record操作
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/12/05/celery队列路由/" data-title="celery队列路由" data-url="http://willcup.com/2016/12/05/celery队列路由/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#自动路由"><span class="toc-number">1.</span> <span class="toc-text">自动路由</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#修改默认队列的名称"><span class="toc-number">2.</span> <span class="toc-text">修改默认队列的名称</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#队列定义"><span class="toc-number">3.</span> <span class="toc-text">队列定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#手动配置"><span class="toc-number">4.</span> <span class="toc-text">手动配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#初识AMQP"><span class="toc-number">5.</span> <span class="toc-text">初识AMQP</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#message"><span class="toc-number">5.0.1.</span> <span class="toc-text">message</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Producers-consumers，-brokers"><span class="toc-number">5.0.2.</span> <span class="toc-text">Producers, consumers， brokers</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Exchanges-queues，-routing-keys"><span class="toc-number">5.0.3.</span> <span class="toc-text">Exchanges, queues， routing keys</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Exchange类型"><span class="toc-number">5.0.4.</span> <span class="toc-text">Exchange类型</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#direct"><span class="toc-number">5.0.4.1.</span> <span class="toc-text">direct</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#topc"><span class="toc-number">5.0.4.2.</span> <span class="toc-text">topc</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#相关API"><span class="toc-number">5.0.5.</span> <span class="toc-text">相关API</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#使用API"><span class="toc-number">5.0.6.</span> <span class="toc-text">使用API</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Routing-Tasks"><span class="toc-number">6.</span> <span class="toc-text">Routing Tasks</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#定义队列"><span class="toc-number">6.0.1.</span> <span class="toc-text">定义队列</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#指定task目的地"><span class="toc-number">6.0.2.</span> <span class="toc-text">指定task目的地</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Routers"><span class="toc-number">6.0.3.</span> <span class="toc-text">Routers</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#广播"><span class="toc-number">6.0.4.</span> <span class="toc-text">广播</span></a></li></ol></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

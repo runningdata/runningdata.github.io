@@ -1,0 +1,619 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>hive2---轻松更新hive表1 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="首先是merge、insert、update、delete。
+以前，让hive里的数据持续更新是需要很复杂的成本的，很难去维护与执行。HDP2.6借助hive里的merge语法彻底地简化了数据维护成本，完成了INSERT, UPDATE, DELETE能力。
+这个blog会说明怎样解释以下三种问题：
+
+hive update，从RDBMS同步数据到hive
+更新hive里数据的分区
+选择性地mas">
+<meta property="og:type" content="article">
+<meta property="og:title" content="hive2---轻松更新hive表1">
+<meta property="og:url" content="http://willcup.com/2017/11/22/hive2---轻松更新hive表1/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="首先是merge、insert、update、delete。
+以前，让hive里的数据持续更新是需要很复杂的成本的，很难去维护与执行。HDP2.6借助hive里的merge语法彻底地简化了数据维护成本，完成了INSERT, UPDATE, DELETE能力。
+这个blog会说明怎样解释以下三种问题：
+
+hive update，从RDBMS同步数据到hive
+更新hive里数据的分区
+选择性地mas">
+<meta property="og:image" content="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/RDBMS-Source.png">
+<meta property="og:image" content="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/Time-equals-1.png">
+<meta property="og:image" content="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/Time-equals-2.png">
+<meta property="og:image" content="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/update-hive-partitions.png">
+<meta property="og:image" content="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/second-load.png">
+<meta property="og:image" content="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/contracts-table.png">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.785Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="hive2---轻松更新hive表1">
+<meta name="twitter:description" content="首先是merge、insert、update、delete。
+以前，让hive里的数据持续更新是需要很复杂的成本的，很难去维护与执行。HDP2.6借助hive里的merge语法彻底地简化了数据维护成本，完成了INSERT, UPDATE, DELETE能力。
+这个blog会说明怎样解释以下三种问题：
+
+hive update，从RDBMS同步数据到hive
+更新hive里数据的分区
+选择性地mas">
+<meta name="twitter:image" content="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/RDBMS-Source.png">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/11/22/hive2---轻松更新hive表1/" title="hive2---轻松更新hive表1" itemprop="url">hive2---轻松更新hive表1</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-11-22T09:07:16.000Z" itemprop="datePublished"> 发表于 2017-11-22</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#基础操作：SQL-MERGE-UPDATE-AND-DELETE"><span class="toc-text">基础操作：SQL MERGE, UPDATE AND DELETE</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#保持数据fresh"><span class="toc-text">保持数据fresh</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#例1：HIVE-UPSERT"><span class="toc-text">例1：HIVE UPSERT</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#例2：更新hive-partition"><span class="toc-text">例2：更新hive partition</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#例3：mask或者purge-hive的数据"><span class="toc-text">例3：mask或者purge hive的数据</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#把MaxLeads的所有的电话号码mask掉"><span class="toc-text">把MaxLeads的所有的电话号码mask掉</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#把所有LeadMax的记录都purge掉"><span class="toc-text">把所有LeadMax的记录都purge掉</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#把给定id列表的所有记录都删掉"><span class="toc-text">把给定id列表的所有记录都删掉</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#结论"><span class="toc-text">结论</span></a></li></ol>
+		
+		</div>
+		
+		<p>首先是merge、insert、update、delete。</p>
+<p>以前，让hive里的数据持续更新是需要很复杂的成本的，很难去维护与执行。HDP2.6借助hive里的merge语法彻底地简化了数据维护成本，完成了INSERT, UPDATE, DELETE能力。</p>
+<p>这个blog会说明怎样解释以下三种问题：</p>
+<ul>
+<li>hive update，从RDBMS同步数据到hive</li>
+<li>更新hive里数据的分区</li>
+<li>选择性地mask或者purge数据</li>
+</ul>
+<h4 id="基础操作：SQL-MERGE-UPDATE-AND-DELETE"><a href="#基础操作：SQL-MERGE-UPDATE-AND-DELETE" class="headerlink" title="基础操作：SQL MERGE, UPDATE AND DELETE"></a>基础操作：SQL MERGE, UPDATE AND DELETE</h4><p>MERGE是SQL 2008标准里的，是一个强大的SQL语句，它可以在同一个statement中inert，update，delete数据。MERGE让两个系统一致性工作变得简单。咱们看一下MERGE的语法：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">MERGE INTO &lt;target table&gt;</div><div class="line"> USING &lt;table reference&gt;</div><div class="line">ON &lt;search condition&gt;</div><div class="line"> &lt;merge when clause&gt;...</div><div class="line">WHEN MATCHED [ AND &lt;search condition&gt; ]</div><div class="line">THEN &lt;merge update or delete specification&gt;</div><div class="line">WHEN NOT MATCHED [ AND &lt;search condition&gt; ]</div><div class="line">THEN &lt;merge insert specification&gt;</div></pre></td></tr></table></figure></p>
+<p>WHEN MATCHED/WHEN NOT MATCHED语句可以无限量的。</p>
+<p>我们也会使用到比较熟悉的UPDATE，语法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">UPDATE &lt;target table&gt;</div><div class="line">SET &lt;set clause list&gt;</div><div class="line">[ WHERE &lt;search condition&gt; ]</div></pre></td></tr></table></figure></p>
+<p>当没必要把insert 和update的数据在一个sql statement里进行合并的时候，就可以使用update了。</p>
+<h4 id="保持数据fresh"><a href="#保持数据fresh" class="headerlink" title="保持数据fresh"></a>保持数据fresh</h4><p>在HDP2.6中，需要先做两个工作：</p>
+<ul>
+<li>开启Hive transaction。</li>
+<li>我们table必须是一个transactional table。就是说这个table必须是clustered的，必须是ORCFile存储格式，而且有一个table属性：transactional=true。下面是一个例子：<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">create table customer_partitioned</div><div class="line"> (id int, name string, email string, state string)</div><div class="line"> partitioned by (signup date)</div><div class="line"> clustered by (id) into 2 buckets stored as orc</div><div class="line"> tblproperties(&quot;transactional&quot;=&quot;true&quot;);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="例1：HIVE-UPSERT"><a href="#例1：HIVE-UPSERT" class="headerlink" title="例1：HIVE UPSERT"></a>例1：HIVE UPSERT</h4><p>假设我们有一个源数据库，想要load进hadoop来运行ing大批量的分析。这个RDBMS中的数据不断的被添加和修改，而且并没有log告诉你哪些数据有变化【就是说没有binlog】。最简单的处理就是每24小时完整的copy一下这个RDBMS的数据镜像。</p>
+<p><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/RDBMS-Source.png" alt=""></p>
+<p>下面我们创建table：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">create table customer_partitioned</div><div class="line">(id int, name string, email string, state string)</div><div class="line"> partitioned by (signup date)</div><div class="line"> clustered by (id) into 2 buckets stored as orc</div><div class="line"> tblproperties(&quot;transactional&quot;=&quot;true&quot;);</div></pre></td></tr></table></figure></p>
+<p>假设我们的数据在Time = 1的时候是这样的：<br><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/Time-equals-1.png" alt=""></p>
+<p>在Time = 2的时候是这样的<br><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/Time-equals-2.png" alt=""></p>
+<p>Upsert操作是吧update和insert放在一个操作里，这样我们就不用关心这些数据是不是原来就已经存在于目标table中。MERGE就是用来做这个事情的：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">merge into customer_partitioned</div><div class="line"> using all_updates on customer_partitioned.id = all_updates.id</div><div class="line"> when matched then update set</div><div class="line">   email=all_updates.email,</div><div class="line">   state=all_updates.state</div><div class="line"> when not matched then insert</div><div class="line">   values(all_updates.id, all_updates.name, all_updates.email,</div><div class="line">   all_updates.state, all_updates.signup);</div></pre></td></tr></table></figure></p>
+<p>注意我们的两个when条件语句是用来管理update或者insert的。在merge过后，这个managed table就与Time=2的staged Table完全一样了，而且所有数据也都在其对应的分区中。</p>
+<h4 id="例2：更新hive-partition"><a href="#例2：更新hive-partition" class="headerlink" title="例2：更新hive partition"></a>例2：更新hive partition</h4><p>hive中很多会用日期作为partition策略。这样可以简化数据加载，提升性能。只是有时我们偶尔会出现数据进入错误的分区的情形。例如，假设用户数据是由一个第三方提供的，里面包含一个用户的singup日期。如果这个第三方数据提供者提供的数据开始有问题，后面又修正了，那么前面的在错误分区里的数据就应该被清除了。</p>
+<p><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/update-hive-partitions.png" alt="初始数据"></p>
+<p><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/second-load.png" alt="修复后的数据"></p>
+<p>注意到ID为2的数据第一次跟第二次的signup日期是不一样的，这就需要更新2017-01-08分区，从里面把它删除，然后把它加入到2017-01-10里面去。</p>
+<p>在MERGE出现之前，基本不可能管理这些分区裱花的。Hive的MERGE statement不是原生支持更新partition key，但是有一个小的技巧。 We introduce a delete marker which we set any time the partition keys and UNION this with a second query that produces an extra row on-the-fly for each of these non-matching records.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">merge into customer_partitioned</div><div class="line"> using (</div><div class="line">-- Updates with matching partitions or net new records.</div><div class="line">-- 更新符合分区的或者</div><div class="line">select</div><div class="line">  case</div><div class="line">       when all_updates.signup &lt;&gt; customer_partitioned.signup then 1</div><div class="line">       else 0</div><div class="line">     end as delete_flag,</div><div class="line">     all_updates.id as match_key,</div><div class="line">     all_updates.* from</div><div class="line">    all_updates left join customer_partitioned</div><div class="line">   on all_updates.id = customer_partitioned.id</div><div class="line">      union all</div><div class="line"></div><div class="line"> -- Produce new records when partitions don’t match.</div><div class="line"> -- 分区不匹配的时候，生成新的record</div><div class="line">     select 0, null, all_updates.*</div><div class="line">     from all_updates, customer_partitioned where</div><div class="line">     all_updates.id = customer_partitioned.id</div><div class="line">     and all_updates.signup &lt;&gt; customer_partitioned.signup</div><div class="line"> ) sub</div><div class="line">on customer_partitioned.id = sub.match_key</div><div class="line"> when matched and delete_flag=1 then delete</div><div class="line"> when matched and delete_flag=0 then</div><div class="line">   update set email=sub.email, state=sub.state</div><div class="line"> when not matched then</div><div class="line">   insert values(sub.id, sub.name, sub.email, sub.state, sub.signup);</div></pre></td></tr></table></figure></p>
+<p>在MERGE处理过这个managed table之后，它就跟源数据表完全一致了。虽然过程中有分区的修改，但是这是一个操作，是原子、且独立的操作。</p>
+<h4 id="例3：mask或者purge-hive的数据"><a href="#例3：mask或者purge-hive的数据" class="headerlink" title="例3：mask或者purge hive的数据"></a>例3：mask或者purge hive的数据</h4><p>假设有一天你们公司的安全部门过来，让我们把某个用户的所有数据进行mask或者purge操作。那么我们就需要花费很长的时间对很多收到影响的分区进行数据重写。</p>
+<p>假设有一个contact table<br><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/contracts-table.png" alt=""></p>
+<p>我们对应的hive表是：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">create table contacts</div><div class="line"> (id int, name string, customer string, phone string)</div><div class="line"> clustered by (id) into 2 buckets stored as orc </div><div class="line">tblproperties(&quot;transactional&quot;=&quot;true&quot;);</div></pre></td></tr></table></figure></p>
+<p>安全部门提出以下要求：</p>
+<h5 id="把MaxLeads的所有的电话号码mask掉"><a href="#把MaxLeads的所有的电话号码mask掉" class="headerlink" title="把MaxLeads的所有的电话号码mask掉"></a>把MaxLeads的所有的电话号码mask掉</h5><p>我们可以使用hive内置的mask方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">update contacts set phone = mask(phone) where customer = &apos;MaxLeads&apos;;</div></pre></td></tr></table></figure></p>
+<h5 id="把所有LeadMax的记录都purge掉"><a href="#把所有LeadMax的记录都purge掉" class="headerlink" title="把所有LeadMax的记录都purge掉"></a>把所有LeadMax的记录都purge掉</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">delete from contacts where customer = &apos;LeadMax&apos;;</div></pre></td></tr></table></figure>
+<h5 id="把给定id列表的所有记录都删掉"><a href="#把给定id列表的所有记录都删掉" class="headerlink" title="把给定id列表的所有记录都删掉"></a>把给定id列表的所有记录都删掉</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">delete from contacts where id in ( select id from purge_list );</div></pre></td></tr></table></figure>
+<h4 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h4><p>hive的MERGE和ACID事务让hive里的数据管理工作变得简单、强大、而且兼容于现有的EDW平台。</p>
+<p>参考：<a href="https://zh.hortonworks.com/blog/update-hive-tables-easy-way/" target="_blank" rel="external">https://zh.hortonworks.com/blog/update-hive-tables-easy-way/</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/11/22/hive2---轻松更新hive表1/" data-title="hive2---轻松更新hive表1 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/11/22/hive2---轻松更新hive表2/" title="hive2---轻松更新hive表2">
+  <strong>上一篇：</strong><br/>
+  <span>
+  hive2---轻松更新hive表2</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/11/22/实时系统的特性/"  title="实时系统的特性">
+ <strong>下一篇：</strong><br/> 
+ <span>实时系统的特性
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/11/22/hive2---轻松更新hive表1/" data-title="hive2---轻松更新hive表1" data-url="http://willcup.com/2017/11/22/hive2---轻松更新hive表1/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#基础操作：SQL-MERGE-UPDATE-AND-DELETE"><span class="toc-number">1.</span> <span class="toc-text">基础操作：SQL MERGE, UPDATE AND DELETE</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#保持数据fresh"><span class="toc-number">2.</span> <span class="toc-text">保持数据fresh</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#例1：HIVE-UPSERT"><span class="toc-number">3.</span> <span class="toc-text">例1：HIVE UPSERT</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#例2：更新hive-partition"><span class="toc-number">4.</span> <span class="toc-text">例2：更新hive partition</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#例3：mask或者purge-hive的数据"><span class="toc-number">5.</span> <span class="toc-text">例3：mask或者purge hive的数据</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#把MaxLeads的所有的电话号码mask掉"><span class="toc-number">5.1.</span> <span class="toc-text">把MaxLeads的所有的电话号码mask掉</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#把所有LeadMax的记录都purge掉"><span class="toc-number">5.2.</span> <span class="toc-text">把所有LeadMax的记录都purge掉</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#把给定id列表的所有记录都删掉"><span class="toc-number">5.3.</span> <span class="toc-text">把给定id列表的所有记录都删掉</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#结论"><span class="toc-number">6.</span> <span class="toc-text">结论</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,720 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="左右水色 右手天光">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Will's Blog">
+<meta property="og:url" content="http://willcup.com/page/27/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="左右水色 右手天光">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Will's Blog">
+<meta name="twitter:description" content="左右水色 右手天光">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main">
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/07/09/搭建Kafka源码调试环境/" title="搭建Kafka源码调试环境" itemprop="url">搭建Kafka源码调试环境</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2015-07-08T16:14:06.000Z" itemprop="datePublished"> 发表于 2015-07-09</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h1 id="简单流程"><a href="#简单流程" class="headerlink" title="简单流程"></a>简单流程</h1><ol>
+<li>git clone <a href="https://github.com/apache/kafka.git" target="_blank" rel="external">https://github.com/apache/kafka.git</a></li>
+<li>git tag -l 瞅准0.8.2.1</li>
+<li>git checkout 0.8.2.1 -b will0821</li>
+<li><a href="http://gradle.org/下载安装gradle，也为自己的IDE安装gradle插件【对gradle不是特别了解，所以多用插件】。我下载的是gradle2.5，解压后需要在IDE里指定GRADLE_HOME变量。" target="_blank" rel="external">http://gradle.org/下载安装gradle，也为自己的IDE安装gradle插件【对gradle不是特别了解，所以多用插件】。我下载的是gradle2.5，解压后需要在IDE里指定GRADLE_HOME变量。</a><br>Eclipse是通过gradle EnIDE的配置窗口指定的。其他请自行解决。<br><img src="/imgs/eclipse_ide_gradle.png" alt="Figure  - eclipse截图"></li>
+<li>build，尝试运行</li>
+</ol>
+<hr>
+<h1 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h1><ul>
+<li>我用的是eclipse，报错<strong>“找不到或无法加载主类”</strong>，按照这个思路去Google，没有找到实际能解决的办法。此时注意到eclipse的下方Maker里有一条错误提示<strong>“scalatest_2.10-1.9.1.jar of core build path is cross-compiled with an incompatible version of Scala (2.10.0)”</strong>，找到官方JIRA提供的解决方案 <a href="https://issues.apache.org/jira/browse/KAFKA-1873。将kafka下的**gradle.properties**里scalaVersion从2.10.4修改到2.11.5即可。猜测这个文件应该是类似于maven里的build配置项。" target="_blank" rel="external">https://issues.apache.org/jira/browse/KAFKA-1873。将kafka下的**gradle.properties**里scalaVersion从2.10.4修改到2.11.5即可。猜测这个文件应该是类似于maven里的build配置项。</a><br>重新build一把，再次执行入口类Kafka即可。</li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/07/08/flume-源码阅读笔记（2）/" title="flume 源码阅读笔记（2）" itemprop="url">flume 源码阅读笔记（2）</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2015-07-08T12:15:48.000Z" itemprop="datePublished"> 发表于 2015-07-08</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>通过寻找LifecycleAware的子类就可以发现，所有flume的component都继承了这个接口。下面是几个主要的</p>
+<hr>
+<h1 id="Channel"><a href="#Channel" class="headerlink" title="Channel"></a>Channel</h1><p>连接source和sink，可以看做是MQ或者buffer，保证自身线程安全。<br>实在是懒得翻译，直接copy文档<br>A channel <strong>connects</strong> a Source to a Sink. The source acts as producer while the sink acts as a consumer of events. The channel itself is the <strong>buffer</strong> between the two.<br>A channel exposes a <strong>Transaction</strong> interface that can be used by its clients to ensure <strong>atomic</strong> put and take semantics. This is necessary to guarantee single hop reliability between agents. For instance, a source will successfully produce an event if and only if that event can be committed to the source’s associated channel. Similarly, a sink will consume an event if and only if its respective endpoint can accept the event. The extent of transaction support varies for different channel implementations ranging from strong to best-effort semantics.<br>Channels are associated with <strong>unique names</strong> that can be used for separating configuration and working namespaces.<br>Channels must be <strong>thread safe</strong>, protecting any internal invariants as no guarantees are given as to when and by how many sources/sinks they may be simultaneously accessed by. </p>
+<pre><code>*  Transaction getTransaction()
+*  put(Event event)
+*  Event take() 
+</code></pre><hr>
+<h1 id="Sink"><a href="#Sink" class="headerlink" title="Sink"></a>Sink</h1><p>连接channel，然后消费channel里的内容，根据sink类型的不同，把这些message发往不同的目的地。<br>可以根据不同的行为使用<strong>SinkGroup</strong>和<strong>SinkProcessor</strong>来为Sink分组。<strong>SinkRunner</strong>通过processor定期轮询他们。</p>
+<pre><code>*  Status process() 
+    在某个transaction范围内消费channel里的message，如果transaction成功，就提交。若没成功，需要**回滚**这个transaction。
+要确保这个方法只有一个线程调用
+*   Channel getChannel()
+*  setChannel(Channel channel)
+</code></pre><hr>
+<h1 id="Source"><a href="#Source" class="headerlink" title="Source"></a>Source</h1><p>A source generates {@plainlink Event <strong>events</strong>} and calls methods on the configured <strong>ChannelProcessor</strong> to persist those events into the configured channels.<br>Sources are associated with <strong>unique names</strong> that can be used for separating configuration and working namespaces.<br>不用搭理线程安全。</p>
+<pre><code>* ChannelProcessor getChannelProcessor()
+* setChannelProcessor(ChannelProcessor channelProcessor)
+</code></pre><hr>
+<h1 id="SinkProcessor"><a href="#SinkProcessor" class="headerlink" title="SinkProcessor"></a>SinkProcessor</h1><p>Interface for a device that allows abstraction of the behavior of multiple sinks, always assigned to a SinkRunner 。<br>A sink processors <strong>SinkProcessor.process()</strong> method will only be accessed by a <strong>single</strong> runner thread. However configuration methods such as Configurable.configure may be concurrently accessed.</p>
+<pre><code>*  Status process() 
+    Handle a request to **poll the owned sinks**.The processor is expected to call **Sink.process()** on whatever sink(s) appropriate, handling failures as appropriate and throwing EventDeliveryException when there is a failure to deliver any events according to the delivery policy defined by the sink processor implementation. See specific implementations of this interface for delivery behavior and policies.
+*  setSinks(List&lt;Sink&gt; sinks)
+</code></pre><p>看起来这个processor有些像wrapper + manager的意思。</p>
+<hr>
+<h1 id="SinkSelector"><a href="#SinkSelector" class="headerlink" title="SinkSelector"></a>SinkSelector</h1><p>An interface that allows the <strong>LoadBalancingSinkProcessor</strong> to use a load-balancing strategy such as round-robin, random distribution etc. Implementations of this class can be plugged into the system via <strong>processor configuration</strong> and are used to select a sink on every invocation.<br>An instance of the configured sink selector is create during the processor configuration, its setSinks(List) method is invoked following which it is configured via a subcontext. Once configured, <strong>the lifecycle of this selector is tied to the lifecycle of the sink processor</strong>.<br>At runtime, the processor invokes the createSinkIterator() method for every process call to create  <strong>an iteration order over the available sinks</strong>. The processor then loops through this iteration order until one of the sinks succeeds in processing the event. If the iterator is exhausted and none of the sinks succeed, the processor will raise an EventDeliveryException. </p>
+<pre><code>*  setSinks(List&lt;Sink&gt; sinks)
+*  Iterator&lt;Sink&gt; createSinkIterator()
+*  void informSinkFailed(Sink failedSink)
+</code></pre><hr>
+<h1 id="SourceRunner"><a href="#SourceRunner" class="headerlink" title="SourceRunner"></a>SourceRunner</h1><p>A source runner controls <strong>how a source is driven</strong>. This is an abstract class used for instantiating derived classes.</p>
+<pre><code>*  Source source
+*  SourceRunner forSource(Source source)  
+    根据source类型实例化SourceRunner实现类的静态工厂方法
+</code></pre><hr>
+<h1 id="SinkRunner"><a href="#SinkRunner" class="headerlink" title="SinkRunner"></a>SinkRunner</h1><p>A <strong>driver</strong> for sinks that polls them, attempting to process events if any are available in the Channel.<br>Note that, unlike sources, all sinks are polled.</p>
+<pre><code>*  Thread runnerThread
+*  LifecycleState lifecycleState
+*  **SinkProcessor** policy
+*  CounterGroup counterGroup
+*  PollingRunner runner
+</code></pre><p>轮询调用sink的驱动器，如果channel里有任何可用的event，都会尝试执行。与source不同，所有的sink都会被涉及。Runner像是Processor的Wrapper。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> </span>&#123;</div><div class="line">    SinkProcessor policy = getPolicy();</div><div class="line">    policy.start();</div><div class="line">    runner = <span class="keyword">new</span> PollingRunner(); <span class="comment">//封装shouldStop决定是否运行</span></div><div class="line">    runner.policy = policy;</div><div class="line">    runner.counterGroup = counterGroup;</div><div class="line">    runner.shouldStop = <span class="keyword">new</span> AtomicBoolean();</div><div class="line">    runnerThread = <span class="keyword">new</span> Thread(runner);</div><div class="line">    runnerThread.setName(<span class="string">"SinkRunner-PollingRunner-"</span> +</div><div class="line">        policy.getClass().getSimpleName());</div><div class="line">    runnerThread.start();</div><div class="line">    lifecycleState = LifecycleState.START;</div><div class="line">  &#125;</div></pre></td></tr></table></figure>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/源码/">源码</a><a href="/tags/flume/">flume</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/07/08/flume-源码阅读笔记（1）/" title="flume 源码阅读笔记（1）" itemprop="url">flume 源码阅读笔记（1）</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2015-07-08T12:15:48.000Z" itemprop="datePublished"> 发表于 2015-07-08</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>#1 . 启动脚本<br>最开始肯定是从启动脚本flume-ng下手了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">FLUME_AGENT_CLASS=&quot;org.apache.flume.node.Application&quot; # 这个是主要入口</div><div class="line">FLUME_AVRO_CLIENT_CLASS=&quot;org.apache.flume.client.avro.AvroCLIClient&quot;</div><div class="line">FLUME_VERSION_CLASS=&quot;org.apache.flume.tools.VersionInfo&quot;</div><div class="line">FLUME_TOOLS_CLASS=&quot;org.apache.flume.tools.FlumeToolsMain&quot;</div></pre></td></tr></table></figure></p>
+<hr>
+<p>#2. 主程序入口Application<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div></pre></td><td class="code"><pre><div class="line">Options options = <span class="keyword">new</span> Options();</div><div class="line">..... <span class="comment">//一大堆命令行参数</span></div><div class="line"></div><div class="line"> CommandLineParser parser = <span class="keyword">new</span> GnuParser();</div><div class="line"> CommandLine commandLine = parser.parse(options, args);</div><div class="line"> <span class="comment">// 以上两行，对命令行参数解析完毕</span></div><div class="line"></div><div class="line"> <span class="comment">// 打印帮助信息</span></div><div class="line"> <span class="keyword">if</span> (commandLine.hasOption(<span class="string">'h'</span>)) &#123;</div><div class="line">   <span class="keyword">new</span> HelpFormatter().printHelp(<span class="string">"flume-ng agent"</span>, options, <span class="keyword">true</span>);</div><div class="line">   <span class="keyword">return</span>;</div><div class="line"> &#125;</div><div class="line"></div><div class="line"> String agentName = commandLine.getOptionValue(<span class="string">'n'</span>);</div><div class="line"> <span class="keyword">boolean</span> reload = !commandLine.hasOption(<span class="string">"no-reload-conf"</span>);</div><div class="line"></div><div class="line"> <span class="comment">// 是否有zookeeper的相关配置</span></div><div class="line"> <span class="keyword">if</span> (commandLine.hasOption(<span class="string">'z'</span>) || commandLine.hasOption(<span class="string">"zkConnString"</span>)) &#123;</div><div class="line">   isZkConfigured = <span class="keyword">true</span>;</div><div class="line"> &#125;</div><div class="line"> </div><div class="line"> <span class="comment">// 主角登场</span></div><div class="line"> Application application = <span class="keyword">null</span>;</div><div class="line"> <span class="keyword">if</span> (isZkConfigured) &#123;</div><div class="line">   <span class="comment">// get options</span></div><div class="line">   String zkConnectionStr = commandLine.getOptionValue(<span class="string">'z'</span>);</div><div class="line">   String baseZkPath = commandLine.getOptionValue(<span class="string">'p'</span>);</div><div class="line"></div><div class="line">   <span class="keyword">if</span> (reload) &#123;</div><div class="line">     EventBus eventBus = <span class="keyword">new</span> EventBus(agentName + <span class="string">"-event-bus"</span>);</div><div class="line">     List&lt;LifecycleAware&gt; components = Lists.newArrayList();</div><div class="line">     PollingZooKeeperConfigurationProvider zookeeperConfigurationProvider =</div><div class="line">       <span class="keyword">new</span> PollingZooKeeperConfigurationProvider(</div><div class="line">         agentName, zkConnectionStr, baseZkPath, eventBus);</div><div class="line">     components.add(zookeeperConfigurationProvider);</div><div class="line">     application = <span class="keyword">new</span> Application(components);</div><div class="line">     eventBus.register(application);</div><div class="line">   &#125; <span class="keyword">else</span> &#123;</div><div class="line">     StaticZooKeeperConfigurationProvider zookeeperConfigurationProvider =</div><div class="line">       <span class="keyword">new</span> StaticZooKeeperConfigurationProvider(</div><div class="line">         agentName, zkConnectionStr, baseZkPath);</div><div class="line">     application = <span class="keyword">new</span> Application();</div><div class="line">     application.handleConfigurationEvent(zookeeperConfigurationProvider</div><div class="line">       .getConfiguration());</div><div class="line">   &#125;</div><div class="line"> &#125; <span class="keyword">else</span> &#123;</div><div class="line">   File configurationFile = <span class="keyword">new</span> File(commandLine.getOptionValue(<span class="string">'f'</span>));</div><div class="line">   <span class="comment">/*</span></div><div class="line">    * 如果配置文件不存在，就直接报错</div><div class="line">    */</div><div class="line">   <span class="keyword">if</span> (!configurationFile.exists()) &#123;</div><div class="line">     ...</div><div class="line">   &#125;</div><div class="line">   List&lt;LifecycleAware&gt; components = Lists.newArrayList();</div><div class="line"></div><div class="line">   <span class="keyword">if</span> (reload) &#123;</div><div class="line">     EventBus eventBus = <span class="keyword">new</span> EventBus(agentName + <span class="string">"-event-bus"</span>);</div><div class="line">     PollingPropertiesFileConfigurationProvider configurationProvider =</div><div class="line">       <span class="keyword">new</span> PollingPropertiesFileConfigurationProvider(</div><div class="line">         agentName, configurationFile, eventBus, <span class="number">30</span>);</div><div class="line">     components.add(configurationProvider);</div><div class="line">     application = <span class="keyword">new</span> Application(components);</div><div class="line">     eventBus.register(application);</div><div class="line">   &#125; <span class="keyword">else</span> &#123;</div><div class="line">     PropertiesFileConfigurationProvider configurationProvider =</div><div class="line">       <span class="keyword">new</span> PropertiesFileConfigurationProvider(</div><div class="line">         agentName, configurationFile);</div><div class="line">     <span class="comment">// 下面为典型启动过程</span></div><div class="line">     application = <span class="keyword">new</span> Application();</div><div class="line">     application.handleConfigurationEvent(configurationProvider</div><div class="line">       .getConfiguration());</div><div class="line">   &#125;</div><div class="line"> &#125;</div><div class="line"> application.start(); <span class="comment">// 程序启动</span></div><div class="line"></div><div class="line"> <span class="comment">// 后面是shutdown hook，作清理工作</span></div></pre></td></tr></table></figure></p>
+<p>综上来看，有营养的代码很少，就是读个配置文件，然后直接就启动程序了。那么application的初始化和start方法里都有些什么操作呢？</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"> <span class="comment">// 1. 构造方法里只是注册一个LifecycleSupervisor，也就是管理生命周期的</span></div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="title">Application</span><span class="params">()</span> </span>&#123;</div><div class="line">   <span class="keyword">this</span>(<span class="keyword">new</span> ArrayList&lt;LifecycleAware&gt;(<span class="number">0</span>));</div><div class="line"> &#125;</div><div class="line"></div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="title">Application</span><span class="params">(List&lt;LifecycleAware&gt; components)</span> </span>&#123;</div><div class="line">   <span class="keyword">this</span>.components = components;</div><div class="line">   supervisor = <span class="keyword">new</span> LifecycleSupervisor();</div><div class="line"> &#125;</div><div class="line"></div><div class="line"><span class="comment">// 2. 根据conf重启所有components</span></div><div class="line"> <span class="meta">@Subscribe</span></div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">handleConfigurationEvent</span><span class="params">(MaterializedConfiguration conf)</span> </span>&#123;</div><div class="line">   stopAllComponents();</div><div class="line">   startAllComponents(conf); <span class="comment">// 这个conf来自于配置文件，你懂得，这些component肯定就是source channel sink 之类的了</span></div><div class="line"> &#125;</div><div class="line"> </div><div class="line"> <span class="comment">// 3. 使用1中初始化的supervisor对所有component进行监管</span></div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> </span>&#123;</div><div class="line">   <span class="keyword">for</span>(LifecycleAware component : components) &#123;</div><div class="line">     supervisor.supervise(component,</div><div class="line">         <span class="keyword">new</span> SupervisorPolicy.AlwaysRestartPolicy(), LifecycleState.START);</div><div class="line">   &#125;</div><div class="line"> &#125;</div></pre></td></tr></table></figure>
+<p>好，启动component的入口也明晰了<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startAllComponents</span><span class="params">(MaterializedConfiguration materializedConfiguration)</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (Entry&lt;String, Channel&gt; entry :</div><div class="line">      materializedConfiguration.getChannels().entrySet()) &#123;</div><div class="line">      <span class="keyword">try</span>&#123;</div><div class="line">        logger.info(<span class="string">"Starting Channel "</span> + entry.getKey());</div><div class="line">        <span class="comment">// 1. 将channel交给supervisor来进行生命周期管理，这里是启动</span></div><div class="line">        supervisor.supervise(entry.getValue(),</div><div class="line">            <span class="keyword">new</span> SupervisorPolicy.AlwaysRestartPolicy(), LifecycleState.START);</div><div class="line">      &#125; <span class="keyword">catch</span> (Exception e)&#123;</div><div class="line">        logger.error(<span class="string">"Error while starting &#123;&#125;"</span>, entry.getValue(), e);</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// 2. 启动sink 和 souce之前，确保所有的channel无误地启动完毕</span></div><div class="line">    <span class="keyword">for</span>(Channel ch: materializedConfiguration.getChannels().values())&#123;</div><div class="line">      <span class="keyword">while</span>(ch.getLifecycleState() != LifecycleState.START</div><div class="line">          &amp;&amp; !supervisor.isComponentInErrorState(ch))&#123;</div><div class="line">          logger.info(<span class="string">"Waiting for channel: "</span> + ch.getName() +</div><div class="line">              <span class="string">" to start. Sleeping for 500 ms"</span>);</div><div class="line">          Thread.sleep(<span class="number">500</span>);</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// 3. 同上方式，启动sink</span></div><div class="line">    </div><div class="line">    <span class="comment">// 4. 同上方式，启动source</span></div><div class="line"></div><div class="line">    <span class="comment">// 监控： 目前支持ganlia和http jetty两种，需要在命令行指定type</span></div><div class="line">    <span class="comment">// $ bin/flume-ng agent --conf-file example.conf --name a1 -Dflume.monitoring.type=ganglia -Dflume.monitoring.hosts=com.example:1234,com.example2:5455</span></div><div class="line">    <span class="keyword">this</span>.loadMonitoring();</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
+<p>至此启动流程就完毕了。太简单了也~~~</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/源码/">源码</a><a href="/tags/flume/">flume</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/05/08/在pycharm中开发pySpark程序/" title="在pycharm中开发pySpark程序" itemprop="url">在pycharm中开发pySpark程序</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2015-05-07T17:47:17.000Z" itemprop="datePublished"> 发表于 2015-05-08</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>Apache spark是一个用来分析和处理大数据的有力工具。<br>虽然知道怎样运行pySpark shell，但是开发的时候我们总会喜欢常用的IDE。<br><img src="/imgs/pyspark-reference.png" alt="Figure1 - PySpark Reference"><br>开始我尝试使用pycharm 的preference setting，添加pySpark module到external library(Figure 1).。但是编辑器里还是不能找到引用的对象(Figure 2)。最后，只能在python的运行脚本里添加相应引用了。</p>
+<p><img src="/imgs/reference-problem.png" alt="Figure 2 - Reference Problem"></p>
+<p>通过下面的代码，添加适当的SPARK HOME目录和PYSPARK目录来引入Apache spark module<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> os</div><div class="line"><span class="keyword">import</span> sys</div><div class="line"><span class="comment"># Path for spark source folder</span></div><div class="line">os.environ[<span class="string">'SPARK_HOME'</span>]=<span class="string">"your_spark_home_folder"</span></div><div class="line"><span class="comment"># Append pyspark  to Python Path</span></div><div class="line">sys.path.append(<span class="string">"your_pyspark_folder "</span>)</div><div class="line"><span class="keyword">try</span>:</div><div class="line">    <span class="keyword">from</span> pyspark <span class="keyword">import</span> SparkContext</div><div class="line">    <span class="keyword">from</span> pyspark <span class="keyword">import</span> SparkConf</div><div class="line">    print(<span class="string">"Successfully imported Spark Modules"</span>)</div><div class="line"><span class="keyword">except</span> ImportError <span class="keyword">as</span> e:</div><div class="line">    print(<span class="string">"Can not import Spark Modules"</span>,e)</div><div class="line">    sys.exit(<span class="number">1</span>)</div></pre></td></tr></table></figure></p>
+<p>成功引入后会打印：“Successfully imported Spark Modules” (Figure 3).<br><img src="/imgs/succ-import-pyspark.png" alt="Figure 3 - Successfully import pyspark"><br>再来写个小程序验证PySpark是否能够正常工作. 引入pySpark module后，添加以下代码 (Figure 4).<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># Initialize SparkContext</span></div><div class="line">sc=SparkContext(<span class="string">'local'</span>)</div><div class="line">words=sc.parallelize([<span class="string">"scala"</span>,<span class="string">"java"</span>,<span class="string">"hadoop"</span>,<span class="string">"spark"</span>,<span class="string">"akka"</span>])</div><div class="line">printwords.count()</div></pre></td></tr></table></figure></p>
+<p><img src="/imgs/run-pyspark.png" alt="Figure 4 - Test pyspark"></p>
+<p>转自：<a href="http://renien.github.io/blog/accessing-pyspark-pycharm" target="_blank" rel="external">http://renien.github.io/blog/accessing-pyspark-pycharm</a></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/05/06/Flume-测试笔记（8）/" title="Flume 测试笔记（8）" itemprop="url">Flume 测试笔记（8）</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2015-05-05T16:04:52.000Z" itemprop="datePublished"> 发表于 2015-05-06</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>已经打通了经脉，还需要考虑负载均衡以及容灾问题。鉴于现在log的数据压力不是很大，而且投入的机器也不是很多，暂时只考虑容<br>灾，暂时不考虑负载均衡。</p>
+<h2 id="1-flume代码逻辑"><a href="#1-flume代码逻辑" class="headerlink" title="1.flume代码逻辑"></a>1.flume代码逻辑</h2><p>flume里原生一个Failover Sink Processor，维护failedSinks和liveSinks两个东西来进行工作。首先会测试配置的所有sink，&gt;工作时只取liveSink里的一个作为activeSink，进行实质性的工作。</p>
+<p>FailoverSinkProcessor中的逻辑如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line">@Override</div><div class="line">  public Status process() throws EventDeliveryException &#123;</div><div class="line">    // Retry any failed sinks that have gone through their &quot;cooldown&quot; period</div><div class="line">    Long now = System.currentTimeMillis();</div><div class="line">    while(!failedSinks.isEmpty() &amp;&amp; failedSinks.peek().getRefresh() &lt; now) &#123;</div><div class="line">      FailedSink cur = failedSinks.poll();</div><div class="line">      Status s;</div><div class="line">      try &#123;</div><div class="line">        s = cur.getSink().process();</div><div class="line">        if (s  == Status.READY) &#123;</div><div class="line">          liveSinks.put(cur.getPriority(), cur.getSink());</div><div class="line">          activeSink = liveSinks.get(liveSinks.lastKey());</div><div class="line">          logger.debug(&quot;Sink &#123;&#125; was recovered from the fail list&quot;,</div><div class="line">                  cur.getSink().getName());</div><div class="line">        &#125; else &#123;</div><div class="line">          // if it&apos;s a backoff it needn&apos;t be penalized.</div><div class="line">          failedSinks.add(cur);</div><div class="line">        &#125;</div><div class="line">        return s;</div><div class="line">      &#125; catch (Exception e) &#123;</div><div class="line">        cur.incFails();</div><div class="line">        failedSinks.add(cur);</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    Status ret = null;</div><div class="line">    while(activeSink != null) &#123;</div><div class="line">      try &#123;</div><div class="line">        ret = activeSink.process();</div><div class="line">        return ret;</div><div class="line">      &#125; catch (Exception e) &#123;</div><div class="line">        logger.warn(&quot;Sink &#123;&#125; failed and has been sent to failover list&quot;,</div><div class="line">                activeSink.getName(), e);</div><div class="line">        activeSink = moveActiveToDeadAndGetNext();</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    throw new EventDeliveryException(&quot;All sinks failed to process, &quot; +</div><div class="line">        &quot;nothing left to failover to&quot;);</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
+<p>分析一下执行逻辑，在初始化的时候，failedSink是空的【可以参见configure方法】。在执行第二个while循环的时候，当有activeSink处理失败，就会把这个sink加到failedSinks里去，然后获取liveSinks里的下一个sink作为activeSink。但是这个process方法并没有返回执行的逻辑，那么就应该被重复调用，才可能执行到上面的第一个while循环。<br>SinkRunner中的逻辑：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">      logger.debug(<span class="string">"Polling sink runner starting"</span>);</div><div class="line"></div><div class="line">      <span class="keyword">while</span> (!shouldStop.get()) &#123; <span class="comment">//只要shouldStop为false便会一次次的执行</span></div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">          <span class="keyword">if</span> (policy.process().equals(Sink.Status.BACKOFF)) &#123; <span class="comment">//这里的policy就是SinkProcessor</span></div><div class="line">            counterGroup.incrementAndGet(<span class="string">"runner.backoffs"</span>);</div><div class="line"></div><div class="line">            Thread.sleep(Math.min(</div><div class="line">                counterGroup.incrementAndGet(<span class="string">"runner.backoffs.consecutive"</span>)</div><div class="line">                * backoffSleepIncrement, maxBackoffSleep));</div><div class="line">          &#125; <span class="keyword">else</span> &#123;</div><div class="line">            counterGroup.set(<span class="string">"runner.backoffs.consecutive"</span>, <span class="number">0L</span>);</div><div class="line">          &#125;</div><div class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">          logger.debug(<span class="string">"Interrupted while processing an event. Exiting."</span>);</div><div class="line">          counterGroup.incrementAndGet(<span class="string">"runner.interruptions"</span>);</div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">          logger.error(<span class="string">"Unable to deliver event. Exception follows."</span>, e);</div><div class="line">          <span class="keyword">if</span> (e <span class="keyword">instanceof</span> EventDeliveryException) &#123;</div><div class="line">            counterGroup.incrementAndGet(<span class="string">"runner.deliveryErrors"</span>);</div><div class="line">          &#125; <span class="keyword">else</span> &#123;</div><div class="line">            counterGroup.incrementAndGet(<span class="string">"runner.errors"</span>);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">try</span> &#123;</div><div class="line">            Thread.sleep(maxBackoffSleep);</div><div class="line">          &#125; <span class="keyword">catch</span> (InterruptedException ex) &#123;</div><div class="line">            Thread.currentThread().interrupt();</div><div class="line">          &#125;</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">      logger.debug(<span class="string">"Polling runner exiting. Metrics:&#123;&#125;"</span>, counterGroup);</div><div class="line">    &#125;</div></pre></td></tr></table></figure></p>
+<p>这样看来，其实flume的FailoverSinkProcessor也是会自动发现恢复了的Sink的。</p>
+<h2 id="2-flume官网文档"><a href="#2-flume官网文档" class="headerlink" title="2. flume官网文档"></a>2. flume官网文档</h2><blockquote>
+<p>Failover Sink Processor maintains <strong>a prioritized list of sinks</strong>, guaranteeing that so long as one is available events will be processed (delivered).The failover mechanism works by relegating failed sinks to a pool where they are assigned a cool down period, increasing with sequential failures before they are retried. Once a sink successfully sends an event, it is restored to the live pool.</p>
+<p>To configure, set a <strong>sink groups</strong> processor to failover and set priorities for all individual sinks. All specified priorities must be <strong>unique</strong>. Furthermore, upper limit to failover time can be set (in milliseconds) using maxpenalty property.</p>
+<p>Example for agent named a1:<br>a1.sinkgroups = g1<br>a1.sinkgroups.g1.sinks = k1 k2<br>a1.sinkgroups.g1.processor.type = failover<br>a1.sinkgroups.g1.processor.priority.k1 = 5<br>a1.sinkgroups.g1.processor.priority.k2 = 10<br>a1.sinkgroups.g1.processor.maxpenalty = 10000</p>
+</blockquote>
+<p>我们看到，这里又涉及到了sink group这个东西，其实主要是为了做负载均衡和容灾时更加方便一些，也很好理解，就是把sink分个组而已，然后负载均衡和容灾可以指定一个组就可以了，也就针对这个组里的sink进行对应的策略实施。找了一个比较好的例子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"># channels</div><div class="line">agent.channels = mem_channel</div><div class="line">agent.channels.mem_channel.type = memory</div><div class="line"></div><div class="line"># sources</div><div class="line">agent.sources = event_source</div><div class="line">agent.sources.event_source.type = avro</div><div class="line">agent.sources.event_source.bind = 127.0.0.1</div><div class="line">agent.sources.event_source.port = 10000</div><div class="line">agent.sources.event_source.channels = mem_channel</div><div class="line"></div><div class="line"># sinks</div><div class="line">agent.sinks = main_sink backup_sink</div><div class="line"></div><div class="line">agent.sinks.main_sink.type = avro</div><div class="line">agent.sinks.main_sink.hostname = 127.0.0.1</div><div class="line">agent.sinks.main_sink.port = 10001</div><div class="line">agent.sinks.main_sink.channel = mem_channel</div><div class="line"></div><div class="line">agent.sinks.backup_sink.type = avro</div><div class="line">agent.sinks.backup_sink.hostname = 127.0.0.1</div><div class="line">agent.sinks.backup_sink.port = 10002</div><div class="line">agent.sinks.backup_sink.channel = mem_channel</div><div class="line"></div><div class="line"># sink groups    </div><div class="line">agent.sinkgroups = failover_group</div><div class="line">agent.sinkgroups.failover_group.sinks = main_sink backup_sink</div><div class="line">agent.sinkgroups.failover_group.processor.type = failover</div><div class="line">agent.sinkgroups.failover_group.processor.priority.main_sink = 10</div><div class="line">agent.sinkgroups.failover_group.processor.priority.backup_sink = 5</div></pre></td></tr></table></figure></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+  <nav id="page-nav" class="clearfix">
+    <a class="extend prev" rel="prev" href="/page/26/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/25/">25</a><a class="page-number" href="/page/26/">26</a><span class="page-number current">27</span>
+  </nav>
+
+</div>
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+ </html>

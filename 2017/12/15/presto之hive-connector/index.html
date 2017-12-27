@@ -1,0 +1,722 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>presto之hive-connector | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="概览hive是由三个部分组成的
+
+特定格式的HDFS文件
+metadata数据库，通常是mysql
+HQL及其执行引擎
+
+presto会用到前面两者。
+支持的文件类型ORC、Parquet、Avro、RCFile、SequenceFile、JSON、Text
+配置创建etc/catalog/hive.properties文件，挂载hive-hadoop2 connector作为hive catal">
+<meta property="og:type" content="article">
+<meta property="og:title" content="presto之hive-connector">
+<meta property="og:url" content="http://willcup.com/2017/12/15/presto之hive-connector/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="概览hive是由三个部分组成的
+
+特定格式的HDFS文件
+metadata数据库，通常是mysql
+HQL及其执行引擎
+
+presto会用到前面两者。
+支持的文件类型ORC、Parquet、Avro、RCFile、SequenceFile、JSON、Text
+配置创建etc/catalog/hive.properties文件，挂载hive-hadoop2 connector作为hive catal">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.789Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="presto之hive-connector">
+<meta name="twitter:description" content="概览hive是由三个部分组成的
+
+特定格式的HDFS文件
+metadata数据库，通常是mysql
+HQL及其执行引擎
+
+presto会用到前面两者。
+支持的文件类型ORC、Parquet、Avro、RCFile、SequenceFile、JSON、Text
+配置创建etc/catalog/hive.properties文件，挂载hive-hadoop2 connector作为hive catal">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/12/15/presto之hive-connector/" title="presto之hive-connector" itemprop="url">presto之hive-connector</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-12-15T03:40:46.000Z" itemprop="datePublished"> 发表于 2017-12-15</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#概览"><span class="toc-text">概览</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#支持的文件类型"><span class="toc-text">支持的文件类型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#配置"><span class="toc-text">配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#多个hive集群"><span class="toc-text">多个hive集群</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#HDFS配置"><span class="toc-text">HDFS配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#HDFS用户"><span class="toc-text">HDFS用户</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#访问带有kerberos认证的HDFS"><span class="toc-text">访问带有kerberos认证的HDFS</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#hive配置项"><span class="toc-text">hive配置项</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#schema演化"><span class="toc-text">schema演化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#例子"><span class="toc-text">例子</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#不足"><span class="toc-text">不足</span></a></li></ol>
+		
+		</div>
+		
+		<h4 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h4><p>hive是由三个部分组成的</p>
+<ul>
+<li>特定格式的HDFS文件</li>
+<li>metadata数据库，通常是mysql</li>
+<li>HQL及其执行引擎</li>
+</ul>
+<p>presto会用到前面两者。</p>
+<h4 id="支持的文件类型"><a href="#支持的文件类型" class="headerlink" title="支持的文件类型"></a>支持的文件类型</h4><p>ORC、Parquet、Avro、RCFile、SequenceFile、JSON、Text</p>
+<h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><p>创建<code>etc/catalog/hive.properties</code>文件，挂载<code>hive-hadoop2</code> connector作为<code>hive</code> catalog，替换掉你的hive metastore的thrift host和port：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">connector.name=hive-hadoop2</div><div class="line">hive.metastore.uri=thrift://example.net:9083</div></pre></td></tr></table></figure>
+<h4 id="多个hive集群"><a href="#多个hive集群" class="headerlink" title="多个hive集群"></a>多个hive集群</h4><p>随便你使用多少catalog，添加其他的hive 集群就是了，新增properties文件到<code>etc/catalog</code>就可以了。</p>
+<h4 id="HDFS配置"><a href="#HDFS配置" class="headerlink" title="HDFS配置"></a>HDFS配置</h4><p>对于基本设置，presto自动配置了HDFS client，不需要额外的配置文件。但是对于hdfs联邦和NN HA的情况，需要额外指定一下参数才能正常访问HDFS cluster。这个要添加<code>hive.config.resources</code>引用到你的hdfs配置文件中：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">hive.config.resources=/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml</div></pre></td></tr></table></figure></p>
+<p>官方建议尽量少添加配置项，多余的配置项可能更容易引起问题。</p>
+<p>还有就是这些配置文件必须在每个presto节点上都是有效存在的。</p>
+<h4 id="HDFS用户"><a href="#HDFS用户" class="headerlink" title="HDFS用户"></a>HDFS用户</h4><p>在没有整合Kerberos的HDFS中，presto会使用presto进程的运行用户访问HDFS。我们可以通过配置presto的JVM参数指定访问HDFS的用户。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">-DHADOOP_USER_NAME=hdfs_user</div></pre></td></tr></table></figure></p>
+<h4 id="访问带有kerberos认证的HDFS"><a href="#访问带有kerberos认证的HDFS" class="headerlink" title="访问带有kerberos认证的HDFS"></a>访问带有kerberos认证的HDFS</h4><p>kerberos认证对于HDFS和hive metastore是都支持的。但是，通过ticket cache进行认证的还没有支持。</p>
+<h4 id="hive配置项"><a href="#hive配置项" class="headerlink" title="hive配置项"></a>hive配置项</h4><table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Name</th>
+<th>Description    Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hive.metastore.uri</td>
+<td>Hive metastore 的thrift URI. 如果多个的话，默认使用第一个，后面的作为备用，逗号隔开。Example: thrift://192.0.2.3:9083 or thrift://192.0.2.3:9083,thrift://192.0.2.4:9083</td>
+<td></td>
+</tr>
+<tr>
+<td>hive.config.resources</td>
+<td>逗号分隔的HDFS配置文件, 每个presto server所在的节点都要有效存在.  Example: /etc/hdfs-site.xml</td>
+<td></td>
+</tr>
+<tr>
+<td>hive.storage-format</td>
+<td>创建新表的默认文件格式</td>
+<td>RCBINARY</td>
+</tr>
+<tr>
+<td>hive.compression-codec</td>
+<td>写文件的压缩格式</td>
+<td>GZIP</td>
+</tr>
+<tr>
+<td>hive.force-local-scheduling</td>
+<td>Force splits to be scheduled on the same node as the Hadoop DataNode process serving the split data. This is useful for installations where Presto is collocated with every DataNode.</td>
+<td>false</td>
+</tr>
+<tr>
+<td>hive.respect-table-format</td>
+<td>Should new partitions be written using the existing table format or the default Presto format?</td>
+<td>true</td>
+</tr>
+<tr>
+<td>hive.immutable-partitions</td>
+<td>新数据能不能insert到已经存在的partitions?</td>
+<td>false</td>
+</tr>
+<tr>
+<td>hive.max-partitions-per-writers</td>
+<td>每个writer的最大partition数.</td>
+<td>100</td>
+</tr>
+<tr>
+<td>hive.max-partitions-per-scan</td>
+<td>单个table scan可扫描的最大partition数</td>
+<td>100,000</td>
+</tr>
+<tr>
+<td>hive.metastore.authentication.type</td>
+<td>Hive metastore认证类型,可是是 NONE 或者 KERBEROS.</td>
+<td>NONE</td>
+</tr>
+<tr>
+<td>hive.metastore.service.principal</td>
+<td>The Kerberos principal of the Hive metastore service.</td>
+<td></td>
+</tr>
+<tr>
+<td>hive.metastore.client.principal</td>
+<td>The Kerberos principal that Presto will use when connecting to the Hive metastore service.</td>
+<td></td>
+</tr>
+<tr>
+<td>hive.metastore.client.keytab</td>
+<td>Hive metastore client keytab 位置.</td>
+<td></td>
+</tr>
+<tr>
+<td>hive.hdfs.authentication.type</td>
+<td>HDFS 认证类型，可以是 NONE 或者 KERBEROS.</td>
+<td>NONE</td>
+</tr>
+<tr>
+<td>hive.hdfs.impersonation.enabled</td>
+<td>启用 HDFS终端user可以假装.</td>
+<td>false</td>
+</tr>
+<tr>
+<td>hive.hdfs.presto.principal</td>
+<td>The Kerberos principal that Presto will use when connecting to HDFS.</td>
+<td></td>
+</tr>
+<tr>
+<td>hive.hdfs.presto.keytab</td>
+<td>HDFS client keytab 位置.</td>
+<td></td>
+</tr>
+<tr>
+<td>hive.security</td>
+<td>参考Hive Security Configuration.</td>
+<td></td>
+</tr>
+<tr>
+<td>security.config-file</td>
+<td>Path of config file to use when hive.security=file. See File Based Authorization for details.</td>
+<td></td>
+</tr>
+<tr>
+<td>hive.non-managed-table-writes-enabled</td>
+<td>Enable writes to non-managed (external) Hive tables.</td>
+<td>false</td>
+</tr>
+</tbody>
+</table>
+<h4 id="schema演化"><a href="#schema演化" class="headerlink" title="schema演化"></a>schema演化</h4><p>hive允许同一个table的不同partition的数据有不同的schema。有的时候字段类型也有变化，Hive connector 也支持。</p>
+<ul>
+<li>tinyint, smallint, integer，bigint与varchar 之间的相互转化</li>
+<li>real转为double</li>
+<li>int类型的扩展转换，比如tinyint、smallint。</li>
+</ul>
+<p>和hive一样，转化失败就会返回null，比如把’foo’转为int</p>
+<h4 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h4><p>hive connector支持查询与操作hive表和库。然而一些特殊的操作还是需要通过hive执行。</p>
+<p>下面创建一个指定位置的hive库：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">SCHEMA</span> hive.web</div><div class="line"><span class="keyword">WITH</span> (location = <span class="string">'s3://my-bucket/'</span>)</div></pre></td></tr></table></figure></p>
+<p>创建一个ORC格式存储的page_views 表，使用date和conuntry进行分区，根据user进行分桶，共计50个桶(注意分区字段必须是最后的字段)</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> hive.web.page_views (</div><div class="line">  view_time <span class="keyword">timestamp</span>,</div><div class="line">  user_id <span class="built_in">bigint</span>,</div><div class="line">  page_url <span class="built_in">varchar</span>,</div><div class="line">  ds <span class="built_in">date</span>,</div><div class="line">  country <span class="built_in">varchar</span></div><div class="line">)</div><div class="line"><span class="keyword">WITH</span> (</div><div class="line">  <span class="keyword">format</span> = <span class="string">'ORC'</span>,</div><div class="line">  partitioned_by = <span class="built_in">ARRAY</span>[<span class="string">'ds'</span>, <span class="string">'country'</span>],</div><div class="line">  bucketed_by = <span class="built_in">ARRAY</span>[<span class="string">'user_id'</span>],</div><div class="line">  bucket_count = <span class="number">50</span></div><div class="line">)</div></pre></td></tr></table></figure>
+<p>删除分区<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">DELETE</span> <span class="keyword">FROM</span> hive.web.page_views</div><div class="line"><span class="keyword">WHERE</span> ds = <span class="built_in">DATE</span> <span class="string">'2016-08-09'</span></div><div class="line">  <span class="keyword">AND</span> country = <span class="string">'US'</span></div></pre></td></tr></table></figure></p>
+<p>查询：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> hive.web.page_views</div></pre></td></tr></table></figure></p>
+<p>创建外部表：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> hive.web.request_logs (</div><div class="line">  request_time <span class="keyword">timestamp</span>,</div><div class="line">  <span class="keyword">url</span> <span class="built_in">varchar</span>,</div><div class="line">  ip <span class="built_in">varchar</span>,</div><div class="line">  user_agent <span class="built_in">varchar</span></div><div class="line">)</div><div class="line"><span class="keyword">WITH</span> (</div><div class="line">  <span class="keyword">format</span> = <span class="string">'TEXTFILE'</span>,</div><div class="line">  external_location = <span class="string">'s3://my-bucket/data/logs/'</span></div><div class="line">)</div></pre></td></tr></table></figure></p>
+<p>删除外部表，只会删除metadata，不会删除真实数据。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">DROP TABLE hive.web.request_logs</div></pre></td></tr></table></figure>
+<h4 id="不足"><a href="#不足" class="headerlink" title="不足"></a>不足</h4><p>delete只支持where语句能满足整个分区的情况，也就是说只能一个分区为单位进行delete。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/12/15/presto之hive-connector/" data-title="presto之hive-connector | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/12/15/presto命令行/" title="presto命令行">
+  <strong>上一篇：</strong><br/>
+  <span>
+  presto命令行</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/12/15/yarn的节点label/"  title="yarn的节点label">
+ <strong>下一篇：</strong><br/> 
+ <span>yarn的节点label
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/12/15/presto之hive-connector/" data-title="presto之hive-connector" data-url="http://willcup.com/2017/12/15/presto之hive-connector/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#概览"><span class="toc-number">1.</span> <span class="toc-text">概览</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#支持的文件类型"><span class="toc-number">2.</span> <span class="toc-text">支持的文件类型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#配置"><span class="toc-number">3.</span> <span class="toc-text">配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#多个hive集群"><span class="toc-number">4.</span> <span class="toc-text">多个hive集群</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#HDFS配置"><span class="toc-number">5.</span> <span class="toc-text">HDFS配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#HDFS用户"><span class="toc-number">6.</span> <span class="toc-text">HDFS用户</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#访问带有kerberos认证的HDFS"><span class="toc-number">7.</span> <span class="toc-text">访问带有kerberos认证的HDFS</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#hive配置项"><span class="toc-number">8.</span> <span class="toc-text">hive配置项</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#schema演化"><span class="toc-number">9.</span> <span class="toc-text">schema演化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#例子"><span class="toc-number">10.</span> <span class="toc-text">例子</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#不足"><span class="toc-number">11.</span> <span class="toc-text">不足</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

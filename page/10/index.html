@@ -1,0 +1,1198 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="左右水色 右手天光">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Will's Blog">
+<meta property="og:url" content="http://willcup.com/page/10/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="左右水色 右手天光">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Will's Blog">
+<meta name="twitter:description" content="左右水色 右手天光">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main">
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/08/24/marathon/" title="marathon" itemprop="url">marathon</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-08-24T09:38:08.000Z" itemprop="datePublished"> 发表于 2017-08-24</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ol>
+<li>mesos 给 resource offer给sheculer</li>
+<li>scheduler 调用lanunch task，把要求的资源发过去</li>
+<li>mesos启动task</li>
+</ol>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/08/24/python-mesos-framework/" title="python-mesos-framework" itemprop="url">python-mesos-framework</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-08-24T07:35:31.000Z" itemprop="datePublished"> 发表于 2017-08-24</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> mesos.interface</div><div class="line"><span class="keyword">from</span> mesos.interface <span class="keyword">import</span> mesos_pb2</div><div class="line"><span class="keyword">import</span> mesos.native</div></pre></td></tr></table></figure>
+<h4 id="ImportError-No-module-named-google-protobuf-internal"><a href="#ImportError-No-module-named-google-protobuf-internal" class="headerlink" title="ImportError: No module named google.protobuf.internal"></a>ImportError: No module named google.protobuf.internal</h4><blockquote>
+<p>pip install protobuf</p>
+</blockquote>
+<h4 id="ImportError-usr-lib-python2-7-site-packages-mesos-scheduler-scheduler-so-undefined-symbol-svn-txdelta2"><a href="#ImportError-usr-lib-python2-7-site-packages-mesos-scheduler-scheduler-so-undefined-symbol-svn-txdelta2" class="headerlink" title="ImportError: /usr/lib/python2.7/site-packages/mesos/scheduler/_scheduler.so: undefined symbol: svn_txdelta2"></a>ImportError: /usr/lib/python2.7/site-packages/mesos/scheduler/_scheduler.so: undefined symbol: svn_txdelta2</h4><blockquote>
+<p>yum install subversion-devel -y</p>
+</blockquote>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/08/23/prometheus的alertmanager部分/" title="prometheus的alertmanager部分" itemprop="url">prometheus的alertmanager部分</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-08-23T03:07:29.000Z" itemprop="datePublished"> 发表于 2017-08-23</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><h4 id="分组"><a href="#分组" class="headerlink" title="分组"></a>分组</h4><p>把近似的告警放进单个通知中。</p>
+<p>例如：一个服务的几百台实例分布在不同的机器中，如果出现局部的网络问题，那么可能会报出部分服务大约100个报警信息，我们是需要知道哪些实例有问题的，这样才能快速定位区域。但是没有必要发送几百条通知，只需要一条通知，包含所有的实例列表就可以了。</p>
+<h4 id="inhibit"><a href="#inhibit" class="headerlink" title="inhibit"></a>inhibit</h4><p>inhibition是用来避免关联报警的。</p>
+<p>例如：如果一个集群不可用的告警已经firing了。那么Altermanager可以让其他的与集群相关的告警不发出。这样能避免此种类型的告警爆炸问题。</p>
+<h4 id="silence"><a href="#silence" class="headerlink" title="silence"></a>silence</h4><p>一般用来指定不告警的时段。通常基于matcher进行配置。</p>
+<h2 id="告警规则"><a href="#告警规则" class="headerlink" title="告警规则"></a>告警规则</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">ALERT &lt;alert name&gt;</div><div class="line">  IF &lt;expression&gt;</div><div class="line">  [ FOR &lt;duration&gt; ]    发生持续时长</div><div class="line">  [ LABELS &lt;label set&gt; ]    为告警指定label，同样label的告警会被最新的告警覆盖</div><div class="line">  [ ANNOTATIONS &lt;label set&gt; ]</div></pre></td></tr></table></figure>
+<p>例子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"># Alert for any instance that is unreachable for &gt;5 minutes.</div><div class="line">ALERT InstanceDown</div><div class="line">  IF up == 0</div><div class="line">  FOR 5m</div><div class="line">  LABELS &#123; severity = &quot;page&quot; &#125;</div><div class="line">  ANNOTATIONS &#123;</div><div class="line">    summary = &quot;Instance &#123;&#123; $labels.instance &#125;&#125; down&quot;,</div><div class="line">    description = &quot;&#123;&#123; $labels.instance &#125;&#125; of job &#123;&#123; $labels.job &#125;&#125; has been down for more than 5 minutes.&quot;,</div><div class="line">  &#125;</div><div class="line"></div><div class="line"># Alert for any instance that have a median request latency &gt;1s.</div><div class="line">ALERT APIHighRequestLatency</div><div class="line">  IF api_http_request_latencies_second&#123;quantile=&quot;0.5&quot;&#125; &gt; 1</div><div class="line">  FOR 1m</div><div class="line">  ANNOTATIONS &#123;</div><div class="line">    summary = &quot;High request latency on &#123;&#123; $labels.instance &#125;&#125;&quot;,</div><div class="line">    description = &quot;&#123;&#123; $labels.instance &#125;&#125; has a median request latency above 1s (current value: &#123;&#123; $value &#125;&#125;s)&quot;,</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
+<p>label存的是实例的label信息，value是IF表达式的结果。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/08/22/apache-atlas数据治理/" title="apache-atlas数据治理" itemprop="url">apache-atlas数据治理</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-08-22T06:46:36.000Z" itemprop="datePublished"> 发表于 2017-08-22</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>Atlas是一个可扩展的一系列的核心基础管理服务。</p>
+<p>特性</p>
+<ul>
+<li>数据分类<ul>
+<li>为数据定义面向业务的分类标签</li>
+<li>定义、annotate、自动获取数据集之间的关系【source、target、中间处理的process】</li>
+<li>导出元数据到第三方系统</li>
+</ul>
+</li>
+<li>中心化监听<ul>
+<li>捕获每个app、process等数据交互的安全信息</li>
+<li>捕获每个步骤【execution、step、activities】的操作信息</li>
+</ul>
+</li>
+<li>搜索和lineage<ul>
+<li>预定义导航路径来检索数据分类和监听信息</li>
+<li>基于文本的索引，定位对应数据和监听的事件</li>
+<li>对数据集的血统可视化，可以看到操作、安全等信息</li>
+</ul>
+</li>
+<li>安全和策略引擎<ul>
+<li>基于数据分类、属性、角色的运行时Rationalize compliance policy</li>
+<li>Advanced definition of policies for preventing data derivation based on classification (i.e. re-identification) – Prohibitions</li>
+<li>Column and Row level masking based on cell values and attibutes.</li>
+</ul>
+</li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/08/18/prometheus自定义exporter/" title="prometheus自定义exporter" itemprop="url">prometheus自定义exporter</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-08-18T07:30:10.000Z" itemprop="datePublished"> 发表于 2017-08-18</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="可维护性和简洁度"><a href="#可维护性和简洁度" class="headerlink" title="可维护性和简洁度"></a>可维护性和简洁度</h2><p>最核心的地方是考虑一下获取metrics的成本与途径。</p>
+<p>如果已经有了一个不错的、不怎么修改的metrics，那么就很容易搞定。例如haproxy exporter</p>
+<p>如果有上百个metrcis，而且随着版本变化metric也一直在变，那就会有得受了。例如mysql exporter </p>
+<p>node exporter介于两者之间，是个别的module总在变化。</p>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>exporter不应该关心app在哪里的配置，也能够使用filter过滤一些太稀碎的metric。</p>
+<p>与监控系统协作的时候，framework和protocol相关的东西会很复杂。</p>
+<p>最好是既有系统的数据结构能有prometheus一致，或者近似。这样就可以自动转化metric的形式，例如Cloudwatch, SNMP and Collectd。</p>
+<p>其实更多情况是不那么标准的。例如jmx exporter， 用户必须说明怎样进行metric转化才行。</p>
+<p>YAML是标准的prometheus配置文件格式。</p>
+<h2 id="metrics"><a href="#metrics" class="headerlink" title="metrics"></a>metrics</h2><h4 id="命名"><a href="#命名" class="headerlink" title="命名"></a>命名</h4><h4 id="label"><a href="#label" class="headerlink" title="label"></a>label</h4><p>避免使用type作为label名称，太通用，而且无意义。应该是用避免使用一些类似region, zone, cluster,az,datacenter,dc,woner,customer,stage,environment, env等字眼。</p>
+<h4 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> prometheus_client <span class="keyword">import</span> start_http_server, Metric, REGISTRY</div><div class="line"><span class="keyword">import</span> json</div><div class="line"><span class="keyword">import</span> requests</div><div class="line"><span class="keyword">import</span> sys</div><div class="line"><span class="keyword">import</span> time</div><div class="line"></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">JsonCollector</span><span class="params">()</span>:</span></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">init</span><span class="params">(self, endpoint, appname, srvtype, separator=<span class="string">'__'</span>)</span>:</span></div><div class="line">        self._endpoint = endpoint</div><div class="line">        self._appname = appname</div><div class="line">        self._separator = separator</div><div class="line">        self._srvtype = srvtype</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, target)</span>:</span></div><div class="line">        self.init(target.url, target.appname, target.srvtype)</div><div class="line"></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">handle_type</span><span class="params">(self, prefix, d, metric</span></span></div><div class="line">        <span class="string">'''</span></div><div class="line">        本来是应该使用具体的metric类型的，调用其add_metric接口。</div><div class="line">        但是由于这是一个JSON到prometheus的通用方法，所以没有那样处理。</div><div class="line">        '''</div><div class="line">        prefix = prefix.upper<span class="params">()</span></div><div class="line">        if isinstance<span class="params">(d, dict)</span>:</div><div class="line">            self.extract_dict<span class="params">(prefix, d, metric)</span></div><div class="line">        elif isinstance<span class="params">(d, list)</span>:</div><div class="line">            self.extract_list<span class="params">(prefix, d, metric)</span></div><div class="line">        else:</div><div class="line">            if not isinstance<span class="params">(d, <span class="params">(str, unicode)</span>)</span>:</div><div class="line">                metric.add_sample<span class="params">(<span class="string">'json_val'</span>,</span></div><div class="line">                                  value=d, labels=&#123;<span class="string">'app_name'</span>: self._appname, <span class="string">'rowkey'</span>: prefix&#125;)</div><div class="line">            else:</div><div class="line">                try:</div><div class="line">                    val = float<span class="params">(d)</span></div><div class="line">                    metric.add_sample<span class="params">(<span class="string">'json_val'</span>,</span></div><div class="line">                                  value=val, labels=&#123;<span class="string">'app_name'</span>: self._appname, <span class="string">'rowkey'</span>: prefix&#125;)</div><div class="line">                except ValueError:</div><div class="line">                    print<span class="params">(<span class="string">'Error convert %s to float for %s'</span> % <span class="params">(d, prefix)</span>)</span></div><div class="line">    </div><div class="line">    </div><div class="line">    def extract_dict<span class="params">(self, prefix, dd, metric)</span>:</div><div class="line">        for k, v in dd.items<span class="params">()</span>:</div><div class="line">            if len<span class="params">(prefix)</span> == <span class="number">0</span>:</div><div class="line">                self.handle_type<span class="params">(k, v, metric)</span></div><div class="line">            else:</div><div class="line">                self.handle_type<span class="params">(prefix + self._separator + k, v, metric)</span></div><div class="line">    </div><div class="line">    </div><div class="line">    def extract_list<span class="params">(self, prefix, dd, metric)</span>:</div><div class="line">        for i in dd:</div><div class="line">            if len<span class="params">(prefix)</span> == <span class="number">0</span>:</div><div class="line">                self.handle_type<span class="params">(dd.index<span class="params">(i)</span>, i, metric)</span></div><div class="line">            else:</div><div class="line">                self.handle_type<span class="params">(prefix + self._separator + dd.index<span class="params">(i)</span>, i, metric)</span></div><div class="line"></div><div class="line">    def collect<span class="params">(self)</span>:</div><div class="line">        <span class="string">'''</span></div><div class="line">        此处需要注意，接口返回的是这里的结果，不要把metric弄成成员变量。</div><div class="line">        应该每次都new一个返回去，不然add_sample会把所有的变量都累加进去</div><div class="line">        '''</div><div class="line">        try:</div><div class="line">            response = json.loads<span class="params">(requests.get<span class="params">(self._endpoint)</span>.content.decode<span class="params">(<span class="string">'UTF-8'</span>)</span>)</span></div><div class="line">            metric = Metric<span class="params">(self._srvtype, <span class="string">'spark program id'</span>, <span class="string">'summary'</span>)</span></div><div class="line">            self.handle_type<span class="params">(<span class="string">''</span>, response, metric)</span></div><div class="line">            yield metric</div><div class="line">        except Exception, e:</div><div class="line">            print e.message</div><div class="line"></div><div class="line"></div><div class="line">class Target<span class="params">()</span>:</div><div class="line">    def __init__<span class="params">(self, srvtype, appname, url)</span>:</div><div class="line">        self.srvtype = srvtype</div><div class="line">        self.appname = appname</div><div class="line">        self.url = url</div><div class="line"></div><div class="line">if __name__ == <span class="string">'__main__'</span>:</div><div class="line">    # Usage: json_exporter.py port</div><div class="line">    </div><div class="line">    print<span class="params">(sys.argv)</span></div><div class="line">    start_http_server<span class="params">(int<span class="params">(sys.argv[<span class="number">1</span>])</span>)</span></div><div class="line">    targets = list<span class="params">()</span></div><div class="line">    targets.append<span class="params">(Target<span class="params">(<span class="string">'flume'</span>, <span class="string">'haijun_flume_test1'</span>, <span class="string">'http://10.2.19.94:34545/metrics'</span>)</span>)</span></div><div class="line">    targets.append<span class="params">(Target<span class="params">(<span class="string">'spark_streaming'</span>, <span class="string">'h5_streaming_test1'</span>, <span class="string">'http://datanode02.will.com:8088/proxy/application_1501827559666_32228/metrics/json'</span>)</span>)</span></div><div class="line">    for target in targets:</div><div class="line">        REGISTRY.register<span class="params">(JsonCollector<span class="params">(target)</span>)</span></div><div class="line">    #REGISTRY.register<span class="params">(JsonCollector<span class="params">()</span>)</span></div><div class="line"></div><div class="line">    while True: time.sleep<span class="params">(<span class="number">10</span>)</span></div></pre></td></tr></table></figure>
+<p>下面是爬取yarn中指定名称规范的运行中的app的简单示例代码。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> requests</div><div class="line"><span class="keyword">import</span> json</div><div class="line"><span class="keyword">import</span> re</div><div class="line"></div><div class="line"></div><div class="line">url = <span class="string">'http://datanode02.will.com:8088/ws/v1/cluster/apps?states=RUNNING'</span></div><div class="line">html_doc = requests.get(url).content</div><div class="line">result = json.loads(html_doc)</div><div class="line"><span class="keyword">for</span> app <span class="keyword">in</span> result[<span class="string">'apps'</span>][<span class="string">'app'</span>]:</div><div class="line">    <span class="keyword">if</span> re.match(<span class="string">'.*_online'</span>, app[<span class="string">'name'</span>]): </div><div class="line">        print(app[<span class="string">'name'</span>], app[<span class="string">'trackingUrl'</span>] + <span class="string">'metrics/json'</span>)</div></pre></td></tr></table></figure></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/28/Quota/" title="Quota" itemprop="url">Quota</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-28T06:06:28.000Z" itemprop="datePublished"> 发表于 2017-07-28</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>在mesos上运行多个framework的时候有个问题，就是如果当前没有其他framework接受剩余资源，默认的WDRF分配器可能会把剩余资源分配给已经满足公平共享的framework。并没有把剩余资源留下备用的机制。尽管dynamic reservations允许operator和framework可在指定的mesos agent上动态保留资源，但是并不能从根本上解决问题，因为每个agent都可能挂掉。</p>
+<p>Mesos 0.27提出了quota，用来保证一个role会获取指定大小的最小资源保留。当然，这个role也可以获得比这个quota配置的更多的资源。</p>
+<p>quota有些类似reserved resource，稍有不同。quota资源不能绑定到指定的agent上，就是说一个quota保证一个role会有指定大小的资源，但是可以是在集群的任意位置。然而 reservations是用来指定特定的资源给指定role的特定的agent使用。quota只能让operator通过HTTP终端进行配置，而dynamic reservations则可以通过framework的principal验证后进行控制。</p>
+<p>注意：reserved reservations是用来满足一个role的quota配置的。例如，如果一个role指定定了一个4CPU和一个agent上的2个CPU的reserved reservations。那么这个role有一个4CPU的最小保证，而不是6个。</p>
+<h2 id="Terminology【术语】"><a href="#Terminology【术语】" class="headerlink" title="Terminology【术语】"></a>Terminology【术语】</h2><p>operator是一个管理mesos集群的东西，可以是人，工具，或者脚本。</p>
+<p>在计算机领域，quota通常指下面的事情：</p>
+<ul>
+<li>一个最小保证</li>
+<li>一个最大范围</li>
+<li>以上两者</li>
+</ul>
+<p>在mesos中，quota是一个role即将游泳的资源的最小保证。</p>
+<h2 id="动力和限制"><a href="#动力和限制" class="headerlink" title="动力和限制"></a>动力和限制</h2><p>通过下面场景，进一步了解quota。</p>
+<h4 id="场景1：-贪婪framework"><a href="#场景1：-贪婪framework" class="headerlink" title="场景1： 贪婪framework"></a>场景1： 贪婪framework</h4><p>在一个集群中有两个framework，每个都订阅了自己特有的role，每个role都有相同的权重。frameworkA定于了role RA，frameworkB订阅了role RB。集群中只有一种单一资源：100CPU. fA只需要10个CPU，而FB需要全部的CPU。如果没有Quota的话，FA就会根据默认的公平调度，每个framework都50个CPU，那么就会有40个是浪费的。</p>
+<h4 id="场景2：-新framework的资源"><a href="#场景2：-新framework的资源" class="headerlink" title="场景2： 新framework的资源"></a>场景2： 新framework的资源</h4><p>贪婪framework FB订阅role RB，是当前集群唯一的framework，那么它就都占了100CPU.如果一个fa新加入进来，需要等待FB的任务完成后才能获取属于自己的50CPU资源。</p>
+<p>对于场景2来说，quota自己是不足以解决这个问题的，然而可以一直保持一个资源池作为保留或者或者进行资源抢占。</p>
+<h2 id="Operator-HTTP终端"><a href="#Operator-HTTP终端" class="headerlink" title="Operator HTTP终端"></a>Operator HTTP终端</h2><p>master的/quota HTTP终端使operator可以操控quota。目前是提供一种类REST接口，支持下面的操作：</p>
+<ul>
+<li>POST设置一个新的quota</li>
+<li>DELETE 移除一个已经存在的quota</li>
+<li>GET 查询当前的quota</li>
+</ul>
+<p>目前并不支持更新原有的quota，需要先删除，后添加。</p>
+<h2 id="工作原理"><a href="#工作原理" class="headerlink" title="工作原理"></a>工作原理</h2><p>首先mesos master会处理quota相关的请求，然后allocator来实施quota。</p>
+<p>要注意quota具体怎样被实施是依赖于你所使用的allocator的。还有就是实施过程中，可能会对正在运行的framework造成一些影响，因为要把资源重新分配一下。还有资源是只可扩展的资源，端口号这种不行….</p>
+<h2 id="quota请求处理过程"><a href="#quota请求处理过程" class="headerlink" title="quota请求处理过程"></a>quota请求处理过程</h2><p>添加的过程</p>
+<ol>
+<li>认证</li>
+<li>解析与验证request</li>
+<li>如果开启了授权，就授权认证</li>
+<li>运行capacity heuristic</li>
+<li>存储quota</li>
+<li>解除outstanding offer</li>
+</ol>
+<p>移除的过程</p>
+<ol>
+<li>认证</li>
+<li>确认request有效性</li>
+<li>鉴权</li>
+<li>移除quota</li>
+</ol>
+<h4 id="capacity-heuristic检查"><a href="#capacity-heuristic检查" class="headerlink" title="capacity heuristic检查"></a>capacity heuristic检查</h4><p>配置错误的quota可能会导致所有的framework都分配不到资源。例如假设一个opetaror给不存在的role 设置了100CPU的quota，而当前集群只用100CPU.</p>
+<p>为了防止这种极端情形的出现，mesos master会用一个capacity heuristic来检查quota是不是对于当前集群资源合理。这个heuristic会测试总的quota是不是超过了集群非静态保留的总资源。</p>
+<blockquote>
+<p>总资源 - 静态保留资源 》= 总资源 + quota request</p>
+</blockquote>
+<p>注意即便当前是有足够的资源的，但是agent随时可能挂掉，导致集群不能满足配置的quota的需求。</p>
+<p>使用force标志可以让check通过，通常是因为operator知道后期会有新的资源加进来。</p>
+<h4 id="接触outstanding-offer"><a href="#接触outstanding-offer" class="headerlink" title="接触outstanding offer"></a>接触outstanding offer</h4><p>设置新quota的过程中，master会接触outstanding offer。这避免了当前剩余的没有offer出去，但是很多分配出去给其他framework的资源还没有被使用，造成的资源不足情况。因此，按照下面规则解除outstanding offer：</p>
+<ul>
+<li>解除至少跟quota请求中一样多的资源</li>
+<li>如果一个agent有一个offer需要被解除，那么这个agent的所有offer都会被解除。This is done in order to make the potential offer bigger, which increases the chances that a quota’ed framework will be able to use the offer.</li>
+<li>尽可能多的解除当前quota的role的framework的offer。这会让每个订阅这个role的framework收到一个offer。</li>
+</ul>
+<h4 id="通过wDRF-Allocator实施"><a href="#通过wDRF-Allocator实施" class="headerlink" title="通过wDRF Allocator实施"></a>通过wDRF Allocator实施</h4><p>wDRF Allocator首先会根据quota设置的分配资源给role。如果所有的quota都满足了，就为剩余的role执行标准的wDRF。</p>
+<p>注意： 一个已经quota的role不会会获取到多一些的未被预定的不可撤销的资源。如果这个role中framework没有选择可撤销的资源，那么他们可能会在role满足之后停止获取offer。这时设置任何比这个role的fair share还低的quota值都很可能导致给这个role的总资源降低。</p>
+<p>注意：当前auota保证也是一个quota限制。就是说，一旦一个role的quota满足了，这个role就不会获得更多的资源了。这是为了减轻缺乏quota限制。</p>
+<p>如果有多个framework订阅了一个role，这个role有一个quota，标准的wDRF算法来决定这些framework的offer比例。</p>
+<p>默认的wDRF allocator认为只有不可撤销的资源才是quota可用的。</p>
+<h2 id="容灾"><a href="#容灾" class="headerlink" title="容灾"></a>容灾</h2><p>如果一个role里有quota，master容灾恢复就很重要。在恢复过程中会有一段时间并不是所有的agent都向master注册了自己。因此不可能所有的quota都被满足。</p>
+<p>为了定位这个问题，如果恢复的时候任何前面的quota被探测到后，allocator就进入recovery模式，在这个过程中，allocator并不保证offer。只有满足下面任何一个条件的时候才退出这个模式</p>
+<ul>
+<li>指定数量的agent重新注册自己(默认80%)</li>
+<li>一个超时时间(默认10分钟)</li>
+</ul>
+<h2 id="当前不足"><a href="#当前不足" class="headerlink" title="当前不足"></a>当前不足</h2><ul>
+<li>quota不允许指定详细资源粒度(例如每个节点上10个CPU)</li>
+<li>不允许指定约束条件(比如，在互斥节点上分配2 * 5个CPU，形成HA)</li>
+<li>不能为默认的role *设置quota</li>
+<li>目前不支持更新</li>
+</ul>
+<p>参考： <a href="http://mesos.apache.org/documentation/latest/quota/" target="_blank" rel="external">http://mesos.apache.org/documentation/latest/quota/</a></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/27/阿里中间件笔记/" title="阿里中间件笔记" itemprop="url">阿里中间件笔记</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-27T06:34:20.000Z" itemprop="datePublished"> 发表于 2017-07-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>AliSQL：何登成</p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><ul>
+<li>主从复制，数据一致性</li>
+<li>HA依赖外部组件</li>
+</ul>
+<h2 id="解决【XCluster】"><a href="#解决【XCluster】" class="headerlink" title="解决【XCluster】"></a>解决【XCluster】</h2><p>基于paxos标准构建alisql集群</p>
+<ul>
+<li>高性能、可异地部署、网络抖动高容忍<ul>
+<li>batching和pipelining，有了pipeline可以同个时间点传输多批数据，问题是乱序收取、日志空洞。等全部到来的时候再去处理，两外的方案是乱序也通过多数派确认提交。</li>
+</ul>
+</li>
+<li>独立基础库，可单独部署【并不限于alisql使用】</li>
+</ul>
+<p>raft是不会出现日志空洞的，但是不能支持pipeline。poxos可以使用pipelining，但是会有乱序。</p>
+<p>sysbench是一个模块化的、跨平台、多线程基准测试工具，主要用于评估测试各种不同系统参数下的数据库负载情况。</p>
+<h2 id="HIStroe：阿里OLAP，-焦方飞"><a href="#HIStroe：阿里OLAP，-焦方飞" class="headerlink" title="HIStroe：阿里OLAP， 焦方飞"></a>HIStroe：阿里OLAP， 焦方飞</h2><p>MPP计算</p>
+<p>知识网格的列式存储</p>
+<p>存储：</p>
+<p>succinct data</p>
+<p>lsm  index</p>
+<p>查询优化： 让更苛刻的条件优先执行</p>
+<p>Hi-index原理，不需要解压数据就可以检索</p>
+<h2 id="rocketMQ-万亿级数据洪峰下的消息引擎-冯嘉"><a href="#rocketMQ-万亿级数据洪峰下的消息引擎-冯嘉" class="headerlink" title="rocketMQ: 万亿级数据洪峰下的消息引擎 冯嘉"></a>rocketMQ: 万亿级数据洪峰下的消息引擎 冯嘉</h2>
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/25/Roles/" title="Roles" itemprop="url">Roles</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-25T03:37:29.000Z" itemprop="datePublished"> 发表于 2017-07-25</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="role"><a href="#role" class="headerlink" title="role"></a>role</h2><p>好多host-level的OS(例如Linux，BSDs等)都支持多用户。同样的，mesos也是一个多用户集群管理系统，使用一个mesos集群管理一个组织的所有资源，服务于这个组织的用户。</p>
+<p>mesos里与资源相关的东西如下：</p>
+<ul>
+<li>用户之间对于资源的公平共享</li>
+<li>保证用户资源(优先级、隔离、限额等)</li>
+<li>精确地资源计算能力<ul>
+<li>分别有多少资源是 已分配/未分配等等</li>
+<li>基于每个用户计算</li>
+</ul>
+</li>
+</ul>
+<p>在mesos中，我们为所有用户分配一个或多个role。其实，role就是mesos资源的消费者。这个消费者可以代表一个组织的一个用户，也可能是一个组、一个群、一个service，一个framework等等。</p>
+<p>调度器会订阅一个或多个role，监听他们申请到的资源，然后执行调度任务。</p>
+<p>下面是一些例子：</p>
+<ul>
+<li>保证一个role可以分配到指定的资源（通过quota指定）</li>
+<li>保证个别agent上的一些或者所有资源都分配给一个指定的role(通过reservations)</li>
+<li>保证资源是在role之间公平共享(通过DRF)</li>
+<li>声明某些role获取相对更多的资源(通过weight)</li>
+</ul>
+<h2 id="role与acl"><a href="#role与acl" class="headerlink" title="role与acl"></a>role与acl</h2><p>有两种方式来控制一个framework应该订阅哪些role。首先，可以指定ACLs。其次，可以在mesos master启动的时候传递–roles参数，代表role的白名单，逗号隔开。注意在HA环境下，要保证多个master的启动白名单是一致的。</p>
+<h2 id="role与framework的关联"><a href="#role与framework的关联" class="headerlink" title="role与framework的关联"></a>role与framework的关联</h2><p>framework通过制定FrameworkInfo里的roles订阅role。</p>
+<p>作为用户，你可以在启动framework的时候指定要订阅哪些role。具体怎样弄需要看你的framework相关的接口是怎样的。例如，一个单用户的scheduler可能会通过–mesos_role参数指定，多用户的scheduerl就通过 –mesos_roles参数指定。或者也可以通过一个LDAP系统动态调整framwork和role之间的订阅关系。</p>
+<h4 id="订阅多个role"><a href="#订阅多个role" class="headerlink" title="订阅多个role"></a>订阅多个role</h4><p>上面有提到，一个framework可以同时订阅多个role，通过MULTI_ROLE实现。</p>
+<p>一个framework对外提供资源的时候，这些资源只能属于一个role。framework可以通过Offer对象的allocation_info.role字段来确认某个offer是提供给哪个role的，或者通过每个提供的Resource对象的allocation_info.role字段。（当前实现中，在一个Offer中的所有资源都是提供给同一个role的）</p>
+<h4 id="同一个role的多个framework"><a href="#同一个role的多个framework" class="headerlink" title="同一个role的多个framework"></a>同一个role的多个framework</h4><p>多个framework可以订阅同一个role。例如：一个framework可以创建一个持久化的数据卷，然后往里面写数据。一旦这个写数据的任务完成后，这个数据卷就可以提供给订阅同一个role的其他的framewo使用了。第二个framework就可以读取前一个framework写的数据。</p>
+<p>然而，配置多个framework使用同一个role的时候需要慎重一些，因为所有的framework都能够访问到这个role申请到的资源。例如，如果一个framework把一些敏感信息存到了数据卷中，其他的framework就可以读取了。类似地，如果一个framework创建了一个持久化的数据卷，其他framework可以直接偷走自己用来启动自己的任务。通常来说，订阅同一个role的framework之间是具有良好的协作关系的。</p>
+<h2 id="资源与role的关系"><a href="#资源与role的关系" class="headerlink" title="资源与role的关系"></a>资源与role的关系</h2><p>资源通过reservation分配给一个role。资源可以永久静态地或者动态地提供给role使用。framework和operator可以指定一定量的资源作为某个role的最小持有量。</p>
+<h2 id="默认的role"><a href="#默认的role" class="headerlink" title="默认的role"></a>默认的role</h2><p>名称为*的role是一个特殊的role。没有分配的资源是用这个*代表的。</p>
+<p>对于没有提供FrameworkInfo.role的framework注册，会分配给他的就是*这个role。</p>
+<h2 id="role与资源分配"><a href="#role与资源分配" class="headerlink" title="role与资源分配"></a>role与资源分配</h2><p>默认，mesos master使用基于权重的资源分配方式(weighted Dominant Resource Fairness)。 In particular, this implementation of wDRF first identifies which role is furthest below its fair share of the role’s dominant resource. 然后每个订阅这个role的framework就获取到返回的资源。</p>
+<p>资源分配过程可以通过指定role的权重进行自定义控制。</p>
+<h2 id="Role与quota"><a href="#Role与quota" class="headerlink" title="Role与quota"></a>Role与quota</h2><p>为了保证一个role能够分配到指定大小的资源，我们可以通过/quota终端指定quota。</p>
+<p>资源分配者在公平分配剩余资源之前，会首先满足quota的需求。</p>
+<h2 id="Role与Principal"><a href="#Role与Principal" class="headerlink" title="Role与Principal"></a>Role与Principal</h2><p>Principal代表一个与mesos互动的实体，更像是用户名。例如，framework在向mesos master注册的时候会提供principal，在使用HTTP终端的时候会提供principal。一个实体需要提供principal来认证自己的身份。</p>
+<p>Role，仅仅用来控制资源分配。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/24/mesos的containerizer/" title="mesos的containerizer" itemprop="url">mesos的containerizer</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-24T10:17:14.000Z" itemprop="datePublished"> 发表于 2017-07-24</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="Docker-Containerizer"><a href="#Docker-Containerizer" class="headerlink" title="Docker Containerizer"></a>Docker Containerizer</h2><p>Docker containerizer使用dockers engine管理container。</p>
+<h4 id="container启动过程"><a href="#container启动过程" class="headerlink" title="container启动过程"></a>container启动过程</h4><ul>
+<li>Docker containerizer 在ContainerInfo::type为DOCKER的时候尝试在docker里启动task</li>
+<li>Docker containerizer先pull image</li>
+<li>调用pre-launch的hook</li>
+<li>executor以下面两种方式启动起来<ul>
+<li>mesos agent运行在一个docker container中<ul>
+<li>这种方式需要提供–docker_mesos_image的参数。使用指定的docker image启动mesos agent</li>
+<li>如果task包含自定义的executor，那么这个executor就在docker container中被启动</li>
+<li>如果task并不包含executor。就是说它定义了一个command，默认的mesos-docker-executor就在docker container中通过docker Cli执行这个command。</li>
+</ul>
+</li>
+<li>mesos agent不运行在docker container中<ul>
+<li>如果task中包含自定义的executor，那么在docker container中执行</li>
+<li>如果task不博阿涵自定义的executor，也就是定义了一个command，就fork一个子进程来执行默认的mesos-docker-executor. 然后mesos-docker-executor产生一个shell通过docker cli执行这个command。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="Mesos-Containerizer"><a href="#Mesos-Containerizer" class="headerlink" title="Mesos Containerizer"></a>Mesos Containerizer</h2><p>Mesos Containerizer是原生的。Mesos Containerizer会处理所有没有制定ContainerInfo::DockerInfo的executor/task。</p>
+<h4 id="container启动过程-1"><a href="#container启动过程-1" class="headerlink" title="container启动过程"></a>container启动过程</h4><ul>
+<li>在每个isolator上调用prepare</li>
+<li>使用Launcher fork出executor。在isolated之前，这个被fork出来的executor是不能执行的</li>
+<li>Isolate这个executor。通过pid调用每个isolator的isolate方法</li>
+<li>抽取executor</li>
+<li>执行executor。就是上面的executor会获得执行的信号。先执行一些准备的命令，然后再执行executor的内容。</li>
+</ul>
+<h4 id="Launcher"><a href="#Launcher" class="headerlink" title="Launcher"></a>Launcher</h4><p>Launcher负责产生和销毁container。</p>
+<ul>
+<li>在containerizerd context中fork新的进程。这个子进程会执行给定路径的可执行文件，接受参数、flag和环境变量等。</li>
+<li>子进程的IO会根据指定的方式进行重定向</li>
+</ul>
+<h6 id="linux-launcher"><a href="#linux-launcher" class="headerlink" title="linux launcher"></a>linux launcher</h6><ul>
+<li>为container创建一个freezer 的cgroup</li>
+<li>创建一个posix的pipe为host和container进程提供通信通道</li>
+<li>使用系统的clone方法生成子进程(也就是container进程)</li>
+<li>把新生成的container放进freezer的对应层级中</li>
+<li>通过上面的pip给子进程一个signal，让它继续执行</li>
+</ul>
+<h6 id="Posix-launcher-TBD"><a href="#Posix-launcher-TBD" class="headerlink" title="Posix launcher (TBD)"></a>Posix launcher (TBD)</h6><h4 id="Isolators"><a href="#Isolators" class="headerlink" title="Isolators"></a>Isolators</h4><p>Isolator负责创建container中的运行环境【CPU, NETWORK, 存储，内存等】</p>
+<h2 id="Containerizer-states"><a href="#Containerizer-states" class="headerlink" title="Containerizer states"></a>Containerizer states</h2><p>Docker</p>
+<ul>
+<li>FETCHING</li>
+<li>PULLING</li>
+<li>RUNNING</li>
+<li>DESTROYING</li>
+</ul>
+<p>Mesos</p>
+<ul>
+<li>PREPARING</li>
+<li>ISOLATING</li>
+<li>FETCHING</li>
+<li>RUNNING</li>
+<li>DESTROYING</li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/20/docker内OS的相关事宜/" title="docker内OS的相关事宜" itemprop="url">docker内OS的相关事宜</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-20T06:59:20.000Z" itemprop="datePublished"> 发表于 2017-07-20</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>假设宿主机是centos7，然后docker镜像使用ubuntu16.04。</p>
+<p>那么dockers容器在启动的时候是怎样运行ubuntu的，这种情境咋总是感觉跟启动虚拟机一样呢？</p>
+<p>各种cgroup什么的还好理解，但是这些os内核它是怎样运作起来的呢？</p>
+<h2 id="答案"><a href="#答案" class="headerlink" title="答案"></a>答案</h2><p>容器是依赖宿主机内核的，如果内核不能满足容器需求，就不能run。 这么看来，其实docker也不是那么“万能”的。</p>
+<p>甚至如果容器里需要使用高版本内核的时候，宿主机不能支持，那么这个容器就run不起来………….理论上是这样，用的时候就要注意了。不知道这种docker是不是会自动下载这个内核，然后完全单独运行的话，其实本质上，真的和虚拟机差不多了</p>
+<p>都独立内核了，ns和cg都不能用宿主机的了，那就是彻底的虚拟机了。</p>
+<p>docker 和 传统的虚拟机的区别就是 ， 传统虚拟机假装有一套新的硬件，系统跑在硬件上就行了， docker 假装有一个系统，进程跑在系统里就行了，其实个人认为准确说，应该是docker假装有一个内核。</p>
+<h2 id="翻译"><a href="#翻译" class="headerlink" title="翻译"></a>翻译</h2><p>docker最开始使用的是LXC，后来切换到了libcontainer。这样就可以跟宿主机共享操作系统资源。docker使用一种分层的文件系统AUFS，并且管理自己的网络。</p>
+<p>AUFS是一个分层的文件系统，将只读的和可写的部分merge在一起。OS公用的地方是只读的，每个container自己挂载的是可写的。</p>
+<p>假设我们有一个1g的image，需要1000个节点的扩容。如果使用一个完整的VM的话，需要1000G的空间。使用Docker的话，这1000个container节点可以共享1g的OS资源。</p>
+<p>一个完整的VM拥有自己的一组资源，基本不共享什么东西。用重量换得了更多的独立性。Docker相反，独立性相对差一些，但是很轻量。所以可以在宿主机上跑上千个container。</p>
+<p>一个完整的VM通常要花费几分钟才能启动，一个docker container则只需要几秒。</p>
+<p>两个东西各有优缺点。</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://stackoverflow.com/questions/33112137/run-different-linux-os-in-docker-container" target="_blank" rel="external">https://stackoverflow.com/questions/33112137/run-different-linux-os-in-docker-container</a></li>
+<li><a href="https://stackoverflow.com/questions/33112137/run-different-linux-os-in-docker-container" target="_blank" rel="external">https://stackoverflow.com/questions/33112137/run-different-linux-os-in-docker-container</a></li>
+<li><a href="https://stackoverflow.com/questions/16047306/how-is-docker-different-from-a-normal-virtual-machine" target="_blank" rel="external">https://stackoverflow.com/questions/16047306/how-is-docker-different-from-a-normal-virtual-machine</a></li>
+<li><a href="https://docs.docker.com/engine/faq/#what-is-different-between-a-docker-container-and-a-vm" target="_blank" rel="external">https://docs.docker.com/engine/faq/#what-is-different-between-a-docker-container-and-a-vm</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+  <nav id="page-nav" class="clearfix">
+    <a class="extend prev" rel="prev" href="/page/9/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/page/11/">11</a><a class="page-number" href="/page/12/">12</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/11/">Next<span></span></a>
+  </nav>
+
+</div>
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+ </html>

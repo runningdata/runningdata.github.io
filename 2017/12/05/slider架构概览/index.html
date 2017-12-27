@@ -1,0 +1,598 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>slider架构概览 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="概述slider是一个YARN application，用来部署非YARN的app到YARN集群中。
+slider包含一个YARN application master，Slider AM，然后client application需要通过RPC或者HTTP与YARN和Slider AM进行通信。client application提供了命令行与low-level API，以供测试。
+被部署的app">
+<meta property="og:type" content="article">
+<meta property="og:title" content="slider架构概览">
+<meta property="og:url" content="http://willcup.com/2017/12/05/slider架构概览/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="概述slider是一个YARN application，用来部署非YARN的app到YARN集群中。
+slider包含一个YARN application master，Slider AM，然后client application需要通过RPC或者HTTP与YARN和Slider AM进行通信。client application提供了命令行与low-level API，以供测试。
+被部署的app">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.793Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="slider架构概览">
+<meta name="twitter:description" content="概述slider是一个YARN application，用来部署非YARN的app到YARN集群中。
+slider包含一个YARN application master，Slider AM，然后client application需要通过RPC或者HTTP与YARN和Slider AM进行通信。client application提供了命令行与low-level API，以供测试。
+被部署的app">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/12/05/slider架构概览/" title="slider架构概览" itemprop="url">slider架构概览</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-12-05T08:03:33.000Z" itemprop="datePublished"> 发表于 2017-12-05</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#概述"><span class="toc-text">概述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#slider打包"><span class="toc-text">slider打包</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#AM架构"><span class="toc-text">AM架构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#失败模型"><span class="toc-text">失败模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RPC-接口"><span class="toc-text">RPC 接口</span></a></li></ol>
+		
+		</div>
+		
+		<h4 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h4><p>slider是一个YARN application，用来部署非YARN的app到YARN集群中。</p>
+<p>slider包含一个YARN application master，Slider AM，然后client application需要通过RPC或者HTTP与YARN和Slider AM进行通信。client application提供了命令行与low-level API，以供测试。</p>
+<p>被部署的app应该是可以运行在YARN管理的server池中的程序，还要能动态定位到它自己的peer。slider并不负责配置这些peer server，只负责一些app指定的实例的配置初始化工作。</p>
+<p>每个app实例都是一个或多个component，每个component可以有不同的程序或命令，不同的配置项或参数。</p>
+<p>AM负责启动哪些具体的role，为每个component请求一个YARN container。然后监控app实例的状态，当一个远程执行的进程完成之后，YARN会通知到AM。然后AM就去部署这个component的下一个实例去了。</p>
+<h4 id="slider打包"><a href="#slider打包" class="headerlink" title="slider打包"></a>slider打包</h4><p>slider一个重要的目标就是支持已经存在的APP部署到yarn上去</p>
+<h4 id="AM架构"><a href="#AM架构" class="headerlink" title="AM架构"></a>AM架构</h4><p>AM包含：</p>
+<ul>
+<li>AM engine，负责处理所有的外部服务的整合，尤其是YARN和其他的slider client</li>
+<li>provider，指定部署app的class</li>
+<li>app的状态</li>
+</ul>
+<p>app状态是app实例的模型，包含：</p>
+<ul>
+<li>app实例一些期望的状态，比如每种component的实例数量，他们的YARN container内存等</li>
+<li>当前实例在yarn集群中每种component的数据，包括每个node上的可用资源</li>
+<li>role history。记录每个node都被部署过哪种component，后面可以还这样部署。这是为了在需要读写本地磁盘的时候不出问题。</li>
+<li>追踪消息队列：请求、发布、启动节点</li>
+</ul>
+<p>app engine整合了所有外部的东西：YARN RM， 指定node的NM，接受来自RM的service，request，释放container的event，在分配的container上启动app。</p>
+<p>集群中发生任何变化，都会发送通知，然后app engine把通知传递给App的Status类，Status类更新它的状态，返回一系列集群操作(请求不同类型的container， 可能会指定节点，或者请求释放container)，供提交。</p>
+<p>有了这些之后，再加上分配消息，app engine就可以把app State分配给指定的组件了，然后出发provider构建app的启动context。</p>
+<p>provider有带有用于启动provider支持的程序的文件关联、环境变量、命令，用以发布container。</p>
+<p>core provider在目标container上部署一个minimal 的agent，然后这个agent会计入agent provider的REST API， 执行它的命令。</p>
+<p>这个agnet要执行的命令主要是从HDFS下载归档文件，解压开，运行python脚本来执行真正的配置，最后就是目标的执行了。这里面会用到很多模板。</p>
+<p>总结一下：slider不是一个典型的YARN analysis app，YARN analysis app是指在短期、中期生命的container中分配和调度工作，带有一个query或者analysis session的一个生命周期，slider的生命周期是长达几天或者几个月的。slider要是app集群保持某个状态，app也应该能在node失败后进行恢复，还有就是定位到自己的peer node，再有就是与HDFS文件系统的数据进行交互。</p>
+<p>Samza是第一个被设计运行在yarn上的app，它作为一个平台或者long-live 服务存在。这些app对yarn的需求是不一样的，他们的application master的设计主要集中在维护分布式app在一个稳定的状态，而不是提交什么作业。</p>
+<p>MVC的切分实现了mode与aid mock测试的隔离性，增强了slider能够在YARN上部署更大规模的信息。</p>
+<h4 id="失败模型"><a href="#失败模型" class="headerlink" title="失败模型"></a>失败模型</h4><p>app master被设计为一个<a href="https://www.usenix.org/legacy/events/hotos03/tech/full_papers/candea/candea.pdf" target="_blank" rel="external"> crash-only application</a>, client是随时可以直接请求YARN来终止app实例的。</p>
+<p>有一个RPC方法可以停掉app实例。这个是挺好的，会记录一条message在日志里，以后可能还会给provider警告一下这个app实例要被关掉了。这也有一定潜在的危险，以你为provider实现里可能开始期望这个方法被可靠调用。slider的设计是失败不会告警，而是基于配置进行重新构建，可以被人工停止。</p>
+<h4 id="RPC-接口"><a href="#RPC-接口" class="headerlink" title="RPC 接口"></a>RPC 接口</h4><p>RPC接口允许client查询当前app的状态，也能通过json请求进行更新。</p>
+<p>主要操作有：</p>
+<ul>
+<li>getJSONClusterStatus(): 获取app实例的json状态输出</li>
+<li>flexCluster(): 更新调整不同component的数量</li>
+<li>stopCluster </li>
+</ul>
+<p>还有一些其他更low-level的操作供我们进行诊断、测试，但是比较有限。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/12/05/slider架构概览/" data-title="slider架构概览 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/12/05/slider上手/" title="slider上手">
+  <strong>上一篇：</strong><br/>
+  <span>
+  slider上手</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/12/04/在yarn上安装presto/"  title="在yarn上安装presto">
+ <strong>下一篇：</strong><br/> 
+ <span>在yarn上安装presto
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/12/05/slider架构概览/" data-title="slider架构概览" data-url="http://willcup.com/2017/12/05/slider架构概览/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#概述"><span class="toc-number">1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#slider打包"><span class="toc-number">2.</span> <span class="toc-text">slider打包</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#AM架构"><span class="toc-number">3.</span> <span class="toc-text">AM架构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#失败模型"><span class="toc-number">4.</span> <span class="toc-text">失败模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RPC-接口"><span class="toc-number">5.</span> <span class="toc-text">RPC 接口</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,570 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>ambari脚本更新配置 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="类似于hdfs_log_dir_prefix这种配置项一旦在服务初始化完成之后，就不能在UI界面上进行修改了。具体ambari为什么要这样限制，个人表示无从知晓。
+通过文件/var/lib/ambari-agent/cache/cluster_configuration/configurations.json，我们可以直接看到所有的环境相关配置。暂时猜测可能是为了统一一次性生成此文件，而所有UI的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ambari脚本更新配置">
+<meta property="og:url" content="http://willcup.com/2017/03/31/ambari脚本更新配置/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="类似于hdfs_log_dir_prefix这种配置项一旦在服务初始化完成之后，就不能在UI界面上进行修改了。具体ambari为什么要这样限制，个人表示无从知晓。
+通过文件/var/lib/ambari-agent/cache/cluster_configuration/configurations.json，我们可以直接看到所有的环境相关配置。暂时猜测可能是为了统一一次性生成此文件，而所有UI的">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.773Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ambari脚本更新配置">
+<meta name="twitter:description" content="类似于hdfs_log_dir_prefix这种配置项一旦在服务初始化完成之后，就不能在UI界面上进行修改了。具体ambari为什么要这样限制，个人表示无从知晓。
+通过文件/var/lib/ambari-agent/cache/cluster_configuration/configurations.json，我们可以直接看到所有的环境相关配置。暂时猜测可能是为了统一一次性生成此文件，而所有UI的">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/03/31/ambari脚本更新配置/" title="ambari脚本更新配置" itemprop="url">ambari脚本更新配置</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-03-31T02:45:56.000Z" itemprop="datePublished"> 发表于 2017-03-31</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<p>类似于<code>hdfs_log_dir_prefix</code>这种配置项一旦在服务初始化完成之后，就不能在UI界面上进行修改了。具体ambari为什么要这样限制，个人表示无从知晓。</p>
+<p>通过文件<code>/var/lib/ambari-agent/cache/cluster_configuration/configurations.json</code>，我们可以直接看到所有的环境相关配置。暂时猜测可能是为了统一一次性生成此文件，而所有UI的操作都是修改的各自的对应的xml配置文件。</p>
+<p>官方提供了两种方式修改对于此json文件相关的配置。一个是API，另一个就是通过<code>/var/lib/ambari-server/resources/scripts/config.sh</code>脚本。</p>
+<p>个人比较倾向于脚本，更不易出错。查看config.sh的使用方法：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line">/var/lib/ambari-server/resources/scripts/configs.py --help</div><div class="line">Usage: configs.py [options]</div><div class="line">Options:</div><div class="line">  -h, --help            show this help message and exit</div><div class="line">  -t PORT, --port=PORT  Optional port number for Ambari server. Default is</div><div class="line">                        &apos;8080&apos;. Provide empty string to not use port.</div><div class="line">  -s PROTOCOL, --protocol=PROTOCOL</div><div class="line">                        Optional support of SSL. Default protocol is &apos;http&apos;</div><div class="line">  -a ACTION, --action=ACTION</div><div class="line">                        Script action: &lt;get&gt;, &lt;set&gt;, &lt;delete&gt;</div><div class="line">  -l HOST, --host=HOST  Server external host name</div><div class="line">  -n CLUSTER, --cluster=CLUSTER</div><div class="line">                        Name given to cluster. Ex: &apos;c1&apos;</div><div class="line">  -c CONFIG_TYPE, --config-type=CONFIG_TYPE</div><div class="line">                        One of the various configuration types in Ambari. Ex:</div><div class="line">                        core-site, hdfs-site, mapred-queue-acls, etc.</div><div class="line">  To specify credentials please use &quot;-e&quot; OR &quot;-u&quot; and &quot;-p&apos;&quot;:</div><div class="line">    -u USER, --user=USER</div><div class="line">                        Optional user ID to use for authentication. Default is</div><div class="line">                        &apos;admin&apos;</div><div class="line">    -p PASSWORD, --password=PASSWORD</div><div class="line">                        Optional password to use for authentication. Default</div><div class="line">                        is &apos;admin&apos;</div><div class="line">    -e CREDENTIALS_FILE, --credentials-file=CREDENTIALS_FILE</div><div class="line">                        Optional file with user credentials separated by new</div><div class="line">                        line.</div><div class="line">  To specify property(s) please use &quot;-f&quot; OR &quot;-k&quot; and &quot;-v&apos;&quot;:</div><div class="line">    -f FILE, --file=FILE</div><div class="line">                        File where entire configurations are saved to, or read</div><div class="line">                        from. Supported extensions (.xml, .json&gt;)</div><div class="line">    -k KEY, --key=KEY   Key that has to be set or deleted. Not necessary for</div><div class="line">                        &apos;get&apos; action.</div><div class="line">    -v VALUE, --value=VALUE</div><div class="line">                        Optional value to be set. Not necessary for &apos;get&apos; or</div><div class="line">                        &apos;delete&apos; actions.</div></pre></td></tr></table></figure></p>
+<p>首先，我们可以先用api查看一下配置项的分布：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div></pre></td><td class="code"><pre><div class="line">[hdfs@data-test01 scripts]$ curl -k -s -u admin:admin &quot;http://10.1.5.79:8080/api/v1/clusters/willcluster?fields=Clusters/desired_configs&quot;</div><div class="line">&#123;</div><div class="line">  &quot;href&quot; : &quot;http://10.1.5.79:8080/api/v1/clusters/willcluster?fields=Clusters/desired_configs&quot;,</div><div class="line">  &quot;Clusters&quot; : &#123;</div><div class="line">    &quot;cluster_name&quot; : &quot;willcluster&quot;,</div><div class="line">    &quot;version&quot; : &quot;HDP-2.4&quot;,</div><div class="line">    &quot;desired_configs&quot; : &#123;</div><div class="line">      &quot;capacity-scheduler&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1490254923891&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 2</div><div class="line">      &#125;,</div><div class="line">      &quot;cluster-env&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1490254925199&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 2</div><div class="line">      &#125;,</div><div class="line">      &quot;core-site&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1490345767824&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 5</div><div class="line">      &#125;,</div><div class="line">      &quot;hadoop-env&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1490254923436&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 2</div><div class="line">      &#125;,</div><div class="line">      &quot;hadoop-policy&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 1</div><div class="line">      &#125;,</div><div class="line">      &quot;hdfs-log4j&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 1</div><div class="line">      &#125;,</div><div class="line">      &quot;hdfs-site&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1490344980013&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 4</div><div class="line">      &#125;,</div><div class="line">      &quot;kerberos-env&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1490254524258&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 2</div><div class="line">      &#125;,</div><div class="line">      &quot;krb5-conf&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1490254524258&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 2</div><div class="line">      &#125;,</div><div class="line">      &quot;mapred-env&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 1</div><div class="line">      &#125;,</div><div class="line">      &quot;mapred-site&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1490254925210&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 2</div><div class="line">      &#125;,</div><div class="line">      &quot;ranger-hdfs-audit&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 1</div><div class="line">      &#125;,</div><div class="line">      &quot;ranger-hdfs-plugin-properties&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 1</div><div class="line">      &#125;,</div><div class="line">      &quot;ranger-hdfs-policymgr-ssl&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 1</div><div class="line">      &#125;,</div><div class="line">      &quot;ranger-hdfs-security&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 1</div><div class="line">      &#125;,</div><div class="line">      &quot;ranger-yarn-audit&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 1</div><div class="line">      &#125;,</div><div class="line">      &quot;ranger-yarn-plugin-properties&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 1</div><div class="line">      &#125;,</div><div class="line">      &quot;ranger-yarn-policymgr-ssl&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 1</div><div class="line">      &#125;,</div><div class="line">      &quot;ranger-yarn-security&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 1</div><div class="line">      &#125;,</div><div class="line">      &quot;ssl-client&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 1</div><div class="line">      &#125;,</div><div class="line">      &quot;ssl-server&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 1</div><div class="line">      &#125;,</div><div class="line">      &quot;yarn-env&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 1</div><div class="line">      &#125;,</div><div class="line">      &quot;yarn-log4j&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 1</div><div class="line">      &#125;,</div><div class="line">      &quot;yarn-site&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1490254924330&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 6</div><div class="line">      &#125;,</div><div class="line">      &quot;zoo.cfg&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 1</div><div class="line">      &#125;,</div><div class="line">      &quot;zookeeper-env&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1490254924765&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 2</div><div class="line">      &#125;,</div><div class="line">      &quot;zookeeper-log4j&quot; : &#123;</div><div class="line">        &quot;tag&quot; : &quot;version1&quot;,</div><div class="line">        &quot;user&quot; : &quot;admin&quot;,</div><div class="line">        &quot;version&quot; : 1</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>上面的key就对应于<code>config.sh</code> set的一些可选项,也就是CONFIG_TYPE。</p>
+<p>下面列出一些常用的样例。按照amabri的惯例，每个log目录都应该是由对应的user创建并修改的。这里我们的所有机器都只有/server目录，下面并没有添加或配置log目录，试一下能不能像初始化环境的时候自动配置对应权限。一试成功了。真好，哈哈<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">./configs.sh  set 10.1.5.79 willcluster hadoop-env hdfs_log_dir_prefix &quot;/server/log/hadoop&quot;</div><div class="line">./configs.sh  set 10.1.5.79 willcluster mapred-env mapred_log_dir_prefix &quot;/server/log/hadoop-mapred&quot;</div><div class="line">./configs.sh  set 10.1.5.79 willcluster yarn-env yarn_log_dir_prefix &quot;/server/log/yarn&quot;</div><div class="line">./configs.sh  set 10.1.5.79 willcluster zookeeper-env zk_log_dir &quot;/server/log/zookeeper&quot;</div></pre></td></tr></table></figure></p>
+<p>刷新amabri的UI的配置页就可以看到，对应配置已经修改成功，等待重启生效了。</p>
+<p>然后tail一下各个服务对应的日志，都没有问题。</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://cwiki.apache.org/confluence/display/AMBARI/Modify+configurations" target="_blank" rel="external">https://cwiki.apache.org/confluence/display/AMBARI/Modify+configurations</a></li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/03/31/ambari脚本更新配置/" data-title="ambari脚本更新配置 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/03/31/HDFS权限问题/" title="HDFS权限问题">
+  <strong>上一篇：</strong><br/>
+  <span>
+  HDFS权限问题</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/03/30/centos7-安装k8s/"  title="centos7-安装k8s">
+ <strong>下一篇：</strong><br/> 
+ <span>centos7-安装k8s
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/03/31/ambari脚本更新配置/" data-title="ambari脚本更新配置" data-url="http://willcup.com/2017/03/31/ambari脚本更新配置/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

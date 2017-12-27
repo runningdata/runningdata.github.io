@@ -1,0 +1,673 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>yarn的节点label | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="Overviewnodel label是用来把一些共同特征的节点进行归组的手段，然后任务可以指定label要求，运行到指定label的节点上。
+现在只支持node partition：
+一个node只有一个node partition，所以一个集群被分为多个子集，这些子集互不相交。默认情况下，node是属于DEFAULT partition的。用户可以配置每个partition对于queue中可用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="yarn的节点label">
+<meta property="og:url" content="http://willcup.com/2017/12/15/yarn的节点label/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="Overviewnodel label是用来把一些共同特征的节点进行归组的手段，然后任务可以指定label要求，运行到指定label的节点上。
+现在只支持node partition：
+一个node只有一个node partition，所以一个集群被分为多个子集，这些子集互不相交。默认情况下，node是属于DEFAULT partition的。用户可以配置每个partition对于queue中可用">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.793Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="yarn的节点label">
+<meta name="twitter:description" content="Overviewnodel label是用来把一些共同特征的节点进行归组的手段，然后任务可以指定label要求，运行到指定label的节点上。
+现在只支持node partition：
+一个node只有一个node partition，所以一个集群被分为多个子集，这些子集互不相交。默认情况下，node是属于DEFAULT partition的。用户可以配置每个partition对于queue中可用">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/12/15/yarn的节点label/" title="yarn的节点label" itemprop="url">yarn的节点label</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-12-15T02:59:13.000Z" itemprop="datePublished"> 发表于 2017-12-15</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#Overview"><span class="toc-text">Overview</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Features"><span class="toc-text">Features</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Configuration"><span class="toc-text">Configuration</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#设置ResourceManager启用Node-Labels"><span class="toc-text">设置ResourceManager启用Node Labels:</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#添加-修改-node-labels-list和node-to-labels-mapping-to-YARN"><span class="toc-text">添加/修改 node labels list和node-to-labels mapping to YARN</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#给node-labels配置Schedulers"><span class="toc-text">给node labels配置Schedulers</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#Capacity-Scheduler-配置"><span class="toc-text">Capacity Scheduler 配置</span></a></li></ol></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#为APP指定node-label"><span class="toc-text">为APP指定node label</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#监控"><span class="toc-text">监控</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#通过UI监控"><span class="toc-text">通过UI监控</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#通过命令行监控"><span class="toc-text">通过命令行监控</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#其他"><span class="toc-text">其他</span></a></li></ol>
+		
+		</div>
+		
+		<h4 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h4><p>nodel label是用来把一些共同特征的节点进行归组的手段，然后任务可以指定label要求，运行到指定label的节点上。</p>
+<p>现在只支持node partition：</p>
+<p>一个node只有一个node partition，所以一个集群被分为多个子集，这些子集互不相交。默认情况下，node是属于DEFAULT partition的。用户可以配置每个partition对于queue中可用多少资源。具体需要看下一节。</p>
+<p>有两种不同的node partition：</p>
+<ul>
+<li>exclusive： container会分配在node label完全匹配的node上。(例如指定了partition=”x”，那么就被分配到partition=“x”的node上，默认的就分配到默认的node上)</li>
+<li>non-exclusive: 如果一个partition是non-exclusive的，它就可以把空闲资源分配给请求DEFAULT partition的。</li>
+</ul>
+<p>用户可以为每个queue指定可以访问的多个node label，app只能使用这个queue能使用的node label的node。</p>
+<h4 id="Features"><a href="#Features" class="headerlink" title="Features"></a>Features</h4><ul>
+<li>Partition cluster - 每个node都可以有一个label，这样cluster就会被划分为包含多个不相交的子集partition.</li>
+<li>ACL of node-labels on queues - 用户可以指定每个queue可以访问的label的node。</li>
+<li>指定一个queue可以访问某个label的比例 - 例如queue A可以使用label=hbase的30%的node resource。</li>
+<li>在resource request中指定nodel label的要求, 那么就只会分配这个label属性的节点资源。如果什么都没有指定的话，就默认为DEFAULT partition。</li>
+<li>运维相关<ul>
+<li>nodel label和node label的映射关系可以通过RM restart进行恢复</li>
+<li>更新node label - admin可在RM运行态更新node和queue的label</li>
+</ul>
+</li>
+</ul>
+<h4 id="Configuration"><a href="#Configuration" class="headerlink" title="Configuration"></a>Configuration</h4><h5 id="设置ResourceManager启用Node-Labels"><a href="#设置ResourceManager启用Node-Labels" class="headerlink" title="设置ResourceManager启用Node Labels:"></a>设置ResourceManager启用Node Labels:</h5><p>yarn-site.xml</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>yarn.node-labels.fs-store.root-dir</td>
+<td>hdfs://namenode:port/path/to/store/node-labels/</td>
+</tr>
+<tr>
+<td>yarn.node-labels.enabled</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<p>注意:</p>
+<p>确保<code>yarn.node-labels.fs-store.root-dir</code>已经存在，而且RM有权限访问(一般是yarn用户访问)</p>
+<p>如果用户想把node label存储在RM的本地文件系统，就是用<code>file:///home/yarn/node-label</code></p>
+<h6 id="添加-修改-node-labels-list和node-to-labels-mapping-to-YARN"><a href="#添加-修改-node-labels-list和node-to-labels-mapping-to-YARN" class="headerlink" title="添加/修改 node labels list和node-to-labels mapping to YARN"></a>添加/修改 node labels list和node-to-labels mapping to YARN</h6><p>这是两个连续的步骤。</p>
+<ul>
+<li><p>添加Node labels池到cluster中，后面给node添加的label只能是这里面的label，并不是给集群所有节点默认label，这个要注意一下:</p>
+<ul>
+<li>执行<code>yarn rmadmin -addToClusterNodeLabels &quot;label_1(exclusive=true/false),label_2(exclusive=true/false)</code> 添加 node label.</li>
+<li>如果用户没有指定 “(exclusive=…)”, execlusive默认为true.</li>
+<li>运行<code>yarn cluster --list-node-labels</code>，检查新加的node label是否已生效</li>
+</ul>
+</li>
+<li><p>给node添加label</p>
+<ul>
+<li>执行<code>yarn rmadmin -replaceLabelsOnNode “node1[:port]=label1 node2=label2”</code>. 给node1添加label1,给node2添加label2. 如果用户没有指定port, 就给这个node上运行的所有的NodeManagers都添加.</li>
+</ul>
+</li>
+</ul>
+<h5 id="给node-labels配置Schedulers"><a href="#给node-labels配置Schedulers" class="headerlink" title="给node labels配置Schedulers"></a>给node labels配置Schedulers</h5><h6 id="Capacity-Scheduler-配置"><a href="#Capacity-Scheduler-配置" class="headerlink" title="Capacity Scheduler 配置"></a>Capacity Scheduler 配置</h6><table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>yarn.scheduler.capacity.<queue-path>.capacity</queue-path></td>
+<td>Set the percentage of the queue can access to nodes belong to DEFAULT partition. The sum of DEFAULT capacities for direct children under each parent, must be equal to 100.</td>
+</tr>
+<tr>
+<td>yarn.scheduler.capacity.<queue-path>.accessible-node-labels</queue-path></td>
+<td>Admin need specify labels can be accessible by each queue, split by comma, like “hbase,storm” means queue can access label hbase and storm. All queues can access to nodes without label, user don’t have to specify that. If user don’t specify this field, it will inherit from its parent. If user want to explicitly specify a queue can only access nodes without labels, just put a space as the value.</td>
+</tr>
+<tr>
+<td>yarn.scheduler.capacity.<queue-path>.accessible-node-labels.<label>.capacity</label></queue-path></td>
+<td>Set the percentage of the queue can access to nodes belong to <label> partition . The sum of <label> capacities for direct children under each parent, must be equal to 100. By default, it’s 0.</label></label></td>
+</tr>
+<tr>
+<td>yarn.scheduler.capacity.<queue-path>.accessible-node-labels.<label>.maximum-capacity</label></queue-path></td>
+<td>Similar to yarn.scheduler.capacity.<queue-path>.maximum-capacity, it is for maximum-capacity for labels of each queue. By default, it’s 100.</queue-path></td>
+</tr>
+<tr>
+<td>yarn.scheduler.capacity.<queue-path>.default-node-label-expression</queue-path></td>
+<td>Value like “hbase”, which means: if applications submitted to the queue without specifying node label in their resource requests, it will use “hbase” as default-node-label-expression. By default, this is empty, so application will get containers from nodes without label.</td>
+</tr>
+</tbody>
+</table>
+<p>node label配置示例:</p>
+<p>假设我们的queue是这样的</p>
+<pre><code>           root
+       /     |    \
+engineer    sales  marketing
+</code></pre><p>We have 5 nodes (hostname=h1..h5) in the cluster, each of them has 24G memory, 24 vcores. 1 among the 5 nodes has GPU (assume it’s h5). So admin added GPU label to h5.</p>
+<p>我们集群中有5个node，每个node有24G内存，24个vcore。其中一个node h5有GPU，那么admin想给很h5添加一个GPU的label。</p>
+<p>用户就可以这样配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">yarn.scheduler.capacity.root.queues=engineering,marketing,sales</div><div class="line">yarn.scheduler.capacity.root.engineering.capacity=33</div><div class="line">yarn.scheduler.capacity.root.marketing.capacity=34</div><div class="line">yarn.scheduler.capacity.root.sales.capacity=33</div><div class="line"></div><div class="line">yarn.scheduler.capacity.root.engineering.accessible-node-labels=GPU</div><div class="line">yarn.scheduler.capacity.root.marketing.accessible-node-labels=GPU</div><div class="line"></div><div class="line">yarn.scheduler.capacity.root.engineering.accessible-node-labels.GPU.capacity=50</div><div class="line">yarn.scheduler.capacity.root.marketing.accessible-node-labels.GPU.capacity=50</div><div class="line"></div><div class="line">yarn.scheduler.capacity.root.engineering.default-node-label-expression=GPU</div></pre></td></tr></table></figure></p>
+<p>我们设置了<code>root.engineering/marketing/sales.capacity=33</code>, 这样每个队列都保证有33%的资源,也就是 24 <em> 4 </em> (1/3) = (32G mem, 32 v-cores).</p>
+<p>只有engineering/marketing queue 有权限使用GPU partition (因为 root.<queue-name>.accessible-node-labels).</queue-name></p>
+<p>engineering/marketing queue 都可以使用partition=GPU的 1/2资源，也就是h5的1/2的资源，也就是24 * 0.5 = (12G mem, 12 v-cores).</p>
+<p>注意:</p>
+<p>配置完后，要执行<code>yarn rmadmin -refreshQueues</code>来使配置生效, 然后去RM的web UI检查一下。</p>
+<h4 id="为APP指定node-label"><a href="#为APP指定node-label" class="headerlink" title="为APP指定node label"></a>为APP指定node label</h4><p>可以通过java API指定node label的要求。</p>
+<ul>
+<li>ApplicationSubmissionContext.setNodeLabelExpression(..) 设置node label表达式</li>
+<li>ResourceRequest.setNodeLabelExpression(..) 设置单独resource request的node label表达式, 这个可以overwrite ApplicationSubmissionContext的表达式设置</li>
+<li>在ApplicationSubmissionContext中的setAMContainerResourceRequest.setNodeLabelExpressio用来定位app master container要求的node label</li>
+</ul>
+<h4 id="监控"><a href="#监控" class="headerlink" title="监控"></a>监控</h4><h5 id="通过UI监控"><a href="#通过UI监控" class="headerlink" title="通过UI监控"></a>通过UI监控</h5><p>web UI提供的指标:</p>
+<p>Nodes page: <a href="http://RM-Address:port/cluster/nodes" target="_blank" rel="external">http://RM-Address:port/cluster/nodes</a><br>Node labels page: <a href="http://RM-Address:port/cluster/nodelabels,可以获取到类型" target="_blank" rel="external">http://RM-Address:port/cluster/nodelabels,可以获取到类型</a> (exclusive/non-exclusive), active node managers的数量, 每个partition的总资源<br>Scheduler page: <a href="http://RM-Address:port/cluster/scheduler" target="_blank" rel="external">http://RM-Address:port/cluster/scheduler</a>, 每个queue关于label的配置</p>
+<h5 id="通过命令行监控"><a href="#通过命令行监控" class="headerlink" title="通过命令行监控"></a>通过命令行监控</h5><ul>
+<li>yarn cluster –list-node-labels</li>
+<li>yarn node -status <nodeid> </nodeid></li>
+</ul>
+<h4 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h4><p>YARN Capacity Scheduler, if you need more understanding about how to configure Capacity Scheduler<br>Write YARN application using node labels, you can see following two links as examples: YARN distributed shell, Hadoop MapReduce</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/12/15/yarn的节点label/" data-title="yarn的节点label | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/12/15/presto之hive-connector/" title="presto之hive-connector">
+  <strong>上一篇：</strong><br/>
+  <span>
+  presto之hive-connector</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/12/14/slider源码走读1/"  title="slider源码走读1">
+ <strong>下一篇：</strong><br/> 
+ <span>slider源码走读1
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/12/15/yarn的节点label/" data-title="yarn的节点label" data-url="http://willcup.com/2017/12/15/yarn的节点label/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#Overview"><span class="toc-number">1.</span> <span class="toc-text">Overview</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Features"><span class="toc-number">2.</span> <span class="toc-text">Features</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Configuration"><span class="toc-number">3.</span> <span class="toc-text">Configuration</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#设置ResourceManager启用Node-Labels"><span class="toc-number">3.1.</span> <span class="toc-text">设置ResourceManager启用Node Labels:</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#添加-修改-node-labels-list和node-to-labels-mapping-to-YARN"><span class="toc-number">3.1.1.</span> <span class="toc-text">添加/修改 node labels list和node-to-labels mapping to YARN</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#给node-labels配置Schedulers"><span class="toc-number">3.2.</span> <span class="toc-text">给node labels配置Schedulers</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#Capacity-Scheduler-配置"><span class="toc-number">3.2.1.</span> <span class="toc-text">Capacity Scheduler 配置</span></a></li></ol></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#为APP指定node-label"><span class="toc-number">4.</span> <span class="toc-text">为APP指定node label</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#监控"><span class="toc-number">5.</span> <span class="toc-text">监控</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#通过UI监控"><span class="toc-number">5.1.</span> <span class="toc-text">通过UI监控</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#通过命令行监控"><span class="toc-number">5.2.</span> <span class="toc-text">通过命令行监控</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#其他"><span class="toc-number">6.</span> <span class="toc-text">其他</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

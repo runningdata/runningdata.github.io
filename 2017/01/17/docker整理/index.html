@@ -1,0 +1,647 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>docker整理 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="centos7的yum源
+清华的docker源https://mirrors.tuna.tsinghua.edu.cn/help/docker/
+阿里的源http://mirrors.aliyun.com/
+
+registry mirror编辑或添加文件 /etc/docker/daemon.json123&amp;#123;  &amp;quot;registry-mirrors&amp;quot;: [&amp;quot;h">
+<meta property="og:type" content="article">
+<meta property="og:title" content="docker整理">
+<meta property="og:url" content="http://willcup.com/2017/01/17/docker整理/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="centos7的yum源
+清华的docker源https://mirrors.tuna.tsinghua.edu.cn/help/docker/
+阿里的源http://mirrors.aliyun.com/
+
+registry mirror编辑或添加文件 /etc/docker/daemon.json123&amp;#123;  &amp;quot;registry-mirrors&amp;quot;: [&amp;quot;h">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.781Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="docker整理">
+<meta name="twitter:description" content="centos7的yum源
+清华的docker源https://mirrors.tuna.tsinghua.edu.cn/help/docker/
+阿里的源http://mirrors.aliyun.com/
+
+registry mirror编辑或添加文件 /etc/docker/daemon.json123&amp;#123;  &amp;quot;registry-mirrors&amp;quot;: [&amp;quot;h">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/01/17/docker整理/" title="docker整理" itemprop="url">docker整理</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-01-17T07:41:46.000Z" itemprop="datePublished"> 发表于 2017-01-17</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#centos7的yum源"><span class="toc-text">centos7的yum源</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#registry-mirror"><span class="toc-text">registry mirror</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#修改docker-daemon配置"><span class="toc-text">修改docker daemon配置</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-启动manager，初始化集群"><span class="toc-text">1. 启动manager，初始化集群</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-添加node"><span class="toc-text">2.添加node</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-部署服务"><span class="toc-text">3. 部署服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-服务扩容"><span class="toc-text">4. 服务扩容</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-删除服务"><span class="toc-text">5. 删除服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-节点维护"><span class="toc-text">5. 节点维护</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-路由"><span class="toc-text">6. 路由</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-其他"><span class="toc-text">7. 其他</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#坑"><span class="toc-text">坑</span></a></li></ol></li></ol></li></ol>
+		
+		</div>
+		
+		<h2 id="centos7的yum源"><a href="#centos7的yum源" class="headerlink" title="centos7的yum源"></a>centos7的yum源</h2><ul>
+<li>清华的docker源<br><a href="https://mirrors.tuna.tsinghua.edu.cn/help/docker/" target="_blank" rel="external">https://mirrors.tuna.tsinghua.edu.cn/help/docker/</a></li>
+<li>阿里的源<br><a href="http://mirrors.aliyun.com/" target="_blank" rel="external">http://mirrors.aliyun.com/</a></li>
+</ul>
+<h2 id="registry-mirror"><a href="#registry-mirror" class="headerlink" title="registry mirror"></a>registry mirror</h2><p>编辑或添加文件 /etc/docker/daemon.json<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;registry-mirrors&quot;: [&quot;https://docker.mirrors.ustc.edu.cn&quot;,&quot;http://3a35aff6.m.daocloud.io&quot;,&quot;http://ethanzhu.m.tenxcloud.net&quot;]</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>之后重启docker-daemon就可以了。</p>
+<p>参考：</p>
+<ul>
+<li><a href="http://ethanzhu.leanote.com/post/docker-%E6%9B%B4%E6%94%B9" target="_blank" rel="external">http://ethanzhu.leanote.com/post/docker-%E6%9B%B4%E6%94%B9</a></li>
+</ul>
+<h2 id="修改docker-daemon配置"><a href="#修改docker-daemon配置" class="headerlink" title="修改docker daemon配置"></a>修改docker daemon配置</h2><p>查了好多资料，都说直接修改/etc/default/docker里的DOCKER_OPTS就可以制定registry mirror、镜像存储路径等各种docker daemon的启动参数，但是试了N次都没有成功，</p>
+<p>其实细想一下，从启动脚本入手/etc/systemd/system/docker.service，官方说要在/etc/systemd/system/docker.service.d目录下创建自己的conf文件，修改启动命令的参数。我创建了一个will.conf<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[Service]</div><div class="line">ExecStart=</div><div class="line">ExecStart=/usr/bin/dockerd --graph=&quot;/server/dspace&quot;</div></pre></td></tr></table></figure></p>
+<p>之后reload一下daemon的配置。供参考的<a href="http://docs-stage.docker.com/v1.10/engine/reference/commandline/daemon/" target="_blank" rel="external">参数信息</a></p>
+<p>要修改的主要参数在于<strong>启动service里的ExecStart</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl daemon-reload</div></pre></td></tr></table></figure>
+<p>再去看指定的目录和docker info信息，发现已经修改过来了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">[root@dnode2 ~]# ll /server/dspace/</div><div class="line">total 32</div><div class="line">drwx------ 2 root root 4096 Jan 18 23:48 containers</div><div class="line">drwx------ 4 root root 4096 Jan 18 23:48 devicemapper</div><div class="line">drwx------ 3 root root 4096 Jan 18 23:48 image</div><div class="line">drwxr-x--- 3 root root 4096 Jan 18 23:48 network</div><div class="line">drwx------ 2 root root 4096 Jan 18 23:48 swarm</div><div class="line">drwx------ 2 root root 4096 Jan 18 23:48 tmp</div><div class="line">drwx------ 2 root root 4096 Jan 18 23:48 trust</div><div class="line">drwx------ 2 root root 4096 Jan 18 23:48 volumes</div><div class="line">[root@dnode2 ~]# docker images</div><div class="line">REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE</div></pre></td></tr></table></figure></p>
+<p>刚才的images也都查不到了，停掉docker daemon，手动把原来的镜像全都copy过来，启动docker daemon就可以了。</p>
+<p>综上，其实已经有两种方式配置docker daemon的启动参数了，一个是在service.docker.d目录里添加自己id配置文件will.conf，直接修改启动命令并指定参数。另一个就是编辑/etc/docker/daemon.json文件。</p>
+<p>应该是两种方式都可以行得通，但是命令行和json的参数并不完全对应，需要找一下json的mapping key，现在觉得json 的方式会更加友好一些。</p>
+<p>参考</p>
+<ul>
+<li>官网 <a href="https://docs.docker.com/engine/admin/systemd/" target="_blank" rel="external">https://docs.docker.com/engine/admin/systemd/</a></li>
+<li><a href="http://blog.csdn.net/l6807718/article/details/51325431" target="_blank" rel="external">http://blog.csdn.net/l6807718/article/details/51325431</a></li>
+</ul>
+<p>杂记<br>=</p>
+<ol>
+<li>docker容器的cpu和memory是可以调整集群资源参数的，有limit设置；</li>
+<li>Dockerfile里声明volume的目录是对于任何的volumes命令参数不可变的，会自动生成一个挂载点，目的是不让host直接修改，作为一个数据容器为其他镜像提供volume挂载服务。【–volumes-from】<br><a href="https://docs.docker.com/engine/reference/builder/#/volume" target="_blank" rel="external">https://docs.docker.com/engine/reference/builder/#/volume</a><br><a href="http://www.cnblogs.com/51kata/p/5266626.html" target="_blank" rel="external">http://www.cnblogs.com/51kata/p/5266626.html</a></li>
+</ol>
+<p>docker swarm<br>=</p>
+<h4 id="1-启动manager，初始化集群"><a href="#1-启动manager，初始化集群" class="headerlink" title="1. 启动manager，初始化集群"></a>1. 启动manager，初始化集群</h4><p>manager机器上执行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker swarm init --advertise-addr 10.1.5.129</div><div class="line">Swarm initialized: current node (efpood09fyouiyib1f78y5oa6) is now a manager.</div><div class="line"></div><div class="line">To add a worker to this swarm, run the following command:</div><div class="line"></div><div class="line">    docker swarm join \</div><div class="line">    --token SWMTKN-1-50wivhmqel8u7pnorhfpu5a8qrfvged69b6r8v06jzscsysds2-3yllw8v8deku690gd8a8pfio1 \</div><div class="line">    10.1.5.129:2377</div><div class="line"></div><div class="line">To add a manager to this swarm, run &apos;docker swarm join-token manager&apos; and follow the instructions.</div><div class="line">[root@controller wil]# docker info</div><div class="line">.....</div><div class="line">.....</div><div class="line">Swarm: active</div><div class="line"> NodeID: efpood09fyouiyib1f78y5oa6</div><div class="line"> Is Manager: true</div><div class="line"> ClusterID: 4wnicl4f2vvtlpmpa2pyj28ji</div><div class="line"> Managers: 1</div><div class="line"> Nodes: 1</div><div class="line"> Orchestration:</div><div class="line">  Task History Retention Limit: 5</div><div class="line"> Raft:</div><div class="line">  Snapshot Interval: 10000</div><div class="line">  Heartbeat Tick: 1</div><div class="line">  Election Tick: 3</div><div class="line"> Dispatcher:</div><div class="line">  Heartbeat Period: 5 seconds</div><div class="line"> CA Configuration:</div><div class="line">  Expiry Duration: 3 months</div><div class="line"> Node Address: 10.1.5.129</div><div class="line">Runtimes: runc</div><div class="line">.....</div><div class="line">.....</div></pre></td></tr></table></figure></p>
+<p>可以看到初始化后，docker info里显示了swarm相关的信息。</p>
+<p>查看当前swarm集群中的机器：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]#  docker node ls</div><div class="line">ID                           HOSTNAME    STATUS  AVAILABILITY  MANAGER STATUS</div><div class="line">efpood09fyouiyib1f78y5oa6 *  controller  Ready   Active        Leader</div></pre></td></tr></table></figure></p>
+<p>* 代表的是当前机器</p>
+<h4 id="2-添加node"><a href="#2-添加node" class="headerlink" title="2.添加node"></a>2.添加node</h4><p>可以在manager节点上确认一下加入集群需要的token：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker swarm join-token worker</div><div class="line">To add a worker to this swarm, run the following command:</div><div class="line"></div><div class="line">    docker swarm join \</div><div class="line">    --token SWMTKN-1-50wivhmqel8u7pnorhfpu5a8qrfvged69b6r8v06jzscsysds2-3yllw8v8deku690gd8a8pfio1 \</div><div class="line">    10.1.5.129:2377</div></pre></td></tr></table></figure></p>
+<p>然后分别在dnode1、dnode2上运行此命令：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">[root@dnode2 willdjango]# docker swarm join \</div><div class="line">&gt;     --token SWMTKN-1-50wivhmqel8u7pnorhfpu5a8qrfvged69b6r8v06jzscsysds2-3yllw8v8deku690gd8a8pfio1 \</div><div class="line">&gt;     10.1.5.129:2377</div><div class="line"></div><div class="line">This node joined a swarm as a worker.</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">[root@dnode1 server]# docker swarm join \</div><div class="line">&gt;     --token SWMTKN-1-50wivhmqel8u7pnorhfpu5a8qrfvged69b6r8v06jzscsysds2-3yllw8v8deku690gd8a8pfio1 \</div><div class="line">&gt;     10.1.5.129:2377</div><div class="line"></div><div class="line">This node joined a swarm as a worker.</div></pre></td></tr></table></figure>
+<p>再查看当前集群node状态, 此命令只能在manager所在的节点上执行，worker节点没有权限：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker node ls</div><div class="line">ID                           HOSTNAME    STATUS  AVAILABILITY  MANAGER STATUS</div><div class="line">0c67km60csfft6paxdsodp8ss    dnode2      Ready   Active        </div><div class="line">759vbg6zxxzffj4i3pw21249y    dnode1      Ready   Active        </div><div class="line">efpood09fyouiyib1f78y5oa6 *  controller  Ready   Active        Leader</div></pre></td></tr></table></figure></p>
+<h4 id="3-部署服务"><a href="#3-部署服务" class="headerlink" title="3. 部署服务"></a>3. 部署服务</h4><p>创建一个service：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker service create --replicas 1 --name resourcemanager_swarm willcup/yarn:0.1 /bin/bash</div><div class="line">0nnc9cpf1ebhbw6ixbro9q8wn</div><div class="line">[root@controller wil]# docker service ls</div><div class="line">ID            NAME                   REPLICAS  IMAGE             COMMAND</div><div class="line">0nnc9cpf1ebh  resourcemanager_swarm  0/1       willcup/yarn:0.1  /bin/bash</div></pre></td></tr></table></figure></p>
+<p>查看这个service的元信息：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker service inspect --pretty resourcemanager_swarm</div><div class="line">ID:		0nnc9cpf1ebhbw6ixbro9q8wn</div><div class="line">Name:		resourcemanager_swarm</div><div class="line">Mode:		Replicated</div><div class="line"> Replicas:	1</div><div class="line">Placement:</div><div class="line">UpdateConfig:</div><div class="line"> Parallelism:	1</div><div class="line"> On failure:	pause</div><div class="line">ContainerSpec:</div><div class="line"> Image:		willcup/yarn:0.1</div><div class="line"> Args:		/bin/bash</div><div class="line">Resources:</div></pre></td></tr></table></figure></p>
+<p>查看这个service的进程所在：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker service ps resourcemanager_swarm</div><div class="line">ID                         NAME                         IMAGE             NODE        DESIRED STATE  CURRENT STATE            ERROR</div><div class="line">dss32jnwz7aaxtqemvxpke4gg  resourcemanager_swarm.1      willcup/yarn:0.1  dnode2      Running        Preparing 5 minutes ago  </div><div class="line">1az4a1ctb9y3io2oswew0zab9   \_ resourcemanager_swarm.1  willcup/yarn:0.1  controller  Shutdown       Complete 2 minutes ago</div></pre></td></tr></table></figure></p>
+<p>像这个我们的例子中就是，在controller中启动未成功，然后转到dnode1上运行了。但是两次执行的DESIRED STATE和CURRENT STATE并不吻合。看了一下是我们的manager机器【也就是上面的controller】并不认识dnode2，配置一下hosts。再查看一下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker service ps resourcemanager_swarm</div><div class="line">ID                         NAME                         IMAGE             NODE        DESIRED STATE  CURRENT STATE            ERROR</div><div class="line">bvrtqkl8iybt5rr5kqlj6mio2  resourcemanager_swarm.1      willcup/yarn:0.1  controller  Running        Running 10 seconds ago   </div><div class="line">dss32jnwz7aaxtqemvxpke4gg   \_ resourcemanager_swarm.1  willcup/yarn:0.1  dnode2      Shutdown       Complete 4 minutes ago   </div><div class="line">1az4a1ctb9y3io2oswew0zab9   \_ resourcemanager_swarm.1  willcup/yarn:0.1  controller  Shutdown       Complete 10 minutes ago  </div><div class="line">[root@controller wil]# docker service ps resourcemanager_swarm</div><div class="line">ID                         NAME                         IMAGE             NODE        DESIRED STATE  CURRENT STATE                ERROR</div><div class="line">c2btlmupl7r9ss3dents28928  resourcemanager_swarm.1      willcup/yarn:0.1  controller  Running        Preparing 22 seconds ago     </div><div class="line">99hilqo2an723j9k7n2grkf0o   \_ resourcemanager_swarm.1  willcup/yarn:0.1  dnode2      Shutdown       Complete 3 minutes ago       </div><div class="line">a16ktljr241g9zn6qluunx84l   \_ resourcemanager_swarm.1  willcup/yarn:0.1  controller  Shutdown       Complete about a minute ago  </div><div class="line">c52kek07d8uve9kqjsf3vcgh3   \_ resourcemanager_swarm.1  willcup/yarn:0.1  dnode2      Shutdown       Complete 6 minutes ago       </div><div class="line">bvrtqkl8iybt5rr5kqlj6mio2   \_ resourcemanager_swarm.1  willcup/yarn:0.1  controller  Shutdown       Complete 4 minutes ago</div></pre></td></tr></table></figure></p>
+<p>总是出问题。。。</p>
+<p>还是用官网的吧：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker service create --replicas 1 --name helloworld alpine ping docker.com</div><div class="line">2q5p0ahn92aa8be9el23j93yx</div><div class="line">[root@controller wil]# docker service ps helloworld</div><div class="line">ID                         NAME          IMAGE   NODE        DESIRED STATE  CURRENT STATE            ERROR</div><div class="line">dvjcrjztbqkj3x5e8fggraw0f  helloworld.1  alpine  controller  Running        Preparing 6 seconds ago  </div><div class="line">[root@controller wil]# docker service ps helloworld</div><div class="line">ID                         NAME          IMAGE   NODE        DESIRED STATE  CURRENT STATE           ERROR</div><div class="line">dvjcrjztbqkj3x5e8fggraw0f  helloworld.1  alpine  controller  Running        Starting 4 seconds ago  </div><div class="line">[root@controller wil]# docker service ps helloworld</div><div class="line">ID                         NAME          IMAGE   NODE        DESIRED STATE  CURRENT STATE           ERROR</div><div class="line">dvjcrjztbqkj3x5e8fggraw0f  helloworld.1  alpine  controller  Running        Starting 8 seconds ago  </div><div class="line">[root@controller wil]# docker service ps helloworld</div><div class="line">ID                         NAME          IMAGE   NODE        DESIRED STATE  CURRENT STATE               ERROR</div><div class="line">dvjcrjztbqkj3x5e8fggraw0f  helloworld.1  alpine  controller  Running        Running about a minute ago</div></pre></td></tr></table></figure></p>
+<p>说是在controller上运行着的，我们就到controller机器上ps一下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker ps</div><div class="line">CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES</div><div class="line">5653c87be989        alpine:latest       &quot;ping docker.com&quot;   4 minutes ago       Up 3 minutes                            helloworld.1.dvjcrjztbqkj3x5e8fggraw0f</div></pre></td></tr></table></figure></p>
+<h4 id="4-服务扩容"><a href="#4-服务扩容" class="headerlink" title="4. 服务扩容"></a>4. 服务扩容</h4><p>对于后台服务，很多时候我们是部署多个，然后再前面部署负载均衡的。我们可以通过swarm的命令轻松的将我们的服务进行扩容：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker service scale helloworld=5</div><div class="line">helloworld scaled to 5</div><div class="line">[root@controller wil]# docker service ps helloworld</div><div class="line">ID                         NAME          IMAGE   NODE        DESIRED STATE  CURRENT STATE                     ERROR</div><div class="line">dvjcrjztbqkj3x5e8fggraw0f  helloworld.1  alpine  controller  Running        Running 5 minutes ago             </div><div class="line">5x3rsxhw31w5prpwhvh5bzn8m  helloworld.2  alpine  dnode2      Running        Preparing 2 minutes ago           </div><div class="line">1ymr6qzfzvpjc86lwx7c7p938  helloworld.3  alpine  dnode1      Running        Preparing 16 seconds ago          </div><div class="line">3h36sr8m8c4f7utei50ss9tav  helloworld.4  alpine  dnode1      Running        Preparing 16 seconds ago          </div><div class="line">eneop6ooju630tzpxt8vlftjw  helloworld.5  alpine  controller  Running        Preparing less than a second ago  </div><div class="line">[root@controller wil]# docker service ps helloworld</div><div class="line">ID                         NAME          IMAGE   NODE        DESIRED STATE  CURRENT STATE               ERROR</div><div class="line">dvjcrjztbqkj3x5e8fggraw0f  helloworld.1  alpine  controller  Running        Running 7 minutes ago       </div><div class="line">5x3rsxhw31w5prpwhvh5bzn8m  helloworld.2  alpine  dnode2      Running        Running 3 minutes ago       </div><div class="line">1ymr6qzfzvpjc86lwx7c7p938  helloworld.3  alpine  dnode1      Running        Running about a minute ago  </div><div class="line">3h36sr8m8c4f7utei50ss9tav  helloworld.4  alpine  dnode1      Running        Running about a minute ago  </div><div class="line">eneop6ooju630tzpxt8vlftjw  helloworld.5  alpine  controller  Running        Running about a minute ago</div></pre></td></tr></table></figure></p>
+<p>可以看到，实现了扩容，自动将container重命名，并且分布到了不同的节点之上。</p>
+<h4 id="5-删除服务"><a href="#5-删除服务" class="headerlink" title="5. 删除服务"></a>5. 删除服务</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker service rm helloworld</div><div class="line">helloworld</div><div class="line">[root@controller wil]# docker service ps helloworld</div><div class="line">Error: No such service: helloworld</div></pre></td></tr></table></figure>
+<p>虽然service很快就被删除了，但是其实container是需要一些时间才能清理干净的。开始的时候docker ps还能看到部分，稍等一下就没有了：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker ps -a</div><div class="line">CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                     PORTS               NAMES</div><div class="line">5653c87be989        alpine:latest       &quot;ping docker.com&quot;        10 minutes ago      Removal In Progress                            helloworld.1.dvjcrjztbqkj3x5e8fggraw0f</div><div class="line">fb3c81306678        a6a1f5eb98f2        &quot;bash /entrypoint.sh &quot;   3 hours ago         Exited (1) 3 hours ago                         composetest_nodemanager_1</div><div class="line">c191fc0db545        a6a1f5eb98f2        &quot;bash /entrypoint.sh &quot;   19 hours ago        Exited (137) 3 hours ago                       composetest_resourcemanager_1</div><div class="line">[root@controller wil]# docker ps -a</div><div class="line">CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                     PORTS               NAMES</div><div class="line">fb3c81306678        a6a1f5eb98f2        &quot;bash /entrypoint.sh &quot;   3 hours ago         Exited (1) 3 hours ago                         composetest_nodemanager_1</div><div class="line">c191fc0db545        a6a1f5eb98f2        &quot;bash /entrypoint.sh &quot;   19 hours ago        Exited (137) 3 hours ago                       composetest_resourcemanager_1</div></pre></td></tr></table></figure></p>
+<h4 id="5-节点维护"><a href="#5-节点维护" class="headerlink" title="5. 节点维护"></a>5. 节点维护</h4><p>有的时候我们要临时维护几台节点，就需要把这个节点标记下线，为了不影响服务质量，需要把正在运行的服务转移到其他节点上。swarm会自动为我们做这些工作，我们只需要标记某个节点为drain就可以了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker service ps helloworld</div><div class="line">ID                         NAME          IMAGE   NODE        DESIRED STATE  CURRENT STATE               ERROR</div><div class="line">ciw4f1ibuwuqjv2hvn6s1mqs9  helloworld.1  alpine  dnode1      Running        Running about a minute ago  </div><div class="line">0ezba4uegtfmajlkw6kbw66q5  helloworld.2  alpine  dnode2      Running        Running 4 minutes ago       </div><div class="line">dnb7d4cjwes3ubywn6iv2vpiu  helloworld.3  alpine  controller  Running        Running about a minute ago  </div><div class="line">dyidqdhh7n04m0sk3k0fy74yp  helloworld.4  alpine  controller  Running        Running about a minute ago  </div><div class="line">66lmmu30fywqqey7lpirz5o6s  helloworld.5  alpine  dnode1      Running        Running about a minute ago  </div><div class="line">[root@controller wil]# docker node update --availability drain dnode1</div><div class="line">dnode1</div><div class="line">[root@controller wil]# docker node ls</div><div class="line">ID                           HOSTNAME    STATUS  AVAILABILITY  MANAGER STATUS</div><div class="line">0c67km60csfft6paxdsodp8ss    dnode2      Ready   Active        </div><div class="line">759vbg6zxxzffj4i3pw21249y    dnode1      Ready   Drain         </div><div class="line">efpood09fyouiyib1f78y5oa6 *  controller  Ready   Active        Leader</div><div class="line">[root@controller wil]# docker service ps helloworld</div><div class="line">ID                         NAME              IMAGE   NODE        DESIRED STATE  CURRENT STATE               ERROR</div><div class="line">9sxv9bi0j7yy341rtp6hkrm0e  helloworld.1      alpine  dnode2      Ready          Preparing 3 minutes ago     </div><div class="line">ciw4f1ibuwuqjv2hvn6s1mqs9   \_ helloworld.1  alpine  dnode1      Shutdown       Running 2 minutes ago       </div><div class="line">0ezba4uegtfmajlkw6kbw66q5  helloworld.2      alpine  dnode2      Running        Running 4 minutes ago       </div><div class="line">dnb7d4cjwes3ubywn6iv2vpiu  helloworld.3      alpine  controller  Running        Running about a minute ago  </div><div class="line">dyidqdhh7n04m0sk3k0fy74yp  helloworld.4      alpine  controller  Running        Running about a minute ago  </div><div class="line">8ozxlg29d4ynko3plauupuuu5  helloworld.5      alpine  dnode2      Ready          Preparing 3 minutes ago     </div><div class="line">66lmmu30fywqqey7lpirz5o6s   \_ helloworld.5  alpine  dnode1      Shutdown       Running 2 minutes ago       </div><div class="line">[root@controller wil]# docker service ps helloworld</div><div class="line">ID                         NAME              IMAGE   NODE        DESIRED STATE  CURRENT STATE               ERROR</div><div class="line">9sxv9bi0j7yy341rtp6hkrm0e  helloworld.1      alpine  dnode2      Running        Preparing 3 minutes ago     </div><div class="line">ciw4f1ibuwuqjv2hvn6s1mqs9   \_ helloworld.1  alpine  dnode1      Shutdown       Shutdown 19 seconds ago     </div><div class="line">0ezba4uegtfmajlkw6kbw66q5  helloworld.2      alpine  dnode2      Running        Running 5 minutes ago       </div><div class="line">dnb7d4cjwes3ubywn6iv2vpiu  helloworld.3      alpine  controller  Running        Running about a minute ago  </div><div class="line">dyidqdhh7n04m0sk3k0fy74yp  helloworld.4      alpine  controller  Running        Running about a minute ago  </div><div class="line">8ozxlg29d4ynko3plauupuuu5  helloworld.5      alpine  dnode2      Running        Preparing 3 minutes ago     </div><div class="line">66lmmu30fywqqey7lpirz5o6s   \_ helloworld.5  alpine  dnode1      Shutdown       Shutdown 20 seconds ago</div></pre></td></tr></table></figure></p>
+<p>当维护完成之后，再把node状态更新回来：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker node update --availability active dnode1</div><div class="line">dnode1</div><div class="line">[root@controller wil]# docker service ps helloworld</div><div class="line">ID                         NAME              IMAGE   NODE        DESIRED STATE  CURRENT STATE           ERROR</div><div class="line">9sxv9bi0j7yy341rtp6hkrm0e  helloworld.1      alpine  dnode2      Running        Running 4 minutes ago   </div><div class="line">ciw4f1ibuwuqjv2hvn6s1mqs9   \_ helloworld.1  alpine  dnode1      Shutdown       Shutdown 2 minutes ago  </div><div class="line">0ezba4uegtfmajlkw6kbw66q5  helloworld.2      alpine  dnode2      Running        Running 6 minutes ago   </div><div class="line">dnb7d4cjwes3ubywn6iv2vpiu  helloworld.3      alpine  controller  Running        Running 3 minutes ago   </div><div class="line">dyidqdhh7n04m0sk3k0fy74yp  helloworld.4      alpine  controller  Running        Running 3 minutes ago   </div><div class="line">8ozxlg29d4ynko3plauupuuu5  helloworld.5      alpine  dnode2      Running        Running 4 minutes ago   </div><div class="line">66lmmu30fywqqey7lpirz5o6s   \_ helloworld.5  alpine  dnode1      Shutdown       Shutdown 2 minutes ago  </div><div class="line">[root@controller wil]# docker node ls</div><div class="line">ID                           HOSTNAME    STATUS  AVAILABILITY  MANAGER STATUS</div><div class="line">0c67km60csfft6paxdsodp8ss    dnode2      Ready   Active        </div><div class="line">759vbg6zxxzffj4i3pw21249y    dnode1      Ready   Active        </div><div class="line">efpood09fyouiyib1f78y5oa6 *  controller  Ready   Active        Leader</div></pre></td></tr></table></figure></p>
+<p>但是服务如果不出问题的话，不会自动迁移回dnode1了。</p>
+<p>通常我们可以让manager节点是drain的，以保证它负载低，集群能正常运行。</p>
+<h4 id="6-路由"><a href="#6-路由" class="headerlink" title="6. 路由"></a>6. 路由</h4><p>所有的swarm节点都加入了一个ingress的routing mesh。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker network ls</div><div class="line">NETWORK ID          NAME                  DRIVER              SCOPE</div><div class="line">6461c2e9e64e        bridge                bridge              local               </div><div class="line">5d5d0be2f5a6        docker_gwbridge       bridge              local               </div><div class="line">e2bbfd5c0b62        host                  host                local               </div><div class="line">0r5dk7ja8vw7        ingress               overlay             swarm               </div><div class="line">01c12cd7bba7        none                  null                local</div></pre></td></tr></table></figure>
+<p>routing mesh会把所有对于public port的请求转发到所有对应service的节点的container上。</p>
+<p>先搞一个有public接口的service:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker service create \</div><div class="line">&gt;   --name my-web \</div><div class="line">&gt;   --publish 8080:80 \</div><div class="line">&gt;   --replicas 2 \</div><div class="line">&gt;   nginx</div><div class="line">2lsi4py6pbcu96ttnjyqj7u4i</div><div class="line">[root@controller wil]# docker service ps my-web</div><div class="line">ID                         NAME      IMAGE  NODE    DESIRED STATE  CURRENT STATE             ERROR</div><div class="line">84xjxx4kth0idnzuob4186cn7  my-web.1  nginx  dnode1  Running        Preparing 20 seconds ago  </div><div class="line">0fqk2zwyp9u2ohi9iu91qli50  my-web.2  nginx  dnode2  Running        Preparing 3 minutes ago</div></pre></td></tr></table></figure></p>
+<p>这个命令会在所有的node上都开放8080端口，swarm的load balancer会把对于任何一个node的8080接口的请求路由给active的container【这里就是dnode1和dnode2】。</p>
+<p>也可以为正在运行的服务添加开放的端口映射：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">$ docker service update \</div><div class="line">  --publish-add &lt;PUBLISHED-PORT&gt;:&lt;TARGET-PORT&gt; \</div><div class="line">  &lt;SERVICE&gt;</div></pre></td></tr></table></figure></p>
+<p>查看某service开放的端口：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]#  docker service inspect --format=&quot;&#123;&#123;json .Endpoint.Spec.Ports&#125;&#125;&quot; my-web</div><div class="line">[&#123;&quot;Protocol&quot;:&quot;tcp&quot;,&quot;TargetPort&quot;:80,&quot;PublishedPort&quot;:8080&#125;]</div></pre></td></tr></table></figure></p>
+<p>单独指定开放tcp/udp端口，默认就是TCP：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ docker service create --name dns-cache -p 53:53/tcp dns-cache</div><div class="line">$ docker service create --name dns-cache -p 53:53/udp dns-cache</div></pre></td></tr></table></figure></p>
+<p>因为目前是有三个node的8080都可以提供服务，所以我们也可以在他们之外再加个HAProxy做负载均衡。<br>其实如果swarm自己的调度器能够均匀分发请求给不同的container的话，也没有必要弄外部的LB了。</p>
+<h4 id="7-其他"><a href="#7-其他" class="headerlink" title="7. 其他"></a>7. 其他</h4><p>另外，创建服务的时候和compose类似，也是有很多参数可以指定的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker service create --help</div><div class="line"></div><div class="line">Usage:	docker service create [OPTIONS] IMAGE [COMMAND] [ARG...]</div><div class="line"></div><div class="line">Create a new service</div><div class="line"></div><div class="line">Options:</div><div class="line">      --constraint value               Placement constraints (default [])</div><div class="line">      --container-label value          Container labels (default [])</div><div class="line">      --endpoint-mode string           Endpoint mode (vip or dnsrr)</div><div class="line">  -e, --env value                      Set environment variables (default [])</div><div class="line">      --help                           Print usage</div><div class="line">  -l, --label value                    Service labels (default [])</div><div class="line">      --limit-cpu value                Limit CPUs (default 0.000)</div><div class="line">      --limit-memory value             Limit Memory (default 0 B)</div><div class="line">      --log-driver string              Logging driver for service</div><div class="line">      --log-opt value                  Logging driver options (default [])</div><div class="line">      --mode string                    Service mode (replicated or global) (default &quot;replicated&quot;)</div><div class="line">      --mount value                    Attach a mount to the service</div><div class="line">      --name string                    Service name</div><div class="line">      --network value                  Network attachments (default [])</div><div class="line">  -p, --publish value                  Publish a port as a node port (default [])</div><div class="line">      --replicas value                 Number of tasks (default none)</div><div class="line">      --reserve-cpu value              Reserve CPUs (default 0.000)</div><div class="line">      --reserve-memory value           Reserve Memory (default 0 B)</div><div class="line">      --restart-condition string       Restart when condition is met (none, on-failure, or any)</div><div class="line">      --restart-delay value            Delay between restart attempts (default none)</div><div class="line">      --restart-max-attempts value     Maximum number of restarts before giving up (default none)</div><div class="line">      --restart-window value           Window used to evaluate the restart policy (default none)</div><div class="line">      --stop-grace-period value        Time to wait before force killing a container (default none)</div><div class="line">      --update-delay duration          Delay between updates</div><div class="line">      --update-failure-action string   Action on update failure (pause|continue) (default &quot;pause&quot;)</div><div class="line">      --update-parallelism uint        Maximum number of tasks updated simultaneously (0 to update all at once) (default 1)</div><div class="line">  -u, --user string                    Username or UID</div><div class="line">      --with-registry-auth             Send registry authentication details to swarm agents</div><div class="line">  -w, --workdir string                 Working directory inside the container</div></pre></td></tr></table></figure></p>
+<p>需要注意的是：慎重使用mount。原因有以下三点：</p>
+<ul>
+<li>如果mount到host path上，那么需要每个node都有同样的path和文件。</li>
+<li>需要确保所有node上的这个文件一直是可用的状态</li>
+<li>这种方式完全就是反设计的。因为不能保证生产和测试的mount文件是一致的，从而导致运行出问题。</li>
+</ul>
+<p>参考：<a href="https://docs.docker.com/engine/swarm/services/" target="_blank" rel="external">https://docs.docker.com/engine/swarm/services/</a></p>
+<p>可以通过demote和promote改变node的角色。</p>
+<p><strong>重大发现</strong>： docker是有python的API的，可以用API管理集群： <a href="https://docker-py.readthedocs.io/en/stable/services.html。" target="_blank" rel="external">https://docker-py.readthedocs.io/en/stable/services.html。</a></p>
+<h4 id="坑"><a href="#坑" class="headerlink" title="坑"></a>坑</h4><p>1.12版本的swarm模式里并不能获取已经失败了的service的container的日志：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker service ps yarn</div><div class="line">ID                         NAME        IMAGE             NODE        DESIRED STATE  CURRENT STATE              ERROR</div><div class="line">c317x0ovq833c6g83hi4iwzz4  yarn.1      willcup/yarn:0.1  controller  Running        Running 2 seconds ago      </div><div class="line">2w5k9c4efh8h188ompgnfvh57   \_ yarn.1  willcup/yarn:0.1  dnode1      Shutdown       Failed about a minute ago  &quot;task: non-zero exit (127)&quot;</div><div class="line">4jvdu7nz8kxvnd9wa9qzmy1pw   \_ yarn.1  willcup/yarn:0.1  controller  Shutdown       Failed about a minute ago  &quot;task: non-zero exit (127)&quot;</div><div class="line">5yu69ugxmndhfdetvd9kthel2   \_ yarn.1  willcup/yarn:0.1  dnode1      Shutdown       Failed 3 minutes ago       &quot;task: non-zero exit (127)&quot;</div><div class="line">7qyx81ptxouv6883h1o1pbiti   \_ yarn.1  willcup/yarn:0.1  controller  Shutdown       Failed 5 minutes ago       &quot;task: non-zero exit (127)&quot;</div></pre></td></tr></table></figure>
+<p>上面失败的就都找不到了。而且rm service以后，那些container都会被自动清理掉。</p>
+<p>对于某些功能支持的不完善.</p>
+<p>参考：</p>
+<ul>
+<li><a href="http://www.jianshu.com/p/3efee6927833" target="_blank" rel="external">http://www.jianshu.com/p/3efee6927833</a></li>
+<li><a href="https://github.com/docker/docker/issues/24812" target="_blank" rel="external">https://github.com/docker/docker/issues/24812</a></li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/01/17/docker整理/" data-title="docker整理 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/01/17/centos7命令/" title="centos7命令">
+  <strong>上一篇：</strong><br/>
+  <span>
+  centos7命令</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/01/15/InfoQ视频记录/"  title="InfoQ视频记录">
+ <strong>下一篇：</strong><br/> 
+ <span>InfoQ视频记录
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/01/17/docker整理/" data-title="docker整理" data-url="http://willcup.com/2017/01/17/docker整理/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#centos7的yum源"><span class="toc-number">1.</span> <span class="toc-text">centos7的yum源</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#registry-mirror"><span class="toc-number">2.</span> <span class="toc-text">registry mirror</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#修改docker-daemon配置"><span class="toc-number">3.</span> <span class="toc-text">修改docker daemon配置</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-启动manager，初始化集群"><span class="toc-number">3.0.1.</span> <span class="toc-text">1. 启动manager，初始化集群</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-添加node"><span class="toc-number">3.0.2.</span> <span class="toc-text">2.添加node</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-部署服务"><span class="toc-number">3.0.3.</span> <span class="toc-text">3. 部署服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-服务扩容"><span class="toc-number">3.0.4.</span> <span class="toc-text">4. 服务扩容</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-删除服务"><span class="toc-number">3.0.5.</span> <span class="toc-text">5. 删除服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-节点维护"><span class="toc-number">3.0.6.</span> <span class="toc-text">5. 节点维护</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-路由"><span class="toc-number">3.0.7.</span> <span class="toc-text">6. 路由</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-其他"><span class="toc-number">3.0.8.</span> <span class="toc-text">7. 其他</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#坑"><span class="toc-number">3.0.9.</span> <span class="toc-text">坑</span></a></li></ol></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

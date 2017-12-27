@@ -1,0 +1,635 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>hive2-LLAP | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="Live Long And Process。
+概览最近几年，有了tez和CBO等机制，hive的运行速度与特性已经有了很大提升。这次2.0又把hive带入了一个新的level
+
+异步spindle-aware的IO
+预抽取column chunk，缓存column chunk
+多线程JIT友好的operator pipeline
+
+上面的特性就是LLAP提供的了，LLAP提供了一个混合引擎模型。它">
+<meta property="og:type" content="article">
+<meta property="og:title" content="hive2-LLAP">
+<meta property="og:url" content="http://willcup.com/2017/11/27/hive2-LLAP/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="Live Long And Process。
+概览最近几年，有了tez和CBO等机制，hive的运行速度与特性已经有了很大提升。这次2.0又把hive带入了一个新的level
+
+异步spindle-aware的IO
+预抽取column chunk，缓存column chunk
+多线程JIT友好的operator pipeline
+
+上面的特性就是LLAP提供的了，LLAP提供了一个混合引擎模型。它">
+<meta property="og:image" content="https://cwiki.apache.org/confluence/download/attachments/62689557/LLAP_diagram.png?version=1&modificationDate=1474327021000&api=v2">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.785Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="hive2-LLAP">
+<meta name="twitter:description" content="Live Long And Process。
+概览最近几年，有了tez和CBO等机制，hive的运行速度与特性已经有了很大提升。这次2.0又把hive带入了一个新的level
+
+异步spindle-aware的IO
+预抽取column chunk，缓存column chunk
+多线程JIT友好的operator pipeline
+
+上面的特性就是LLAP提供的了，LLAP提供了一个混合引擎模型。它">
+<meta name="twitter:image" content="https://cwiki.apache.org/confluence/download/attachments/62689557/LLAP_diagram.png?version=1&modificationDate=1474327021000&api=v2">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/11/27/hive2-LLAP/" title="hive2-LLAP" itemprop="url">hive2-LLAP</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-11-27T06:59:23.000Z" itemprop="datePublished"> 发表于 2017-11-27</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#概览"><span class="toc-text">概览</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#持久化daemon"><span class="toc-text">持久化daemon</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#执行引擎"><span class="toc-text">执行引擎</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#query-fragment执行"><span class="toc-text">query fragment执行</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#IO"><span class="toc-text">IO</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#缓存"><span class="toc-text">缓存</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#workload管理"><span class="toc-text">workload管理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ACID支持"><span class="toc-text">ACID支持</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#安全"><span class="toc-text">安全</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#监控"><span class="toc-text">监控</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#web-service"><span class="toc-text">web service</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#在slider上部署"><span class="toc-text">在slider上部署</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#LLAP-status"><span class="toc-text">LLAP status</span></a></li></ol>
+		
+		</div>
+		
+		<p>Live Long And Process。</p>
+<h4 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h4><p>最近几年，有了tez和CBO等机制，hive的运行速度与特性已经有了很大提升。这次2.0又把hive带入了一个新的level</p>
+<ul>
+<li>异步spindle-aware的IO</li>
+<li>预抽取column chunk，缓存column chunk</li>
+<li>多线程JIT友好的operator pipeline</li>
+</ul>
+<p>上面的特性就是LLAP提供的了，LLAP提供了一个混合引擎模型。它包含了一个长期存在的daemon，替代直接与HDFS的Datanode交互。还有一个与DAG紧密结合的framework。对于缓存、字段pre-fetching、query的执行与ACL都被移动到了daemon中。small/short的query大部分都会被送到这个daemon直接处理，其他稍微重一些的操作都会被YARN的container运行。</p>
+<p>跟DataNode类似，LLAP deamon也可以被其他的app使用，尤其是基于文件处理的关系型数据view。这个daemon也提供了可选的API(例如InputFormat)，供其它数据处理框架作为一个构建的block。</p>
+<p>最后，细粒度的字段级别的acl在这个model中也得到了完美的呈现。</p>
+<p>下图显示了LLAP的一个执行样例。Tez AM负责整体的编排工作。query的初始化stage被push给了LLAP。reduce stage，大的shuffle操作是在几个container中执行的。多个查询和app可以并发访问LLAP。</p>
+<p><img src="https://cwiki.apache.org/confluence/download/attachments/62689557/LLAP_diagram.png?version=1&amp;modificationDate=1474327021000&amp;api=v2" alt=""></p>
+<h4 id="持久化daemon"><a href="#持久化daemon" class="headerlink" title="持久化daemon"></a>持久化daemon</h4><p>为了进一步优化缓存和JIT，还有能够更好的估算startup耗时等，集群中的worker节点上都会有一个daemon。这个daemon处理IO,缓存，query分片的执行。</p>
+<ul>
+<li>所有的node都是无状态的。任何发送给LLAP节点的request都包含数据的位置和元信息。可以是本地的位置，也可以是远程的，数据本地化是调用者需要考虑的事情(YARN)</li>
+<li>recovery/resilency。失败和恢复都很简单，因为任何数据家电都可以用来处理输入数据的任何分片。Tez AM只需要简单的重新运行失败的分片即可。</li>
+<li>节点间沟通。LLAP节点之间可以共享数据(例如抽取partition数据，广播数据分片等)。实现方式与Tez中一样的。</li>
+</ul>
+<h5 id="执行引擎"><a href="#执行引擎" class="headerlink" title="执行引擎"></a>执行引擎</h5><p>LLAP和已经存在的，基于过程的hive引擎是可以兼容的，保留了hive的可扩展性和广泛性。它并没有取代已经存在的执行模型，而是对其进行增强。</p>
+<ul>
+<li>daemon是可选的。在没有这些daemon的时候，hive仍然是可运行的。</li>
+<li>外部编排和执行引擎。LLAP并不是一个像Tez或者MR的执行引擎。所有的执行都是被已经存在的hive执行引擎（比如tez）在LLAP节点上进行调度与监控的，跟普通的container一样。显然，LLAP级别的支持是基于每个执行引擎(目前是tez)的。MR的支持并没有计划，但是其他的引擎有可能会在后面也加入进来。其他的框架，例如pig，也可以选择使用LLAP daemon。</li>
+<li>部分执行。LLAP daemon的执行结果可以说某个hive query的结果的一部分，也可以传递给外部的hive task，这个取决于具体的query</li>
+<li>资源管理。YARN仍然负责资源的管理与分发。yarn container delegation被用来允许分配资源给LLAP。为了避免jvm内存设置的初始化，缓存的数据是放在off-heap的，大的buffer也是(比如groupby，join等操作)。通过这种方案，daemon可以只是用很小的内存，其他资源(CPU,内存等)会根据负载进行分发。</li>
+</ul>
+<h4 id="query-fragment执行"><a href="#query-fragment执行" class="headerlink" title="query fragment执行"></a>query fragment执行</h4><p>LLAP节点会执行一些query分片，比如filter，projection，数据转化，部分聚合，排序，分桶，hash join/semi-join等。在LLAP中只接受hive代码和udf。没有任何代码是可以在运行时生成和执行的。这是出于稳定性和安全性的考虑。</p>
+<ul>
+<li>并发执行。一个LLAP节点允许不同query和session 的多个查询分片的并发执行。</li>
+<li>interface。用户可以通过client API直接访问LLAP节点。他们可以指定关系转化，然后通过面向record的stream进行数据读取。</li>
+</ul>
+<h4 id="IO"><a href="#IO" class="headerlink" title="IO"></a>IO</h4><p>daemon摆脱了压缩格式处理的IO，这些工作交给其他独立的线程。数据在就绪的时候会被传递给execution，就是说前一批数据正在被处理的同时，就可以准备下一批了。数据是以简单的RLE编码的列式格式传递给execution的，主要是为了后面方便进行vectorized processiong【向量化处理？】。这也是缓存的格式，可以减小IO，缓存，execution之间的copy流量。</p>
+<ul>
+<li>多种文件格式。IO和缓存依赖于已经存在的文件格式(越高效越好)。因此，和vectorization工作类似，不同的文件格式都会通过插件形式被支持(目前是ORC)。另外，一个通用的，不那么搞笑的插件也可以加进来支持任意的hive输入格式。这些插件必须负责持有元信息，并且把原始数据转化到column chunk。</li>
+<li>预测和bloom filter。SARGs和bloom filter是会被push down到存储层的。</li>
+</ul>
+<h4 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h4><p>daemon会缓存输入文件和数据的元数据。即便数据还没有缓存，元数据和索引信息也是可以先缓存起来的。元数据是以java object的形式存在进程的，缓存的数据是根据<a href="https://cwiki.apache.org/confluence/display/Hive/LLAP#LLAP-I/O" target="_blank" rel="external">IO部分</a>的指定形式，保存在off-heap的。</p>
+<ul>
+<li>驱逐策略【eviction policy】。取出策略是为了调优负载，应对频繁的表扫面的。初始阶段，是使用了LRFU的简单策略。这个策略是可插拔的。</li>
+<li>缓存粒度。column-chunk是缓存数据的基本单位。这是在低开销的处理与高效存储之间的一个权衡。chunk的粒度取决于文件格式和执行引擎了。(Vectorized Row Batch Size, ORC stripe等)</li>
+</ul>
+<p>bloomfilter会自动创建，以提供动态运行时过滤。</p>
+<h4 id="workload管理"><a href="#workload管理" class="headerlink" title="workload管理"></a>workload管理</h4><p>YARN用来获取不同workload的资源。某个workload一旦获取到yarn分配的资源之后，这个执行引擎就可以选择把资源代理给LLAP，或者在单独的进程里启动hive executor。通过YARN的资源管理保证了节点不会过载运行，不管是因为LLAP或者其他container。daemon本身也是在YARN的控制之下的。</p>
+<h4 id="ACID支持"><a href="#ACID支持" class="headerlink" title="ACID支持"></a>ACID支持</h4><p>LLAP是事务感知的。在数据放入缓存之前，将delta文件合并，可以生成一个table的特定的state。如果有多版本，可以在请求中指定使用哪个版本。这样的好处是可以异步merge，而且只用cache一次数据，从而避免了operator pipeline的攻击。</p>
+<h4 id="安全"><a href="#安全" class="headerlink" title="安全"></a>安全</h4><p>LLAP server是一个很自然的就可以进行acl的地方，比per-file的控制粒度还要细。因为LLAP的daemon知道当前要处理的column和record，所有针对这俩东西的策略都可以在这里实施。这并不会替代已有的安全机制，但是会有所增强，也可以提供给其他框架使用。</p>
+<h4 id="监控"><a href="#监控" class="headerlink" title="监控"></a>监控</h4><p>LLAP监控的配置是存储在resources.json， appConfig.json， metainfo.xml，都会存在于slider的templates.py中。</p>
+<p>LLAP monitor daemon也运行在YARN container中，跟LLAP Daemon一样，而且默认监听同样的端口。</p>
+<p>LLAP Metric Collection Server从所有的LLAP Daemon周期性地收集JMX metric</p>
+<p>LLAP daemon列表是在启动集群的zookeeper中抽取的。</p>
+<h4 id="web-service"><a href="#web-service" class="headerlink" title="web service"></a>web service</h4><ul>
+<li>json jmx数据 - /jmx</li>
+<li>jvm stack trace - /stacks</li>
+<li>LLAP daemon的xml配置 - /conf</li>
+<li>LLAP status - /status</li>
+<li>LLAP Peers - /peers</li>
+</ul>
+<h4 id="在slider上部署"><a href="#在slider上部署" class="headerlink" title="在slider上部署"></a>在slider上部署</h4><p>LLAP可以通过slider进行部署，绕过了节点安装与相关复杂处理</p>
+<h4 id="LLAP-status"><a href="#LLAP-status" class="headerlink" title="LLAP status"></a>LLAP status</h4><p><a href="https://issues.apache.org/jira/browse/AMBARI-16149" target="_blank" rel="external">ambari相关</a>介绍了LLAP ap的状态，在hiveserver2中可用了。</p>
+<p>例子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">/current/hive-server2-hive2/bin/hive --service llapstatus --name &#123;llap_app_name&#125; [-f] [-w] [-i] [-t]</div><div class="line">-f,--findAppTimeout &lt;findAppTimeout&gt;                 Amount of time(s) that the tool will sleep to wait for the YARN application to start. negative values=wait</div><div class="line">                                                     forever, 0=Do not wait. default=20s</div><div class="line">-H,--help                                            Print help information</div><div class="line">   --hiveconf &lt;property=value&gt;                       Use value for given property. Overridden by explicit parameters</div><div class="line">-i,--refreshInterval &lt;refreshInterval&gt;               Amount of time in seconds to wait until subsequent status checks in watch mode. Valid only for watch mode.</div><div class="line">                                                     (Default 1s)</div><div class="line">-n,--name &lt;name&gt;                                     LLAP cluster name</div><div class="line">-o,--outputFile &lt;outputFile&gt;                         File to which output should be written (Default stdout)</div><div class="line">-r,--runningNodesThreshold &lt;runningNodesThreshold&gt;   When watch mode is enabled (-w), wait until the specified threshold of nodes are running (Default 1.0</div><div class="line">                                                     which means 100% nodes are running)</div><div class="line">-t,--watchTimeout &lt;watchTimeout&gt;                     Exit watch mode if the desired state is not attained until the specified timeout. (Default 300s)</div><div class="line">-w,--watch                                           Watch mode waits until all LLAP daemons are running or subset of the nodes are running (threshold can be</div><div class="line">                                                     specified via -r option) (Default wait until all nodes are running)</div></pre></td></tr></table></figure></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/11/27/hive2-LLAP/" data-title="hive2-LLAP | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/11/27/hive-llap笔记/" title="hive-llap笔记">
+  <strong>上一篇：</strong><br/>
+  <span>
+  hive-llap笔记</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/11/22/hive2---轻松更新hive表2/"  title="hive2---轻松更新hive表2">
+ <strong>下一篇：</strong><br/> 
+ <span>hive2---轻松更新hive表2
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/11/27/hive2-LLAP/" data-title="hive2-LLAP" data-url="http://willcup.com/2017/11/27/hive2-LLAP/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#概览"><span class="toc-number">1.</span> <span class="toc-text">概览</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#持久化daemon"><span class="toc-number">2.</span> <span class="toc-text">持久化daemon</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#执行引擎"><span class="toc-number">2.1.</span> <span class="toc-text">执行引擎</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#query-fragment执行"><span class="toc-number">3.</span> <span class="toc-text">query fragment执行</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#IO"><span class="toc-number">4.</span> <span class="toc-text">IO</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#缓存"><span class="toc-number">5.</span> <span class="toc-text">缓存</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#workload管理"><span class="toc-number">6.</span> <span class="toc-text">workload管理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ACID支持"><span class="toc-number">7.</span> <span class="toc-text">ACID支持</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#安全"><span class="toc-number">8.</span> <span class="toc-text">安全</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#监控"><span class="toc-number">9.</span> <span class="toc-text">监控</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#web-service"><span class="toc-number">10.</span> <span class="toc-text">web service</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#在slider上部署"><span class="toc-number">11.</span> <span class="toc-text">在slider上部署</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#LLAP-status"><span class="toc-number">12.</span> <span class="toc-text">LLAP status</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,597 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>impala架构 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="impala Daemon核心的impala组件是impala daemon，它需要在每个datanode上部署一个，进程名是impalad。它负责读写数据文件、接收来自impala-shell命令行、hue、JDBC或者ODBC的查询；并行执行查询、为集群分配分布式任务、再把中间查询结果发送回coordinator node。
+可以通过任何一个datanode上的impala daemon提交查">
+<meta property="og:type" content="article">
+<meta property="og:title" content="impala架构">
+<meta property="og:url" content="http://willcup.com/2017/10/09/impala架构/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="impala Daemon核心的impala组件是impala daemon，它需要在每个datanode上部署一个，进程名是impalad。它负责读写数据文件、接收来自impala-shell命令行、hue、JDBC或者ODBC的查询；并行执行查询、为集群分配分布式任务、再把中间查询结果发送回coordinator node。
+可以通过任何一个datanode上的impala daemon提交查">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.785Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="impala架构">
+<meta name="twitter:description" content="impala Daemon核心的impala组件是impala daemon，它需要在每个datanode上部署一个，进程名是impalad。它负责读写数据文件、接收来自impala-shell命令行、hue、JDBC或者ODBC的查询；并行执行查询、为集群分配分布式任务、再把中间查询结果发送回coordinator node。
+可以通过任何一个datanode上的impala daemon提交查">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/10/09/impala架构/" title="impala架构" itemprop="url">impala架构</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-10-09T07:52:50.000Z" itemprop="datePublished"> 发表于 2017-10-09</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#impala-Daemon"><span class="toc-text">impala Daemon</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#impala-statestore"><span class="toc-text">impala statestore</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#impala-catalog服务"><span class="toc-text">impala catalog服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#impala对于hadoop生态的兼容与适配"><span class="toc-text">impala对于hadoop生态的兼容与适配</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#hive"><span class="toc-text">hive</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#HDFS"><span class="toc-text">HDFS</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#HBase"><span class="toc-text">HBase</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#并发控制"><span class="toc-text">并发控制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#内存控制"><span class="toc-text">内存控制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#与其他资源管理工具的关系"><span class="toc-text">与其他资源管理工具的关系</span></a></li></ol>
+		
+		</div>
+		
+		<h2 id="impala-Daemon"><a href="#impala-Daemon" class="headerlink" title="impala Daemon"></a>impala Daemon</h2><p>核心的impala组件是impala daemon，它需要在每个datanode上部署一个，进程名是impalad。它负责读写数据文件、接收来自impala-shell命令行、hue、JDBC或者ODBC的查询；并行执行查询、为集群分配分布式任务、再把中间查询结果发送回coordinator node。</p>
+<p>可以通过任何一个datanode上的impala daemon提交查询，然后这个node上的impala daemon就作为这个查询的coordinator node。其他node把部分结果回传给coordinator node，coordinator node负责把这些结果进行组织，并产生最终结果。当通过impala-shell命令运行查询的时候，我们可能需要一直连接着同一个impala daemon。对于集群生产环境，我们需要考虑负载均衡，将查询放到不同的node上去提交。</p>
+<p>impala daemon需要与statestore持续联系，以确认哪些node是健康的，可以接受任务。</p>
+<p>impala daemon还要接收catalogd的广播信息，获取集群中哪些impala node新建、修改、drop一些类型的对象、或insert或者load data语句的执行。这个动作最小化了REFRESH和INVALIDATE METADATA语句的执行次数，这两个动作在1.2之前必须要协调所有node的元数据。</p>
+<p>在2.9或更高版本中，我们可以控制哪些node可以用作query coordinator，那些是query executor，以此提升扩展性。</p>
+<h2 id="impala-statestore"><a href="#impala-statestore" class="headerlink" title="impala statestore"></a>impala statestore</h2><p>statestore负责检查所有 datanode上的impala daemon的健康状态，同时也通知每个impala daemon它的新发现。他是一个独立的进程，statestored，需要集群中的某个机器上有一个就可以。如果一个impala daemon掉线的话，statestore会通知所有其他的impala daemon，这要后面的查询任务就不会分配到这个掉线的node上。</p>
+<p>因为statestore的职责是处理问题情况，所以它并不是impala 集群执行正常任务的核心所在。如果statestore挂掉，impala daemon会像往常一样继续运行、分配任务、执行任务。只是集群会在某些impala daemon挂掉的时候变得不那么强壮。当statestore恢复之后，它会重建与impala daemon的联系。</p>
+<p>多数既有的HA和LB方案都可以用于impala daemon。而statestored和catalogd进程就不需要，因为它们挂掉并不会造成数据丢失。如果这些进程变为不可用的话，可以直接停掉impala服务，删掉基友的impala statestore和impala catalog server，然后把它们分配到其他的node上，重启impala service就可以了。</p>
+<h2 id="impala-catalog服务"><a href="#impala-catalog服务" class="headerlink" title="impala catalog服务"></a>impala catalog服务</h2><p>catalog服务负责将impala SQL语句导致的源数据变化传递给集群中的所有的Datanode节点，进程为catalogd，整个集群只需要一个。因为查询请求会通过statestore daemon，最好将statestored和catalogd两个服务运行在同一个host上。</p>
+<p>catalog服务避免了由元数据变化引起的REFRESH和INVALIDATE METADATA操作。当我们通过hive创建表、加载数据的时候，我们必须要执行REFRESH和INVALIDATE METADATA操作才能执行数据查询。</p>
+<p>这个特性有关于impala的以下几个方面：</p>
+<ul>
+<li>见安装impala、升级impala</li>
+<li>通过impala执行CREATE TABLE, INSERT或者其他修改表、修改数据的操作并不需要REFRESH和INVALIDATE METADATA操作。但是如果是通过hive或者手动加载HDFS文件方式的话，就需要。</li>
+</ul>
+<p>默认地，加载元数据和加载缓存是异步的，所以impala可以立刻接收请求。可以通过参数配置load_catalog_in_background=false.。</p>
+<h2 id="impala对于hadoop生态的兼容与适配"><a href="#impala对于hadoop生态的兼容与适配" class="headerlink" title="impala对于hadoop生态的兼容与适配"></a>impala对于hadoop生态的兼容与适配</h2><h4 id="hive"><a href="#hive" class="headerlink" title="hive"></a>hive</h4><p>impala维护了table定义，也就是metastore，其实就是hive 的metastore的数据库。impala还要追踪对应的数据文件：HDFS中数据的block的具体位置。</p>
+<p>对于数据量特别大、分区数特别多的表来说，单抽取元数据就可能花掉数分钟的时间。因此，每个impala  node都会把这些信息缓存起来以供后面重用。</p>
+<p>如果某个表的定义改变或者数据被更新，那么其他所有的impala daemon都要在对这个表执行查询之前同步最新的metadata，替换掉老的那份缓存。1.2版本之后，这个过程是自动的通过catalogd进程完成。</p>
+<p>对于未通过impala操作的修改，则需要执行REFRESH（已经存在的表加入新的数据文件或更新）或者INVALIDATE METADATA(创建新标、删除表、执行了HDFS rebalance、 删除了数据文件等)。INVALIDATE METATDATA会重新抽取所有的表的metadata。所有如果要是知道哪个表有变化的话，可以使用REFRESH table_name来执行只拉取这个表的相关元数据。</p>
+<h4 id="HDFS"><a href="#HDFS" class="headerlink" title="HDFS"></a>HDFS</h4><p>impala使用HDFS作为主要的存储介质，利用HDFS的冗余来保证数据不丢失。impala表数据物理上就是HDFS的数据文件，可以是HDFS支持的任何格式或压缩格式。当数据文件是放在一个目录作为一个表存在是，impala会把这个目录下所有的文件都作为表的内容进行读取。通过impala新增的数据文件，则会由impala进行命名。</p>
+<h4 id="HBase"><a href="#HBase" class="headerlink" title="HBase"></a>HBase</h4><p>HDFS的替代方案。需要在impala中额外定义对应表。</p>
+<h2 id="并发控制"><a href="#并发控制" class="headerlink" title="并发控制"></a>并发控制</h2><p>通过准入控制来闲置资源的方式之一是限制一个最大并发查询数量。在我们没有内存使用情况的足够信息的时候这是一个比较初步的方式。这个参数可以分别给每个动态资源池进行设置。</p>
+<p>这个配置也可以结合下面章节中内存控制的配置一起使用。不管是达到了内存最大使用量，或者超过了最大并发查询数，后续的查询都会被放到队列里，等待资源。</p>
+<h2 id="内存控制"><a href="#内存控制" class="headerlink" title="内存控制"></a>内存控制</h2><p>每个动态资源池都可以配置一个最大内存使用量。最好是在已经明确知道工作量与使用大小的时候使用这个配置。</p>
+<p>每个host上都要指定一个默认的最大内存Default Query<br>Memory Limit，相当于在这个资源池中为每个query指定一个MEM_LIMIT参数。</p>
+<p>另外，也可以根据每个node的最大内存计算出一个集群级别的最大内存限制，来控制最多并行查询数。</p>
+<p>例如下面场景：</p>
+<ul>
+<li>五个datanode上运行了impalad</li>
+<li>设置一个动态资源池的最大内存为100G</li>
+<li>host级别的最大内存Default Query<br>Memory Limit设置为10G，那么每个查询最多使用 5 * 10 = 50G</li>
+<li>在这个动态资源池中可以并行运行的查询数为2，100 / 50 = 2.</li>
+<li>如果查询并没有用满host或者集群级别的内存上限额度，并不会有什么惩罚措施。这些上限值只是用来估算资源池里可以并行多少查询。</li>
+</ul>
+<p>注意： 如果你为某个impala动态资源池指定了集群级别的最大内存，就必须指定host级别的最大内存Default Query<br>Memory Limit。</p>
+<h2 id="与其他资源管理工具的关系"><a href="#与其他资源管理工具的关系" class="headerlink" title="与其他资源管理工具的关系"></a>与其他资源管理工具的关系</h2><p>admission control是轻量级、去中心化的。他设置的是一个soft limit，并不是像yarn把资源进行all-or-nothing方式处理。</p>
+<p>因为admission control并不与其他hadoop组件(MR)交互，我们可以使用yarn的部分静态资源池，与其他hadoop应用共享yarn。要使用impala多租户的时候推荐使用此种配置。admission control控制查询并发和内存上限，yarn来管理其它的组件。这种情况中，impala的资源并不是由yarn管理的。</p>
+<p>impala的admission control可以使用yarn的user与pool的认证关系。</p>
+<p>虽然impala admission control使用了fair-scheduelr.xml配置文件，但是这个文件并不关心YARN实际使用哪个scheduler，也就是说它仍可以使用capacity scheduler。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/10/09/impala架构/" data-title="impala架构 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/10/09/presto架构/" title="presto架构">
+  <strong>上一篇：</strong><br/>
+  <span>
+  presto架构</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/10/09/hadoop-vs-mpp/"  title="hadoop-vs-mpp">
+ <strong>下一篇：</strong><br/> 
+ <span>hadoop-vs-mpp
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/10/09/impala架构/" data-title="impala架构" data-url="http://willcup.com/2017/10/09/impala架构/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#impala-Daemon"><span class="toc-number">1.</span> <span class="toc-text">impala Daemon</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#impala-statestore"><span class="toc-number">2.</span> <span class="toc-text">impala statestore</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#impala-catalog服务"><span class="toc-number">3.</span> <span class="toc-text">impala catalog服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#impala对于hadoop生态的兼容与适配"><span class="toc-number">4.</span> <span class="toc-text">impala对于hadoop生态的兼容与适配</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#hive"><span class="toc-number">4.0.1.</span> <span class="toc-text">hive</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#HDFS"><span class="toc-number">4.0.2.</span> <span class="toc-text">HDFS</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#HBase"><span class="toc-number">4.0.3.</span> <span class="toc-text">HBase</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#并发控制"><span class="toc-number">5.</span> <span class="toc-text">并发控制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#内存控制"><span class="toc-number">6.</span> <span class="toc-text">内存控制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#与其他资源管理工具的关系"><span class="toc-number">7.</span> <span class="toc-text">与其他资源管理工具的关系</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

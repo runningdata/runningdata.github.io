@@ -1,0 +1,617 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>mondrian架构 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="1 mondrain系统的层次
+表现层(the presentation layer)
+维度层(the dimensional layer)
+聚合层(the star layer)
+存储层(the storage layer)
+
+1.1 表现层(the presentation layer)表现层决定了最终用户将在他们的显示器上看到什么, 及他们如何同系统产生交互。有许多方法可以用来向用户显示多维">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mondrian架构">
+<meta property="og:url" content="http://willcup.com/2016/12/05/mondrian架构/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="1 mondrain系统的层次
+表现层(the presentation layer)
+维度层(the dimensional layer)
+聚合层(the star layer)
+存储层(the storage layer)
+
+1.1 表现层(the presentation layer)表现层决定了最终用户将在他们的显示器上看到什么, 及他们如何同系统产生交互。有许多方法可以用来向用户显示多维">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.789Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="mondrian架构">
+<meta name="twitter:description" content="1 mondrain系统的层次
+表现层(the presentation layer)
+维度层(the dimensional layer)
+聚合层(the star layer)
+存储层(the storage layer)
+
+1.1 表现层(the presentation layer)表现层决定了最终用户将在他们的显示器上看到什么, 及他们如何同系统产生交互。有许多方法可以用来向用户显示多维">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/mondrian架构/" title="mondrian架构" itemprop="url">mondrian架构</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:09:02.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-mondrain系统的层次"><span class="toc-text">1 mondrain系统的层次</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-表现层-the-presentation-layer"><span class="toc-text">1.1 表现层(the presentation layer)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-维度层-the-dimensional-layer"><span class="toc-text">1.2 维度层(the dimensional layer)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-聚合层-the-star-layer"><span class="toc-text">1.3 聚合层(the star layer)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-4-存储层-the-storage-layer"><span class="toc-text">1.4 存储层(the storage layer)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-存储与聚合策略"><span class="toc-text">2 存储与聚合策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-API"><span class="toc-text">3 API</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-MDX"><span class="toc-text">4 MDX </span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-参数"><span class="toc-text">4.1 参数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-内置函数"><span class="toc-text">4.2 内置函数</span></a></li></ol></li></ol></li></ol>
+		
+		</div>
+		
+		<h2 id="1-mondrain系统的层次"><a href="#1-mondrain系统的层次" class="headerlink" title="1 mondrain系统的层次"></a>1 mondrain系统的层次</h2><ul>
+<li>表现层(the presentation layer)</li>
+<li>维度层(the dimensional layer)</li>
+<li>聚合层(the star layer)</li>
+<li>存储层(the storage layer)</li>
+</ul>
+<h4 id="1-1-表现层-the-presentation-layer"><a href="#1-1-表现层-the-presentation-layer" class="headerlink" title="1.1 表现层(the presentation layer)"></a>1.1 表现层(the presentation layer)</h4><p>表现层决定了最终用户将在他们的显示器上看到什么, 及他们如何同系统产生交互。<br>有许多方法可以用来向用户显示多维数据集, 有 pivot 表 (一种交互式的表), pie, line 和图表(bar charts)。它们可以用Swing 或 JSP来实现。<br>表现层以多维”文法(grammar)(维、度量、单元)”的形式发出查询，然后OLAP服务器返回结果。</p>
+<h4 id="1-2-维度层-the-dimensional-layer"><a href="#1-2-维度层-the-dimensional-layer" class="headerlink" title="1.2 维度层(the dimensional layer)"></a>1.2 维度层(the dimensional layer)</h4><p>维度层用来解析、验证和执行MDX查询请求。<br>一个MDX查询要通过几个阶段来完成：首先是计算坐标轴（axes），再者计算坐标轴axes 中cell的值。<br> 为了提高效率，维度层把要求查询的单元成批发送到集合层，查询转换器接受操作现有查询的请求，而不是对每个请求都建立一个MDX 声明。</p>
+<h4 id="1-3-聚合层-the-star-layer"><a href="#1-3-聚合层-the-star-layer" class="headerlink" title="1.3 聚合层(the star layer)"></a>1.3 聚合层(the star layer)</h4><p>集合层负责维护和创建聚合缓存，一个聚合是在内存中缓存一组单元值， 这些单元值由一组维的值来确定。<br>维度层对这些单元发出查询请求，如果所查询的单元值不在缓存中，则聚合管理器(aggregation manager)会向存储层发出查询请求</p>
+<h4 id="1-4-存储层-the-storage-layer"><a href="#1-4-存储层-the-storage-layer" class="headerlink" title="1.4 存储层(the storage layer)"></a>1.4 存储层(the storage layer)</h4><p>存储层是一个关系型数据库(RDBMS)。它负责创建集合的单元数据，和提供维表的成员。在后面后说一下直接使用RDBMS而不另外开发存储的原因。</p>
+<p>这些层次组件可以都在同一个机器上，也可以分布开。第二层和第三层组成mondrian server，他俩必须在一个机器上。</p>
+<h2 id="2-存储与聚合策略"><a href="#2-存储与聚合策略" class="headerlink" title="2 存储与聚合策略"></a>2 存储与聚合策略</h2><p>OLAP server通常都基于他们存储数据的方式被归为以下两类：</p>
+<ul>
+<li>MOLAP（multidimensional OLAP） server。为了便于多维访问，它将所有的数据结构化存储在磁盘上。一般数据都是存储在稠密的数据中，每个cell只需要4或8个字节</li>
+<li>ROLAP(relational OLAP) server。直接将数据存在RDBMS中。事实表里的每一行的字段都同时包含了维度和指标。</li>
+</ul>
+<p>我们需要存储三种数据：事实表数据（事务记录）、聚合数据、维度。</p>
+<p>MOLAP数据库是以多维格式存储事实数据的，但是如果维度很多的话，数据就会稀疏，这种存储格式表现就不太好了。 HOLAP (hybrid OLAP)系统的解决了这个问题，它在关系数据库中存储到最细粒度的数据，把聚合结果存在多维格式下。</p>
+<p>对于大数据集来说，否则有些查询可能会需要遍历事实表里的所有数据。 MOLAP的聚合表通常是内存数据结构的一个快照，存储在磁盘上。ROLAP 聚合表是存在表里的。在一些 ROLAP 系统中，这些都需要OLAP server详细管理。对其他系统来说，这些表只是物化视图而已，只有在OLAP server被访问到指定查询时才会用到。</p>
+<p>最极端的聚合策略就是缓存了，存在内存里。如果缓存里数据集在比较低的聚合level上，还可以上卷。</p>
+<p>缓存可能是聚合策略中最重要的部分了，因为他是可以适配的。很难在不适用大量磁盘的前提下，选择聚合维度并预计算。要是维度较多，或者用户提交了某些一些不可预测的查询就更糟糕了。在数据实时变化的系统中，维护预计算聚合几乎是不可实现的。一个缓存的合理大小应该能够允许系统执行一些不可预估的查询，不适用任何聚合。</p>
+<p>Mondrian的聚合策略如下：</p>
+<ul>
+<li>事实数据存在RDBMS中。我们没必要自己再开发一个存储了</li>
+<li>通过提交group by查询，将聚合数据读取进入缓存。既然RDBMS有了聚合操作，我们也直接使用</li>
+<li>如果RDBMS支持物化视图，数据库管理员为某些聚合创建了物化视图，然后mondrian就可以使用它们咯。理想情况下，mondrian的聚合管理员应该知道这些物化视图是否存在，知道怎样高效计算，甚至能够给数据库管理员一些调优建议。</li>
+</ul>
+<p>总的原则就是能委托给数据库的就给数据库做。数据库的负载虽然增加了一些，但是数据库的客户端获益很大。多维存储应该减少IO，才能更快。</p>
+<p>另外，因为mondrian并不需要什么存储，所以只要把jar文件加入classpath就可以运行它了。没有多余的数据管理，数据加载过程也很简单，mondrian很适合数据实时变化的OLAP。</p>
+<h2 id="3-API"><a href="#3-API" class="headerlink" title="3 API"></a>3 API</h2><p>mondrian为app提供了客户端api。</p>
+<p>因为对于执行OLAP查询并没有统一规范，所以mondrian也是自己独有的API，但是熟悉jdbc的朋友们都会很容易上手。主要区别在于查询语言是MDX(‘Multi-Dimensional eXpressions’)，而JDBC是使用标准SQL的。</p>
+<p>下面的java代码是连接mondrian，执行查询，然后打印结果：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> mondrian.olap.*;</div><div class="line"><span class="keyword">import</span> java.io.PrintWriter;</div><div class="line"></div><div class="line">Connection connection = DriverManager.getConnection(</div><div class="line">    <span class="string">"Provider=mondrian;"</span> +</div><div class="line">    <span class="string">"Jdbc=jdbc:odbc:MondrianFoodMart;"</span> +</div><div class="line">    <span class="string">"Catalog=/WEB-INF/FoodMart.xml;"</span>,</div><div class="line">    <span class="keyword">null</span>,</div><div class="line">    <span class="keyword">false</span>);</div><div class="line">Query query = connection.parseQuery(</div><div class="line">    <span class="string">"SELECT &#123;[Measures].[Unit Sales], [Measures].[Store Sales]&#125; on columns,"</span> +</div><div class="line">    <span class="string">" &#123;[Product].children&#125; on rows "</span> +</div><div class="line">    <span class="string">"FROM [Sales] "</span> +</div><div class="line">    <span class="string">"WHERE ([Time].[1997].[Q1], [Store].[CA].[San Francisco])"</span>);</div><div class="line">Result result = connection.execute(query);</div><div class="line">result.print(<span class="keyword">new</span> PrintWriter(System.out));</div></pre></td></tr></table></figure></p>
+<p>使用DriverManger创建Connection。Query对应于jdbc的Statement，通过解析MDX字符串创建。 Result对应于jdbc的ResultSet。既然我们这里处理的是多维数据，这个结果里就包含了坐标轴axes和单元格cell，而不是行row和列column了。还有，OLAP是用于数据探查的，你可以执行一些类似下钻drillDown、排序sort的操作修改parse tree，然后重新执行查询。</p>
+<p>还有一些对象： Schema, Cube, Dimension, Hierarchy, Level, Member. 可以看一下mondrian的API了解详情。</p>
+<h2 id="4-MDX"><a href="#4-MDX" class="headerlink" title="4 MDX "></a>4 MDX </h2><h4 id="4-1-参数"><a href="#4-1-参数" class="headerlink" title="4.1 参数"></a>4.1 参数</h4><p>参数是在MDX查询中内嵌的一个变量。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Parameter(&lt;name&gt;, &lt;type&gt;, &lt;defaultValue&gt;[, &lt;description&gt;])</div></pre></td></tr></table></figure></p>
+<ul>
+<li>name ,在query中唯一</li>
+<li>type， NUMERIC, STRING或者层次名称之一</li>
+<li>defaultValue。 默认值，是一个表达式，应该跟type类型一致，如果是层次，就得是层次的某个成员</li>
+<li>desc。 </li>
+</ul>
+<p>要是想在同一个query中使用某个参数多次，就使用：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ParamRef(&lt;name&gt;)</div></pre></td></tr></table></figure></p>
+<p>下面的查询会查出California的前10名品牌，我们可以修改Count参数为前5名，或者修改Region参数为西雅图：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">SELECT &#123;[Measures].[Unit Sales]&#125; on columns,</div><div class="line">   TopCount([Product].[Brand].members,</div><div class="line">     Parameter(&quot;Count&quot;, NUMERIC, 10, &quot;Number of products to show&quot;),</div><div class="line">     (Parameter(&quot;Region&quot;, [Store], [Store].[USA].[CA]),</div><div class="line">     [Measures].[Unit Sales])) on rows</div><div class="line">FROM Sales</div></pre></td></tr></table></figure></p>
+<p>可以调用Query.getParameters()来获取某个查询的所有参数，然后调用Query.setParameter(String name, String value)修改参数值。</p>
+<h4 id="4-2-内置函数"><a href="#4-2-内置函数" class="headerlink" title="4.2 内置函数"></a>4.2 内置函数</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">StrToSet(&lt;String Expression&gt;[, &lt;Hierarchy&gt;])</div><div class="line">StrToTuple(&lt;String Expression&gt;[, &lt;Hierarchy&gt;])</div></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/12/05/mondrian架构/" data-title="mondrian架构 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/12/05/jenkins/" title="jenkins">
+  <strong>上一篇：</strong><br/>
+  <span>
+  jenkins</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/12/05/ember异常记录/"  title="ember异常记录">
+ <strong>下一篇：</strong><br/> 
+ <span>ember异常记录
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/12/05/mondrian架构/" data-title="mondrian架构" data-url="http://willcup.com/2016/12/05/mondrian架构/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-mondrain系统的层次"><span class="toc-number">1.</span> <span class="toc-text">1 mondrain系统的层次</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-表现层-the-presentation-layer"><span class="toc-number">1.0.1.</span> <span class="toc-text">1.1 表现层(the presentation layer)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-维度层-the-dimensional-layer"><span class="toc-number">1.0.2.</span> <span class="toc-text">1.2 维度层(the dimensional layer)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-聚合层-the-star-layer"><span class="toc-number">1.0.3.</span> <span class="toc-text">1.3 聚合层(the star layer)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-4-存储层-the-storage-layer"><span class="toc-number">1.0.4.</span> <span class="toc-text">1.4 存储层(the storage layer)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-存储与聚合策略"><span class="toc-number">2.</span> <span class="toc-text">2 存储与聚合策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-API"><span class="toc-number">3.</span> <span class="toc-text">3 API</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-MDX"><span class="toc-number">4.</span> <span class="toc-text">4 MDX </span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-参数"><span class="toc-number">4.0.1.</span> <span class="toc-text">4.1 参数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-内置函数"><span class="toc-number">4.0.2.</span> <span class="toc-text">4.2 内置函数</span></a></li></ol></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

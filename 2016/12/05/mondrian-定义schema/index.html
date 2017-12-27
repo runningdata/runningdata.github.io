@@ -1,0 +1,637 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>mondrian-定义schema | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="一个schema定义了一个多维数据库。它包含一个逻辑模型，这个逻辑模型中包含了多个立方体、层级、成员、以及将这个模型映射到物理模型的映射。
+逻辑模型包含了MDX语言中的构造组件：: cubes, dimensions, hierarchies, levels, and members.物理模型是物理数据源。一般是星型模型，就是RDBMS中的一堆表。
+Scheme 文件mondrian的schema">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mondrian-定义schema">
+<meta property="og:url" content="http://willcup.com/2016/12/05/mondrian-定义schema/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="一个schema定义了一个多维数据库。它包含一个逻辑模型，这个逻辑模型中包含了多个立方体、层级、成员、以及将这个模型映射到物理模型的映射。
+逻辑模型包含了MDX语言中的构造组件：: cubes, dimensions, hierarchies, levels, and members.物理模型是物理数据源。一般是星型模型，就是RDBMS中的一堆表。
+Scheme 文件mondrian的schema">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.789Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="mondrian-定义schema">
+<meta name="twitter:description" content="一个schema定义了一个多维数据库。它包含一个逻辑模型，这个逻辑模型中包含了多个立方体、层级、成员、以及将这个模型映射到物理模型的映射。
+逻辑模型包含了MDX语言中的构造组件：: cubes, dimensions, hierarchies, levels, and members.物理模型是物理数据源。一般是星型模型，就是RDBMS中的一堆表。
+Scheme 文件mondrian的schema">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/mondrian-定义schema/" title="mondrian-定义schema" itemprop="url">mondrian-定义schema</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:11:20.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Scheme-文件"><span class="toc-text">Scheme 文件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-注解"><span class="toc-text">2.1 注解</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-逻辑模型"><span class="toc-text">3 逻辑模型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-cube"><span class="toc-text">3.1 cube</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-measure"><span class="toc-text">3.2 measure</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-dimension-hierarchy-level"><span class="toc-text">3.3 dimension, hierarchy, level</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#3-3-1-将维度和hierarchy映射到表"><span class="toc-text">3.3.1 将维度和hierarchy映射到表</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-3-2-‘all’-member"><span class="toc-text">3.3.2 ‘all’ member</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-3-3-Time-dimemsion"><span class="toc-text">3.3.3 Time dimemsion</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-3-4-level的顺序与展示"><span class="toc-text">3.3.4 level的顺序与展示</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-5-多个hierarchy"><span class="toc-text">3.5 多个hierarchy</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-3-6-Degenerate-dimensions"><span class="toc-text">3.3.6 Degenerate dimensions</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-3-7-inline-table"><span class="toc-text">3.3.7 inline table</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-3-8-Member-properties-and-formatters"><span class="toc-text">3.3.8 Member properties and formatters</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-3-9-Approximate-level-cardinality"><span class="toc-text">3.3.9 Approximate level cardinality</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-3-10-Default-Measure-Attribute"><span class="toc-text">3.3.10 Default Measure Attribute</span></a></li></ol></li></ol></li></ol></li></ol>
+		
+		</div>
+		
+		<p>一个schema定义了一个多维数据库。它包含一个逻辑模型，这个逻辑模型中包含了多个立方体、层级、成员、以及将这个模型映射到物理模型的映射。</p>
+<p>逻辑模型包含了MDX语言中的构造组件：: cubes, dimensions, hierarchies, levels, and members.<br>物理模型是物理数据源。一般是星型模型，就是RDBMS中的一堆表。</p>
+<h2 id="Scheme-文件"><a href="#Scheme-文件" class="headerlink" title="Scheme 文件"></a>Scheme 文件</h2><p>mondrian的schema是定义在xml文件中的。有一个比较全面的例子demo/FoodMart.xml。目前，创建schema只能通过编辑xml文件来实现。下面是xml结构：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">Schema</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Cube</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Table</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">AggName</span>&gt;</span></div><div class="line">aggElements</div><div class="line"><span class="tag">&lt;<span class="name">AggPattern</span>&gt;</span></div><div class="line">aggElements</div><div class="line"><span class="tag">&lt;<span class="name">Dimension</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Hierarchy</span>&gt;</span></div><div class="line">relation</div><div class="line"><span class="tag">&lt;<span class="name">Closure</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Level</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">KeyExpression</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">SQL</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">NameExpression</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">SQL</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">CaptionExpression</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">SQL</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">OrdinalExpression</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">SQL</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">ParentExpression</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">SQL</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Property</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">PropertyExpression</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">SQL</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">DimensionUsage</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Measure</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">MeasureExpression</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">SQL</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">CalculatedMemberProperty</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">CalculatedMember</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Formula</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">CalculatedMemberProperty</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">NamedSet</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Formula</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">VirtualCube</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">CubeUsages</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">CubeUsage</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">VirtualCubeDimension</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">VirtualCubeMeasure</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Role</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">SchemaGrant</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">CubeGrant</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">DimensionGrant</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">HierarchyGrant</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">MemberGrant</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Union</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">RoleUsage</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">UserDefinedFunction</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Parameter</span>/&gt;</span></div><div class="line"></div><div class="line">relation ::=</div><div class="line"><span class="tag">&lt;<span class="name">Table</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">SQL</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">View</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">SQL</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">InlineTable</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">ColumnDefs</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">ColumnDef</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Rows</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Row</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Value</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Join</span>&gt;</span></div><div class="line">relation</div><div class="line"></div><div class="line">aggElement ::=</div><div class="line"><span class="tag">&lt;<span class="name">AggExclude</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">AggFactCount</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">AggIgnoreColumn</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">AggForeignKey</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">AggMeasure</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">AggLevel</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>注意：xml元素的顺序。<userdefinedfunction> 必须在 <cube>, <virtualcube>, <namedset> and <role> 元素后面。</role></namedset></virtualcube></cube></userdefinedfunction></p>
+<h4 id="2-1-注解"><a href="#2-1-注解" class="headerlink" title="2.1 注解"></a>2.1 注解</h4><p>主要的元素(schema, cube, virtual cube, shared dimension, dimension, hierarchy, level, measure, calculated member)都支持注解。注解能够把用户定义的属性和元数据元素联系起来，允许工具在不继承mondrian schema的前提下添加元数据。</p>
+<p>下面例子，为Schema添加了 Author和Date两个注解。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">Schema</span> <span class="attr">name</span>=<span class="string">"Rock Sales"</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Annotations</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Annotation</span> <span class="attr">name</span>=<span class="string">"Author"</span>&gt;</span>Fred Flintstone<span class="tag">&lt;/<span class="name">Annotation</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Annotation</span> <span class="attr">name</span>=<span class="string">"Date"</span>&gt;</span>10,000 BC<span class="tag">&lt;/<span class="name">Annotation</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">Annotations</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Cube</span> <span class="attr">name</span>=<span class="string">"Sales"</span>&gt;</span></div><div class="line">...</div></pre></td></tr></table></figure></p>
+<h2 id="3-逻辑模型"><a href="#3-逻辑模型" class="headerlink" title="3 逻辑模型"></a>3 逻辑模型</h2><p>最重要的三个组件： cubes, measures, dimensions。</p>
+<ul>
+<li>cube。 维度和指标在指定子区域的集合。</li>
+<li>measure。量化的指标。</li>
+<li>dimension。可切分指标的属性。</li>
+</ul>
+<p>下面是一个简单的schema:<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">Schema</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">Cube</span> <span class="attr">name</span>=<span class="string">"Sales"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">Table</span> <span class="attr">name</span>=<span class="string">"sales_fact_1997"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">Dimension</span> <span class="attr">name</span>=<span class="string">"Gender"</span> <span class="attr">foreignKey</span>=<span class="string">"customer_id"</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">Hierarchy</span> <span class="attr">hasAll</span>=<span class="string">"true"</span> <span class="attr">allMemberName</span>=<span class="string">"All Genders"</span> <span class="attr">primaryKey</span>=<span class="string">"customer_id"</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">Table</span> <span class="attr">name</span>=<span class="string">"customer"</span>/&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Gender"</span> <span class="attr">column</span>=<span class="string">"gender"</span> <span class="attr">uniqueMembers</span>=<span class="string">"true"</span>/&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">Hierarchy</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">Dimension</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">Dimension</span> <span class="attr">name</span>=<span class="string">"Time"</span> <span class="attr">foreignKey</span>=<span class="string">"time_id"</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">Hierarchy</span> <span class="attr">hasAll</span>=<span class="string">"false"</span> <span class="attr">primaryKey</span>=<span class="string">"time_id"</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">Table</span> <span class="attr">name</span>=<span class="string">"time_by_day"</span>/&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Year"</span> <span class="attr">column</span>=<span class="string">"the_year"</span> <span class="attr">type</span>=<span class="string">"Numeric"</span> <span class="attr">uniqueMembers</span>=<span class="string">"true"</span>/&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Quarter"</span> <span class="attr">column</span>=<span class="string">"quarter"</span> <span class="attr">uniqueMembers</span>=<span class="string">"false"</span>/&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Month"</span> <span class="attr">column</span>=<span class="string">"month_of_year"</span> <span class="attr">type</span>=<span class="string">"Numeric"</span> <span class="attr">uniqueMembers</span>=<span class="string">"false"</span>/&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">Hierarchy</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">Dimension</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">Measure</span> <span class="attr">name</span>=<span class="string">"Unit Sales"</span> <span class="attr">column</span>=<span class="string">"unit_sales"</span> <span class="attr">aggregator</span>=<span class="string">"sum"</span> <span class="attr">formatString</span>=<span class="string">"#,###"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">Measure</span> <span class="attr">name</span>=<span class="string">"Store Sales"</span> <span class="attr">column</span>=<span class="string">"store_sales"</span> <span class="attr">aggregator</span>=<span class="string">"sum"</span> <span class="attr">formatString</span>=<span class="string">"#,###.##"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">Measure</span> <span class="attr">name</span>=<span class="string">"Store Cost"</span> <span class="attr">column</span>=<span class="string">"store_cost"</span> <span class="attr">aggregator</span>=<span class="string">"sum"</span> <span class="attr">formatString</span>=<span class="string">"#,###.00"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">CalculatedMember</span> <span class="attr">name</span>=<span class="string">"Profit"</span> <span class="attr">dimension</span>=<span class="string">"Measures"</span> <span class="attr">formula</span>=<span class="string">"[Measures].[Store Sales] - [Measures].[Store Cost]"</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">CalculatedMemberProperty</span> <span class="attr">name</span>=<span class="string">"FORMAT_STRING"</span> <span class="attr">value</span>=<span class="string">"$#,##0.00"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">CalculatedMember</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">Cube</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">Schema</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>这个schema只有一个立方体，叫做’sales’。两个维度，time和gender。四个指标。</p>
+<p>我们可以基于这个schema写出如下MDX查询：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">SELECT</span> &#123;[<span class="keyword">Measures</span>].[Unit Sales], [<span class="keyword">Measures</span>].[<span class="keyword">Store</span> Sales]&#125; <span class="keyword">ON</span> <span class="keyword">COLUMNS</span>,</div><div class="line">  &#123;descendants([<span class="keyword">Time</span>].[<span class="number">1997</span>].[Q1])&#125; <span class="keyword">ON</span> <span class="keyword">ROWS</span></div><div class="line"><span class="keyword">FROM</span> [Sales]</div><div class="line"><span class="keyword">WHERE</span> [Gender].[F]</div></pre></td></tr></table></figure></p>
+<h4 id="3-1-cube"><a href="#3-1-cube" class="headerlink" title="3.1 cube"></a>3.1 cube</h4><p>cube是指标和维度的集合。指标和维度的共同处之一就是都在事实表上，这里就是 “sales_fact_1997表。指标基于事实表里的字段计算，事实表里也包含所有的维度。</p>
+<p>事实表使用<table>元素定义。如果事实表不在默认的schema中，你可以使用schema属性明确指定：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">Table</span> <span class="attr">schema</span>=<span class="string">" dmart"</span> <span class="attr">name</span>=<span class="string">"sales_fact_1997"</span>/&gt;</span></div></pre></td></tr></table></figure></table></p>
+<p>还可以使用<view>构造更复杂的SQL语句。事实表不支持<join>。</join></view></p>
+<h4 id="3-2-measure"><a href="#3-2-measure" class="headerlink" title="3.2 measure"></a>3.2 measure</h4><p>Sales cube定义了 “Unit Sales” 和 “Store Sales”几个指标。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">Measure</span> <span class="attr">name</span>=<span class="string">"Unit Sales"</span> <span class="attr">column</span>=<span class="string">"unit_sales"</span> <span class="attr">aggregator</span>=<span class="string">"sum"</span> <span class="attr">datatype</span>=<span class="string">"Integer"</span> <span class="attr">formatString</span>=<span class="string">"#,###"</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Measure</span> <span class="attr">name</span>=<span class="string">"Store Sales"</span> <span class="attr">column</span>=<span class="string">"store_sales"</span> <span class="attr">aggregator</span>=<span class="string">"sum"</span> <span class="attr">datatype</span>=<span class="string">"Numeric"</span> <span class="attr">formatString</span>=<span class="string">"#,###.00"</span>/&gt;</span></div></pre></td></tr></table></figure></p>
+<p>datatype是可选的属性，它指示着这个指标在mondrian缓存中存在的形式，也决定这些指标怎样通过XML返回。(“String”, “Integer”, “Numeric”, “Boolean”, “Date”, “Time”, “Timestamp”) 。 除了”count”或者 “distinct-count” 是”Integer”，其他的aggregator的默认值都是”Numeric”。</p>
+<p>formatString也是可选的，它代表指标被打印的形式。<a href="http://mondrian.pentaho.com/documentation/mdx.php#Format_strings" target="_blank" rel="external">更多参考</a></p>
+<p>获取某个指标的名称可以调用 Member.getCaption() 。</p>
+<p>指标使用cell reader，而不是读取column，或者也能使用sql表达式来计算。 “Promotion Sales”就是通过sql表达式计算的：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">Measure</span> <span class="attr">name</span>=<span class="string">"Promotion Sales"</span> <span class="attr">aggregator</span>=<span class="string">"sum"</span> <span class="attr">formatString</span>=<span class="string">"#,###.00"</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">MeasureExpression</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">SQL</span> <span class="attr">dialect</span>=<span class="string">"generic"</span>&gt;</span></div><div class="line">			(case when sales_fact_1997.promotion_id = 0 then 0 else sales_fact_1997.store_sales end)</div><div class="line">		<span class="tag">&lt;/<span class="name">SQL</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">MeasureExpression</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">Measure</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>要格式化cell 值，<a href="http://mondrian.pentaho.com/documentation/schema.php#Cell_formatter" target="_blank" rel="external">请参考</a></p>
+<h4 id="3-3-dimension-hierarchy-level"><a href="#3-3-dimension-hierarchy-level" class="headerlink" title="3.3 dimension, hierarchy, level"></a>3.3 dimension, hierarchy, level</h4><p>先看一些定义：</p>
+<ul>
+<li>member。 指定维度中的一个点。性别hierarchy包含M和F两个member。</li>
+<li>hierarchy。一组形成某个结构的member。store hierarchy包含name, city, state, nation。这个hierarchy允许出现中间层次，一个state的子聚合（sub-total）是这个state的所有city的所有子聚合(sub-total)之和。</li>
+<li>level。同一个level的member距离hierarchy最上层root的距离相等，也就是说在同一层上</li>
+<li>dimemsion。一组hierarchy的集合，用来区分同一个事实表中的属性。</li>
+</ul>
+<p>例子：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">Dimension</span> <span class="attr">name</span>=<span class="string">"Gender"</span> <span class="attr">foreignKey</span>=<span class="string">"customer_id"</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">Hierarchy</span> <span class="attr">hasAll</span>=<span class="string">"true"</span> <span class="attr">primaryKey</span>=<span class="string">"customer_id"</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Table</span> <span class="attr">name</span>=<span class="string">"customer"</span>/&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Gender"</span> <span class="attr">column</span>=<span class="string">"gender"</span> <span class="attr">uniqueMembers</span>=<span class="string">"true"</span>/&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">Hierarchy</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">Dimension</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>这个维度包含了一个hierarchy，这个hierarchy包含了一个level。这个维度的值来源于customer表的gender字段。</p>
+<p>对于任意一个订单，gender维度是这个顾客的性别，应该是事实表 “sales_fact_1997.customer_id” 和维度表”customer.customer_id” join的结果。</p>
+<h5 id="3-3-1-将维度和hierarchy映射到表"><a href="#3-3-1-将维度和hierarchy映射到表" class="headerlink" title="3.3.1 将维度和hierarchy映射到表"></a>3.3.1 将维度和hierarchy映射到表</h5><p>一个维度通过一对儿字段join进入一个cube，一个字段来自事实表，另一个来自维度表。 <dimension>元素有一个foreignKey属性，它是事实表里字段的名字。<hierarchy>元素有一个primaryKey属性。</hierarchy></dimension></p>
+<p>如果hierarchy涉及到多个表，我们可以使用primaryKey来区分。</p>
+<p>column属性定义了level的key。必须是在level表中的名字。如果key是一个表达式，可以在level中使用<keyexpression>元素。下面是一个例子<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">Dimension</span> <span class="attr">name</span>=<span class="string">"Gender"</span> <span class="attr">foreignKey</span>=<span class="string">"customer_id"</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">Hierarchy</span> <span class="attr">hasAll</span>=<span class="string">"true"</span> <span class="attr">primaryKey</span>=<span class="string">"customer_id"</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">Table</span> <span class="attr">name</span>=<span class="string">"customer"</span>/&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Gender"</span> <span class="attr">column</span>=<span class="string">"gender"</span> <span class="attr">uniqueMembers</span>=<span class="string">"true"</span>&gt;</span></div><div class="line">			<span class="tag">&lt;<span class="name">KeyExpression</span>&gt;</span></div><div class="line">				<span class="tag">&lt;<span class="name">SQL</span> <span class="attr">dialect</span>=<span class="string">"generic"</span>&gt;</span>customer.gender<span class="tag">&lt;/<span class="name">SQL</span>&gt;</span></div><div class="line">			<span class="tag">&lt;/<span class="name">KeyExpression</span>&gt;</span></div><div class="line">		<span class="tag">&lt;/<span class="name">Level</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">Hierarchy</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">Dimension</span>&gt;</span></div></pre></td></tr></table></figure></keyexpression></p>
+<p><level>, <measure>, <property>还有一些嵌套属性：<br>Parent element    | 属性 |    Equivalent nested element |    描述<br>—|—|—|—</property></measure></level></p>
+<p><level>    |     column        | <keyexpression>        | Key of level.</keyexpression></level></p>
+<p><level |="" namecolumn="" <nameexpression="">    |     Expression which defines the name of members of this level. If not specified, the level key is used.</level></p>
+<p><level>        | ordinalColumn    |     <ordinalexpression>    |     Expression which defines the order of members. If not specified, the level key is used.</ordinalexpression></level></p>
+<p><level>        | captionColumn        | <captionexpression>    |     Expression which forms the caption of members. If not specified, the level name is used.</captionexpression></level></p>
+<p><level>        |     |     <parentexpression>    |     Expression by which child members reference their parent member in a parent-child hierarchy. Not specified in a regular hierarchy.</parentexpression></level></p>
+<p><measure>    |     column    |     <measureexpression>        | SQL expression to calculate the value of the measure (the argument to the SQL aggregate function).</measureexpression></measure></p>
+<p><property>        | column    |     <propertyexpression>    |     SQL expression to calculate the value of the property.</propertyexpression></property></p>
+<p>uniqueMembers 属性用来优化SQL生成过程。如果知道某个level字段的值是唯一的，就设置uniqueMembers为true。 例如[Year].[Month] 在Month level就不是唯一的，因为在不同年里会出现相同的月份。而[Product Class].[Product Name] 就是唯一的，因为产品名字不会有相同的。顶层的都是唯一的。</p>
+<p>highCardinality 属性通知mondrian当前维度会有很大的不可预估的值。</p>
+<h5 id="3-3-2-‘all’-member"><a href="#3-3-2-‘all’-member" class="headerlink" title="3.3.2 ‘all’ member"></a>3.3.2 ‘all’ member</h5><p>默认每个hierarchy都有一个顶层节点level，’all’。它是所有其他member的父节点，也是这个hierarchy的默认值，当hierarchy没有被包含在某个坐标系或者切片的时候，就使用这个值来计算cell值。allMemberName 和allLevelName 属性重写所有level和所有member的默认名称。</p>
+<p>如果 <hierarchy> 元素有属性 hasAll=”false”，那么’all’这个level就失效了。维度的默认值就成了第一个level里的第一个元素，如果是time hierarchy的话，就是hierarchy的第一年。修改默认值的话，容易产生混淆，所以含是使用 hasAll=”true”吧。</hierarchy></p>
+<p>下面是覆盖默认值的例子<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">Dimension</span> <span class="attr">name</span>=<span class="string">"Time"</span> <span class="attr">type</span>=<span class="string">"TimeDimension"</span> <span class="attr">foreignKey</span>=<span class="string">"time_id"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">Hierarchy</span> <span class="attr">hasAll</span>=<span class="string">"false"</span> <span class="attr">primaryKey</span>=<span class="string">"time_id"</span> <span class="attr">defaultMember</span>=<span class="string">"[Time].[1997].[Q1].[1]"</span>/&gt;</span></div><div class="line">    ....</div></pre></td></tr></table></figure></p>
+<h5 id="3-3-3-Time-dimemsion"><a href="#3-3-3-Time-dimemsion" class="headerlink" title="3.3.3 Time dimemsion"></a>3.3.3 Time dimemsion</h5><p>时间维度是基于年月周日的。与之相关的MDX的内置函数如下：</p>
+<ul>
+<li>ParallelPeriod([level[, index[, member]]])</li>
+<li>PeriodsToDate([level[, member]])</li>
+<li>WTD([member])</li>
+<li>MTD([member])</li>
+<li>QTD([member])</li>
+<li>YTD([member])</li>
+<li>LastPeriod(index[, member])</li>
+</ul>
+<p>例子<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">Dimension</span> <span class="attr">name</span>=<span class="string">"Time"</span> <span class="attr">type</span>=<span class="string">"TimeDimension"</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">Hierarchy</span> <span class="attr">hasAll</span>=<span class="string">"true"</span> <span class="attr">allMemberName</span>=<span class="string">"All Periods"</span> <span class="attr">primaryKey</span>=<span class="string">"dateid"</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Table</span> <span class="attr">name</span>=<span class="string">"datehierarchy"</span>/&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Year"</span> <span class="attr">column</span>=<span class="string">"year"</span> <span class="attr">uniqueMembers</span>=<span class="string">"true"</span> <span class="attr">levelType</span>=<span class="string">"TimeYears"</span> <span class="attr">type</span>=<span class="string">"Numeric"</span>/&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Quarter"</span> <span class="attr">column</span>=<span class="string">"quarter"</span> <span class="attr">uniqueMembers</span>=<span class="string">"false"</span> <span class="attr">levelType</span>=<span class="string">"TimeQuarters"</span>/&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Month"</span> <span class="attr">column</span>=<span class="string">"month"</span> <span class="attr">uniqueMembers</span>=<span class="string">"false"</span> <span class="attr">ordinalColumn</span>=<span class="string">"month"</span> <span class="attr">nameColumn</span>=<span class="string">"month_name"</span> <span class="attr">levelType</span>=<span class="string">"TimeMonths"</span> <span class="attr">type</span>=<span class="string">"Numeric"</span>/&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Week"</span> <span class="attr">column</span>=<span class="string">"week_in_month"</span> <span class="attr">uniqueMembers</span>=<span class="string">"false"</span> <span class="attr">levelType</span>=<span class="string">"TimeWeeks"</span>/&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Day"</span> <span class="attr">column</span>=<span class="string">"day_in_month"</span> <span class="attr">uniqueMembers</span>=<span class="string">"false"</span> <span class="attr">ordinalColumn</span>=<span class="string">"day_in_month"</span> <span class="attr">nameColumn</span>=<span class="string">"day_name"</span> <span class="attr">levelType</span>=<span class="string">"TimeDays"</span> <span class="attr">type</span>=<span class="string">"Numeric"</span>/&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">Hierarchy</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">Dimension</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<h5 id="3-3-4-level的顺序与展示"><a href="#3-3-4-level的顺序与展示" class="headerlink" title="3.3.4 level的顺序与展示"></a>3.3.4 level的顺序与展示</h5><p>注意时间hierarchy的例子中的ordinalColumn 和nameColumn 属性。这两个属性关系到level怎样在结果中展现。ordinalColumn 属性指定了hierarchy中的一个字段，根据这个字段排序，nameColumn 则指明了要展示的字段。</p>
+<p>例如，在月份level中，datehierarchy有month (1 .. 12) ，和month_name (January, February, …)两个字段。MDX内部使用的字段是month，此种形式：[Time].[2005].[Q1].[1]。Month level的元素会按照January, February…的顺序显示。</p>
+<p>在父子hierarchy中，元素都是按照层级顺序排序的。ordinalColumn控制着同一个分支的兄弟节点之间的顺序。</p>
+<p>level包含一个type属性，它的枚举有 “String”, “Integer”, “Numeric”, “Boolean”, “Date”, “Time”, “Timestamp”.</p>
+<h5 id="3-5-多个hierarchy"><a href="#3-5-多个hierarchy" class="headerlink" title="3.5 多个hierarchy"></a>3.5 多个hierarchy</h5><p>有的维度包含多个hierarchy：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">Dimension</span> <span class="attr">name</span>=<span class="string">"Time"</span> <span class="attr">foreignKey</span>=<span class="string">"time_id"</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">Hierarchy</span> <span class="attr">hasAll</span>=<span class="string">"false"</span> <span class="attr">primaryKey</span>=<span class="string">"time_id"</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Table</span> <span class="attr">name</span>=<span class="string">"time_by_day"</span>/&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Year"</span> <span class="attr">column</span>=<span class="string">"the_year"</span> <span class="attr">type</span>=<span class="string">"Numeric"</span> <span class="attr">uniqueMembers</span>=<span class="string">"true"</span>/&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Quarter"</span> <span class="attr">column</span>=<span class="string">"quarter"</span> <span class="attr">uniqueMembers</span>=<span class="string">"false"</span>/&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Month"</span> <span class="attr">column</span>=<span class="string">"month_of_year"</span> <span class="attr">type</span>=<span class="string">"Numeric"</span> <span class="attr">uniqueMembers</span>=<span class="string">"false"</span>/&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">Hierarchy</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">Hierarchy</span> <span class="attr">name</span>=<span class="string">"Time Weekly"</span> <span class="attr">hasAll</span>=<span class="string">"false"</span> <span class="attr">primaryKey</span>=<span class="string">"time_id"</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Table</span> <span class="attr">name</span>=<span class="string">"time_by_week"</span>/&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Year"</span> <span class="attr">column</span>=<span class="string">"the_year"</span> <span class="attr">type</span>=<span class="string">"Numeric"</span> <span class="attr">uniqueMembers</span>=<span class="string">"true"</span>/&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Week"</span> <span class="attr">column</span>=<span class="string">"week"</span> <span class="attr">uniqueMembers</span>=<span class="string">"false"</span>/&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Day"</span> <span class="attr">column</span>=<span class="string">"day_of_week"</span> <span class="attr">type</span>=<span class="string">"String"</span> <span class="attr">uniqueMembers</span>=<span class="string">"false"</span>/&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">Hierarchy</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">Dimension</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>注意，第一个hierarchy并没有name属性，默认是继承它的dimemsion。</p>
+<p>以上两个hierarchy之间除了都是使用time_id作为join的key以外没有任何其他地方有相同点。把两个hierarchy放在同一个dimemsion中完全是为了迎合终端用户，因为终端用户认为为’Time’ 和’Time Weekly’两个hierarchy弄两个坐标系完全是没有什么道理的。如果两个hierarchy在同一个dimemsion中，MDX语言就会强制你只能使用两者之中的一个。</p>
+<h5 id="3-3-6-Degenerate-dimensions"><a href="#3-3-6-Degenerate-dimensions" class="headerlink" title="3.3.6 Degenerate dimensions"></a>3.3.6 Degenerate dimensions</h5><p>退化维度，是指特别简单都不值当给他创建一个表的问题。例如下面的事实表:<br>product_id|    time_id|    payment_method|    customer_id    store_id|    item_count    dollars<br>—|—|—|—|—<br>55    20040106|    Credit    |123|    22|    3|    $3.54<br>78    20040106|    Cash|    89|    22|    1|    $20.00<br>199    20040107|    ATM|    3|    22    |2    |$2.99<br>55    20040106|    Cash|    122|    22    |1|    $1.18</p>
+<p>假设我们为payment_method 字段创建了一个表。：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">payment_method</div><div class="line">Credit</div><div class="line">Cash</div><div class="line">ATM</div></pre></td></tr></table></figure></p>
+<p>它只有3个可能的值，建表没啥意义。我们应该创建一个退化维度。为此，我们要创建一个没有table的dimemsion，mondrian会认为这些字段来源于事实表：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">Cube</span> <span class="attr">name</span>=<span class="string">"Checkout"</span>&gt;</span></div><div class="line">	<span class="comment">&lt;!-- The fact table is always necessary. --&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">Table</span> <span class="attr">name</span>=<span class="string">"checkout"</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">Dimension</span> <span class="attr">name</span>=<span class="string">"Payment method"</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Hierarchy</span> <span class="attr">hasAll</span>=<span class="string">"true"</span>&gt;</span></div><div class="line">			<span class="comment">&lt;!-- No table element here. Fact table is assumed. --&gt;</span></div><div class="line">			<span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Payment method"</span> <span class="attr">column</span>=<span class="string">"payment_method"</span> <span class="attr">uniqueMembers</span>=<span class="string">"true"</span>/&gt;</span></div><div class="line">		<span class="tag">&lt;/<span class="name">Hierarchy</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">Dimension</span>&gt;</span></div><div class="line">	<span class="comment">&lt;!-- other dimensions and measures --&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">Cube</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>由于没有join操作，所以foreignKey也米有必要了。hierarchy也没有table元素以及primaryKey属性。</p>
+<h5 id="3-3-7-inline-table"><a href="#3-3-7-inline-table" class="headerlink" title="3.3.7 inline table"></a>3.3.7 inline table</h5><p><inlinetable>用来在schema中定义一个简单的数据集。</inlinetable></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">Dimension</span> <span class="attr">name</span>=<span class="string">"Severity"</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">Hierarchy</span> <span class="attr">hasAll</span>=<span class="string">"true"</span> <span class="attr">primaryKey</span>=<span class="string">"severity_id"</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">InlineTable</span> <span class="attr">alias</span>=<span class="string">"severity"</span>&gt;</span></div><div class="line">			<span class="tag">&lt;<span class="name">ColumnDefs</span>&gt;</span></div><div class="line">				<span class="tag">&lt;<span class="name">ColumnDef</span> <span class="attr">name</span>=<span class="string">"id"</span> <span class="attr">type</span>=<span class="string">"Numeric"</span>/&gt;</span></div><div class="line">				<span class="tag">&lt;<span class="name">ColumnDef</span> <span class="attr">name</span>=<span class="string">"desc"</span> <span class="attr">type</span>=<span class="string">"String"</span>/&gt;</span></div><div class="line">			<span class="tag">&lt;/<span class="name">ColumnDefs</span>&gt;</span></div><div class="line">			<span class="tag">&lt;<span class="name">Rows</span>&gt;</span></div><div class="line">				<span class="tag">&lt;<span class="name">Row</span>&gt;</span></div><div class="line">					<span class="tag">&lt;<span class="name">Value</span> <span class="attr">column</span>=<span class="string">"id"</span>&gt;</span>1<span class="tag">&lt;/<span class="name">Value</span>&gt;</span></div><div class="line">					<span class="tag">&lt;<span class="name">Value</span> <span class="attr">column</span>=<span class="string">"desc"</span>&gt;</span>High<span class="tag">&lt;/<span class="name">Value</span>&gt;</span></div><div class="line">				<span class="tag">&lt;/<span class="name">Row</span>&gt;</span></div><div class="line">				<span class="tag">&lt;<span class="name">Row</span>&gt;</span></div><div class="line">					<span class="tag">&lt;<span class="name">Value</span> <span class="attr">column</span>=<span class="string">"id"</span>&gt;</span>2<span class="tag">&lt;/<span class="name">Value</span>&gt;</span></div><div class="line">					<span class="tag">&lt;<span class="name">Value</span> <span class="attr">column</span>=<span class="string">"desc"</span>&gt;</span>Medium<span class="tag">&lt;/<span class="name">Value</span>&gt;</span></div><div class="line">				<span class="tag">&lt;/<span class="name">Row</span>&gt;</span></div><div class="line">				<span class="tag">&lt;<span class="name">Row</span>&gt;</span></div><div class="line">					<span class="tag">&lt;<span class="name">Value</span> <span class="attr">column</span>=<span class="string">"id"</span>&gt;</span>3<span class="tag">&lt;/<span class="name">Value</span>&gt;</span></div><div class="line">					<span class="tag">&lt;<span class="name">Value</span> <span class="attr">column</span>=<span class="string">"desc"</span>&gt;</span>Low<span class="tag">&lt;/<span class="name">Value</span>&gt;</span></div><div class="line">				<span class="tag">&lt;/<span class="name">Row</span>&gt;</span></div><div class="line">			<span class="tag">&lt;/<span class="name">Rows</span>&gt;</span></div><div class="line">		<span class="tag">&lt;/<span class="name">InlineTable</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Severity"</span> <span class="attr">column</span>=<span class="string">"id"</span> <span class="attr">nameColumn</span>=<span class="string">"desc"</span> <span class="attr">uniqueMembers</span>=<span class="string">"true"</span>/&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">Hierarchy</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">Dimension</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>以上面数据集声明dimemsion：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">Dimension</span> <span class="attr">name</span>=<span class="string">"Severity"</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">Hierarchy</span> <span class="attr">hasAll</span>=<span class="string">"true"</span> <span class="attr">primaryKey</span>=<span class="string">"severity_id"</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Table</span> <span class="attr">name</span>=<span class="string">"severity"</span>/&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">Level</span> <span class="attr">name</span>=<span class="string">"Severity"</span> <span class="attr">column</span>=<span class="string">"id"</span> <span class="attr">nameColumn</span>=<span class="string">"desc"</span> <span class="attr">uniqueMembers</span>=<span class="string">"true"</span>/&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">Hierarchy</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">Dimension</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<h5 id="3-3-8-Member-properties-and-formatters"><a href="#3-3-8-Member-properties-and-formatters" class="headerlink" title="3.3.8 Member properties and formatters"></a>3.3.8 Member properties and formatters</h5><p>As we shall see later, a level definition can also define member properties and a member formatter.</p>
+<h5 id="3-3-9-Approximate-level-cardinality"><a href="#3-3-9-Approximate-level-cardinality" class="headerlink" title="3.3.9 Approximate level cardinality"></a>3.3.9 Approximate level cardinality</h5><p>The <level> element allows specifying the optional attribute “approxRowCount”. Specifying approxRowCount can improve performance by reducing the need to determine level, hierarchy, and dimension cardinality. This can have a significant impact when connecting to Mondrian via XMLA.</level></p>
+<h5 id="3-3-10-Default-Measure-Attribute"><a href="#3-3-10-Default-Measure-Attribute" class="headerlink" title="3.3.10 Default Measure Attribute"></a>3.3.10 Default Measure Attribute</h5>  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/12/05/mondrian-定义schema/" data-title="mondrian-定义schema | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/12/05/cas-4.2.6-server配置与http支持/" title="cas-4.2.6-server配置与http支持">
+  <strong>上一篇：</strong><br/>
+  <span>
+  cas-4.2.6-server配置与http支持</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/12/05/公平调度器-capacity-scheduler/"  title="公平调度器-capacity-scheduler">
+ <strong>下一篇：</strong><br/> 
+ <span>公平调度器-capacity-scheduler
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/12/05/mondrian-定义schema/" data-title="mondrian-定义schema" data-url="http://willcup.com/2016/12/05/mondrian-定义schema/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Scheme-文件"><span class="toc-number">1.</span> <span class="toc-text">Scheme 文件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-注解"><span class="toc-number">1.0.1.</span> <span class="toc-text">2.1 注解</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-逻辑模型"><span class="toc-number">2.</span> <span class="toc-text">3 逻辑模型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-cube"><span class="toc-number">2.0.1.</span> <span class="toc-text">3.1 cube</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-measure"><span class="toc-number">2.0.2.</span> <span class="toc-text">3.2 measure</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-dimension-hierarchy-level"><span class="toc-number">2.0.3.</span> <span class="toc-text">3.3 dimension, hierarchy, level</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#3-3-1-将维度和hierarchy映射到表"><span class="toc-number">2.0.3.1.</span> <span class="toc-text">3.3.1 将维度和hierarchy映射到表</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-3-2-‘all’-member"><span class="toc-number">2.0.3.2.</span> <span class="toc-text">3.3.2 ‘all’ member</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-3-3-Time-dimemsion"><span class="toc-number">2.0.3.3.</span> <span class="toc-text">3.3.3 Time dimemsion</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-3-4-level的顺序与展示"><span class="toc-number">2.0.3.4.</span> <span class="toc-text">3.3.4 level的顺序与展示</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-5-多个hierarchy"><span class="toc-number">2.0.3.5.</span> <span class="toc-text">3.5 多个hierarchy</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-3-6-Degenerate-dimensions"><span class="toc-number">2.0.3.6.</span> <span class="toc-text">3.3.6 Degenerate dimensions</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-3-7-inline-table"><span class="toc-number">2.0.3.7.</span> <span class="toc-text">3.3.7 inline table</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-3-8-Member-properties-and-formatters"><span class="toc-number">2.0.3.8.</span> <span class="toc-text">3.3.8 Member properties and formatters</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-3-9-Approximate-level-cardinality"><span class="toc-number">2.0.3.9.</span> <span class="toc-text">3.3.9 Approximate level cardinality</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-3-10-Default-Measure-Attribute"><span class="toc-number">2.0.3.10.</span> <span class="toc-text">3.3.10 Default Measure Attribute</span></a></li></ol></li></ol></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

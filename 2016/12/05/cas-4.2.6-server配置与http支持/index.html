@@ -1,0 +1,585 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>cas-4.2.6-server配置与http支持 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="下载下载cas-server-webapp-4.2.6.war，放置到tomcat9的webapps下。
+开始使用的tomcat7，结果报错：Unable to process Jar entry。查了一下是tomcat版本过低的原因。
+启动tomcat，确认war正常解压，cas server正常启动。关闭tomcat。
+编辑cas的主要配置文件在于deployerConfigContext.x">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cas-4.2.6-server配置与http支持">
+<meta property="og:url" content="http://willcup.com/2016/12/05/cas-4.2.6-server配置与http支持/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="下载下载cas-server-webapp-4.2.6.war，放置到tomcat9的webapps下。
+开始使用的tomcat7，结果报错：Unable to process Jar entry。查了一下是tomcat版本过低的原因。
+启动tomcat，确认war正常解压，cas server正常启动。关闭tomcat。
+编辑cas的主要配置文件在于deployerConfigContext.x">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.777Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="cas-4.2.6-server配置与http支持">
+<meta name="twitter:description" content="下载下载cas-server-webapp-4.2.6.war，放置到tomcat9的webapps下。
+开始使用的tomcat7，结果报错：Unable to process Jar entry。查了一下是tomcat版本过低的原因。
+启动tomcat，确认war正常解压，cas server正常启动。关闭tomcat。
+编辑cas的主要配置文件在于deployerConfigContext.x">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/cas-4.2.6-server配置与http支持/" title="cas-4.2.6-server配置与http支持" itemprop="url">cas-4.2.6-server配置与http支持</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:11:31.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#下载"><span class="toc-text">下载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#编辑"><span class="toc-text">编辑</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题"><span class="toc-text">问题</span></a></li></ol>
+		
+		</div>
+		
+		<h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><p>下载cas-server-webapp-4.2.6.war，放置到tomcat9的webapps下。</p>
+<p>开始使用的tomcat7，结果报错：Unable to process Jar entry。查了一下是tomcat版本过低的原因。</p>
+<p>启动tomcat，确认war正常解压，cas server正常启动。<br>关闭tomcat。</p>
+<h2 id="编辑"><a href="#编辑" class="headerlink" title="编辑"></a>编辑</h2><p>cas的主要配置文件在于deployerConfigContext.xml。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">beans</span> <span class="attr">xmlns</span>=<span class="string">"http://www.springframework.org/schema/beans"</span></span></div><div class="line">       <span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></div><div class="line">       <span class="attr">xmlns:context</span>=<span class="string">"http://www.springframework.org/schema/context"</span></div><div class="line">       <span class="attr">xmlns:p</span>=<span class="string">"http://www.springframework.org/schema/p"</span></div><div class="line">       <span class="attr">xmlns:c</span>=<span class="string">"http://www.springframework.org/schema/c"</span></div><div class="line">       <span class="attr">xmlns:aop</span>=<span class="string">"http://www.springframework.org/schema/aop"</span></div><div class="line">       <span class="attr">xmlns:tx</span>=<span class="string">"http://www.springframework.org/schema/tx"</span></div><div class="line">       <span class="attr">xmlns:util</span>=<span class="string">"http://www.springframework.org/schema/util"</span></div><div class="line">       <span class="attr">xmlns:sec</span>=<span class="string">"http://www.springframework.org/schema/security"</span></div><div class="line">       <span class="attr">xsi:schemaLocation</span>=<span class="string">"http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd</span></div><div class="line">       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd</div><div class="line">       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd</div><div class="line">       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd</div><div class="line">       http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd</div><div class="line">       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"&gt;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">util:map</span> <span class="attr">id</span>=<span class="string">"authenticationHandlersResolvers"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">entry</span> <span class="attr">key-ref</span>=<span class="string">"proxyAuthenticationHandler"</span> <span class="attr">value-ref</span>=<span class="string">"proxyPrincipalResolver"</span> /&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">entry</span> <span class="attr">key-ref</span>=<span class="string">"primaryAuthenticationHandler"</span> <span class="attr">value-ref</span>=<span class="string">"primaryPrincipalResolver"</span> /&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">util:map</span>&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">util:list</span> <span class="attr">id</span>=<span class="string">"authenticationMetadataPopulators"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">ref</span> <span class="attr">bean</span>=<span class="string">"successfulHandlerMetaDataPopulator"</span> /&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">ref</span> <span class="attr">bean</span>=<span class="string">"rememberMeAuthenticationMetaDataPopulator"</span> /&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">util:list</span>&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"attributeRepository"</span> <span class="attr">class</span>=<span class="string">"org.jasig.services.persondir.support.NamedStubPersonAttributeDao"</span></span></div><div class="line">          <span class="attr">p:backingMap-ref</span>=<span class="string">"attrRepoBackingMap"</span> /&gt;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="comment">&lt;!-- 设置数据源 --&gt;</span></div><div class="line">   <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"dataSource"</span> <span class="attr">class</span>=<span class="string">"org.springframework.jdbc.datasource.DriverManagerDataSource"</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"driverClassName"</span> <span class="attr">value</span>=<span class="string">"com.mysql.jdbc.Driver"</span>&gt;</span><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"url"</span> <span class="attr">value</span>=<span class="string">"jdbc:mysql://127.0.0.1:3306/metamap1?useUnicode=true&amp;amp;characterEncoding=utf8"</span>&gt;</span><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"username"</span> <span class="attr">value</span>=<span class="string">"root"</span>&gt;</span><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"password"</span> <span class="attr">value</span>=<span class="string">""</span>&gt;</span><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div><div class="line"></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"primaryAuthenticationHandler"</span></span></div><div class="line">      <span class="attr">class</span>=<span class="string">"com.will.cas.auth.WillAuthenticationHandler"</span></div><div class="line">      <span class="attr">p:dataSource-ref</span>=<span class="string">"dataSource"</span></div><div class="line">      /&gt;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="comment">&lt;!-- &lt;alias name="acceptUsersAuthenticationHandler" alias="primaryAuthenticationHandler" /&gt; --&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">alias</span> <span class="attr">name</span>=<span class="string">"personDirectoryPrincipalResolver"</span> <span class="attr">alias</span>=<span class="string">"primaryPrincipalResolver"</span> /&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">util:map</span> <span class="attr">id</span>=<span class="string">"attrRepoBackingMap"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">entry</span> <span class="attr">key</span>=<span class="string">"uid"</span> <span class="attr">value</span>=<span class="string">"uid"</span> /&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">entry</span> <span class="attr">key</span>=<span class="string">"eduPersonAffiliation"</span> <span class="attr">value</span>=<span class="string">"eduPersonAffiliation"</span> /&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">entry</span> <span class="attr">key</span>=<span class="string">"groupMembership"</span> <span class="attr">value</span>=<span class="string">"groupMembership"</span> /&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">entry</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">key</span>&gt;</span><span class="tag">&lt;<span class="name">value</span>&gt;</span>memberOf<span class="tag">&lt;/<span class="name">value</span>&gt;</span><span class="tag">&lt;/<span class="name">key</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">list</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>faculty<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>staff<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>org<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">list</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">entry</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">util:map</span>&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">alias</span> <span class="attr">name</span>=<span class="string">"serviceThemeResolver"</span> <span class="attr">alias</span>=<span class="string">"themeResolver"</span> /&gt;</span></div><div class="line"></div><div class="line">    <span class="comment">&lt;!-- &lt;alias name="jsonServiceRegistryDao" alias="serviceRegistryDao" /&gt; --&gt;</span></div><div class="line"></div><div class="line">    <span class="comment">&lt;!-- 注册服务 --&gt;</span></div><div class="line">     <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"serviceRegistryDao"</span> <span class="attr">class</span>=<span class="string">"org.jasig.cas.services.InMemoryServiceRegistryDaoImpl"</span></span></div><div class="line">             <span class="attr">p:registeredServices-ref</span>=<span class="string">"registeredServicesList"</span> /&gt;</div><div class="line"> </div><div class="line">     <span class="tag">&lt;<span class="name">util:list</span> <span class="attr">id</span>=<span class="string">"registeredServicesList"</span>&gt;</span></div><div class="line">         <span class="tag">&lt;<span class="name">bean</span> <span class="attr">class</span>=<span class="string">"org.jasig.cas.services.RegexRegisteredService"</span></span></div><div class="line">               <span class="attr">p:id</span>=<span class="string">"0"</span> <span class="attr">p:name</span>=<span class="string">"HTTP and IMAP"</span> <span class="attr">p:description</span>=<span class="string">"Allows HTTP(S) and IMAP(S) protocols"</span></div><div class="line">               <span class="attr">p:serviceId</span>=<span class="string">"^(https?|http?|imaps?)://.*"</span> <span class="attr">p:evaluationOrder</span>=<span class="string">"10000001"</span> /&gt;</div><div class="line">     <span class="tag">&lt;/<span class="name">util:list</span>&gt;</span></div><div class="line"></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">alias</span> <span class="attr">name</span>=<span class="string">"defaultTicketRegistry"</span> <span class="attr">alias</span>=<span class="string">"ticketRegistry"</span> /&gt;</span></div><div class="line">    </div><div class="line">    <span class="tag">&lt;<span class="name">alias</span> <span class="attr">name</span>=<span class="string">"ticketGrantingTicketExpirationPolicy"</span> <span class="attr">alias</span>=<span class="string">"grantingTicketExpirationPolicy"</span> /&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">alias</span> <span class="attr">name</span>=<span class="string">"multiTimeUseOrTimeoutExpirationPolicy"</span> <span class="attr">alias</span>=<span class="string">"serviceTicketExpirationPolicy"</span> /&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">alias</span> <span class="attr">name</span>=<span class="string">"anyAuthenticationPolicy"</span> <span class="attr">alias</span>=<span class="string">"authenticationPolicy"</span> /&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">alias</span> <span class="attr">name</span>=<span class="string">"acceptAnyAuthenticationPolicyFactory"</span> <span class="attr">alias</span>=<span class="string">"authenticationPolicyFactory"</span> /&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"auditTrailManager"</span></span></div><div class="line">          <span class="attr">class</span>=<span class="string">"org.jasig.inspektr.audit.support.Slf4jLoggingAuditTrailManager"</span></div><div class="line">          <span class="attr">p:entrySeparator</span>=<span class="string">"$&#123;cas.audit.singleline.separator:|&#125;"</span></div><div class="line">          <span class="attr">p:useSingleLine</span>=<span class="string">"$&#123;cas.audit.singleline:false&#125;"</span>/&gt;</div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">alias</span> <span class="attr">name</span>=<span class="string">"neverThrottle"</span> <span class="attr">alias</span>=<span class="string">"authenticationThrottle"</span> /&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">util:list</span> <span class="attr">id</span>=<span class="string">"monitorsList"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">ref</span> <span class="attr">bean</span>=<span class="string">"memoryMonitor"</span> /&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">ref</span> <span class="attr">bean</span>=<span class="string">"sessionMonitor"</span> /&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">util:list</span>&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">alias</span> <span class="attr">name</span>=<span class="string">"defaultPrincipalFactory"</span> <span class="attr">alias</span>=<span class="string">"principalFactory"</span> /&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">alias</span> <span class="attr">name</span>=<span class="string">"defaultAuthenticationTransactionManager"</span> <span class="attr">alias</span>=<span class="string">"authenticationTransactionManager"</span> /&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">alias</span> <span class="attr">name</span>=<span class="string">"defaultPrincipalElectionStrategy"</span> <span class="attr">alias</span>=<span class="string">"principalElectionStrategy"</span> /&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">alias</span> <span class="attr">name</span>=<span class="string">"tgcCipherExecutor"</span> <span class="attr">alias</span>=<span class="string">"defaultCookieCipherExecutor"</span> /&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">beans</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>cas提供了几种连接数据库验证的实现，但是对于我们验证django用户的需求不适合，因为django用户的密码的加密salt是动态的。如果是简单的数据库用户验证，可以参考：<a href="https://apereo.github.io/cas/4.2.x/installation/Database-Authentication.html" target="_blank" rel="external">https://apereo.github.io/cas/4.2.x/installation/Database-Authentication.html</a></p>
+<p>这里我们实现了一个自己的AuthenticationHandler，主要代码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> com.will.cas.auth;<span class="comment">/* Example implementation of password hasher similar on Django's PasswordHasher</span></div><div class="line"> * Requires Java8 (but should be easy to port to older JREs)</div><div class="line"> * Currently it would work only for pbkdf2_sha256 algorithm</div><div class="line"> *</div><div class="line"> * Django code: https://github.com/django/django/blob/1.6.5/django/contrib/auth/hashers.py#L221</div><div class="line"> */</div><div class="line"></div><div class="line"><span class="keyword">import</span> org.jasig.cas.authentication.HandlerResult;</div><div class="line"><span class="keyword">import</span> org.jasig.cas.authentication.PreventedException;</div><div class="line"><span class="keyword">import</span> org.jasig.cas.authentication.UsernamePasswordCredential;</div><div class="line"><span class="keyword">import</span> org.jasig.cas.authentication.handler.support.AbstractUsernamePasswordAuthenticationHandler;</div><div class="line"><span class="keyword">import</span> org.springframework.jdbc.core.JdbcTemplate;</div><div class="line"></div><div class="line"><span class="keyword">import</span> javax.crypto.SecretKey;</div><div class="line"><span class="keyword">import</span> javax.crypto.SecretKeyFactory;</div><div class="line"><span class="keyword">import</span> javax.crypto.spec.PBEKeySpec;</div><div class="line"><span class="keyword">import</span> javax.security.auth.login.FailedLoginException;</div><div class="line"><span class="keyword">import</span> javax.sql.DataSource;</div><div class="line"><span class="keyword">import</span> javax.validation.constraints.NotNull;</div><div class="line"><span class="keyword">import</span> java.nio.charset.Charset;</div><div class="line"><span class="keyword">import</span> java.security.GeneralSecurityException;</div><div class="line"><span class="keyword">import</span> java.security.NoSuchAlgorithmException;</div><div class="line"><span class="keyword">import</span> java.security.spec.InvalidKeySpecException;</div><div class="line"><span class="keyword">import</span> java.security.spec.KeySpec;</div><div class="line"><span class="keyword">import</span> java.util.Base64;</div><div class="line"></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">WillAuthenticationHandler</span> <span class="keyword">extends</span> <span class="title">AbstractUsernamePasswordAuthenticationHandler</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> JdbcTemplate jdbcTemplate;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> DataSource dataSource;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * Method to set the datasource and generate a JdbcTemplate.</div><div class="line">     *</div><div class="line">     * <span class="doctag">@param</span> dataSource the datasource to use.</div><div class="line">     */</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setDataSource</span><span class="params">(@NotNull <span class="keyword">final</span> DataSource dataSource)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.jdbcTemplate = <span class="keyword">new</span> JdbcTemplate(dataSource);</div><div class="line">        <span class="keyword">this</span>.dataSource = dataSource;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * Method to return the jdbcTemplate.</div><div class="line">     *</div><div class="line">     * <span class="doctag">@return</span> a fully created JdbcTemplate.</div><div class="line">     */</div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">final</span> JdbcTemplate <span class="title">getJdbcTemplate</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.jdbcTemplate;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">final</span> DataSource <span class="title">getDataSource</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.dataSource;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">public</span> <span class="keyword">final</span> Integer DEFAULT_ITERATIONS = <span class="number">10000</span>;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">final</span> String algorithm = <span class="string">"pbkdf2_sha256"</span>;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">WillAuthenticationHandler</span><span class="params">()</span> </span>&#123;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">protected</span> HandlerResult <span class="title">authenticateUsernamePasswordInternal</span><span class="params">(UsernamePasswordCredential credential)</span> <span class="keyword">throws</span> GeneralSecurityException, PreventedException </span>&#123;</div><div class="line">        String username = credential.getUsername();</div><div class="line">        String pwd = credential.getPassword();</div><div class="line">        System.out.println(<span class="string">"Got username : "</span> + username + <span class="string">" and password : "</span> + pwd);</div><div class="line">        <span class="keyword">int</span> count = <span class="keyword">this</span>.jdbcTemplate.queryForObject(<span class="string">"select count(1) from auth_user where username=?"</span>, Integer.class, username);</div><div class="line">        <span class="keyword">if</span> (count == <span class="number">0</span>) &#123;</div><div class="line">            System.out.println(username + <span class="string">" not found with SQL query."</span>);</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> FailedLoginException(username + <span class="string">" not found with SQL query."</span>);</div><div class="line">        &#125;</div><div class="line">        String encyptedPassword = <span class="keyword">this</span>.jdbcTemplate.queryForObject(<span class="string">"select password from auth_user where username=?"</span>, String.class, username);</div><div class="line">        System.out.println(<span class="string">"Got encyptedPassword : "</span> + encyptedPassword);</div><div class="line">        <span class="keyword">if</span> (checkPassword(pwd, encyptedPassword)) &#123;</div><div class="line">            System.out.println(<span class="string">" auth success for user : "</span> + username);</div><div class="line">            <span class="keyword">return</span> createHandlerResult(credential, <span class="keyword">this</span>.principalFactory.createPrincipal(username), <span class="keyword">null</span>);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> FailedLoginException(username + <span class="string">"'s password is wrong for : "</span> + pwd);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getEncodedHash</span><span class="params">(String password, String salt, <span class="keyword">int</span> iterations)</span> </span>&#123;</div><div class="line">        <span class="comment">// Returns only the last part of whole encoded password</span></div><div class="line">        SecretKeyFactory keyFactory = <span class="keyword">null</span>;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            keyFactory = SecretKeyFactory.getInstance(<span class="string">"PBKDF2WithHmacSHA256"</span>);</div><div class="line">        &#125; <span class="keyword">catch</span> (NoSuchAlgorithmException e) &#123;</div><div class="line">            System.err.println(<span class="string">"Could NOT retrieve PBKDF2WithHmacSHA256 algorithm"</span>);</div><div class="line">            System.exit(<span class="number">1</span>);</div><div class="line">        &#125;</div><div class="line">        KeySpec keySpec = <span class="keyword">new</span> PBEKeySpec(password.toCharArray(), salt.getBytes(Charset.forName(<span class="string">"UTF-8"</span>)), iterations, <span class="number">256</span>);</div><div class="line">        SecretKey secret = <span class="keyword">null</span>;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            secret = keyFactory.generateSecret(keySpec);</div><div class="line">        &#125; <span class="keyword">catch</span> (InvalidKeySpecException e) &#123;</div><div class="line">            System.out.println(<span class="string">"Could NOT generate secret key"</span>);</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">byte</span>[] rawHash = secret.getEncoded();</div><div class="line">        <span class="keyword">byte</span>[] hashBase64 = Base64.getEncoder().encode(rawHash);</div><div class="line"></div><div class="line">        <span class="keyword">return</span> <span class="keyword">new</span> String(hashBase64);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">encode</span><span class="params">(String password, String salt, <span class="keyword">int</span> iterations)</span> </span>&#123;</div><div class="line">        <span class="comment">// returns hashed password, along with algorithm, number of iterations and salt</span></div><div class="line">        String hash = getEncodedHash(password, salt, iterations);</div><div class="line">        <span class="keyword">return</span> String.format(<span class="string">"%s$%d$%s$%s"</span>, algorithm, iterations, salt, hash);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">encode</span><span class="params">(String password, String salt)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.encode(password, salt, <span class="keyword">this</span>.DEFAULT_ITERATIONS);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">checkPassword</span><span class="params">(String password, String hashedPassword)</span> </span>&#123;</div><div class="line">        <span class="comment">// hashedPassword consist of: ALGORITHM, ITERATIONS_NUMBER, SALT and</span></div><div class="line">        <span class="comment">// HASH; parts are joined with dollar character ("$")</span></div><div class="line">        String[] parts = hashedPassword.split(<span class="string">"\\$"</span>);</div><div class="line">        <span class="keyword">if</span> (parts.length != <span class="number">4</span>) &#123;</div><div class="line">            <span class="comment">// wrong hash format</span></div><div class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">        &#125;</div><div class="line">        Integer iterations = Integer.parseInt(parts[<span class="number">1</span>]);</div><div class="line">        String salt = parts[<span class="number">2</span>];</div><div class="line">        String hash = encode(password, salt, iterations);</div><div class="line"></div><div class="line">        <span class="keyword">return</span> hash.equals(hashedPassword);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// Following examples can be generated at any Django project:</span></div><div class="line">    <span class="comment">//</span></div><div class="line">    <span class="comment">//  &gt;&gt;&gt; from django.contrib.auth.hashers import make_password</span></div><div class="line">    <span class="comment">//  &gt;&gt;&gt; make_password('mystery', hasher='pbkdf2_sha256')  # salt would be randomly generated</span></div><div class="line">    <span class="comment">//  'pbkdf2_sha256$10000$HqxvKtloKLwx$HdmdWrgv5NEuaM4S6uMvj8/s+5Yj+I/d1ay6zQyHxdg='</span></div><div class="line">    <span class="comment">//  &gt;&gt;&gt; make_password('mystery', salt='mysalt', hasher='pbkdf2_sha256')</span></div><div class="line">    <span class="comment">//  'pbkdf2_sha256$10000$mysalt$KjUU5KrwyUbKTGYkHqBo1IwUbFBzKXrGQgwA1p2AuY0='</span></div><div class="line">    <span class="comment">//</span></div><div class="line">    <span class="comment">//</span></div><div class="line">    <span class="comment">// mystery</span></div><div class="line">    <span class="comment">// pbkdf2_sha256$10000$qx1ec0f4lu4l$3G81rAm/4ng0tCCPTrx2aWohq7ztDBfFYczGNoUtiKQ=</span></div><div class="line">    <span class="comment">//</span></div><div class="line">    <span class="comment">// s3cr3t</span></div><div class="line">    <span class="comment">// pbkdf2_sha256$10000$BjDHOELBk7fR$xkh1Xf6ooTqwkflS3rAiz5Z4qOV1Jd5Lwd8P+xGtW+I=</span></div><div class="line">    <span class="comment">//</span></div><div class="line">    <span class="comment">// puzzle</span></div><div class="line">    <span class="comment">// pbkdf2_sha256$10000$IFYFG7hiiKYP$rf8vHYFD7K4q2N3DQYfgvkiqpFPGCTYn6ZoenLE3jLc=</span></div><div class="line">    <span class="comment">//</span></div><div class="line">    <span class="comment">// riddle</span></div><div class="line">    <span class="comment">// pbkdf2_sha256$10000$A0S5o3pNIEq4$Rk2sxXr8bonIDOGj6SU4H/xpjKHhHAKpFXfmNZ0dnEY=</span></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">        runTests();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">runTests</span><span class="params">()</span> </span>&#123;</div><div class="line">        System.out.println(<span class="string">"==========================="</span>);</div><div class="line">        System.out.println(<span class="string">"= Testing password hasher ="</span>);</div><div class="line">        System.out.println(<span class="string">"==========================="</span>);</div><div class="line">        System.out.println();</div><div class="line"></div><div class="line">        System.out.println();</div><div class="line">        passwordShouldMatch(<span class="string">"admin"</span>, <span class="string">"pbkdf2_sha256$12000$g3UeiuUEnwfp$Qr/Qb6cCntnCflkBcJ+OenxWubIu6O84xLWGgWqNftw="</span>);</div><div class="line">        passwordShouldMatch(<span class="string">"will@2016"</span>, <span class="string">"pbkdf2_sha256$30000$tTJpdOsd3eoN$GcBF0YoHg8eV7s6NBqjX1i3VllEIeYuMUsyH5stzuw4="</span>);</div><div class="line"></div><div class="line">        System.out.println();</div><div class="line">        passwordShouldNotMatch(<span class="string">"foo"</span>, <span class="string">""</span>);</div><div class="line">        passwordShouldNotMatch(<span class="string">"mystery"</span>, <span class="string">"pbkdf2_md5$10000$qx1ec0f4lu4l$3G81rAm/4ng0tCCPTrx2aWohq7ztDBfFYczGNoUtiKQ="</span>);</div><div class="line">        passwordShouldNotMatch(<span class="string">"mystery"</span>, <span class="string">"pbkdf2_sha1$10000$qx1ec0f4lu4l$3G81rAm/4ng0tCCPTrx2aWohq7ztDBfFYczGNoUtiKQ="</span>);</div><div class="line">        passwordShouldNotMatch(<span class="string">"mystery"</span>, <span class="string">"pbkdf2_sha256$10001$Qx1ec0f4lu4l$3G81rAm/4ng0tCCPTrx2aWohq7ztDBfFYczGNoUtiKQ="</span>);</div><div class="line">        passwordShouldNotMatch(<span class="string">"mystery"</span>, <span class="string">"pbkdf2_sha256$10001$qx1ec0f4lu4l$3G81rAm/4ng0tCCPTrx2aWohq7ztDBfFYczGNoUtiKQ="</span>);</div><div class="line">        passwordShouldNotMatch(<span class="string">"mystery"</span>, <span class="string">"pbkdf2_sha256$10000$qx7ztDBfFYczGNoUtiKQ="</span>);</div><div class="line">        passwordShouldNotMatch(<span class="string">"s3cr3t"</span>, <span class="string">"pbkdf2_sha256$10000$BjDHOELBk7fR$foobar"</span>);</div><div class="line">        passwordShouldNotMatch(<span class="string">"puzzle"</span>, <span class="string">"pbkdf2_sha256$10000$IFYFG7hiiKYP$rf8vHYFD7K4q2N3DQYfgvkiqpFPGCTYn6ZoenLE3jLcX"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">passwordShouldMatch</span><span class="params">(String password, String expectedHash)</span> </span>&#123;</div><div class="line">        WillAuthenticationHandler willAuthenticationHandler = <span class="keyword">new</span> WillAuthenticationHandler();</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (willAuthenticationHandler.checkPassword(password, expectedHash)) &#123;</div><div class="line">            System.out.println(<span class="string">" =&gt; OK"</span>);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            String[] parts = expectedHash.split(<span class="string">"\\$"</span>);</div><div class="line">            <span class="keyword">if</span> (parts.length != <span class="number">4</span>) &#123;</div><div class="line">                System.out.printf(<span class="string">" =&gt; Wrong hash provided: '%s'\n"</span>, expectedHash);</div><div class="line">                <span class="keyword">return</span>;</div><div class="line">            &#125;</div><div class="line">            String salt = parts[<span class="number">2</span>];</div><div class="line">            String resultHash = willAuthenticationHandler.encode(password, salt);</div><div class="line">            String msg = <span class="string">" =&gt; Wrong! Password '%s' hash expected to be '%s' but is '%s'\n"</span>;</div><div class="line">            System.out.printf(msg, password, expectedHash, resultHash);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">passwordShouldNotMatch</span><span class="params">(String password, String expectedHash)</span> </span>&#123;</div><div class="line">        WillAuthenticationHandler willAuthenticationHandler = <span class="keyword">new</span> WillAuthenticationHandler();</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (willAuthenticationHandler.checkPassword(password, expectedHash)) &#123;</div><div class="line">            System.out.printf(<span class="string">" =&gt; Wrong (password '%s' did '%s' match but were not supposed to)\n"</span>, password, expectedHash);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            System.out.println(<span class="string">" =&gt; OK (password didn't match)"</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>基本是抄袭了AbstractJdbcUsernamePasswordAuthenticationHandler的内容，然后执行了自己的算法实现。本来是可以直接继承AbstractJdbcUsernamePasswordAuthenticationHandler，重写方法实现的，但是考虑到我们要兼容很多个系统的数据库用户，所以需要多个dataSource和jdbcTemplate，就放弃了。</p>
+<p>对于cas配置的切入点在于authenticationHandlersResolvers，以前版本的都是有个authenticationManager，然后编辑他的构造参数来定义认证处理器的，4.2.6貌似把它内置了。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"> <span class="tag">&lt;<span class="name">util:map</span> <span class="attr">id</span>=<span class="string">"authenticationHandlersResolvers"</span>&gt;</span></div><div class="line">       <span class="tag">&lt;<span class="name">entry</span> <span class="attr">key-ref</span>=<span class="string">"proxyAuthenticationHandler"</span> <span class="attr">value-ref</span>=<span class="string">"proxyPrincipalResolver"</span> /&gt;</span></div><div class="line">       <span class="tag">&lt;<span class="name">entry</span> <span class="attr">key-ref</span>=<span class="string">"primaryAuthenticationHandler"</span> <span class="attr">value-ref</span>=<span class="string">"primaryPrincipalResolver"</span> /&gt;</span></div><div class="line">   <span class="tag">&lt;/<span class="name">util:map</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"dataSource"</span> <span class="attr">class</span>=<span class="string">"org.springframework.jdbc.datasource.DriverManagerDataSource"</span>&gt;</span></div><div class="line">     <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"driverClassName"</span> <span class="attr">value</span>=<span class="string">"com.mysql.jdbc.Driver"</span>&gt;</span><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">     <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"url"</span> <span class="attr">value</span>=<span class="string">"jdbc:mysql://127.0.0.1:3306/metamap1?useUnicode=true&amp;amp;characterEncoding=utf8"</span>&gt;</span><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">     <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"username"</span> <span class="attr">value</span>=<span class="string">"root"</span>&gt;</span><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">     <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"password"</span> <span class="attr">value</span>=<span class="string">""</span>&gt;</span><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">   <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div><div class="line"></div><div class="line"></div><div class="line">   <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"primaryAuthenticationHandler"</span></span></div><div class="line">     <span class="attr">class</span>=<span class="string">"com.will.cas.auth.WillAuthenticationHandler"</span></div><div class="line">     <span class="attr">p:dataSource-ref</span>=<span class="string">"dataSource"</span></div><div class="line">     /&gt;</div></pre></td></tr></table></figure>
+<p>如此，便指定了自定义的认证处理器。</p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>在app1配置cas server为当前cas server后，跳转到登录页面，结果提示：</p>
+<blockquote>
+<p>未认证的授权服务 不允许使用CAS来认证您访问的目标应用</p>
+</blockquote>
+<p>查了一下解决方案，同样是在deployerConfigContext.xml中配置服务注册的DAO serviceRegistryDao为内存实现类，然后使用正则表达式表示这个cas server接收的服务：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">alias</span> <span class="attr">name</span>=<span class="string">"jsonServiceRegistryDao"</span> <span class="attr">alias</span>=<span class="string">"serviceRegistryDao"</span> /&gt;</span></div></pre></td></tr></table></figure></p>
+<p>改为：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"serviceRegistryDao"</span> <span class="attr">class</span>=<span class="string">"org.jasig.cas.services.InMemoryServiceRegistryDaoImpl"</span></span></div><div class="line">             <span class="attr">p:registeredServices-ref</span>=<span class="string">"registeredServicesList"</span> /&gt;</div><div class="line"> </div><div class="line">     <span class="tag">&lt;<span class="name">util:list</span> <span class="attr">id</span>=<span class="string">"registeredServicesList"</span>&gt;</span></div><div class="line">         <span class="tag">&lt;<span class="name">bean</span> <span class="attr">class</span>=<span class="string">"org.jasig.cas.services.RegexRegisteredService"</span></span></div><div class="line">               <span class="attr">p:id</span>=<span class="string">"0"</span> <span class="attr">p:name</span>=<span class="string">"HTTP and IMAP"</span> <span class="attr">p:description</span>=<span class="string">"Allows HTTP(S) and IMAP(S) protocols"</span></div><div class="line">               <span class="attr">p:serviceId</span>=<span class="string">"^(https?|http?|imaps?)://.*"</span> <span class="attr">p:evaluationOrder</span>=<span class="string">"10000001"</span> /&gt;</div><div class="line">     <span class="tag">&lt;/<span class="name">util:list</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>其实理论上应该也可以在默认的jsonServiceRegistryDao配置的，但是找了一会儿没有找到json配置文件的位置。注意了一下貌似它是属于cas-addons的，有些插件的意思，后面再探查一下。</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://github.com/Unicon/cas-addons/wiki/Configuring-JSON-Service-Registry" target="_blank" rel="external">https://github.com/Unicon/cas-addons/wiki/Configuring-JSON-Service-Registry</a></li>
+<li><a href="http://www.cnphp6.com/archives/133139" target="_blank" rel="external">http://www.cnphp6.com/archives/133139</a></li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/12/05/cas-4.2.6-server配置与http支持/" data-title="cas-4.2.6-server配置与http支持 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/12/05/ambari故障记录/" title="ambari故障记录">
+  <strong>上一篇：</strong><br/>
+  <span>
+  ambari故障记录</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/12/05/mondrian-定义schema/"  title="mondrian-定义schema">
+ <strong>下一篇：</strong><br/> 
+ <span>mondrian-定义schema
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/12/05/cas-4.2.6-server配置与http支持/" data-title="cas-4.2.6-server配置与http支持" data-url="http://willcup.com/2016/12/05/cas-4.2.6-server配置与http支持/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#下载"><span class="toc-number">1.</span> <span class="toc-text">下载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#编辑"><span class="toc-number">2.</span> <span class="toc-text">编辑</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题"><span class="toc-number">3.</span> <span class="toc-text">问题</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

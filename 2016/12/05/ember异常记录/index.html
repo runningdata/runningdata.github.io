@@ -1,0 +1,571 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>ember异常记录 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="ember-mermaid要画流程图，对比了一下，决定使用ember-mermaid，但是github里说的安装方式运行的话，会报错：123456789101112131415root@will-vm:/usr/local/metamap/metamap_js# ember install ember-mermaidDEPRECATION: Overriding init without call">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ember异常记录">
+<meta property="og:url" content="http://willcup.com/2016/12/05/ember异常记录/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="ember-mermaid要画流程图，对比了一下，决定使用ember-mermaid，但是github里说的安装方式运行的话，会报错：123456789101112131415root@will-vm:/usr/local/metamap/metamap_js# ember install ember-mermaidDEPRECATION: Overriding init without call">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.781Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ember异常记录">
+<meta name="twitter:description" content="ember-mermaid要画流程图，对比了一下，决定使用ember-mermaid，但是github里说的安装方式运行的话，会报错：123456789101112131415root@will-vm:/usr/local/metamap/metamap_js# ember install ember-mermaidDEPRECATION: Overriding init without call">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/ember异常记录/" title="ember异常记录" itemprop="url">ember异常记录</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:09:02.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#ember-mermaid"><span class="toc-text">ember-mermaid</span></a></li></ol>
+		
+		</div>
+		
+		<h4 id="ember-mermaid"><a href="#ember-mermaid" class="headerlink" title="ember-mermaid"></a>ember-mermaid</h4><p>要画流程图，对比了一下，决定使用ember-mermaid，但是github里说的安装方式运行的话，会报错：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/<span class="built_in">local</span>/metamap/metamap_js<span class="comment"># ember install ember-mermaid</span></div><div class="line">DEPRECATION: Overriding init without calling this._super is deprecated. Please call this._super(), addon: `ember-mermaid`</div><div class="line">    at Function.Addon.lookup (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:896:27)</div><div class="line">The addon `ember-cli-htmlbars` requires an Ember CLI version of 0.1.2 or above, but you are running null.</div><div class="line">Error: The addon `ember-cli-htmlbars` requires an Ember CLI version of 0.1.2 or above, but you are running null.</div><div class="line">    at Function.deprecatedAssertAbove [as assertAbove] (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli-htmlbars/node_modules/ember-cli-version-checker/index.js:143:18)</div><div class="line">    at CoreObject.module.exports.init (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli-htmlbars/ember-addon-main.js:13:13)</div><div class="line">    at CoreObject.superWrapper [as init] (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/node_modules/core-object/lib/assign-properties.js:32:18)</div><div class="line">    at CoreObject.Class (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/node_modules/core-object/core-object.js:33:38)</div><div class="line">    at /usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/models/addons-factory.js:48:21</div><div class="line">    at visit (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/utilities/DAG.js:23:3)</div><div class="line">    at DAG.topsort (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/utilities/DAG.js:82:7)</div><div class="line">    at CoreObject.extend.initializeAddons (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/models/addons-factory.js:44:11)</div><div class="line">    at CoreObject.extend.initializeAddons (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:226:38)</div><div class="line">    at setupRegistryForEachAddon (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/node_modules/ember-cli-preprocess-registry/preprocessors.js:18:10)</div></pre></td></tr></table></figure></p>
+<p>搜了一下没找到相关资料，索性直接暴力解决,修改报错文件里检查版本的部分/usr/local/metamap/metamap_js/node_modules/ember-cli-htmlbars/node_modules/ember-cli-version-checker/index.js:143:18。看到上面是验证版本的地方出了问题<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> (!dependencyChecker.satisfies(comparison)) &#123;</div><div class="line">  <span class="keyword">var</span> error  = <span class="keyword">new</span> <span class="built_in">Error</span>(message);</div><div class="line"></div><div class="line">  error.suppressStacktrace = <span class="literal">true</span>;</div><div class="line">  <span class="keyword">throw</span> error;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>注释掉上面这些代码后成功安装。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# ember install ember-mermaid</div><div class="line">DEPRECATION: Overriding init without calling this._super is deprecated. Please call this._super(), addon: `ember-mermaid`</div><div class="line">    at Function.Addon.lookup (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:896:27)</div><div class="line">DEPRECATION: Node v0.10.45 is no longer supported by Ember CLI. Please update to a more recent version of Node</div><div class="line">Could not start watchman; falling back to NodeWatcher for file system events.</div><div class="line">Visit http://ember-cli.com/user-guide/#watchman for more info.</div><div class="line">Installed packages for tooling via npm.</div><div class="line">DEPRECATION: Overriding init without calling this._super is deprecated. Please call this._super(), addon: `ember-mermaid`</div><div class="line">    at Function.Addon.lookup (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:896:27)</div><div class="line">installing ember-mermaid</div><div class="line">  install bower package mermaid</div><div class="line">  not-cached https://github.com/knsv/mermaid.git#^0.5.8</div><div class="line">  progress 接收对象中:  26% (58/222)</div><div class="line">  progress 接收对象中:  67% (149/222), 1.98 MiB | 166.00 KiB/s</div><div class="line">  progress 接收对象中:  68% (151/222), 1.98 MiB | 166.00 KiB/s</div><div class="line">  resolved https://github.com/knsv/mermaid.git#0.5.8</div><div class="line">  conflict Unable to find suitable version for mermaid</div><div class="line">    1) mermaid ^0.5.8</div><div class="line">    2) mermaid ^6.0.0</div><div class="line">? Answer 2</div><div class="line">Installed browser packages via Bower.</div><div class="line">Installed addon package.</div></pre></td></tr></table></figure></p>
+<p>既然成功安装了，为防有其他差错，就把这个检查版本的文件恢复回去了。<br>然后启动ember server又出现了这个问题<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# ember serve</div><div class="line">DEPRECATION: Overriding init without calling this._super is deprecated. Please call this._super(), addon: `ember-mermaid`</div><div class="line">    at Function.Addon.lookup (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:896:27)</div><div class="line">The addon `ember-cli-htmlbars` requires an Ember CLI version of 0.1.2 or above, but you are running null.</div><div class="line">Error: The addon `ember-cli-htmlbars` requires an Ember CLI version of 0.1.2 or above, but you are running null.</div><div class="line">    at Function.deprecatedAssertAbove [as assertAbove] (/usr/local/metamap/metamap_js/node_modules/ember-cli-htmlbars/node_modules/ember-cli-version-checker/index.js:143:18)</div><div class="line">    at CoreObject.module.exports.init (/usr/local/metamap/metamap_js/node_modules/ember-cli-htmlbars/ember-addon-main.js:13:13)</div><div class="line">    at CoreObject.superWrapper [as init] (/usr/local/metamap/metamap_js/node_modules/ember-cli/node_modules/core-object/lib/assign-properties.js:32:18)</div><div class="line">    at CoreObject.Class (/usr/local/metamap/metamap_js/node_modules/ember-cli/node_modules/core-object/core-object.js:33:38)</div><div class="line">    at /usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addons-factory.js:48:21</div><div class="line">    at visit (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/utilities/DAG.js:23:3)</div><div class="line">    at DAG.topsort (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/utilities/DAG.js:82:7)</div><div class="line">    at CoreObject.extend.initializeAddons (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addons-factory.js:44:11)</div><div class="line">    at CoreObject.extend.initializeAddons (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:226:38)</div><div class="line">    at setupRegistryForEachAddon (/usr/local/metamap/metamap_js/node_modules/ember-cli/node_modules/ember-cli-preprocess-registry/preprocessors.js:18:10)</div></pre></td></tr></table></figure></p>
+<p>仔细看了一下官方github上给出的解释，说是要把ember-font-awesome升级到2.1.1就可以了。查了一下，压根就没有安装这个东西<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# find . -name &apos;ember-font-awesome&apos;</div><div class="line">root@will-vm:/usr/local/metamap/metamap_js#</div></pre></td></tr></table></figure></p>
+<p>看一下ember-mermaid的官网吧，到ember addon仓库搜索了一把<a href="https://emberobserver.com/addons/ember-mermaid，发现人家的ember-cli的版本是2.4.1，最近支持的是2.5.0.群里很多人都说2.6不稳定，所以一直没有升级。。" target="_blank" rel="external">https://emberobserver.com/addons/ember-mermaid，发现人家的ember-cli的版本是2.4.1，最近支持的是2.5.0.群里很多人都说2.6不稳定，所以一直没有升级。。</a><br>索性我就降级吧。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">npm rm -g ember-cli</div><div class="line">npm install -g ember-cli@2.5</div><div class="line">ember -v</div><div class="line">ember new testPro</div></pre></td></tr></table></figure></p>
+<p>上面使用ember 2.5版本生成了一个临时项目，为了把依赖的版本copy到现有的2.6的项目里去，覆盖掉2.6的那些版本依赖。主要针对bower.json和package.json两个文件里与ember-xxx相关的版本配置。</p>
+<p>之后就成功启动了，也能够使用mermaid了，再删掉临时项目就可以了。</p>
+<p><code>参考</code> ：</p>
+<ul>
+<li><a href="https://github.com/crodriguez1a/ember-mermaid" target="_blank" rel="external">https://github.com/crodriguez1a/ember-mermaid</a></li>
+<li><a href="https://knsv.github.io/mermaid/#usage" target="_blank" rel="external">https://knsv.github.io/mermaid/#usage</a></li>
+<li><a href="http://www.jqueryscript.net/chart-graph/Simple-SVG-Flow-Chart-Plugin-with-jQuery-flowSVG.html" target="_blank" rel="external">http://www.jqueryscript.net/chart-graph/Simple-SVG-Flow-Chart-Plugin-with-jQuery-flowSVG.html</a></li>
+<li><a href="https://jsplumbtoolkit.com/community/demo/flowchart/index.html" target="_blank" rel="external">https://jsplumbtoolkit.com/community/demo/flowchart/index.html</a></li>
+<li><a href="https://www.erp5.com/javascript-10.Flow.Chart" target="_blank" rel="external">https://www.erp5.com/javascript-10.Flow.Chart</a></li>
+<li><a href="https://github.com/ember-cli/ember-cli/issues/5973" target="_blank" rel="external">https://github.com/ember-cli/ember-cli/issues/5973</a></li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/12/05/ember异常记录/" data-title="ember异常记录 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/12/05/mondrian架构/" title="mondrian架构">
+  <strong>上一篇：</strong><br/>
+  <span>
+  mondrian架构</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/12/05/antlr简记/"  title="antlr简记">
+ <strong>下一篇：</strong><br/> 
+ <span>antlr简记
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/12/05/ember异常记录/" data-title="ember异常记录" data-url="http://willcup.com/2016/12/05/ember异常记录/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#ember-mermaid"><span class="toc-number">1.</span> <span class="toc-text">ember-mermaid</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

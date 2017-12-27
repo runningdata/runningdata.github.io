@@ -3,6 +3,16 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
   
     <title>Will&#39;s Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
@@ -57,8 +67,6 @@
 					
 						<li><a href="/archives">归档</a></li>
 					
-						<li><a href="/node_modules">测试</a></li>
-					
 						<li><a href="/about">关于</a></li>
 					
 					<li>
@@ -83,882 +91,51 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2015/12/08/mysql新技能-ON-DUPLICATE-KEY-UPDATE/" title="mysql新技能-ON DUPLICATE KEY UPDATE" itemprop="url">mysql新技能-ON DUPLICATE KEY UPDATE</a>
+      <a href="/2017/11/22/hive2---轻松更新hive表2/" title="hive2---轻松更新hive表2" itemprop="url">hive2---轻松更新hive表2</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
 		
   <p class="article-time">
-    <time datetime="2015-12-08T02:30:42.000Z" itemprop="datePublished"> 发表于 2015-12-08</time>
+    <time datetime="2017-11-22T09:58:13.000Z" itemprop="datePublished"> 发表于 2017-11-22</time>
     
   </p>
 </header>
     <div class="article-content">
         
-        <p>向数据库插入数据的时候，我们会遇到一种情形：如果数据库中没有此条记录，就直接插入；如果已经存在此条记录，就更新其部分的字段值。这里定位“此条记录”是指在数据库中是唯一的，确定某个标识可以在数据库中唯一定位某一条记录。<br>玩儿hive的同学请注意意思，虽R是insert overwrite的大概思想，但是不会覆盖整个分区数据，而仅仅针对“此条记录”。</p>
-<p>ON DUPLICATE KEY不会指定具体的唯一key是哪个,因为并没有必要，这个语句要求table里有unique key,或者primary key, 它会自动比较这个key是不是有重复，如果有重复就update，没有的话就直接insert。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> <span class="keyword">table</span> (a,b,c) <span class="keyword">VALUES</span> (<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>)</div><div class="line">  <span class="keyword">ON</span> <span class="keyword">DUPLICATE</span> <span class="keyword">KEY</span> <span class="keyword">UPDATE</span> c=c+<span class="number">1</span>;</div><div class="line"></div><div class="line"><span class="keyword">UPDATE</span> <span class="keyword">table</span> <span class="keyword">SET</span> c=c+<span class="number">1</span> <span class="keyword">WHERE</span> a=<span class="number">1</span>;</div></pre></td></tr></table></figure>
-<p>如果a=1这条记录存在，而且a是unique key的话，那么这两个句子是等同的。<br>这个句子还支持一下方式，就是可以同时更新多个字段的值，而且可以相互引用：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> <span class="keyword">table</span> (a,b,c) <span class="keyword">VALUES</span> (<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>),(<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>)</div><div class="line">  <span class="keyword">ON</span> <span class="keyword">DUPLICATE</span> <span class="keyword">KEY</span> <span class="keyword">UPDATE</span> c=<span class="keyword">VALUES</span>(a)+<span class="keyword">VALUES</span>(b), b=<span class="number">2</span>;</div></pre></td></tr></table></figure></p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/mysql/">mysql</a><a href="/tags/sql/">sql</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2015/12/07/vim-vundle/" title="vim-vundle" itemprop="url">vim-vundle</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2015-12-07T06:55:44.000Z" itemprop="datePublished"> 发表于 2015-12-07</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>传说中的vim，今儿哥们儿要强迫自己继续装个B，吼吼~~ 为哥的勇气鼓掌！！</p>
-<h3 id="0-安装vundle"><a href="#0-安装vundle" class="headerlink" title="0.安装vundle"></a>0.安装vundle</h3><p>vundle是一个vim的插件管理器，涉猎了一段时间，发现很多人在用，为了更好更快地入门，就先玩儿个最活跃的，预料体验也不会特别差。</p>
-<blockquote>
-<p>git clone <a href="https://github.com/VundleVim/Vundle.vim.git" target="_blank" rel="external">https://github.com/VundleVim/Vundle.vim.git</a> ~/.vim/bundle/Vundle.vim</p>
-</blockquote>
-<h3 id="1-配置vundle"><a href="#1-配置vundle" class="headerlink" title="1.配置vundle"></a>1.配置vundle</h3><p>就是下载自己需<br>要的一些插件，其实现在我毛线都不知道，就是网上随便搜了几个比较综合了一下。<br>建议参考：<a href="https://github.com/VundleVim/Vundle.vim，了解最新的配置说明。" target="_blank" rel="external">https://github.com/VundleVim/Vundle.vim，了解最新的配置说明。</a><br>BTW, 牛人参考: <a href="https://github.com/VundleVim/Vundle.vim/wiki/Examples" target="_blank" rel="external">https://github.com/VundleVim/Vundle.vim/wiki/Examples</a></p>
-<p>下面是我的~/.vimrc文件内容<br><figure class="highlight vim"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div></pre></td><td class="code"><pre><div class="line">et nocompatible                <span class="comment">" be iMproved</span></div><div class="line"><span class="keyword">filetype</span> off                    <span class="comment">" required!</span></div><div class="line"></div><div class="line"><span class="comment">" set the runtime path to include Vundle and initialize</span></div><div class="line"><span class="keyword">set</span> rtp+=~/.<span class="keyword">vim</span>/bundle/vundle/</div><div class="line"><span class="keyword">call</span> vundle#rc()</div><div class="line"></div><div class="line"><span class="comment">" let Vundle manage Vundle</span></div><div class="line"><span class="comment">" 使用vundle来管理</span></div><div class="line">Bundle <span class="string">'gmarik/vundle'</span></div><div class="line"></div><div class="line"><span class="comment">"my Bundle here:</span></div><div class="line"><span class="comment">"</span></div><div class="line"><span class="comment">" original repos on github</span></div><div class="line"><span class="comment">" 相较于Command-T等查找文件的插件，ctrlp.vim最大的好处在于没有依赖，干净利落</span></div><div class="line">Bundle <span class="string">'kien/ctrlp.vim'</span></div><div class="line"></div><div class="line"><span class="string">" 在输入()，"</span><span class="comment">"等需要配对的符号时，自动帮你补全剩余半个</span></div><div class="line">Bundle <span class="string">'AutoClose'</span></div><div class="line"></div><div class="line"><span class="string">" 在()、"</span><span class="comment">"、甚至HTML标签之间快速跳转；</span></div><div class="line">Bundle <span class="string">'matchit.zip'</span></div><div class="line"></div><div class="line"><span class="comment">" 显示行末的空格</span></div><div class="line">Bundle <span class="string">'ShowTrailingWhitespace'</span></div><div class="line"></div><div class="line"><span class="comment">" 用全新的方式在文档中高效的移动光标，革命性的突破</span></div><div class="line">Bundle <span class="string">'EasyMotion'</span></div><div class="line"></div><div class="line"><span class="comment">" 自动识别文件编码；</span></div><div class="line">Bundle <span class="string">'FencView.vim'</span></div><div class="line"><span class="comment">" 必不可少，在VIM的编辑窗口树状显示文件目录</span></div><div class="line">Bundle <span class="string">'The-NERD-tree'</span></div><div class="line"></div><div class="line"><span class="comment">" 解放生产力的神器，简单配置，就可以按照自己的风格快速输入大段代码。</span></div><div class="line">Bundle <span class="string">'UltiSnips'</span></div><div class="line">Bundle <span class="string">'sukima/xmledit'</span></div><div class="line">Bundle <span class="string">'sjl/gundo.vim'</span></div><div class="line">Bundle <span class="string">'jiangmiao/auto-pairs'</span></div><div class="line">Bundle <span class="string">'klen/python-mode'</span></div><div class="line">Bundle <span class="string">'Valloric/ListToggle'</span></div><div class="line"><span class="comment">"Bundle 'SirVer/ultisnips'</span></div><div class="line"></div><div class="line"><span class="comment">" 迄今位置最好的自动VIM自动补全插件了吧</span></div><div class="line">Bundle <span class="string">'Valloric/YouCompleteMe'</span></div><div class="line"></div><div class="line">Bundle <span class="string">'scrooloose/syntastic'</span></div><div class="line">Bundle <span class="string">'t9md/vim-quickhl'</span></div><div class="line"><span class="comment">" Bundle 'Lokaltog/vim-powerline'</span></div><div class="line">Bundle <span class="string">'scrooloose/nerdcommenter'</span></div><div class="line"></div><div class="line">Plugin <span class="string">'godlygeek/tabular'</span></div><div class="line">Plugin <span class="string">'plasticboy/vim-markdown'</span></div><div class="line"></div><div class="line"><span class="comment">"..................................</span></div><div class="line"><span class="comment">" vim-scripts repos</span></div><div class="line">Bundle <span class="string">'YankRing.vim'</span></div><div class="line">Bundle <span class="string">'vcscommand.vim'</span></div><div class="line">Bundle <span class="string">'ShowPairs'</span></div><div class="line">Bundle <span class="string">'SudoEdit.vim'</span></div><div class="line">Bundle <span class="string">'EasyGrep'</span></div><div class="line">Bundle <span class="string">'VOoM'</span></div><div class="line">Bundle <span class="string">'VimIM'</span></div><div class="line"><span class="comment">"..................................</span></div><div class="line"><span class="comment">" non github repos</span></div><div class="line"><span class="comment">" Bundle 'git://git.wincent.com/command-t.git'</span></div><div class="line"><span class="comment">"......................................</span></div><div class="line"><span class="keyword">filetype</span> plugin <span class="built_in">indent</span> <span class="keyword">on</span>	<span class="comment">"这一行就是结束了</span></div><div class="line"></div><div class="line"><span class="comment">" 粘贴错位问题</span></div><div class="line"><span class="keyword">nnoremap</span> <span class="symbol">&lt;F3&gt;</span> :<span class="keyword">set</span> invpaste paste?<span class="symbol">&lt;CR&gt;</span></div><div class="line"><span class="keyword">imap</span> <span class="symbol">&lt;F3&gt;</span> <span class="symbol">&lt;C-O&gt;</span>:<span class="keyword">set</span> invpaste paste?<span class="symbol">&lt;CR&gt;</span></div><div class="line"><span class="keyword">set</span> pastetoggle=<span class="symbol">&lt;F3&gt;</span></div><div class="line"></div><div class="line"></div><div class="line"><span class="comment">" nerdTree设置</span></div><div class="line"><span class="comment">" 在 vim 启动的时候默认开启 NERDTree（autocmd 可以缩写为 au）</span></div><div class="line"><span class="keyword">autocmd</span> VimEnter * NERDTree</div><div class="line"><span class="comment">" 按下 F2 调出/隐藏 NERDTree</span></div><div class="line"><span class="comment">" map  :silent! NERDTreeToggle</span></div><div class="line">silent! <span class="keyword">map</span> <span class="symbol">&lt;F2&gt;</span> :NERDTreeToggle<span class="symbol">&lt;CR&gt;</span></div><div class="line"><span class="keyword">let</span> <span class="variable">g:NERDTreeMapActivateNode</span>=<span class="string">"&lt;F2&gt;"</span></div><div class="line"><span class="comment">" 将 NERDTree 的窗口设置在 vim 窗口的右侧（默认为左侧）</span></div><div class="line"><span class="string">" let NERDTreeWinPos="</span><span class="keyword">right</span><span class="comment">"</span></div><div class="line"><span class="comment">" 当打开 NERDTree 窗口时，自动显示 Bookmarks</span></div><div class="line"><span class="keyword">let</span> NERDTreeShowBookmarks=<span class="number">1</span></div></pre></td></tr></table></figure></p>
-<h3 id="2-简单使用"><a href="#2-简单使用" class="headerlink" title="2.简单使用"></a>2.简单使用</h3><p>本人的一贯原则，首先找官方的文档或者手册怎样查找: 在vim中使用:h vundle定位<br><img src="/imgs/vim/help_vundle.png" alt=""></p>
-<table>
-<thead>
-<tr>
-<th><em>命令</em></th>
-<th style="text-align:left"><em>描述</em></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>:PluginUpdate</td>
-<td style="text-align:left">更新指定的plugin</td>
-</tr>
-<tr>
-<td>:PluginList</td>
-<td style="text-align:left">显示已经安装的plugin</td>
-</tr>
-<tr>
-<td>:PluginClean</td>
-<td style="text-align:left">清除配置里没有的plugin，针对bundle目录</td>
-</tr>
-<tr>
-<td>:PluginSearch xxx</td>
-<td style="text-align:left">搜索是否包含某个plugin</td>
-</tr>
-</tbody>
-</table>
-<h3 id="3-do-it-yourself"><a href="#3-do-it-yourself" class="headerlink" title="3. do it yourself"></a>3. do it yourself</h3><p>既然配置好了插件，也学习了vundle的最基础命令，最后就只剩下我们去实际体验了。<br><img src="/imgs/vim/install_vundle_plugin.png" alt="执行:PluginInstall之后的界面"><br>上面的过程其实就是在安装所有.vimrc里声明给vundle要去安装的插件，安装后的目录结构如下图：<br><img src="/imgs/vim/vim_plugins_dir.png" alt=""><br><em>友情提示</em>：安装完这些组件后，发现vundle的命令是可以通过tab进行自动补全的。</p>
-<h3 id="4-安装markdown插件"><a href="#4-安装markdown插件" class="headerlink" title="4.安装markdown插件"></a>4.安装markdown插件</h3><p>由于刚刚立志要强迫自己玩儿转vim，所以先安装个markdown插件试试咯。</p>
+        <p>前面讲了使用MERGE,UPDATE,DELETE更新hive数据。现在我们进一步谈一下hive管理slowly-changing dimensions(SCDs，就是缓慢更新的维度表)的策略。在数据仓库中，SCDs更新数据是无规律的。对应于不同的业务需求，有不同的策略。假如你要一个用户维度表的所有历史，以跟踪某个用户随时间的变化情况。还有些情况，我们只关心最新的维度状态 。</p>
+<p>下面是三种SCD更新策略：</p>
 <ul>
-<li>vimrc里添加 <blockquote>
-<p>Plugin ‘godlygeek/tabular’<br>Plugin ‘plasticboy/vim-markdown’</p>
-</blockquote>
-</li>
-<li>之后自己写这个*.md文件，发现vim已经识别了这个文件是markdown，表现是能够识别符号，比如-xxx之后换行会自动-等</li>
-<li>遗憾是没有发现preview的方法，目前的方式是先启动hexo，然后一边编写另一边进行实际的view</li>
-</ul>
-<h3 id="5-资源"><a href="#5-资源" class="headerlink" title="5.资源"></a>5.资源</h3><blockquote>
-<p><a href="http://vim-scripts.org/vim/scripts.html" target="_blank" rel="external">http://vim-scripts.org/vim/scripts.html</a><br><a href="https://github.com/vim-scripts" target="_blank" rel="external">https://github.com/vim-scripts</a></p>
-</blockquote>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/vim/">vim</a><a href="/tags/vundle/">vundle</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2015/12/04/mac使用杂记/" title="mac使用杂记" itemprop="url">mac使用杂记</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2015-12-04T04:00:09.000Z" itemprop="datePublished"> 发表于 2015-12-04</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h3 id="1-查看磁盘空间"><a href="#1-查看磁盘空间" class="headerlink" title="1.查看磁盘空间"></a>1.查看磁盘空间</h3><p>开始 -&gt; 关于本机 -&gt; 存储<br><img src="/imgs/mac/磁盘空间" alt=""></p>
-<h3 id="2-快捷键"><a href="#2-快捷键" class="headerlink" title="2.快捷键"></a>2.快捷键</h3><table>
-<thead>
-<tr>
-<th><em>键</em></th>
-<th style="text-align:left"><em>描述</em></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>空格</td>
-<td style="text-align:left">可以查看各种媒体文件</td>
-</tr>
-<tr>
-<td>command + option + esc</td>
-<td style="text-align:left">强杀进程</td>
-</tr>
-<tr>
-<td>F11</td>
-<td style="text-align:left">一键显示桌面</td>
-</tr>
-</tbody>
-</table>
-<h3 id="3-多jdk环境"><a href="#3-多jdk环境" class="headerlink" title="3. 多jdk环境"></a>3. 多jdk环境</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">➜  ~  cat ~/.bashrc</div><div class="line">export NVM_DIR=~/.nvm</div><div class="line">source $(brew --prefix nvm)/nvm.sh</div><div class="line"></div><div class="line">export JAVA_6_HOME=/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home</div><div class="line">export JAVA_7_1_HOME=/Library/Java/JavaVirtualMachines/jdk1.7.0_07.jdk/Contents/Home</div><div class="line">export JAVA_7_HOME=/Library/Java/JavaVirtualMachines/jdk1.7.0_80.jdk/Contents/Home</div><div class="line">export JAVA_HOME=$JAVA_7_HOME</div><div class="line"></div><div class="line"># 下面的命令用来切换当前jdk环境</div><div class="line">alias jdk6=&apos;export JAVA_HOME=$JAVA_6_HOME &amp;&amp; export PATH=$JAVA_HOME/bin:$PATH&apos;</div><div class="line">alias jdk71=&apos;export JAVA_HOME=$JAVA_7_1_HOME &amp;&amp; export PATH=$JAVA_HOME/bin:$PATH&apos;</div><div class="line">alias jdk72=&apos;export JAVA_HOME=$JAVA_7_2_HOME &amp;&amp; export PATH=$JAVA_HOME/bin:$PATH&apos;</div><div class="line"></div><div class="line">➜  ~  java -version</div><div class="line">java version &quot;1.7.0_80&quot;</div><div class="line">Java(TM) SE Runtime Environment (build 1.7.0_80-b15)</div><div class="line">Java HotSpot(TM) 64-Bit Server VM (build 24.80-b11, mixed mode)</div><div class="line">➜  ~  jdk6</div><div class="line">➜  ~  java -version</div><div class="line">java version &quot;1.6.0_65&quot;</div><div class="line">Java(TM) SE Runtime Environment (build 1.6.0_65-b14-468-11M4833)</div><div class="line">Java HotSpot(TM) 64-Bit Server VM (build 20.65-b04-468, mixed mode)</div></pre></td></tr></table></figure>
-<p>参考自：<a href="http://ningandjiao.iteye.com/blog/2045955" target="_blank" rel="external">http://ningandjiao.iteye.com/blog/2045955</a></p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/mac/">mac</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2015/12/03/强奸R语言-1/" title="强奸R语言 1" itemprop="url">强奸R语言 1</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2015-12-03T11:09:11.000Z" itemprop="datePublished"> 发表于 2015-12-03</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>就是为了学习一些机器学习的知识，需要用到R语言，但是感觉专门再去研究一门语言有些太繁琐。所以索性直接上手，也就是抄写各种机器学习的R程序。</p>
-<p>首先弄的是文本挖掘的小程序：<a href="http://mp.weixin.qq.com/s?__biz=MzA3MDg0MjgxNQ==&amp;mid=400900310&amp;idx=1&amp;sn=4002ae3fc938a46060558480f0583fb2&amp;3rd=MzA3MDU4NTYzMw==&amp;scene=6#rd" target="_blank" rel="external">http://mp.weixin.qq.com/s?__biz=MzA3MDg0MjgxNQ==&amp;mid=400900310&amp;idx=1&amp;sn=4002ae3fc938a46060558480f0583fb2&amp;3rd=MzA3MDU4NTYzMw==&amp;scene=6#rd</a></p>
-<p>好，文章里面提示要安装package。<br>搜一下R安装package的方法：<a href="http://www.r-bloggers.com/installing-r-packages/" target="_blank" rel="external">http://www.r-bloggers.com/installing-r-packages/</a></p>
-<p>先尝试图形界面，简单。<br>使用R的图形界面找不到Snowball这个分词程序<br><img src="/imgs/r/图形界面找不到Snowball.png" alt=""></p>
-<p>再使用命令行：<br><figure class="highlight r"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">install.packages(<span class="string">"Snowball"</span>)</div><div class="line">Warning message:</div><div class="line">package ‘Snowball’ is not available (<span class="keyword">for</span> R version <span class="number">3.2</span><span class="number">.2</span>)</div></pre></td></tr></table></figure></p>
-<p>到Google搜索 r snowball，定位到 <a href="https://cran.r-project.org/src/contrib/Archive/Snowball/" target="_blank" rel="external">https://cran.r-project.org/src/contrib/Archive/Snowball/</a></p>
-<blockquote>
-<p>wget <a href="https://cran.r-project.org/src/contrib/Archive/Snowball/Snowball_0.0-11.tar.gz" target="_blank" rel="external">https://cran.r-project.org/src/contrib/Archive/Snowball/Snowball_0.0-11.tar.gz</a></p>
-</blockquote>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">&gt; getwd()   // 获取当前工作目录</div><div class="line">[<span class="number">1</span>] <span class="string">"/Users/will"</span></div><div class="line">&gt; setwd(<span class="string">'/Users/will/softs/clean'</span>)      //设置工作目录到刚才下载的包那里</div><div class="line">&gt; getwd()</div><div class="line">[<span class="number">1</span>] <span class="string">"/Users/will/softs/clean"</span></div><div class="line">&gt; install.packages(<span class="string">"Snowball_0.0-11.tar.gz"</span>)    // 再次安装</div><div class="line">inferring <span class="string">'repos = NULL'</span> from <span class="string">'pkgs'</span></div><div class="line">ERROR: dependencies ‘RWeka’, ‘rJava’ are not available <span class="keyword">for</span> package ‘Snowball’</div><div class="line">* removing ‘/Library/Frameworks/R.framework/Versions/<span class="number">3.2</span>/Resources/<span class="keyword">library</span>/Snowball’</div><div class="line">Warning message:</div><div class="line">In install.packages(<span class="string">"Snowball_0.0-11.tar.gz"</span>) :</div><div class="line">  安装程序包‘Snowball_0.0-<span class="number">11.</span>tar.gz’时退出狀態的值不是<span class="number">0</span></div></pre></td></tr></table></figure>
-<p>可以看到上面报出两个package找不到:RWeka和rJava</p>
-<p>尝试一下有么有像maven一样自动下载依赖的方法：<br><figure class="highlight r"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">&gt; install.packages(<span class="string">"Snowball_0.0-11.tar.gz"</span>, dependencies=<span class="literal">TRUE</span>)</div><div class="line">inferring <span class="string">'repos = NULL'</span> from <span class="string">'pkgs'</span></div><div class="line">* installing *<span class="keyword">source</span>* package ‘Snowball’ <span class="keyword">...</span></div><div class="line">** 成功将‘Snowball’程序包解包并MD5和检查</div><div class="line">** R</div><div class="line">** inst</div><div class="line">** preparing package <span class="keyword">for</span> lazy loading</div><div class="line">Warning message:</div><div class="line">In install.packages(<span class="string">"Snowball_0.0-11.tar.gz"</span>, dependencies = <span class="literal">TRUE</span>) :</div><div class="line">  安装程序包‘Snowball_0.0-<span class="number">11.</span>tar.gz’时退出狀態的值不是<span class="number">0</span></div><div class="line">No Java runtime present, requesting install.</div></pre></td></tr></table></figure></p>
-<p>马达, mac提示让安装1.6版本的jdk才行，日了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">java version &quot;1.7.0_80&quot;</div><div class="line">Java(TM) SE Runtime Environment (build 1.7.0_80-b15)</div><div class="line">Java HotSpot(TM) 64-Bit Server VM (build 24.80-b11, mixed mode)</div></pre></td></tr></table></figure></p>
-<p>自己手动来<br><figure class="highlight r"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">&gt; install.packages(<span class="string">'RWeka'</span>)</div><div class="line">also installing the dependencies ‘RWekajars’, ‘rJava’</div><div class="line"></div><div class="line">试开URL’https://dirichlet.mat.puc.cl/bin/macosx/mavericks/contrib/<span class="number">3.2</span>/RWekajars_3.7.12-<span class="number">1.</span>tgz<span class="string">'</span></div><div class="line">Content type 'application/x-gzip<span class="string">' length 6473509 bytes (6.2 MB)</span></div><div class="line">==================================================</div><div class="line">downloaded 6.2 MB</div><div class="line"></div><div class="line">试开URL’https://dirichlet.mat.puc.cl/bin/macosx/mavericks/contrib/3.2/rJava_0.9-7.tgz'</div><div class="line">Content type <span class="string">'application/x-gzip'</span> length <span class="number">604271</span> bytes (<span class="number">590</span> KB)</div><div class="line">==================================================</div><div class="line">downloaded <span class="number">590</span> KB</div><div class="line"></div><div class="line">试开URL’https://dirichlet.mat.puc.cl/bin/macosx/mavericks/contrib/<span class="number">3.2</span>/RWeka_0.4-<span class="number">24.</span>tgz<span class="string">'</span></div><div class="line">Content type 'application/x-gzip<span class="string">' length 536260 bytes (523 KB)</span></div><div class="line">==================================================</div><div class="line">downloaded 523 KB</div></pre></td></tr></table></figure></p>
-<p>同样的方式，安装其他包(<em>安装的时候需要注意当前目录getwd一下，是不是源package所在的位置</em>)</p>
-<blockquote>
-<p>wget <a href="http://download.r-forge.r-project.org/src/contrib/Rwordseg_0.2-1.tar.gz" target="_blank" rel="external">http://download.r-forge.r-project.org/src/contrib/Rwordseg_0.2-1.tar.gz</a></p>
-</blockquote>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line">&gt; install.packages(<span class="string">"Rwordseg_0.2-1.tar.gz"</span>, dependencies=<span class="literal">TRUE</span>)</div><div class="line">inferring <span class="string">'repos = NULL'</span> from <span class="string">'pkgs'</span></div><div class="line">* installing *<span class="keyword">source</span>* package ‘Rwordseg’ <span class="keyword">...</span></div><div class="line">** R</div><div class="line">** demo</div><div class="line">** inst</div><div class="line">** preparing package <span class="keyword">for</span> lazy loading</div><div class="line">** help</div><div class="line">*** installing help indices</div><div class="line">** building package indices</div><div class="line">** testing <span class="keyword">if</span> installed package can be loaded</div><div class="line">* DONE (Rwordseg)</div><div class="line"></div><div class="line">&gt; install.packages(<span class="string">"tm"</span>)</div><div class="line">also installing the dependencies ‘NLP’, ‘slam’</div><div class="line"></div><div class="line">试开URL’https://dirichlet.mat.puc.cl/bin/macosx/mavericks/contrib/<span class="number">3.2</span>/NLP_0.1-<span class="number">8.</span>tgz<span class="string">'</span></div><div class="line">Content type 'application/x-gzip<span class="string">' length 275184 bytes (268 KB)</span></div><div class="line">==================================================</div><div class="line">downloaded 268 KB</div><div class="line"></div><div class="line">试开URL’https://dirichlet.mat.puc.cl/bin/macosx/mavericks/contrib/3.2/slam_0.1-32.tgz'</div><div class="line">Content type <span class="string">'application/x-gzip'</span> length <span class="number">101732</span> bytes (<span class="number">99</span> KB)</div><div class="line">==================================================</div><div class="line">downloaded <span class="number">99</span> KB</div><div class="line"></div><div class="line">试开URL’https://dirichlet.mat.puc.cl/bin/macosx/mavericks/contrib/<span class="number">3.2</span>/tm_0.6-<span class="number">2.</span>tgz<span class="string">'</span></div><div class="line">Content type 'application/x-gzip<span class="string">' length 660405 bytes (644 KB)</span></div><div class="line">==================================================</div><div class="line">downloaded 644 KB</div><div class="line"></div><div class="line"></div><div class="line">下载的二进制程序包在</div><div class="line">    /var/folders/j_/gk6hxy7x705419zqy5sm167w0000gn/T//RtmpXdkdjK/downloaded_packages里</div></pre></td></tr></table></figure>
-<h2 id="杂记"><a href="#杂记" class="headerlink" title="杂记"></a>杂记</h2><figure class="highlight r"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">&gt; <span class="keyword">library</span>(<span class="string">"arulesViz"</span>)</div><div class="line">&gt; data(<span class="string">"Groceries"</span>) <span class="comment">#加载指定的数据集</span></div><div class="line">&gt; summary(Groceries)    <span class="comment"># 查看</span></div><div class="line">transactions as itemMatrix <span class="keyword">in</span> sparse format with</div><div class="line"> <span class="number">9835</span> rows (elements/itemsets/transactions) and</div><div class="line"> <span class="number">169</span> columns (items) and a density of <span class="number">0.02609146</span> </div><div class="line"></div><div class="line">most frequent items:</div><div class="line">      whole milk other vegetables       rolls/buns             soda </div><div class="line">            <span class="number">2513</span>             <span class="number">1903</span>             <span class="number">1809</span>             <span class="number">1715</span> </div><div class="line">          yogurt          (Other) </div><div class="line">            <span class="number">1372</span>            <span class="number">34055</span> </div><div class="line"></div><div class="line">element (itemset/transaction) length distribution:</div><div class="line">sizes</div><div class="line">   <span class="number">1</span>    <span class="number">2</span>    <span class="number">3</span>    <span class="number">4</span>    <span class="number">5</span>    <span class="number">6</span>    <span class="number">7</span>    <span class="number">8</span>    <span class="number">9</span>   <span class="number">10</span>   <span class="number">11</span>   <span class="number">12</span>   <span class="number">13</span>   <span class="number">14</span>   <span class="number">15</span> </div><div class="line"><span class="number">2159</span> <span class="number">1643</span> <span class="number">1299</span> <span class="number">1005</span>  <span class="number">855</span>  <span class="number">645</span>  <span class="number">545</span>  <span class="number">438</span>  <span class="number">350</span>  <span class="number">246</span>  <span class="number">182</span>  <span class="number">117</span>   <span class="number">78</span>   <span class="number">77</span>   <span class="number">55</span> </div><div class="line">  <span class="number">16</span>   <span class="number">17</span>   <span class="number">18</span>   <span class="number">19</span>   <span class="number">20</span>   <span class="number">21</span>   <span class="number">22</span>   <span class="number">23</span>   <span class="number">24</span>   <span class="number">26</span>   <span class="number">27</span>   <span class="number">28</span>   <span class="number">29</span>   <span class="number">32</span> </div><div class="line">  <span class="number">46</span>   <span class="number">29</span>   <span class="number">14</span>   <span class="number">14</span>    <span class="number">9</span>   <span class="number">11</span>    <span class="number">4</span>    <span class="number">6</span>    <span class="number">1</span>    <span class="number">1</span>    <span class="number">1</span>    <span class="number">1</span>    <span class="number">3</span>    <span class="number">1</span> </div><div class="line"></div><div class="line">   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </div><div class="line">  <span class="number">1.000</span>   <span class="number">2.000</span>   <span class="number">3.000</span>   <span class="number">4.409</span>   <span class="number">6.000</span>  <span class="number">32.000</span> </div><div class="line"></div><div class="line">includes extended item information - examples:</div><div class="line">       labels  level2           level1</div><div class="line"><span class="number">1</span> frankfurter sausage meet and sausage</div><div class="line"><span class="number">2</span>     sausage sausage meet and sausage</div><div class="line"><span class="number">3</span>  liver loaf sausage meet and sausage</div></pre></td></tr></table></figure>
-<p>min: 最小值<br>1st Qu: 一分位数<br>Median: 中位数<br>Mean: 平均值<br>3rd Qu: 三分位数<br>Max： 最大值<br>most frequent items： 最频繁出现的item</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line">&gt; rules &lt;- apriori(Groceries, parameter = list(support = 0.001, confidence = 0.5))</div><div class="line">Apriori</div><div class="line"></div><div class="line">Parameter specification:</div><div class="line"> confidence minval smax arem  aval originalSupport support minlen maxlen</div><div class="line">        0.5    0.1    1 none FALSE            TRUE   0.001      1     10</div><div class="line"> target   ext</div><div class="line">  rules FALSE</div><div class="line"></div><div class="line">Algorithmic control:</div><div class="line"> filter tree heap memopt load sort verbose</div><div class="line">    0.1 TRUE TRUE  FALSE TRUE    2    TRUE</div><div class="line"></div><div class="line">Absolute minimum support count: 9 </div><div class="line"></div><div class="line">set item appearances ...[0 item(s)] done [0.00s].</div><div class="line">set transactions ...[169 item(s), 9835 transaction(s)] done [0.00s].</div><div class="line">sorting and recoding items ... [157 item(s)] done [0.00s].</div><div class="line">creating transaction tree ... done [0.00s].</div><div class="line">checking subsets of size 1 2 3 4 5 6 done [0.01s].</div><div class="line">writing ... [5668 rule(s)] done [0.00s].</div><div class="line">creating S4 object  ... done [0.00s].</div><div class="line">&gt; rules</div><div class="line">set of 5668 rules </div><div class="line">&gt; inspect(head(sort(rules, by = &quot;lift&quot;), 3))</div><div class="line">    lhs                             rhs              support     confidence</div><div class="line">53  &#123;Instant food products,soda&#125; =&gt; &#123;hamburger meat&#125; 0.001220132 0.6315789 </div><div class="line">37  &#123;soda,popcorn&#125;               =&gt; &#123;salty snack&#125;    0.001220132 0.6315789 </div><div class="line">444 &#123;flour,baking powder&#125;        =&gt; &#123;sugar&#125;          0.001016777 0.5555556 </div><div class="line">    lift    </div><div class="line">53  18.99565</div><div class="line">37  16.69779</div><div class="line">444 16.40807</div><div class="line">&gt; inspect(head(sort(rules, by = &quot;lift&quot;), 3))</div><div class="line">    lhs                             rhs              support     confidence lift    </div><div class="line">53  &#123;Instant food products,soda&#125; =&gt; &#123;hamburger meat&#125; 0.001220132 0.6315789  18.99565</div><div class="line">37  &#123;soda,popcorn&#125;               =&gt; &#123;salty snack&#125;    0.001220132 0.6315789  16.69779</div><div class="line">444 &#123;flour,baking powder&#125;        =&gt; &#123;sugar&#125;          0.001016777 0.5555556  16.40807</div><div class="line">&gt; plot(rules)</div><div class="line">&gt; plot(rules)</div><div class="line">&gt;  plot(rules, measure = c(&quot;support&quot;, &quot;lift&quot;), shading = &quot;confidence&quot;)</div></pre></td></tr></table></figure>
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/R/">R</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2015/12/03/ElasticSearch-kibana-Dashboard-定义与使用/" title="ElasticSearch kibana Dashboard 定义与使用" itemprop="url">ElasticSearch kibana Dashboard 定义与使用</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2015-12-03T07:31:45.000Z" itemprop="datePublished"> 发表于 2015-12-03</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>以前在骡迹物流的时候只是玩儿了一下kibana简单的功能，并没有投入使用，当时也基本上玩儿遍了各种可视化，就是么有弄dashboard。<br>在美团这边前两天被拉进elasticsearch的群里，然后收到一个kibana的地址，今儿下午尝试性地玩儿了一下，还蛮爽的，有些惊异。</p>
-<p>dashboard是一个画布，然后这个画布上需要放置很多的visualize，也就是说在弄dashboard之前是需要先准备好visualize的，它由visualize和search组成。</p>
-<h3 id="1-准备源材料"><a href="#1-准备源材料" class="headerlink" title="1. 准备源材料"></a>1. 准备源材料</h3><p>创建并保存visualization和search</p>
-<p><img src="/imgs/es/准备源材料.png" alt=""></p>
-<h3 id="2-新建dashboard"><a href="#2-新建dashboard" class="headerlink" title="2. 新建dashboard"></a>2. 新建dashboard</h3><p><img src="/imgs/es/新建dashboard.png" alt=""></p>
-<h3 id="3-为dashboard添加元素"><a href="#3-为dashboard添加元素" class="headerlink" title="3. 为dashboard添加元素"></a>3. 为dashboard添加元素</h3><p><img src="/imgs/es/创建dashboard.png" alt=""></p>
-<h3 id="4-调整后保存"><a href="#4-调整后保存" class="headerlink" title="4. 调整后保存"></a>4. 调整后保存</h3><p><img src="/imgs/es/保存.png" alt=""></p>
-<p>好了，这已经非常好看了，完全可以直接看了。以后再有运营提数据需求，我就直接创建search或者visualization后，生成dashboard。可是问题又来了，咋给他看呢？总不能让所有的运营人员都登陆kibana页面来瞅吧，那样的话还得加权限神马的，比如对个别页面有只读权限，其他页面或者操作没有任何权限才对。静静地思考，kibana和elasticsearch已然有了思路，是不可能倒在权限这个小问题上的，肯定有一种合理的方式去分享给需求端看。fun，找找看~</p>
-<h3 id="5-dashboard组件化"><a href="#5-dashboard组件化" class="headerlink" title="5. dashboard组件化"></a>5. dashboard组件化</h3><p>叫我脑残，功能就放在眼前<br><img src="/imgs/es/share.png" alt=""></p>
-<p>获取到iframe后，自然就会想到，这个东西是可以嵌入到我们自己的网页中的。如此一来的话，就可以直接将数据存储在elasticsearch中，之后在elasticsearch和kibana之上建立自己的search，visualization，dashboard。然后将最终的dashboard嵌入到应用页面。</p>
-<p>还是有些问题，直接在浏览器访问这个dashboard的url的话会发现其实就是kibana那个页面，但是放进iframe之后就成了不可编辑的状态，而且只有组件，上面不会有kibana的head，这个状态比较理想。可是右击查看源代码的话，还是可以看到kibana的页面接口URL，如果直接访问还是可以直接进行编辑。</p>
-<p>查了一下权限相关</p>
-<ul>
-<li><a href="https://github.com/floragunncom/search-guard" target="_blank" rel="external">https://github.com/floragunncom/search-guard</a></li>
-<li><a href="http://drops.wooyun.org/tips/8129" target="_blank" rel="external">http://drops.wooyun.org/tips/8129</a></li>
-<li><a href="http://3gods.com/2015/09/10/Shield%20Control.html" target="_blank" rel="external">http://3gods.com/2015/09/10/Shield%20Control.html</a></li>
-</ul>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/ElasticSearch/">ElasticSearch</a><a href="/tags/kibana/">kibana</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2015/11/19/guava整理/" title="guava整理 - Basic utilities" itemprop="url">guava整理 - Basic utilities</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2015-11-19T07:04:51.000Z" itemprop="datePublished"> 发表于 2015-11-19</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>总是看到guava的身影，今天来大概浏览一下这个Google项目。</p>
-<h3 id="1-对于null的思考"><a href="#1-对于null的思考" class="headerlink" title="1. 对于null的思考"></a>1. 对于null的思考</h3><p>null值的特点：</p>
-<ul>
-<li>不能清晰表达任何业务模型<br> 就是说在很多情况下，我们看到null的时候通常要分析一下context才能知道这里是什么情况</li>
-<li>容易被人忽视<br> 很多时候coder会专注于自己正在思考的核心业务场景，编写代码逻辑。容易忘记处理null对象的情况，所以一些nullPointerException通常是由于不可避免的粗心遗漏造成的。</li>
-</ul>
-<p>Optional<t><br>    当获取某个值的时候，尽量使用Optional<t>, T能够帮助我们理解当前的业务模型，而Optional.get()这一个不是很方便的调用则会时刻提醒我们充分考虑当前场景下，如果主对象为null应当采取的措施。<br>    有异曲同工之妙的还有scala中的Option<t></t></t></t></p>
-<p>API概览：<br>    <a href="http://docs.guava-libraries.googlecode.com/git/javadoc/com/google/common/base/Optional.html" target="_blank" rel="external">http://docs.guava-libraries.googlecode.com/git/javadoc/com/google/common/base/Optional.html</a></p>
-<h3 id="2-前置条件"><a href="#2-前置条件" class="headerlink" title="2. 前置条件"></a>2. 前置条件</h3><p>就是一些常用的、通用的、简单的条件判断，<br>API:<a href="http://docs.guava-libraries.googlecode.com/git-history/release/javadoc/com/google/common/base/Preconditions.html" target="_blank" rel="external">http://docs.guava-libraries.googlecode.com/git-history/release/javadoc/com/google/common/base/Preconditions.html</a></p>
-<p>java7其实也添加了一些方法：<br><a href="http://docs.oracle.com/javase/7/docs/api/java/util/Objects.html#requireNonNull(java.lang.Object,java.lang.String" target="_blank" rel="external">http://docs.oracle.com/javase/7/docs/api/java/util/Objects.html#requireNonNull(java.lang.Object,java.lang.String</a>)</p>
-<p>如果不满足这些条件，就会抛出Exception</p>
-<h3 id="3-通用对象方法"><a href="#3-通用对象方法" class="headerlink" title="3. 通用对象方法"></a>3. 通用对象方法</h3><p>对于Object默认的toString hashCode等方法提供简单实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">Objects.equal(&quot;a&quot;, &quot;a&quot;); // returns true</div><div class="line">Objects.equal(null, &quot;a&quot;); // returns false</div><div class="line">Objects.equal(&quot;a&quot;, null); // returns false</div><div class="line">Objects.equal(null, null); // returns true</div></pre></td></tr></table></figure></p>
-<p>equals方法给处理了null值情况。</p>
-<p>java7也是用了类似guava的<a href="http://google.github.io/guava/releases/snapshot/api/docs/com/google/common/base/Objects.html#hashCode(java.lang.Object...)的" target="_blank" rel="external">http://google.github.io/guava/releases/snapshot/api/docs/com/google/common/base/Objects.html#hashCode(java.lang.Object...)的</a><br><a href="http://docs.oracle.com/javase/7/docs/api/java/util/Objects.html#hash(java.lang.Object" target="_blank" rel="external">http://docs.oracle.com/javase/7/docs/api/java/util/Objects.html#hash(java.lang.Object</a>…)</p>
-<p>可读的toString<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">// Returns &quot;ClassName&#123;x=1&#125;&quot;</div><div class="line">   MoreObjects.toStringHelper(this)</div><div class="line">       .add(&quot;x&quot;, 1)</div><div class="line">       .toString();</div><div class="line"></div><div class="line">   // Returns &quot;MyObject&#123;x=1&#125;&quot;</div><div class="line">   MoreObjects.toStringHelper(&quot;MyObject&quot;)</div><div class="line">       .add(&quot;x&quot;, 1)</div><div class="line">       .toString();</div></pre></td></tr></table></figure></p>
-<p><a href="http://docs.guava-libraries.googlecode.com/git-history/release/javadoc/com/google/common/base/Objects.html#equal(java.lang.Object" target="_blank" rel="external">http://docs.guava-libraries.googlecode.com/git-history/release/javadoc/com/google/common/base/Objects.html#equal(java.lang.Object</a>, java.lang.Object)</p>
-<h3 id="4-ComparisonChain"><a href="#4-ComparisonChain" class="headerlink" title="4. ComparisonChain"></a>4. ComparisonChain</h3><p>任何一个条件返回非0值，就比较结束。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">public int compareTo(Foo that) &#123;</div><div class="line">     return ComparisonChain.start()</div><div class="line">         .compare(this.aString, that.aString)</div><div class="line">         .compare(this.anInt, that.anInt)</div><div class="line">         .compare(this.anEnum, that.anEnum, Ordering.natural().nullsLast())</div><div class="line">         .result();</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
-<h3 id="5-异常传播"><a href="#5-异常传播" class="headerlink" title="5. 异常传播"></a>5. 异常传播</h3><p>简化Throwable的处理<br>有时候我们catch住一个Exception，但是并不想在这个catch块里处理，就会throw出去给下个块。最常见的例子是RuntimeException和Error，本来我们并不想catch它们，但是通常它们又会被catch住。</p>
-<p>具体使用没看太明白</p>
-<p>集合类使用</p>
-<h3 id="1-不可变集合"><a href="#1-不可变集合" class="headerlink" title="1. 不可变集合"></a>1. 不可变集合</h3><ul>
-<li>安全</li>
-<li>不存在并发问题</li>
-<li>空间可预测</li>
-</ul>
-<p>注：目前guava的不可变集合都不许有null元素，如果要使用带有null的不可变集合，那么选用JDK自带的Collections.unmodifiableXXX</p>
-<p>使用不可变集合</p>
-<ul>
-<li>copyOf：如ImmutableSet.copyOf(set);</li>
-<li>of：如ImmutableSet.of(“a”, “b”, “c”)或 ImmutableMap.of(“a”, 1, “b”, 2);</li>
-<li>builder：public static final ImmutableSet<color\> GOOGLE_COLORS =<pre><code>ImmutableSet.&lt;Color\&gt;builder()
-    .addAll(WEBSAFE_COLORS)
-    .add(new Color(0, 191, 255))
-    .build();
-</code></pre>asList视图</color\></li>
-</ul>
-<p>所有不可变集合都有一个asList()方法提供ImmutableList视图，来帮助你用列表形式方便地读取集合元素。例如，你可以使用sortedSet.asList().get(k)从ImmutableSortedSet中读取第k个最小元素。</p>
-<p>asList()返回的ImmutableList通常是——并不总是——开销稳定的视图实现，而不是简单地把元素拷贝进List。也就是说，asList返回的列表视图通常比一般的列表平均性能更好，比如，在底层集合支持的情况下，它总是使用高效的contains方法。</p>
-<h3 id="2-新的集合类型"><a href="#2-新的集合类型" class="headerlink" title="2. 新的集合类型"></a>2. 新的集合类型</h3><p>JDK没有，但是又被非常广泛使用的集合类型。</p>
-<ul>
-<li><p>MultiSet</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">private void outMuiltSet() &#123;</div><div class="line">   System.out.println(&quot;-------------------&quot;);</div><div class="line">   System.out.println(strs.size());</div><div class="line">   System.out.println(strs.count(new Object())); //count(Object element): 返回给定参数元素的个数</div><div class="line">   System.out.println(strs.count(&quot;sdfsd&quot;)); //count(Object element): 返回给定参数元素的个数</div><div class="line">   System.out.println(strs);</div><div class="line"> &#125;</div><div class="line"></div><div class="line"> public void test3() throws Throwable &#123;</div><div class="line">   strs = TreeMultiset.create();</div><div class="line">   strs.add(&quot;sdfsd&quot;, 2); //add(E element,int occurrences): 向其中添加指定个数的元素</div><div class="line">   strs.add(&quot;sdfsd&quot;);  // add(E element): 向其中添加单个元素</div><div class="line">   strs.add(&quot;dlkjlkj&quot;);</div><div class="line">   System.out.println(strs.elementSet());  // elementSet(): 将不同的元素放入一个Set中</div><div class="line">   Set&lt;Multiset.Entry&lt;Comparable&gt;&gt; entries = strs.entrySet();  //类似与Map.entrySet 返回Set。包含的Entry支持使用getElement()和getCount()</div><div class="line">   for (Multiset.Entry entry: entries) &#123;</div><div class="line">     System.out.println(entry.getElement());</div><div class="line">     System.out.println(entry.getCount());</div><div class="line">   &#125;</div><div class="line">   outMuiltSet();</div><div class="line">   strs.remove(&quot;sdfsd&quot;); // remove(E element): 移除一个元素，其count值 会响应减少</div><div class="line">   outMuiltSet();</div><div class="line">   strs.setCount(&quot;sdfsd&quot;, 10); // 设定某一个元素的重复次数</div><div class="line">   outMuiltSet();</div><div class="line">   strs.remove(&quot;sdfsd&quot;, 2); //remove(E element,int occurrences): 移除相应个数的元素</div><div class="line">   outMuiltSet();</div><div class="line">   strs.setCount(&quot;sdfsd&quot;, 8, 20); //setCount(E element,int oldCount,int newCount): 将符合原有重复个数的元素修改为新的重复次数</div><div class="line">   strs.setCount(&quot;sdfsd&quot;, 8, 20);</div><div class="line">   strs.setCount(&quot;dlkjlkj&quot;, 8, 20);</div><div class="line">   outMuiltSet();</div><div class="line"> &#125;</div></pre></td></tr></table></figure>
-</li>
-<li><p>SortedMultiset</p>
-</li>
-</ul>
-<p>SortedMultiset是Multiset 接口的变种，它支持高效地获取指定范围的子集。比方说，你可以用 latencies.subMultiset(0,BoundType.CLOSED, 100, BoundType.OPEN).size()来统计你的站点中延迟在100毫秒以内的访问，然后把这个值和latencies.size()相比，以获取这个延迟水平在总体访问中的比例。</p>
-<p>TreeMultiset实现SortedMultiset接口。</p>
-<ul>
-<li>Multimap<br>可以用两种方式思考Multimap的概念:</li>
-</ul>
-<p>“键-单个值映射”的集合: a-&gt;1, a-&gt;2, a-&gt;4, b-&gt;3, c-&gt;5<br>“键-值集合映射”的映射: a-&gt;[1,2,4], b-&gt;3, c-&gt;5<br>一般情况下都会使用ListMultimap或SetMultimap接口，它们分别把键映射到List或Set。<br>Multimap.get(key)以集合形式返回键所对应的值视图, 即使没有任何对应的值，也会返回空集合。<br>对值视图集合进行的修改最终都会反映到底层的Multimap。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">public void testMap() &#123;</div><div class="line">    ImmutableListMultimap&lt;String, Integer&gt; of = ImmutableListMultimap.of(&quot;a&quot;, 1, &quot;a&quot;, 2, &quot;b&quot;, 1);</div><div class="line">    System.out.println(of.asMap());</div><div class="line">    ListMultimap map = ArrayListMultimap.create(of);</div><div class="line">    map.put(&quot;a&quot;, 234);</div><div class="line">    map.putAll(&quot;c&quot;, ImmutableSet.of(123,3243));</div><div class="line">    System.out.println(map);</div><div class="line">  &#125;</div></pre></td></tr></table></figure>
-<ul>
-<li>BiMap<br>实现键值对的双向映射,并保持它们间的同步。</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">BiMap&lt;String, Integer&gt; map = HashBiMap.create();</div><div class="line">   map.put(&quot;foo&quot;, 1);</div><div class="line">   map.put(&quot;bar&quot;, 2);</div><div class="line">   map.put(&quot;quux&quot;, 3);</div><div class="line"></div><div class="line">   map.inverse().forcePut(1, &quot;quux&quot;);  // 会导致foo被替换成quux，而quux的value也成了1，就是&#123;bar=2, quux=1&#125;</div><div class="line">   System.out.println(map);</div></pre></td></tr></table></figure>
-<ul>
-<li>Table</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">String v1 = &quot;a&quot;;</div><div class="line">    String v2 = &quot;b&quot;;</div><div class="line">    String v3 = &quot;c&quot;;</div><div class="line">    Table&lt;String, String, Integer&gt; weightedGraph = HashBasedTable.create();</div><div class="line">    weightedGraph.put(v1, v2, 4);</div><div class="line">    weightedGraph.put(v1, v3, 20);</div><div class="line">    weightedGraph.put(v2, v3, 5);</div><div class="line">    System.out.println(weightedGraph);</div><div class="line"></div><div class="line">    System.out.println(weightedGraph.row(v1) + &quot;........sdfsd&quot;); // 按照rowKey查询</div><div class="line">    System.out.println(weightedGraph.column(v3)); // 按照Columnkey查询</div></pre></td></tr></table></figure>
-<ul>
-<li>ClassToInstanceMap</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">ClassToInstanceMap&lt;Number&gt; numberDefaults=MutableClassToInstanceMap.create();</div><div class="line">    numberDefaults.putInstance(Integer.class, Integer.valueOf(0));</div><div class="line">    numberDefaults.putInstance(Integer.class, Float.valueOf(0)); // 编译报错</div></pre></td></tr></table></figure>
-<ul>
-<li><p>RangeSet<br>RangeSet描述了一组不相连的、非空的区间。当把一个区间添加到可变的RangeSet时，所有相连的区间会被合并，空区间会被忽略。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">RangeSet&lt;Integer&gt; rangeSet = TreeRangeSet.create();</div><div class="line">    System.out.println(rangeSet);</div><div class="line">    rangeSet.add(Range.closed(1, 10)); // &#123;[1,10]&#125;</div><div class="line">    System.out.println(rangeSet);</div><div class="line">    rangeSet.add(Range.closedOpen(11, 15));//不相连区间:&#123;[1,10], [11,15)&#125;</div><div class="line">    System.out.println(rangeSet);</div><div class="line">    rangeSet.add(Range.closedOpen(15, 20)); //相连区间; &#123;[1,10], [11,20)&#125;</div><div class="line">    System.out.println(rangeSet);</div><div class="line">    rangeSet.add(Range.openClosed(0, 0)); //空区间; &#123;[1,10], [11,20)&#125;</div><div class="line">    System.out.println(rangeSet);</div><div class="line">    rangeSet.remove(Range.open(5, 10)); //分割[1, 10]; &#123;[1,5], [10,10], [11,20)&#125;</div><div class="line">    System.out.println(rangeSet);</div></pre></td></tr></table></figure>
-</li>
-<li><p>RangeMap<br>RangeMap描述了”不相交的、非空的区间”到特定值的映射。和RangeSet不同，RangeMap不会合并相邻的映射，即便相邻的区间映射到相同的值。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">RangeMap&lt;Integer, String&gt; rangeMap = TreeRangeMap.create();</div><div class="line">    rangeMap.put(Range.closed(1, 10), &quot;foo&quot;); //&#123;[1,10] =&gt; &quot;foo&quot;&#125;</div><div class="line">    System.out.println(rangeMap);</div><div class="line">    rangeMap.put(Range.open(3, 6), &quot;bar&quot;); //&#123;[1,3] =&gt; &quot;foo&quot;, (3,6) =&gt; &quot;bar&quot;, [6,10] =&gt; &quot;foo&quot;&#125;</div><div class="line">    System.out.println(rangeMap);</div><div class="line">    rangeMap.put(Range.open(10, 20), &quot;foo&quot;); //&#123;[1,3] =&gt; &quot;foo&quot;, (3,6) =&gt; &quot;bar&quot;, [6,10] =&gt; &quot;foo&quot;, (10,20) =&gt; &quot;foo&quot;&#125;</div><div class="line">    System.out.println(rangeMap);</div><div class="line">    rangeMap.remove(Range.closed(5, 11)); //&#123;[1,3] =&gt; &quot;foo&quot;, (3,5) =&gt; &quot;bar&quot;, (11,20) =&gt; &quot;foo&quot;&#125;</div><div class="line">    System.out.println(rangeMap);</div></pre></td></tr></table></figure>
-</li>
-</ul>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/guava/">guava</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2015/10/15/node杂记/" title="node杂记" itemprop="url">node杂记</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2015-10-15T07:48:35.000Z" itemprop="datePublished"> 发表于 2015-10-15</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>因为新的项目这边前端是使用的nodejs，精通自己，熟知周边是我一直依赖的坚持。所以现在要对nodejs有个hello world的了解，便于以后自己调试自己的接口以及其他功能代码。</p>
-<p>nodejs的依赖管理工具是npm, 有些类似Python的pip + java的maven，既负责安装全局性的依赖，也能处理当前项目的依赖。</p>
-<ul>
-<li>npm install xxx 是安装依赖到当前目录的node_modules文件夹下，只有当前项目能够使用这些依赖；</li>
-<li>npm install xxx -g 安装依赖到npm根目录的node_modules文件夹下，本机所有nodejs项目都可以使用</li>
-</ul>
-<p>npm主要针对package.json进行，其实npm有啥功能只要看一下package.json有啥配置项就可以了。但是为了完整性，还是列一下:</p>
-<table>
-<thead>
-<tr>
-<th><em>命令</em></th>
-<th style="text-align:left"><em>描述</em></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>npm install</td>
-<td style="text-align:left">安装package.json里指定的所有依赖</td>
-</tr>
-<tr>
-<td>npm install xxx</td>
-<td style="text-align:left">安装xxx,其实这个命令感觉跟当前项目根本没啥关系了</td>
-</tr>
-<tr>
-<td>npm install xxx  –save</td>
-<td style="text-align:left">安装xxx,同时将xxx的最新版本加入package.json的dependency里</td>
-</tr>
-<tr>
-<td>npm set init-author-name ‘Your name’</td>
-<td style="text-align:left">等于为npm init设置了默认值，以后执行npm init的时候，package.<br>json的作者姓名、邮件、主页、许可证字段就会自动写入预设的值。这些信息会存放在用户主目录的~/.npmrc文件，使得用户不用每个项目都输入。如果某个项目有不同的设置，可以针对该项目运行npm config。</td>
-</tr>
-<tr>
-<td>npm info xxx</td>
-<td style="text-align:left">查看模块xxx的具体信息</td>
-</tr>
-<tr>
-<td>npm search xxx</td>
-<td style="text-align:left">查找xxx模块是否存在于npm仓库</td>
-</tr>
-<tr>
-<td>npm list</td>
-<td style="text-align:left">树形结构列出当前项目安装的所有module</td>
-</tr>
-<tr>
-<td>npm info xxx</td>
-<td style="text-align:left">查看模块xxx的具体信息</td>
-</tr>
-</tbody>
-</table>
-<p>注： nodejs自身还有版本管理工具，就是nvm了，可以在一个机器上安装多个版本的nodejs.</p>
-<blockquote>
-<p> git clone <a href="https://github.com/creationix/nvm.git" target="_blank" rel="external">https://github.com/creationix/nvm.git</a> ~/.nvm<br> source ~/.nvm/nvm.sh# </p>
-</blockquote>
-<p> 安装最新版本</p>
-<blockquote>
-<p>nvm install node</p>
-</blockquote>
-<p> 安装指定版本</p>
-<blockquote>
-<p>nvm install 0.12.1</p>
-</blockquote>
-<h1 id="使用已安装的最新版本"><a href="#使用已安装的最新版本" class="headerlink" title="使用已安装的最新版本"></a>使用已安装的最新版本</h1><blockquote>
-<p>nvm use node</p>
-</blockquote>
-<h1 id="使用指定版本的node"><a href="#使用指定版本的node" class="headerlink" title="使用指定版本的node"></a>使用指定版本的node</h1><blockquote>
-<p>nvm use 0.12</p>
-</blockquote>
-<h1 id="查看本地安装的所有版本"><a href="#查看本地安装的所有版本" class="headerlink" title="查看本地安装的所有版本"></a>查看本地安装的所有版本</h1><blockquote>
-<p> nvm ls</p>
-</blockquote>
-<h1 id="查看服务器上所有可供安装的版本。"><a href="#查看服务器上所有可供安装的版本。" class="headerlink" title="查看服务器上所有可供安装的版本。"></a>查看服务器上所有可供安装的版本。</h1><blockquote>
-<p>nvm ls-remote</p>
-</blockquote>
-<h1 id="退出已经激活的nvm，使用deactivate命令。"><a href="#退出已经激活的nvm，使用deactivate命令。" class="headerlink" title="退出已经激活的nvm，使用deactivate命令。"></a>退出已经激活的nvm，使用deactivate命令。</h1><blockquote>
-<p>nvm deactivate</p>
-</blockquote>
-<p>nodejs是一种事件驱动的思想：nodejs的event流有些像java web这边的servlet chain，不过他们的servlet叫做middleware，而且很多层次都可以有middleware。</p>
-<h3 id="app"><a href="#app" class="headerlink" title="app"></a>app</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">// a middleware sub-stack which handles GET requests to /user/:id</div><div class="line">app.get(&apos;/user/:id&apos;, function (req, res, next) &#123;</div><div class="line">  // if user id is 0, skip to the next route</div><div class="line">  if (req.params.id == 0) next(&apos;route&apos;);</div><div class="line">  // else pass the control to the next middleware in this stack</div><div class="line">  else next(); //</div><div class="line">&#125;, function (req, res, next) &#123;</div><div class="line">  // render a regular page</div><div class="line">  res.render(&apos;regular&apos;);</div><div class="line">&#125;);</div><div class="line"></div><div class="line">// handler for /user/:id which renders a special page</div><div class="line">app.get(&apos;/user/:id&apos;, function (req, res, next) &#123;</div><div class="line">  res.render(&apos;special&apos;);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
-<h3 id="router"><a href="#router" class="headerlink" title="router"></a>router</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line">var app = express();</div><div class="line">var router = express.Router();</div><div class="line"></div><div class="line">// a middleware with no mount path, gets executed for every request to the router</div><div class="line">router.use(function (req, res, next) &#123;</div><div class="line">  console.log(&apos;Time:&apos;, Date.now());</div><div class="line">  next();</div><div class="line">&#125;);</div><div class="line"></div><div class="line">// a middleware sub-stack shows request info for any type of HTTP request to /user/:id</div><div class="line">router.use(&apos;/user/:id&apos;, function(req, res, next) &#123;</div><div class="line">  console.log(&apos;Request URL:&apos;, req.originalUrl);</div><div class="line">  next();</div><div class="line">&#125;, function (req, res, next) &#123;</div><div class="line">  console.log(&apos;Request Type:&apos;, req.method);</div><div class="line">  next();</div><div class="line">&#125;);</div><div class="line"></div><div class="line">// a middleware sub-stack which handles GET requests to /user/:id</div><div class="line">router.get(&apos;/user/:id&apos;, function (req, res, next) &#123;</div><div class="line">  // if user id is 0, skip to the next router</div><div class="line">  if (req.params.id == 0) next(&apos;route&apos;);</div><div class="line">  // else pass the control to the next middleware in this stack</div><div class="line">  else next(); //</div><div class="line">&#125;, function (req, res, next) &#123;</div><div class="line">  // render a regular page</div><div class="line">  res.render(&apos;regular&apos;);</div><div class="line">&#125;);</div><div class="line"></div><div class="line">// handler for /user/:id which renders a special page</div><div class="line">router.get(&apos;/user/:id&apos;, function (req, res, next) &#123;</div><div class="line">  console.log(req.params.id);</div><div class="line">  res.render(&apos;special&apos;);</div><div class="line">&#125;);</div><div class="line"></div><div class="line">// mount the router on the app</div><div class="line">app.use(&apos;/&apos;, router);</div></pre></td></tr></table></figure>
-<h3 id="error-handler"><a href="#error-handler" class="headerlink" title="error handler"></a>error handler</h3><p>四个参数，多一个err。如果完事儿不调用next的话，就需要指定状态码，不然就会向普通的middleware一样报错，并且执行失败。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">app.use(function(err, req, res, next) &#123;</div><div class="line">  console.error(err.stack);</div><div class="line">  res.status(500).send(&apos;Something broke!&apos;);</div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
-<h3 id="built-in"><a href="#built-in" class="headerlink" title="built-in"></a>built-in</h3><p>expresss.static(root, [options]) 一般指定应用的静态资源根目录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">var options = &#123;</div><div class="line">  dotfiles: &apos;ignore&apos;,</div><div class="line">  etag: false,</div><div class="line">  extensions: [&apos;htm&apos;, &apos;html&apos;],</div><div class="line">  index: false,</div><div class="line">  maxAge: &apos;1d&apos;,</div><div class="line">  redirect: false,</div><div class="line">  setHeaders: function (res, path, stat) &#123;</div><div class="line">    res.set(&apos;x-timestamp&apos;, Date.now());</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">app.use(express.static(&apos;public&apos;, options));</div></pre></td></tr></table></figure></p>
-<p>也可以指定多个目录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">app.use(express.static(&apos;public&apos;));</div><div class="line">app.use(express.static(&apos;uploads&apos;));</div><div class="line">app.use(express.static(&apos;files&apos;));</div></pre></td></tr></table></figure></p>
-<h3 id="third-party"><a href="#third-party" class="headerlink" title="third-party"></a>third-party</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">var express = require(&apos;express&apos;);</div><div class="line">var app = express();</div><div class="line">var cookieParser = require(&apos;cookie-parser&apos;);</div><div class="line"></div><div class="line">// load the cookie parsing middleware</div><div class="line">app.use(cookieParser());</div></pre></td></tr></table></figure>
-<p>node启动express项目：node app.js，如果指定参数-p 8080,就会启动port为8080的server。<br>process.env是指引用系统的环境变量</p>
-<p>jade是一种node的模板引擎，将一些关键字映射为html里的元素，使简洁，而且生成的HTML是最小的、确保正确的。</p>
-<ul>
-<li>使用的时候可以使好多公共的东西模块化，然后include进来</li>
-<li>模板之间可以extends，一般extends layout, 然后给里面的一些变量赋值,一般都是处理block<br>详见官网吧。</li>
-</ul>
-<p>bootstrap + jade，you know…</p>
-<p>UI: bootstrap<br>模板引擎：jade<br>css引擎：stylus<br>前端：jquery + socket.io<br>后端：express</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2015/10/14/r学习笔记/" title="R学习笔记 - 《R中文手册》" itemprop="url">R学习笔记 - 《R中文手册》</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2015-10-14T11:20:53.000Z" itemprop="datePublished"> 发表于 2015-10-14</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <table>
-<thead>
-<tr>
-<th><em>命令</em></th>
-<th style="text-align:left"><em>描述</em></th>
-<th style="text-align:center"><em>输入</em></th>
-<th style="text-align:right"><em>输出</em></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>ls.str()</td>
-<td style="text-align:left">列出所有变量 <br>+ 类型 + 值</td>
-<td style="text-align:center"></td>
-<td style="text-align:right"></td>
-</tr>
-<tr>
-<td>ls()</td>
-<td style="text-align:left">列出所有变量名称</td>
-<td style="text-align:center"></td>
-<td style="text-align:right"></td>
-</tr>
-<tr>
-<td>rm(变量1, 变量2)</td>
-<td style="text-align:left">删除变量</td>
-</tr>
-<tr>
-<td>rm(list=ls())</td>
-<td style="text-align:left">删除所有变量</td>
-</tr>
-<tr>
-<td>help(命令)</td>
-<td style="text-align:left">查找命令使用方式</td>
-</tr>
-<tr>
-<td>help.search(命令)</td>
-<td style="text-align:left">使用正则搜命令极其使用文档</td>
-</tr>
-<tr>
-<td></td>
-</tr>
-</tbody>
-</table>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand photo" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2015/10/11/your-photo-titile/" title="your photo titile" itemprop="url">your photo titile</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2015-10-11T00:48:59.000Z" itemprop="datePublished"> 发表于 2015-10-11</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2015/10/10/内部JIRA+wiki笔记/" title="mt JIRA+wiki笔记" itemprop="url">mt JIRA+wiki笔记</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2015-10-10T11:14:06.000Z" itemprop="datePublished"> 发表于 2015-10-10</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h2 id="1-JIRA"><a href="#1-JIRA" class="headerlink" title="1.JIRA"></a>1.JIRA</h2><p>目前美团用的是JIRA-4，付费买的，然后进行了一些二次开发.</p>
-<h3 id="1-1-功能"><a href="#1-1-功能" class="headerlink" title="1.1 功能"></a>1.1 功能</h3><pre><code>追踪bug、task
-帮助自己：管理TODO，提高效率
-帮助同伴：了解进展、及时通知和讨论
-帮助leader：监控
-帮助所有人：记录和通知进度、慧谷总结
-RSS订阅
-小工具： 图表神马的
-过滤器：可以写JQL，也可以可视化操作；可以私人拥有，也可以共享给大家
-关注其他人的ticket
-预期时间
-抄送
-集成git、用户反馈邮件自动生成ticket
-</code></pre><h3 id="1-2-Ticket"><a href="#1-2-Ticket" class="headerlink" title="1.2 Ticket"></a>1.2 Ticket</h3><ul>
-<li>状态：open -&gt; in progress -&gt; resolved -&gt; closed</li>
-<li>类型：任务、改进、新功能、缺陷、电话问题</li>
-<li>优先级：blocker、critical、major、trivial</li>
-<li><p>使用原则：</p>
-<ul>
-<li>自主推动与交付，随时增加注释、更新进度</li>
-<li>使用Dashboard来管理自己的TODO</li>
-<li>合理安排优先级</li>
-<li>任务放进对应的版块</li>
+<li>使用新数据覆盖旧数据。很简单，如果只是要同步最新状态的话，就用这个，但是会丢失历史维度值。</li>
+<li>添加带有version的新数据行。可以追踪到所有历史。但是随着时间的退役，可能会特别大，还有就是查询的时候需要只看最新版本的维度值。</li>
+<li>添加新数据行，管理有限版本的历史。有一些历史数据，然是控制在一定范围内。</li>
 <li></li>
 </ul>
-</li>
-</ul>
-<h3 id="1-3-添加备注时机："><a href="#1-3-添加备注时机：" class="headerlink" title="1.3 添加备注时机："></a>1.3 添加备注时机：</h3><ul>
-<li>初始目标出现变动</li>
-<li>开发和追查的问题有进展和结论</li>
-<li>延期或者需要其他依赖条件</li>
-<li>分配给其他人、reopen、close的时候</li>
-</ul>
-<blockquote>
-<p>推荐使用google calendar来管理每日计划</p>
-</blockquote>
-<hr>
-<h2 id="2-Wiki"><a href="#2-Wiki" class="headerlink" title="2. Wiki"></a>2. Wiki</h2><p>专业wiki，注重企业知识管理与协调。公司内部是很注重知识的积累的，所以比较重视wiki这块。<br>一般是一些tips，比如一些技巧、或者一些坑、一些心得什么的，可以分享出来供大家参考。</p>
-<h3 id="2-1-特点"><a href="#2-1-特点" class="headerlink" title="2.1 特点"></a>2.1 特点</h3><ul>
-<li>出色的站点管理</li>
-<li>简单而强大的编辑功能</li>
-<li>团队成员间的交流</li>
-<li>插件扩展</li>
-</ul>
-<h3 id="2-2-功能"><a href="#2-2-功能" class="headerlink" title="2.2 功能"></a>2.2 功能</h3><ul>
-<li>知识管理</li>
-<li>社交</li>
-<li>分享、积累</li>
-<li>文档归档</li>
-<li>查找文档</li>
-<li>监视文档的每次变化</li>
-<li>关注文档</li>
-<li>收藏文档</li>
-<li>文档归类</li>
-</ul>
-<h3 id="2-3-查找"><a href="#2-3-查找" class="headerlink" title="2.3 查找"></a>2.3 查找</h3><pre><code>搜索
-目录结构
-页面链接
-收藏夹
-添加书签【用于收藏外部资源】
-</code></pre><h3 id="2-4-作业"><a href="#2-4-作业" class="headerlink" title="2.4 作业"></a>2.4 作业</h3><p>创建个人空间，添加一个页面，分享或者总结一下。<br>要求：有段落、标题。可选：图片、表格、代码。</p>
+<p>这个blog是讲一下怎样使用hive的MERGE来管理SCD。所有的例子都可以在<a href="https://github.com/cartershanklin/hive-scd-examples" target="_blank" rel="external">这里</a>找到。管理SCD是很麻烦的事情，所以最好能够用一些工作，比如<a href="https://www.amazon.com/Data-Warehouse-Toolkit-Complete-Dimensional/dp/0471200247" target="_blank" rel="external">数仓工具</a></p>
+<h4 id="SCD管理策略一览"><a href="#SCD管理策略一览" class="headerlink" title="SCD管理策略一览"></a>SCD管理策略一览</h4><p><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/1Slowly-changing-dimensions-1024x695.png" alt=""></p>
+<h4 id="基础"><a href="#基础" class="headerlink" title="基础"></a>基础</h4><p>所有的是例子都是从一个外部表，copy到hive的managed table，这个managed table就是merge target。第二个外部表，代表第二次从某个系统全量dump出来的数据。这两个外部表是一样的csv文件，包含字段:ID,Name, Email,State。初始化的数据有1000条，第二次数据有1100条，其中包含100个新纪录和93个需要更新项。</p>
+<h4 id="第一种策略"><a href="#第一种策略" class="headerlink" title="第一种策略"></a>第一种策略</h4><p>有就直接替换，没有就添加。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">merge into</div><div class="line"> contacts_target</div><div class="line">using</div><div class="line"> contacts_update_stage as stage</div><div class="line">on</div><div class="line"> stage.id = contacts_target.id</div><div class="line">when matched then</div><div class="line"> update set name = stage.name, email = stage.email, state = stage.state</div><div class="line">when not matched then</div><div class="line"> insert values (stage.id, stage.name, stage.email, stage.state);</div></pre></td></tr></table></figure>
+<p>值得注意的是，上面的操作也是单独一个，是原子且独立的，如果出现错误会正确rollback。在SQL-on-Hasdoop方式里提供这些特性是很困难的，但是hive的MERGE操作就实现了。</p>
+<h4 id="第二种策略"><a href="#第二种策略" class="headerlink" title="第二种策略"></a>第二种策略</h4><p>保留所有的历史版本，提供单独的版本相关字段:ValidFrom, ValidTo。</p>
+<p><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/2Hive-Type-2_1-1024x319.png" alt=""></p>
+<p>我们可以使用这个策略来满足并发用户对于正在更新的数据的数据读取。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">merge into contacts_target</div><div class="line">using (</div><div class="line"> — The base staging data.</div><div class="line"> select</div><div class="line">contacts_update_stage.id as join_key,</div><div class="line">contacts_update_stage.* from contacts_update_stage</div><div class="line"> union all</div><div class="line">— Generate an extra row for changed records.</div><div class="line"> — The null join_key forces records down the insert path.</div><div class="line"> select</div><div class="line">   null, contacts_update_stage.*</div><div class="line"> from</div><div class="line">   contacts_update_stage join contacts_target</div><div class="line">   on contacts_update_stage.id = contacts_target.id</div><div class="line"> where</div><div class="line">   ( contacts_update_stage.email &lt;&gt; contacts_target.email</div><div class="line">     or contacts_update_stage.state &lt;&gt; contacts_target.state )</div><div class="line">   and contacts_target.valid_to is null</div><div class="line">) sub</div><div class="line">on sub.join_key = contacts_target.id</div><div class="line">when matched</div><div class="line"> and sub.email &lt;&gt; contacts_target.email or sub.state &lt;&gt; contacts_target.state</div><div class="line"> then update set valid_to = current_date()</div><div class="line">when not matched</div><div class="line"> then insert</div><div class="line"> values (sub.id, sub.name, sub.email, sub.state, current_date(), null);</div></pre></td></tr></table></figure>
+<p>需要注意的是，using语句中对于每个更新的row会输出2个record。这些record会有一个null join key(就会成为一个insert了), 还会有一个valid jonk key(这是一个update)。如果都过去i安眠文章的话，其实有类似于在分区之间移动数据，只不过是使用update而不是delete。</p>
+<p>看下93条记录的情况。<br><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/2Hive-Type-2_2-1024x304.png" alt=""></p>
+<h4 id="第三种类型"><a href="#第三种类型" class="headerlink" title="第三种类型"></a>第三种类型</h4><p>第二种类型其实挺强大的了，不过比较复杂，而且维度表会无限增长下去。第三种策略中维度表基本跟数据源大小差不多，但是只提供部分历史。</p>
+<p>下面我们就只保存上一个版本的纬度值</p>
+<p><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/3Hive-Type-3_1.png" alt=""></p>
+<p>当update的时候，我们任务就是把当前的版本放到last的值里。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">merge</span> <span class="keyword">into</span></div><div class="line"> contacts_target</div><div class="line"><span class="keyword">using</span></div><div class="line"> contacts_update_stage <span class="keyword">as</span> stage</div><div class="line"><span class="keyword">on</span> stage.id = contacts_target.id</div><div class="line"><span class="keyword">when</span> <span class="keyword">matched</span> <span class="keyword">and</span></div><div class="line"> contacts_target.email &lt;&gt; stage.email</div><div class="line"> <span class="keyword">or</span> contacts_target.state &lt;&gt; stage.state — <span class="keyword">change</span> detection</div><div class="line"> <span class="keyword">then</span> <span class="keyword">update</span> <span class="keyword">set</span></div><div class="line"> last_email = contacts_target.email, email = stage.email, — email history</div><div class="line"> last_state = contacts_target.state, state = stage.state  — state history</div><div class="line"><span class="keyword">when</span> <span class="keyword">not</span> <span class="keyword">matched</span> <span class="keyword">then</span> <span class="keyword">insert</span></div><div class="line"> <span class="keyword">values</span> (stage.id, stage.name, stage.email, stage.email,</div><div class="line"> stage.state, stage.state);</div></pre></td></tr></table></figure>
+<p>我们看到相比第二种策略，这种就简单多了。</p>
+<p><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/3Hive-Type-3_2.png" alt=""></p>
+<h4 id="一个更简单的变化追踪方法"><a href="#一个更简单的变化追踪方法" class="headerlink" title="一个更简单的变化追踪方法"></a>一个更简单的变化追踪方法</h4><p>如果有很多字段需要比较，那么对于变化的探测逻辑会比较笨重。幸运的是，hive引入了一个hash UDF让这个变得简单，可以接收任意数量的参数，然会一个checksum。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">merge into</div><div class="line"> contacts_target</div><div class="line">using</div><div class="line"> contacts_update_stage as stage</div><div class="line">on stage.id = contacts_target.id</div><div class="line">when matched and</div><div class="line"> hash(contacts_target.email, contacts_target.state) &lt;&gt;</div><div class="line">   hash(stage.email, stage.state)</div><div class="line"> then update set</div><div class="line"> last_email = contacts_target.email, email = stage.email, — email history</div><div class="line"> last_state = contacts_target.state, state = stage.state  — state history</div><div class="line">when not matched then insert</div><div class="line"> values (stage.id, stage.name, stage.email, stage.email,</div><div class="line"> stage.state, stage.state);</div></pre></td></tr></table></figure>
+<p>好处就是，不管有多少个字段要比较，我们对于代码的修改可以几乎没有。</p>
+<h4 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h4><p>SCD管理是数据仓库机器重要的概念，是一个有很多策略和方法实现的子模块。有了ACID MERGE，hive让我们在hadoop上管理SCD变的简单。</p>
+<p>参考：<a href="https://zh.hortonworks.com/blog/update-hive-tables-easy-way-2/" target="_blank" rel="external">https://zh.hortonworks.com/blog/update-hive-tables-easy-way-2/</a></p>
 
         
         
@@ -971,6 +148,752 @@ RSS订阅
     <footer class="article-footer clearfix">
 <div class="article-catetags">
 
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/11/22/hive2---轻松更新hive表1/" title="hive2---轻松更新hive表1" itemprop="url">hive2---轻松更新hive表1</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-11-22T09:07:16.000Z" itemprop="datePublished"> 发表于 2017-11-22</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>首先是merge、insert、update、delete。</p>
+<p>以前，让hive里的数据持续更新是需要很复杂的成本的，很难去维护与执行。HDP2.6借助hive里的merge语法彻底地简化了数据维护成本，完成了INSERT, UPDATE, DELETE能力。</p>
+<p>这个blog会说明怎样解释以下三种问题：</p>
+<ul>
+<li>hive update，从RDBMS同步数据到hive</li>
+<li>更新hive里数据的分区</li>
+<li>选择性地mask或者purge数据</li>
+</ul>
+<h4 id="基础操作：SQL-MERGE-UPDATE-AND-DELETE"><a href="#基础操作：SQL-MERGE-UPDATE-AND-DELETE" class="headerlink" title="基础操作：SQL MERGE, UPDATE AND DELETE"></a>基础操作：SQL MERGE, UPDATE AND DELETE</h4><p>MERGE是SQL 2008标准里的，是一个强大的SQL语句，它可以在同一个statement中inert，update，delete数据。MERGE让两个系统一致性工作变得简单。咱们看一下MERGE的语法：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">MERGE INTO &lt;target table&gt;</div><div class="line"> USING &lt;table reference&gt;</div><div class="line">ON &lt;search condition&gt;</div><div class="line"> &lt;merge when clause&gt;...</div><div class="line">WHEN MATCHED [ AND &lt;search condition&gt; ]</div><div class="line">THEN &lt;merge update or delete specification&gt;</div><div class="line">WHEN NOT MATCHED [ AND &lt;search condition&gt; ]</div><div class="line">THEN &lt;merge insert specification&gt;</div></pre></td></tr></table></figure></p>
+<p>WHEN MATCHED/WHEN NOT MATCHED语句可以无限量的。</p>
+<p>我们也会使用到比较熟悉的UPDATE，语法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">UPDATE &lt;target table&gt;</div><div class="line">SET &lt;set clause list&gt;</div><div class="line">[ WHERE &lt;search condition&gt; ]</div></pre></td></tr></table></figure></p>
+<p>当没必要把insert 和update的数据在一个sql statement里进行合并的时候，就可以使用update了。</p>
+<h4 id="保持数据fresh"><a href="#保持数据fresh" class="headerlink" title="保持数据fresh"></a>保持数据fresh</h4><p>在HDP2.6中，需要先做两个工作：</p>
+<ul>
+<li>开启Hive transaction。</li>
+<li>我们table必须是一个transactional table。就是说这个table必须是clustered的，必须是ORCFile存储格式，而且有一个table属性：transactional=true。下面是一个例子：<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">create table customer_partitioned</div><div class="line"> (id int, name string, email string, state string)</div><div class="line"> partitioned by (signup date)</div><div class="line"> clustered by (id) into 2 buckets stored as orc</div><div class="line"> tblproperties(&quot;transactional&quot;=&quot;true&quot;);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="例1：HIVE-UPSERT"><a href="#例1：HIVE-UPSERT" class="headerlink" title="例1：HIVE UPSERT"></a>例1：HIVE UPSERT</h4><p>假设我们有一个源数据库，想要load进hadoop来运行ing大批量的分析。这个RDBMS中的数据不断的被添加和修改，而且并没有log告诉你哪些数据有变化【就是说没有binlog】。最简单的处理就是每24小时完整的copy一下这个RDBMS的数据镜像。</p>
+<p><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/RDBMS-Source.png" alt=""></p>
+<p>下面我们创建table：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">create table customer_partitioned</div><div class="line">(id int, name string, email string, state string)</div><div class="line"> partitioned by (signup date)</div><div class="line"> clustered by (id) into 2 buckets stored as orc</div><div class="line"> tblproperties(&quot;transactional&quot;=&quot;true&quot;);</div></pre></td></tr></table></figure></p>
+<p>假设我们的数据在Time = 1的时候是这样的：<br><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/Time-equals-1.png" alt=""></p>
+<p>在Time = 2的时候是这样的<br><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/Time-equals-2.png" alt=""></p>
+<p>Upsert操作是吧update和insert放在一个操作里，这样我们就不用关心这些数据是不是原来就已经存在于目标table中。MERGE就是用来做这个事情的：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">merge into customer_partitioned</div><div class="line"> using all_updates on customer_partitioned.id = all_updates.id</div><div class="line"> when matched then update set</div><div class="line">   email=all_updates.email,</div><div class="line">   state=all_updates.state</div><div class="line"> when not matched then insert</div><div class="line">   values(all_updates.id, all_updates.name, all_updates.email,</div><div class="line">   all_updates.state, all_updates.signup);</div></pre></td></tr></table></figure></p>
+<p>注意我们的两个when条件语句是用来管理update或者insert的。在merge过后，这个managed table就与Time=2的staged Table完全一样了，而且所有数据也都在其对应的分区中。</p>
+<h4 id="例2：更新hive-partition"><a href="#例2：更新hive-partition" class="headerlink" title="例2：更新hive partition"></a>例2：更新hive partition</h4><p>hive中很多会用日期作为partition策略。这样可以简化数据加载，提升性能。只是有时我们偶尔会出现数据进入错误的分区的情形。例如，假设用户数据是由一个第三方提供的，里面包含一个用户的singup日期。如果这个第三方数据提供者提供的数据开始有问题，后面又修正了，那么前面的在错误分区里的数据就应该被清除了。</p>
+<p><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/update-hive-partitions.png" alt="初始数据"></p>
+<p><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/second-load.png" alt="修复后的数据"></p>
+<p>注意到ID为2的数据第一次跟第二次的signup日期是不一样的，这就需要更新2017-01-08分区，从里面把它删除，然后把它加入到2017-01-10里面去。</p>
+<p>在MERGE出现之前，基本不可能管理这些分区裱花的。Hive的MERGE statement不是原生支持更新partition key，但是有一个小的技巧。 We introduce a delete marker which we set any time the partition keys and UNION this with a second query that produces an extra row on-the-fly for each of these non-matching records.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">merge into customer_partitioned</div><div class="line"> using (</div><div class="line">-- Updates with matching partitions or net new records.</div><div class="line">-- 更新符合分区的或者</div><div class="line">select</div><div class="line">  case</div><div class="line">       when all_updates.signup &lt;&gt; customer_partitioned.signup then 1</div><div class="line">       else 0</div><div class="line">     end as delete_flag,</div><div class="line">     all_updates.id as match_key,</div><div class="line">     all_updates.* from</div><div class="line">    all_updates left join customer_partitioned</div><div class="line">   on all_updates.id = customer_partitioned.id</div><div class="line">      union all</div><div class="line"></div><div class="line"> -- Produce new records when partitions don’t match.</div><div class="line"> -- 分区不匹配的时候，生成新的record</div><div class="line">     select 0, null, all_updates.*</div><div class="line">     from all_updates, customer_partitioned where</div><div class="line">     all_updates.id = customer_partitioned.id</div><div class="line">     and all_updates.signup &lt;&gt; customer_partitioned.signup</div><div class="line"> ) sub</div><div class="line">on customer_partitioned.id = sub.match_key</div><div class="line"> when matched and delete_flag=1 then delete</div><div class="line"> when matched and delete_flag=0 then</div><div class="line">   update set email=sub.email, state=sub.state</div><div class="line"> when not matched then</div><div class="line">   insert values(sub.id, sub.name, sub.email, sub.state, sub.signup);</div></pre></td></tr></table></figure></p>
+<p>在MERGE处理过这个managed table之后，它就跟源数据表完全一致了。虽然过程中有分区的修改，但是这是一个操作，是原子、且独立的操作。</p>
+<h4 id="例3：mask或者purge-hive的数据"><a href="#例3：mask或者purge-hive的数据" class="headerlink" title="例3：mask或者purge hive的数据"></a>例3：mask或者purge hive的数据</h4><p>假设有一天你们公司的安全部门过来，让我们把某个用户的所有数据进行mask或者purge操作。那么我们就需要花费很长的时间对很多收到影响的分区进行数据重写。</p>
+<p>假设有一个contact table<br><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2017/08/contracts-table.png" alt=""></p>
+<p>我们对应的hive表是：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">create table contacts</div><div class="line"> (id int, name string, customer string, phone string)</div><div class="line"> clustered by (id) into 2 buckets stored as orc </div><div class="line">tblproperties(&quot;transactional&quot;=&quot;true&quot;);</div></pre></td></tr></table></figure></p>
+<p>安全部门提出以下要求：</p>
+<h5 id="把MaxLeads的所有的电话号码mask掉"><a href="#把MaxLeads的所有的电话号码mask掉" class="headerlink" title="把MaxLeads的所有的电话号码mask掉"></a>把MaxLeads的所有的电话号码mask掉</h5><p>我们可以使用hive内置的mask方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">update contacts set phone = mask(phone) where customer = &apos;MaxLeads&apos;;</div></pre></td></tr></table></figure></p>
+<h5 id="把所有LeadMax的记录都purge掉"><a href="#把所有LeadMax的记录都purge掉" class="headerlink" title="把所有LeadMax的记录都purge掉"></a>把所有LeadMax的记录都purge掉</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">delete from contacts where customer = &apos;LeadMax&apos;;</div></pre></td></tr></table></figure>
+<h5 id="把给定id列表的所有记录都删掉"><a href="#把给定id列表的所有记录都删掉" class="headerlink" title="把给定id列表的所有记录都删掉"></a>把给定id列表的所有记录都删掉</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">delete from contacts where id in ( select id from purge_list );</div></pre></td></tr></table></figure>
+<h4 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h4><p>hive的MERGE和ACID事务让hive里的数据管理工作变得简单、强大、而且兼容于现有的EDW平台。</p>
+<p>参考：<a href="https://zh.hortonworks.com/blog/update-hive-tables-easy-way/" target="_blank" rel="external">https://zh.hortonworks.com/blog/update-hive-tables-easy-way/</a></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/11/22/实时系统的特性/" title="实时系统的特性" itemprop="url">实时系统的特性</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-11-22T06:20:41.000Z" itemprop="datePublished"> 发表于 2017-11-22</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h4 id="关键特性"><a href="#关键特性" class="headerlink" title="关键特性"></a>关键特性</h4><p>首先，各个微服务之间应该是解耦的，最好通过stream进行结构。</p>
+<ul>
+<li>持久化，把数据流暂存起来，供消费。具体持久化的时间，可以根据自己的业务处理</li>
+<li>高性能，最快的处理每个环节，最大化单个处理单元的吞吐量</li>
+<li>易扩展性，主要是易于应对数据量的海量增加</li>
+</ul>
+<p>参考：<a href="https://www.youtube.com/watch?v=4lUxf5pzAHs" target="_blank" rel="external">https://www.youtube.com/watch?v=4lUxf5pzAHs</a></p>
+<h4 id="Move-from-State-to-Flow"><a href="#Move-from-State-to-Flow" class="headerlink" title="Move from State to Flow"></a>Move from State to Flow</h4><p>把微服务中的state转移到flow中去。</p>
+<p>如果多个微服务都更新自己的state到同一个本地存储【比如mysql】，那么这个mysql就会变成一个比较危险的地方。如果我们单个微服务要修改mysql的配置，其他几个服务也要受到影响。</p>
+<p>但是我们期望，每个微服务自己有修改的时候，相互之间没有影响，每个微服务的变化都是独立的。假设有A,B,C三个微服务，如果给C单独的mysql，那么c对于A,B就是完全独立的。然后针对A,B,C的更新操作全部看作business event放入一个queue，然后再由consumer从queue里消费event，针对不同的event进行处理。</p>
+<p>参考：<a href="https://www.youtube.com/watch?v=_xqK0Es9zP4" target="_blank" rel="external">https://www.youtube.com/watch?v=_xqK0Es9zP4</a></p>
+<h4 id="财政部门的flow数据架构"><a href="#财政部门的flow数据架构" class="headerlink" title="财政部门的flow数据架构"></a>财政部门的flow数据架构</h4><table>
+<thead>
+<tr>
+<th>state</th>
+<th>flow</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>共享的DB</td>
+<td>不共享任何，只共享flow</td>
+</tr>
+<tr>
+<td>复杂的语义，需要小心的使用事务</td>
+<td>好的沟通规范</td>
+</tr>
+<tr>
+<td>人们较熟悉</td>
+<td>生活中的真实流程</td>
+</tr>
+<tr>
+<td>控制流 + state更新</td>
+<td>控制流 + offset/message</td>
+</tr>
+</tbody>
+</table>
+<p>bank1和bank2都监听同一个message queue，处理过后持久化到自己的私有db。</p>
+<p>参考：<a href="https://www.youtube.com/watch?v=vG2qxjkqOgA" target="_blank" rel="external">https://www.youtube.com/watch?v=vG2qxjkqOgA</a></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/11/22/Flink特性/" title="Flink特性" itemprop="url">Flink特性</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-11-22T06:13:34.000Z" itemprop="datePublished"> 发表于 2017-11-22</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>stateful operator可以追溯到前面的状态，例如count操作</p>
+<p>stateful</p>
+<ul>
+<li>聚合操作</li>
+<li>complex event processing</li>
+<li>ML pattern</li>
+</ul>
+<p>stateless</p>
+<ul>
+<li>数据抽取</li>
+<li>数据清洗</li>
+<li>stateless的转化</li>
+</ul>
+<h4 id="queryable-state"><a href="#queryable-state" class="headerlink" title="queryable state"></a>queryable state</h4><p>如果设定了一个小时的窗口，在到达一小时之前这个数据一般是不可查询的。但是有了 queryable 是state，我们可以在未到时间窗口的时候，就进行查询计算。</p>
+<h4 id="不想中断数据处理，但又想"><a href="#不想中断数据处理，但又想" class="headerlink" title="不想中断数据处理，但又想"></a>不想中断数据处理，但又想</h4><ul>
+<li>修改worker的数量</li>
+<li>迁移到另一个集群</li>
+<li>修复代码bug</li>
+<li>升级flink</li>
+<li>测试不同的算法</li>
+<li>……</li>
+</ul>
+<p>以上这些对于stateless任务其实是很简单的，直接操作就可以。停掉，重启。对于statefule的任务，就比较棘手。对于添加worker的需求，state需要reload或者redistribute。</p>
+<p>Flink方案：savepoint。</p>
+<ul>
+<li>创建savepoint</li>
+<li>修改</li>
+<li>从savepoint重启</li>
+</ul>
+<p>对于session window的state也是很棘手的，Flink1.1会支持这个场景。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/11/21/flink的容错机制/" title="flink的容错机制" itemprop="url">flink的容错机制</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-11-21T08:44:02.000Z" itemprop="datePublished"> 发表于 2017-11-21</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Flink容错机制保证了，即便出现失败，程序的state也最终reflect每条记录exactly once，也可以降级到at least once。</p>
+<p>这个容错机制持续的描绘出分布式数据流的snapshot。对于少有state的流式应用来说，这些snapshot是非常轻量的，可以在不影响到性能的前提下快速完成。流式应用的state会被存储在配置好的地方(比如master节点、hdfs等)。</p>
+<p>如果程序失败了(机器原因、网络原因、软件问题等)，Flink会踢掉分布式数据流。然后系统会重启所有的operator，然后把他们重置到最近的成功的checkpoint。输入流也被重置到这个state snapshot的点。作为重新启动的并行dataflow的一部分，已经处理过的所有的记录都保证不属于前一个checkpoint state里的一部分。</p>
+<p>注意：默认checkpoint是未启用的。</p>
+<p>注意：要完全保证这个机制，需要数据流的source(一般是消息队列或者broker)能够支持重置位移。例如kafka就可以重置位移。</p>
+<p>注意：以你为Flink的checkpoints是通过分布式snapshot实现的，我们可以交换使用snapshot和checkpoint这两个词语。</p>
+<h2 id="checkpoint"><a href="#checkpoint" class="headerlink" title="checkpoint"></a>checkpoint</h2><p>Flinke容错机制的核心就是为分布式的数据流和操作状态进行snapshot。这些snapshot作为一致性的checkpoint供错误恢复使用。Flink执行snapshot的机制在<a href="http://arxiv.org/abs/1506.08603" target="_blank" rel="external"> “Lightweight Asynchronous Snapshots for Distributed Dataflows”.</a>有介绍。是由<a href="http://research.microsoft.com/en-us/um/people/lamport/pubs/chandy.pdf" target="_blank" rel="external">Chandy-Lamport algorithm</a>实现的，这是一种分布式snapshot方法，而且兼容Flink的执行模型。</p>
+<h4 id="Barrier栅栏"><a href="#Barrier栅栏" class="headerlink" title="Barrier栅栏"></a>Barrier栅栏</h4><p>Flink分布式snapshot的核心元素是stream barrier。这些栅栏被注入到data stream和flow当中作为data stream的一部分存在。barrier永远不会超过记录，flow是严格线性的。barrier负责把data stream中的数据进行切分，切分为两部分，一部分到当前的snapshot中，然后另外一部分是下一个snapshot里的。Each barrier carries the ID of the snapshot whose records it pushed in front of it. barrier并不会中断数据流处理，十分轻量。不同snampshot的多个barrier可能同时存在于stream中，这就是说可能会多个snapshot并发执行。</p>
+<p><img src="https://ci.apache.org/projects/flink/flink-docs-release-1.3/fig/stream_barriers.svg" alt=""></p>
+<p>Stream barrier在stream source被注入到并发的data flow中。snapshot n的barrier的点Sn被注入的位置是source stream知道覆盖到数据的snapshot【The point where the barriers for snapshot n are injected (let’s call it Sn) is the position in the source stream up to which the snapshot covers the data】。例如在kafka中，这个位置就是当前分区上一次访问的记录的offset。这个位置Sn就被汇报给checkpoint coordinator(Flink里就是JobManager)。</p>
+<p>然后barrier继续向下执行。当一个中间oerator抽取到snapshot n的barrier时，它发射一个snapshot n的barrier给它所有的outgoing stream。一旦一个sink operator(DAG的最后)收到barrier n的时候，它就向checkpoint coordinator确认ack snapshot n。所有的sink都ack了这个snapshot的时候，它就被认为已经成功了。</p>
+<p>snapshot n完成之后，job再也不会请求Sn之前的数据记录了，因为这些数据记录已经通过了整个数据流处理拓扑。</p>
+<p><img src="https://ci.apache.org/projects/flink/flink-docs-release-1.3/fig/stream_aligning.svg" alt=""></p>
+<p>接收多个input stream的operator必须排列多个input stream的snapshot barriers。上图内容</p>
+<ul>
+<li>operator接到单个input stream的snapshot barrier n的时候，不能立即处理这个stream的数据，需要等着其他input stream的barrier n也到达的时候才行。否则，它会把snapshot n的数据记录和snapshot n+1的数据记录弄混了。</li>
+<li>已经汇报barrier n的input stream暂时被搁置。收到的数据记录暂时不处理，而是放进一个input buffer</li>
+<li>最后一个stream也收到barrier n的时候，这个operator就发射所有pending的outing 记录，然后自己也发射snapshot n的barrier。</li>
+<li>最后，它恢复处理所有input stream的数据记录，处理在此之前的input buffer里的数据记录，然后处理stream的记录。</li>
+</ul>
+<h4 id="state"><a href="#state" class="headerlink" title="state"></a>state</h4><p>如果operator包含任意形式的state，这个state就必须成为snapshot的一部分。operator statue可能是下面的几种：</p>
+<ul>
+<li>user-defined state。通过转化方法(例如map、filter)直接创建与修改的state。</li>
+<li>system state。例如operator计算的一部分，数据缓存等。典型的例子是window buffer，在window buffer中通常收集聚合数据记录，直到window的计算或者被清空。</li>
+</ul>
+<p>operator在收到了它所有input stream的barrier n，并且没有发送barrier n给它的所有output stream之前，snapshot它的state。在这个时间点，barrier之前的所有的数据记录导致的state更新已经完成，并且没有根据已经执行的的barrier之后的数据记录进行任何更新。因为snapshot 的state可能会很大，它可以被存储在一个可配置的<a href="https://ci.apache.org/projects/flink/flink-docs-release-1.3/ops/state_backends.html" target="_blank" rel="external">后端</a>。默认情况下，是放在JobManager的内存里，对于生产环境，最好放在可靠的存储介质上，例如HDFS。在state被存储之后，operator ack这个checkpoint，发送这个snapshot barrier到output stream中。</p>
+<p>现在snapshot包含了：</p>
+<ul>
+<li>对于每个并行的stream data source，snapshot开始的时候stream中的位置信息或者offset</li>
+<li>对于每个operator，一个指向snapshot state仓库的pointer</li>
+</ul>
+<p><img src="https://ci.apache.org/projects/flink/flink-docs-release-1.3/fig/checkpointing.svg" alt="checkpoint流程图"></p>
+<h2 id="Exactly-Once还是At-least-once"><a href="#Exactly-Once还是At-least-once" class="headerlink" title="Exactly Once还是At least once"></a>Exactly Once还是At least once</h2><p>对于streaming program来说alignment操作可能会造成一些延迟。通差，这部分延迟是早毫秒级的，但是我们见过一些非常突出的延迟。对于那些坚持要求低延迟的应用，Flink有一个开关可以关闭checkpoint过程中的alignment操作。checkpoint snapshot仍然很快。</p>
+<p>当alignment被跳过后，即便一些checkpoint barrier n已经到了，operator也要继续处理所有的输入。这样的话，在snapshot n完结之前，operator也会处理属于 snapshot n+1的数据。再回复的时候，这些记录就会被重复处理，因为他们都被记录在了snapshot n的state snapshot里，所以也会作为checkpoint n之后的数据被replay。</p>
+<p>注意：alignment只会发生在具有多个前辈(join)，或者多个sender(在一个stream被repartition/shuffle)的operator。因此，对于只包含并行处理操作(map, flatmap, filter等)的dataflow来说，at least once模式下其实也是exactly once的。</p>
+<h2 id="异步state-snapshot"><a href="#异步state-snapshot" class="headerlink" title="异步state snapshot"></a>异步state snapshot</h2><p>注意上面描述的机制意味着operator在奥村他们的snapshot state到state backend的时候，需要停止处理输入的记录。这个同步的state snapshot操作会造成一个小的时间延迟。</p>
+<p>如果让这个存储操作异步执行的话，就能让operator继续执行下面的步骤了。要这样的话，operator必循能够生成一个state对象，这个state 对象能够被存储，而且后面operator state的更新不会影响到它。例如，copy-on-write数据结构，rocksdb里有这种操作。</p>
+<p>接收到所有input stream的checkpoint barrier后，operator开始异步snapshot，copy他的state。它会马上发送barrier到它的output，然后继续下面的数据流处理。一旦后台的copy进程完成后，它就会向checkpoint coordinator(JobManager) ack这个checkpoint。 这个checkpoint现在只在所有的sink都收到barrier后，所有的statefule operator都ack他们完成了backup后(这个可能比barrier到达sink还要慢)才算完成。</p>
+<h2 id="recovery"><a href="#recovery" class="headerlink" title="recovery"></a>recovery</h2><p>在这个机制下的recovery很直接：一旦发生失败，Flink选择最新的完成的checkpoint k。然后这个system重新部署整个的分布式数据流，然后给每个operator这个snapshot k对应的state，因为这也是checkpoint k的一部分。而且需要从数据源的Sk的位置开始读取数据流。如果是kafka的话，就是从offset为Sk的地方开始抽取数据。</p>
+<p>如果state是增量snapshot的，那么operator要使用最新full snapshot的state，然后把后续的更新操作应用到这个state上。</p>
+<p><a href="https://ci.apache.org/projects/flink/flink-docs-release-1.3/dev/restart_strategies.html" target="_blank" rel="external">更多</a></p>
+<h2 id="operator-snapshot的实现"><a href="#operator-snapshot的实现" class="headerlink" title="operator snapshot的实现"></a>operator snapshot的实现</h2><p>当operator执行snapshot的时候，有两个部分：同步的和异步的。</p>
+<p>operator和state backend是以java FutureTask的形式提供他们的snapshot的。这个task包含了同步部分已完成的state，但是异步部分可能还在pending状态。异步部分后面会被这个checkpoint的一个后台线程执行。</p>
+<p>使用纯同步方式的operator checkpint会返回一个已经完成了的FutrueTask。如果异步操作需要被执行，就执行FutrueTask的run方法。</p>
+<p>这些task是可以被cancel的，这样stream和其他的资源消费句柄就可以被release了。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/11/21/flink的window/" title="flink的window" itemprop="url">flink的window</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-11-21T07:28:54.000Z" itemprop="datePublished"> 发表于 2017-11-21</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>滑动窗口,sliding windows，比如我们每30s统计一下上一分钟的和。<br><img src="https://flink.apache.org/img/blog/window-intro/window-sliding-window.png" alt=""></p>
+<p>当只有一个窗口处理器的时候，我们就只能串行处理一个数据流。每个流里的书都要去向某个指定的window。在Flink中对于Windows on a full stream are【一个完整的流的窗口】 称为 AllWindows。对很多app来说，数据流都要分发进入多个逻辑流，然后会有window operator处理每个逻辑流。假设我们从多个交通传感器获取交通工具的流量，每个交通传感器都监控不同地址的流量。我们可以把这些信息流通过交通传感器的id进行分组，然后分别并发的计算每个交通传感器所在位置的流量信息。在Flink中，我们把这种partitioned window叫做simple window，因为这是对分布式数据流很常见的处理方式。下图展示了一个通过(sernsorID, count)的流进行数据收集的滚动窗口<br><img src="https://flink.apache.org/img/blog/window-intro/windows-keyed.png" alt=""></p>
+<p>通常，一个window在无穷的数据流中定义了一组有穷数据。这组数据可以是基于时间、计数、时间与技术结合、自定义的一些逻辑去分window。Flink的DataStream API提供了简洁的操作供常用的窗口操作，也留了接口让用户提供自定义的分窗口的逻辑。下面我们详细看一下基于时间与计数的窗口机制。</p>
+<h2 id="基于时间的窗口"><a href="#基于时间的窗口" class="headerlink" title="基于时间的窗口"></a>基于时间的窗口</h2><p>下面是一个每分钟滚动一次的窗口，对所有的数据执行某个函数操作。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">// (sensorId, carCnt)形式的数据流</div><div class="line">val vehicleCnts: DataStream[(Int, Int)] = ...</div><div class="line"></div><div class="line">// 0，1是在数据中的位置</div><div class="line">val tumblingCnts: DataStream[(Int, Int)] = vehicleCnts</div><div class="line">  // 通过sensorId分区</div><div class="line">  .keyBy(0) </div><div class="line">  // 1分钟的窗口时间</div><div class="line">  .timeWindow(Time.minutes(1))</div><div class="line">  // 计算carCnt的和</div><div class="line">  .sum(1) </div><div class="line"></div><div class="line">val slidingCnts: DataStream[(Int, Int)] = vehicleCnts</div><div class="line">  .keyBy(0) </div><div class="line">  // 每30秒触发一次1分钟的数据窗口的执行</div><div class="line">  .timeWindow(Time.minutes(1), Time.seconds(30))</div><div class="line">  .sum(1)</div></pre></td></tr></table></figure></p>
+<p>还有一个时间的概念我们要说明</p>
+<ul>
+<li>processing time。窗口是根据当前主机的1分钟去构建与计算窗口内数据的。</li>
+<li>event time。event产生时的时间。相比processing time更好一些</li>
+<li>Ingestion time。是processing  time和event time的杂交品种。一旦数据到达，就把当前机器的时间戳赋给这个数据记录，然后基于这个时间戳，使用event time去持续处理。</li>
+</ul>
+<h2 id="基于计数的窗口"><a href="#基于计数的窗口" class="headerlink" title="基于计数的窗口"></a>基于计数的窗口</h2><p>一个100个event作为窗口的程序。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">// (sensorId, carCnt)形式的数据流</div><div class="line">val vehicleCnts: DataStream[(Int, Int)] = ...</div><div class="line"></div><div class="line">val tumblingCnts: DataStream[(Int, Int)] = vehicleCnts</div><div class="line">  // 用sensorId分区</div><div class="line">  .keyBy(0)</div><div class="line">  // 100个数据为一个窗口</div><div class="line">  .countWindow(100)</div><div class="line">  .sum(1)</div><div class="line"></div><div class="line">val slidingCnts: DataStream[(Int, Int)] = vehicleCnts</div><div class="line">  .keyBy(0)</div><div class="line">  // 100个数据作为一个窗口，每10个触发一次窗口处理</div><div class="line">  .countWindow(100, 10)</div><div class="line">  .sum(1)</div></pre></td></tr></table></figure></p>
+<h2 id="深入了解"><a href="#深入了解" class="headerlink" title="深入了解"></a>深入了解</h2><p>Flink内置的基于时间、计数的窗口已经覆盖了大多数的应用，但是对于一些需要自定义窗口划分逻辑的，需要使用DataStream API暴露的接口，这些接口给了窗口构建与计算的很有条理的控制方式。</p>
+<p>下图是Flink窗口机制的详细图<br><img src="https://flink.apache.org/img/blog/window-intro/window-mechanics.png" alt=""></p>
+<p>到达window operator的数据会先发给<code>WindowAssigner</code>. <code>WindowAssigner</code>把数据分配给一个或者多个window，也有可能要创建新的window。一个<code>Window</code>是一个一组数据、元数据(对于<code>TimeWindow</code>来说是起止时间)的唯一标识符。注意数据是可以被加入到多个window的，也就是说可能会同时存在多个window。</p>
+<p>每个window拥有一个<code>Trigger</code>，它来决定当前window什么时候计算或者清空。这个trigger在每条数据到来的时候都会检验，如果前面注册的timer超时就会触发操作：执行计算、清空窗口、先计算再清空。<strong>如果只是触发计算，那么所有的数据就还留在window里</strong>，下次触发的时候还可以计算。<strong>一个window在被清空之前一直都可以被计算，这也代表着内存占用</strong>。</p>
+<p>计算函数接收window的所有数据，输出一个或多个结果。DataStream API接受不同类型的计算函数，包括一些预定义的sum、min、max，ReduceFunction、FlodFunciton、WindowFunction等。最常见的是<code>WindowFunction</code>，它接收window对象的元数据，一组window对象，window key(如果是分区的window)作为参数。</p>
+<p>这些组件构成了Flink的窗口机制。我们现在一步步看一下怎样实现自定义窗口逻辑。我们以DataStream[IN]类型的stream开始，用一个key选择器函数来抽取key，获得一个Keydtream[IN, KEY].<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">val input: DataStream[IN] = ...</div><div class="line"></div><div class="line">val keyed: KeyedStream[IN, KEY] = input</div><div class="line">  .keyBy(myKeySel: (IN) =&gt; KEY)</div><div class="line"></div><div class="line"></div><div class="line">// 通过WindowAssigner创建一个分窗口的stream。WindowAssigner 有默认的Trigger实现</div><div class="line">var windowed: WindowedStream[IN, KEY, WINDOW] = keyed</div><div class="line">  .window(myAssigner: WindowAssigner[IN, WINDOW])</div><div class="line">  </div><div class="line">// 不适用WindowAssigner默认的trigger</div><div class="line">windowed = windowed</div><div class="line">  .trigger(myTrigger: Trigger[IN, WINDOW])</div><div class="line"></div><div class="line">// 指定可选的evictor</div><div class="line">windowed = windowed</div><div class="line">  .evictor(myEvictor: Evictor[IN, WINDOW])</div><div class="line"></div><div class="line">// 最后，把window function传递给windowed stream</div><div class="line">val output: DataStream[OUT] = windowed</div><div class="line">  .apply(myWinFunc: WindowFunction[IN, OUT, KEY, WINDOW])</div></pre></td></tr></table></figure></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/11/20/centos上搭建ftp服务器/" title="centos上搭建ftp服务器" itemprop="url">centos上搭建ftp服务器</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-11-20T06:46:02.000Z" itemprop="datePublished"> 发表于 2017-11-20</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>首先安装服务：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">yum install -y vsftpd</div></pre></td></tr></table></figure></p>
+<p>创建只读的dataman用户：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">useradd -s /sbin/nologin dataman</div><div class="line">passwd dataman</div></pre></td></tr></table></figure></p>
+<p>编辑配置文件<code>/etc/vsftpd/vsftpd.conf</code>：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"># 修改默认端口</div><div class="line">listen_port=6888</div><div class="line"></div><div class="line"># 禁止匿名登陆</div><div class="line">anonymous_enable=NO</div><div class="line"></div><div class="line"># 指定用户单独的配置信息所在目录</div><div class="line">user_config_dir=/var/ftp</div><div class="line"></div><div class="line"># 不许用户登陆后切换目录</div><div class="line">chroot_local_user=YES</div></pre></td></tr></table></figure></p>
+<p>然后到<code>/var/ftp</code>下新建dataman用户的ftp配置文件，这里只需要指定他的root目录就好了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">local_root=/server/files</div></pre></td></tr></table></figure></p>
+<p>参考</p>
+<ul>
+<li><a href="https://jasonhzy.github.io/2016/03/11/linux-ftp/" target="_blank" rel="external">https://jasonhzy.github.io/2016/03/11/linux-ftp/</a></li>
+<li><a href="http://cn.linux.vbird.org/linux_server/0410vsftpd.php" target="_blank" rel="external">http://cn.linux.vbird.org/linux_server/0410vsftpd.php</a></li>
+</ul>
+<p>坑</p>
+<p>我们的网络原因导致，测试环境要连接线上的ftp服务器的话，需要通过一层运维提供的HAProxy代理。</p>
+<p>这就引出了ftp服务器主动传输与被动传输的概念区别。</p>
+<p>FTP协议有两种工作方式：PORT方式和PASV方式，中文意思为主动式和被动式。</p>
+<p>PORT（主动）方式的连接过程是：客 户端向服务器的FTP端口（默认是21）发送连接请求，服务器接受连接，建立一条命令链路。当需要传送数据时，客户端在命令链路上用PORT命令告诉服务 器：“我打开了XXXX端口，你过来连接我”。于是服务器从20端口向客户端的XXXX端口发送连接请求，建立一条数据链路来传送数据。</p>
+<p>PASV（被动）方式的连接过程是：客 户端向服务器的FTP端口（默认是21）发送连接请求，服务器接受连接，建立一条命令链路。当需要传送数据时，服务器在命令链路上用PASV命令告诉客户 端：“我打开了XXXX端口，你过来连接我”。于是客户端向服务器的XXXX端口发送连接请求，建立一条数据链路来传送数据。</p>
+<h2 id="概括："><a href="#概括：" class="headerlink" title="概括： "></a>概括： </h2><p>主动模式：服务器向客户端敲门，然后客户端开门<br>被动模式：客户端向服务器敲门，然后服务器开门</p>
+<p>所以，如果你是如果通过代理上网的话，就不能用主动模式，因为服务器敲的是上网代理服务器的门，而不是敲客户端的门<br>而且有时候，客户端也不是轻易就开门的，因为有防火墙阻挡，除非客户端开放大于1024的高端端口</p>
+<p>vsftpd服务器端修改配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"># passive</div><div class="line">tcp_wrappers=YES</div><div class="line">pasv_promiscuous=NO</div><div class="line"># 这个比较关键，10.103.70.27是我们的haproxy所在的IP</div><div class="line">pasv_address=10.103.70.27</div><div class="line">port_enable=YES</div><div class="line">port_promiscuous=NO</div><div class="line">pasv_enable=YES</div><div class="line">pasv_min_port=10000</div><div class="line">pasv_max_port=10010</div></pre></td></tr></table></figure></p>
+<p>同时，HAProxy也需要配置到这些端口范围<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">listen ftp</div><div class="line">    bind *:6888,*:10000-10010</div><div class="line">    mode tcp</div><div class="line">    server ftpserver 10.2.19.62 check inter 3000 port 6888</div></pre></td></tr></table></figure></p>
+<ul>
+<li><a href="http://blog.sina.com.cn/s/blog_7f1d56650102v57p.html" target="_blank" rel="external">http://blog.sina.com.cn/s/blog_7f1d56650102v57p.html</a></li>
+<li><a href="http://www.cnblogs.com/exclm/archive/2009/05/08/1452893.html" target="_blank" rel="external">http://www.cnblogs.com/exclm/archive/2009/05/08/1452893.html</a></li>
+<li><a href="http://blog.sina.com.cn/s/blog_5cdb72780100jwjt.html" target="_blank" rel="external">http://blog.sina.com.cn/s/blog_5cdb72780100jwjt.html</a></li>
+<li><a href="https://serverfault.com/questions/441721/ftp-through-haproxy" target="_blank" rel="external">https://serverfault.com/questions/441721/ftp-through-haproxy</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/11/16/ETL日常调度任务类型的思考/" title="ETL日常调度任务类型的思考" itemprop="url">ETL日常调度任务类型的思考</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-11-16T07:27:27.000Z" itemprop="datePublished"> 发表于 2017-11-16</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>对于有些需要等待上游非同质类型、而且是外部任务的任务方案：</p>
+<h2 id="信号灯"><a href="#信号灯" class="headerlink" title="信号灯"></a>信号灯</h2><p>即所有的每个任务在完成之后，都设置一个信号灯，然后后面的任务需要此信号灯满足某个信号的时候才能触发执行。</p>
+<p>信号灯的查看方式可以有多种：</p>
+<ul>
+<li>数据库访问，上游直接修改数据库，下游直接轮询数据库</li>
+<li>rest接口访问，上有直接通过中心接口修改数据库，下游轮询一个中心接口</li>
+<li>发布订阅模式，中间件设置eventbus</li>
+</ul>
+<p>执行：sql查询、接口与状态确认</p>
+<h2 id="提供shell"><a href="#提供shell" class="headerlink" title="提供shell"></a>提供shell</h2><p>具体咋依赖，全都自己去写，这里啥也不限制，而且啥也不伺候</p>
+<p>安全系数低</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/11/15/druid设计/" title="druid设计" itemprop="url">druid设计</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-11-15T06:28:59.000Z" itemprop="datePublished"> 发表于 2017-11-15</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="segment"><a href="#segment" class="headerlink" title="segment"></a>segment</h2><p>Druid的索引是存在segment文件中的，segment文件是按照时间分区的。一个segment文件对应一个时间间隔，时间间隔根据配置项<code>granularitySpec</code>里的<code>segmentGranularity</code>进行配置。推荐segment文件大小设置在300~700M之间。如果你的segment文件太大，那么请考虑修改时间间隔，或者为数据做分区，修改<code>partitioningSpec</code>的<code>targetPartitionSize</code>参数(可以试试五百万行)。</p>
+<h4 id="文件数据结构"><a href="#文件数据结构" class="headerlink" title="文件数据结构"></a>文件数据结构</h4><p>segment是列式存储的：每一列都在不同的数据结构中。每个列都分开存储，druid就可以只访问查询应用到的列的数据。有三个基本的列类型：timestamp、维度、metric。</p>
+<p><img src="http://druid.io/docs/img/druid-column-types.png" alt="实例"></p>
+<p>timestamp和metric列比较简单：都是int或者float数组，使用LZ4算法压缩。一个query只要知道他需要查询那些行，就解压相关列的这部分文件，抽取对应的行，然后执行聚合计算操作即可。</p>
+<p>dimension列有些不同，它要支持filter和groupby操作，所以需要下面三个数据结构</p>
+<ul>
+<li>一个字典，把值映射成int类型的id</li>
+<li>使用上面字典编码的列值的list</li>
+<li>列中每个不同的列指，都要弄一个bitmap对应所有的行，说明哪些行带有这个列指</li>
+</ul>
+<p>把原本的值映射成int的id是为了节省空间。上面第三个里的bitmap也就是倒排索引(inverted indexes)可以提供快速的过滤工作。最后，上面第二个结构里的值，是用来处理group by和topN拆线呢的。也就是说，基于filter的单独聚合指标不要要接触到第二个数据结构中的维度值。</p>
+<p>基于上图中的数据，看一下例子，下面是针对列<code>Page</code>的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">1: 映射编码的字典</div><div class="line">  &#123;</div><div class="line">    &quot;Justin Bieber&quot;: 0,</div><div class="line">    &quot;Ke$ha&quot;:         1</div><div class="line">  &#125;</div><div class="line"></div><div class="line">2: 按照1中映射后，这一列的字段值</div><div class="line">  [0,</div><div class="line">   0,</div><div class="line">   1,</div><div class="line">   1]</div><div class="line"></div><div class="line">3: 每一个或者说每一种列值都有自己的Bitmaps</div><div class="line">  value=&quot;Justin Bieber&quot;: [1,1,0,0]</div><div class="line">  value=&quot;Ke$ha&quot;:         [0,0,1,1]</div></pre></td></tr></table></figure></p>
+<p>注意bitmap数据结构与前面个不同，前两个是随数据量线性增长的，而bitmap是数据量 * 每列各种值的个数。</p>
+<h4 id="多值的列"><a href="#多值的列" class="headerlink" title="多值的列"></a>多值的列</h4><p>假设<code>Page</code>的第二行数据为<code>Ke$ha,Justin Bieber</code>，那么数据结构变化为下面：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">1: Dictionary that encodes column values</div><div class="line">  &#123;</div><div class="line">    &quot;Justin Bieber&quot;: 0,</div><div class="line">    &quot;Ke$ha&quot;:         1</div><div class="line">  &#125;</div><div class="line"></div><div class="line">2: Column data</div><div class="line">  [0,</div><div class="line">   [0,1],  &lt;--Row value of multi-value column can have array of values</div><div class="line">   1,</div><div class="line">   1]</div><div class="line"></div><div class="line">3: Bitmaps - one for each unique value</div><div class="line">  value=&quot;Justin Bieber&quot;: [1,1,0,0]</div><div class="line">  value=&quot;Ke$ha&quot;:         [0,1,1,1]</div><div class="line">                            ^</div><div class="line">                            |</div><div class="line">                            |</div><div class="line">    Multi-value column has multiple non-zero entries</div></pre></td></tr></table></figure></p>
+<h4 id="命名约定"><a href="#命名约定" class="headerlink" title="命名约定"></a>命名约定</h4><p>segment文件的标识符一般是由数据源、开始时间、结束时间、版本构成的。如果数据在某个时间范围外还sharded了，那么也会带有一个分区数字。</p>
+<p>例子：datasource_intervalStart_intervalEnd_version_partitionNum</p>
+<h4 id="segment组件"><a href="#segment组件" class="headerlink" title="segment组件"></a>segment组件</h4><p>一个segment由几个文件组成</p>
+<ul>
+<li>version.bin。  4个字节，代表segment的version。</li>
+<li>meta.smoosh。带有其他smoosh文件内容元数据(文件名、offset)的文件。</li>
+<li>xxxx.smoosh。多个这种文件，都是二进制数据。</li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/11/15/hive2版本亮点/" title="hive2版本亮点" itemprop="url">hive2版本亮点</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-11-15T02:53:01.000Z" itemprop="datePublished"> 发表于 2017-11-15</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ul>
+<li>LLAP。</li>
+</ul>
+<p>Live Long and Process智能将数据缓存到多台机器的内存中，并允许所有客户端共享这些缓存的数据，同时保留了弹性伸缩能力。开启LLAP后，性能相比1版本提升25倍。</p>
+<p>LLAP提供了一个高级的执行模式，他启用一个长时间存活的守护程序去和HDFS DataNode直接交互，也是一个紧密集成的DAG框架。这个守护程序中加入了缓存、预抓取、查询过程和访问控制等功能。短小的查询由守护程序执行，大的重的操作由YARN执行。</p>
+<ul>
+<li>支持使用HPL/SQL的存储过程</li>
+</ul>
+<p>支持使用变量、表达式、控制流声明、迭代来实现业务逻辑，支持使用异常处理程序和条件处理器来实现高级错误处理。</p>
+<p>使用sql on hadoop更加动态：支持使用高级表达式、各种内置函数，基于用户配置、先前查询的结果、来自文件或者非hadoop数据源的数据、即时动态的生成SQL条件。</p>
+<p>利用已有的存储过程SQL，提供函数和声明。</p>
+<p>方便集成和支持多种类型数据仓库，可以实现单个脚本处理hadoop、RDBMS、Nossql等多个系统的数据。</p>
+<ul>
+<li>更智能的成本优化其CBO</li>
+<li>提供全面的监控和诊断工具。hive server2的UI界面、LLAP 的UI、Tez的UI等。</li>
+</ul>
+<p>升级只需要升级hive的元数据库信息即可，2版本提供了升级脚本<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">hive-metastore/bin/schematool -upgradeSchema -dbType</div></pre></td></tr></table></figure></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
 
 </div>
 
@@ -992,7 +915,7 @@ RSS订阅
 
 
   <nav id="page-nav" class="clearfix">
-    <a class="extend prev" rel="prev" href="/page/3/"><span></span>Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/5/">Next<span></span></a>
+    <a class="extend prev" rel="prev" href="/page/3/"><span></span>Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/5/">Next<span></span></a>
   </nav>
 
 </div>
@@ -1013,6 +936,10 @@ RSS订阅
 		<ul class="clearfix">
 		
 			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
 			
 		
@@ -1025,7 +952,7 @@ RSS订阅
 			
 		
 			
-				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
 			
 		
 			
@@ -1033,11 +960,7 @@ RSS订阅
 			
 		
 			
-				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
 			
 		
 			
@@ -1045,7 +968,7 @@ RSS订阅
 			
 		
 			
-				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
 			
 		
 			
@@ -1065,15 +988,19 @@ RSS订阅
 			
 		
 			
-				<li><a href="/tags/2015a/" title="2015a">2015a<sup>1</sup></a></li>
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
 			
 		
 			
@@ -1081,15 +1008,11 @@ RSS订阅
 			
 		
 			
-				<li><a href="/tags/django/" title="django">django<sup>1</sup></a></li>
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Flume/" title="Flume">Flume<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
 			
 		
 		</ul>

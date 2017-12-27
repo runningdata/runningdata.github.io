@@ -1,0 +1,617 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>celery上手 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="首先我们需要有一个celery实例，也就是celery app。有了这个实例我们才能创建task、管理worker，只需要把这个实例作为moduel import进来就可以了。
+创建实例，并创建task：1234567from celery import Celeryapp = Celery(&apos;tasks&apos;, broker=&apos;amqp://guest@localhost//&apos;)@app.taskd">
+<meta property="og:type" content="article">
+<meta property="og:title" content="celery上手">
+<meta property="og:url" content="http://willcup.com/2016/12/05/celery上手/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="首先我们需要有一个celery实例，也就是celery app。有了这个实例我们才能创建task、管理worker，只需要把这个实例作为moduel import进来就可以了。
+创建实例，并创建task：1234567from celery import Celeryapp = Celery(&apos;tasks&apos;, broker=&apos;amqp://guest@localhost//&apos;)@app.taskd">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.781Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="celery上手">
+<meta name="twitter:description" content="首先我们需要有一个celery实例，也就是celery app。有了这个实例我们才能创建task、管理worker，只需要把这个实例作为moduel import进来就可以了。
+创建实例，并创建task：1234567from celery import Celeryapp = Celery(&apos;tasks&apos;, broker=&apos;amqp://guest@localhost//&apos;)@app.taskd">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/celery上手/" title="celery上手" itemprop="url">celery上手</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:09:24.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#实际使用celery"><span class="toc-text">实际使用celery</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Canvas：工作流"><span class="toc-text">Canvas：工作流</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#primitive"><span class="toc-text">primitive</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#groups"><span class="toc-text">groups</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#chain"><span class="toc-text">chain</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#chord"><span class="toc-text">chord</span></a></li></ol></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#路由"><span class="toc-text">路由</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#远程控制"><span class="toc-text">远程控制</span></a></li></ol></li></ol></li></ol>
+		
+		</div>
+		
+		<p>首先我们需要有一个celery实例，也就是celery app。有了这个实例我们才能创建task、管理worker，只需要把这个实例作为moduel import进来就可以了。</p>
+<p>创建实例，并创建task：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> celery <span class="keyword">import</span> Celery</div><div class="line"></div><div class="line">app = Celery(<span class="string">'tasks'</span>, broker=<span class="string">'amqp://guest@localhost//'</span>)</div><div class="line"></div><div class="line"><span class="meta">@app.task</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">add</span><span class="params">(x, y)</span>:</span></div><div class="line">    <span class="keyword">return</span> x + y</div></pre></td></tr></table></figure></p>
+<p>启动worker：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">celery -A tasks worker --loglevel=info</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">-------------- celery@halcyon.local v3.1 (Cipater)</div><div class="line">---- **** -----</div><div class="line">--- * ***  * -- [Configuration]</div><div class="line">-- * - **** --- . broker:      amqp://guest@localhost:5672//</div><div class="line">- ** ---------- . app:         __main__:0x1012d8590</div><div class="line">- ** ---------- . concurrency: 8 (processes)</div><div class="line">- ** ---------- . events:      OFF (enable -E to monitor this worker)</div><div class="line">- ** ----------</div><div class="line">- *** --- * --- [Queues]</div><div class="line">-- ******* ---- . celery:      exchange:celery(direct) binding:celery</div><div class="line">--- ***** -----</div><div class="line"></div><div class="line">[2012-06-08 16:23:51,078: WARNING/MainProcess] celery@halcyon.local has started.</div></pre></td></tr></table></figure>
+<ul>
+<li>concurrency 是worker进程的并发数据，默认是cpu个数。需要视情况而定，cpu密集型的就少一些，IO密集型的就多一些。除了默认的prefork 池，celery还支持eventlet、gevent以及threads。</li>
+<li>event。 启用后celery就发送这个worker里的监控event。这可以被celery events、flower使用。</li>
+<li>queue。代表这个worker会消费的队列。</li>
+</ul>
+<p>调用task：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> tasks <span class="keyword">import</span> add</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>add.delay(<span class="number">4</span>, <span class="number">4</span>)</div></pre></td></tr></table></figure></p>
+<p>使用delay()方法调用task，它是apply_async()方法的简写。然后我们可以去worker的console观察任务执行了。</p>
+<p>调用task放回的对象是AsyncResult实例，它可以用来获取当前task的状态，等待task结束后，获取task的返回值。默认是没有启用的，要使用的话需要给celery配置一个result backend。</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">app = Celery(<span class="string">'tasks'</span>, backend=<span class="string">'redis://localhost'</span>, broker=<span class="string">'amqp://'</span>)</div></pre></td></tr></table></figure>
+<p>这里是使用redis作为task状态和结果的存储介质。再次调用<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span>result = add.delay(<span class="number">4</span>, <span class="number">4</span>)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>result.ready()</div><div class="line"><span class="keyword">False</span></div><div class="line"><span class="comment"># 一般并不会直接获取这个结果，这样就把异步调用弄成同步调用一样了</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>result.get(timeout=<span class="number">1</span>)</div><div class="line"><span class="number">8</span></div><div class="line"><span class="comment">## 当出现异常的时候，get方法默认也会抛出这个异常，可以使用propagate来阻止</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>result.get(propagate=<span class="keyword">False</span>)</div><div class="line"><span class="comment">## 获取异常堆栈</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>result.traceback</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>res.failed()</div><div class="line"><span class="keyword">True</span></div><div class="line"></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>res.successful()</div><div class="line"><span class="keyword">False</span></div><div class="line"><span class="comment"># 一个task的典型status历程：PENDING -&gt; STARTED -&gt; SUCCESS</span></div><div class="line"><span class="comment"># 重试的task：PENDING -&gt; STARTED -&gt; RETRY -&gt; STARTED -&gt; RETRY -&gt; STARTED -&gt; SUCCESS</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>res.state</div><div class="line"><span class="string">'FAILURE'</span></div></pre></td></tr></table></figure></p>
+<p>要使配置马上生效的话，可以调用update方法<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">app.conf.update(</div><div class="line">    CELERY_TASK_SERIALIZER=<span class="string">'json'</span>,</div><div class="line">    CELERY_ACCEPT_CONTENT=[<span class="string">'json'</span>],  <span class="comment"># Ignore other content</span></div><div class="line">    CELERY_RESULT_SERIALIZER=<span class="string">'json'</span>,</div><div class="line">    CELERY_TIMEZONE=<span class="string">'Europe/Oslo'</span>,</div><div class="line">    CELERY_ENABLE_UTC=<span class="keyword">True</span>,</div><div class="line">)</div></pre></td></tr></table></figure></p>
+<p>要是大型项目，弄一个特定的配置module比较好。最好不要硬编码周期任务和task路由，把这些放在一个集中的位置，方便控制。比如系统管理员在系统故障的时候做一些简单的微调什么的。</p>
+<p>使用<code>app.config_from_object()</code>方法，使celery实例使用一个配置module。<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">app.config_from_object(<span class="string">'celeryconfig'</span>)</div></pre></td></tr></table></figure></p>
+<p>celeryconfig.py:<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">BROKER_URL = <span class="string">'amqp://'</span></div><div class="line">CELERY_RESULT_BACKEND = <span class="string">'rpc://'</span></div><div class="line"></div><div class="line">CELERY_TASK_SERIALIZER = <span class="string">'json'</span></div><div class="line">CELERY_RESULT_SERIALIZER = <span class="string">'json'</span></div><div class="line">CELERY_ACCEPT_CONTENT=[<span class="string">'json'</span>]</div><div class="line">CELERY_TIMEZONE = <span class="string">'Europe/Oslo'</span></div><div class="line">CELERY_ENABLE_UTC = <span class="keyword">True</span></div></pre></td></tr></table></figure></p>
+<p>注意，这个module应该可以import到才对。配置文件中可以指定路由、注解等很多东西。<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">CELERY_ANNOTATIONS = &#123;</div><div class="line">    <span class="string">'tasks.add'</span>: &#123;<span class="string">'rate_limit'</span>: <span class="string">'10/m'</span>&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">CELERY_ROUTES = &#123;</div><div class="line">    <span class="string">'tasks.add'</span>: <span class="string">'low-priority'</span>,</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>要是使用rabbitMQ或者Redis作为broker的话，还可以直接通过命令进行配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">celery -A tasks control rate_limit tasks.add 10/m</div></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="实际使用celery"><a href="#实际使用celery" class="headerlink" title="实际使用celery"></a>实际使用celery</h2><p>项目结构：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">proj/__init__.py</div><div class="line">    /celery.py</div><div class="line">    /tasks.py</div></pre></td></tr></table></figure></p>
+<p>celery.py文件内容：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> absolute_import</div><div class="line"></div><div class="line"><span class="keyword">from</span> celery <span class="keyword">import</span> Celery</div><div class="line"></div><div class="line">app = Celery(<span class="string">'proj'</span>,</div><div class="line">             broker=<span class="string">'amqp://'</span>,</div><div class="line">             backend=<span class="string">'amqp://'</span>,</div><div class="line">             include=[<span class="string">'proj.tasks'</span>])</div><div class="line"></div><div class="line"><span class="comment"># Optional configuration, see the application user guide.</span></div><div class="line">app.conf.update(</div><div class="line">    CELERY_TASK_RESULT_EXPIRES=<span class="number">3600</span>,</div><div class="line">)</div><div class="line"></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</div><div class="line">    app.start()</div></pre></td></tr></table></figure></p>
+<p>在celery中可以创建自己的实例，然后在其他地方import这个实例就可以使用了。</p>
+<p>注意一下include，应该把自定义的task的module填写进来，这样celery实例启动的时候就会加载这些module。</p>
+<p>我们的proj/tasks.py：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> absolute_import</div><div class="line"></div><div class="line"><span class="keyword">from</span> proj.celery <span class="keyword">import</span> app</div><div class="line"></div><div class="line"></div><div class="line"><span class="meta">@app.task</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">add</span><span class="params">(x, y)</span>:</span></div><div class="line">    <span class="keyword">return</span> x + y</div><div class="line"></div><div class="line"></div><div class="line"><span class="meta">@app.task</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">mul</span><span class="params">(x, y)</span>:</span></div><div class="line">    <span class="keyword">return</span> x * y</div><div class="line"></div><div class="line"></div><div class="line"><span class="meta">@app.task</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">xsum</span><span class="params">(numbers)</span>:</span></div><div class="line">    <span class="keyword">return</span> sum(numbers)</div></pre></td></tr></table></figure></p>
+<p>启动后要停掉worker的话，只需要直接ctrl + c就可以了。</p>
+<p>生产环境中需要以守护进程的形式启动worker，使用<code>celery multi</code>任务就可以了，它可以启动一个或多个worker。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">celery multi start w1 -A proj -l info</div><div class="line">celery multi v3.1.1 (Cipater)</div><div class="line">&gt; Starting nodes...</div><div class="line">    &gt; w1.halcyon.local: OK</div><div class="line"></div><div class="line">$ celery  multi restart w1 -A proj -l info</div><div class="line">celery multi v3.1.1 (Cipater)</div><div class="line">&gt; Stopping nodes...</div><div class="line">    &gt; w1.halcyon.local: TERM -&gt; 64024</div><div class="line">&gt; Waiting for 1 node.....</div><div class="line">    &gt; w1.halcyon.local: OK</div><div class="line">&gt; Restarting node w1.halcyon.local: OK</div><div class="line">celery multi v3.1.1 (Cipater)</div><div class="line">&gt; Stopping nodes...</div><div class="line">    &gt; w1.halcyon.local: TERM -&gt; 64052</div><div class="line">    </div><div class="line">celery multi stop w1 -A proj -l info</div></pre></td></tr></table></figure>
+<p>stop命令是异步的，这样就不用hang，等着worker停止了。为了我保证所有的task能够完成，也可以使用stopwait方法。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">celery multi stopwait w1 -A proj -l info</div></pre></td></tr></table></figure></p>
+<p>下面是加上指定pid，和log的启动命令：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">$ mkdir -p /var/run/celery</div><div class="line">$ mkdir -p /var/log/celery</div><div class="line">$ celery multi start w1 -A proj -l info --pidfile=/var/run/celery/%n.pid \</div><div class="line">                                        --logfile=/var/log/celery/%n%I.log</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">celery multi start 10 -A proj -l info -Q:1-3 images,video -Q:4,5 data \</div><div class="line">   -Q default -L:4,5 debug</div></pre></td></tr></table></figure>
+<h4 id="Canvas：工作流"><a href="#Canvas：工作流" class="headerlink" title="Canvas：工作流"></a>Canvas：工作流</h4><p>使用subtask搞定，它封装了单个task的参数，可以传递给后面的方法。</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span>add.subtask((<span class="number">2</span>, <span class="number">2</span>), countdown=<span class="number">10</span>)</div><div class="line">tasks.add(<span class="number">2</span>, <span class="number">2</span>)</div></pre></td></tr></table></figure>
+<p>可以替换为:<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span>add.s(<span class="number">2</span>, <span class="number">2</span>)</div><div class="line">tasks.add(<span class="number">2</span>, <span class="number">2</span>)</div></pre></td></tr></table></figure></p>
+<p>比较牛逼的地方在于，他竟然可以定义偏函数<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span>s1 = add.s(<span class="number">2</span>, <span class="number">2</span>)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>res = s1.delay()</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>res.get()</div><div class="line"><span class="number">4</span></div><div class="line"></div><div class="line"><span class="comment"># 空的是前面的参数，后面的是2</span></div><div class="line"><span class="comment"># incomplete partial: add(?, 2)</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>s2 = add.s(<span class="number">2</span>)</div><div class="line"></div><div class="line"><span class="comment"># resolves the partial: add(8, 2)</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>res = s2.delay(<span class="number">8</span>)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>res.get()</div><div class="line"><span class="number">10</span></div><div class="line"></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>s3 = add.s(<span class="number">2</span>, <span class="number">2</span>, debug=<span class="keyword">True</span>)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>s3.delay(debug=<span class="keyword">False</span>)   <span class="comment"># debug is now False.</span></div></pre></td></tr></table></figure></p>
+<h4 id="primitive"><a href="#primitive" class="headerlink" title="primitive"></a>primitive</h4><ul>
+<li>group</li>
+<li>map</li>
+<li>chain</li>
+<li>starmap</li>
+<li>chord</li>
+<li>chunks<br>这些primitive本身就是subtask，所以它们可以组合成工作流。</li>
+</ul>
+<h6 id="groups"><a href="#groups" class="headerlink" title="groups"></a>groups</h6><p>group并行调用多个task，返回一串结果。<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> celery <span class="keyword">import</span> group</div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> proj.tasks <span class="keyword">import</span> add</div><div class="line"></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>group(add.s(i, i) <span class="keyword">for</span> i <span class="keyword">in</span> xrange(<span class="number">10</span>))().get()</div><div class="line">[<span class="number">0</span>, <span class="number">2</span>, <span class="number">4</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">10</span>, <span class="number">12</span>, <span class="number">14</span>, <span class="number">16</span>, <span class="number">18</span>]</div></pre></td></tr></table></figure></p>
+<p>结合偏函数使用group：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span>g = group(add.s(i) <span class="keyword">for</span> i <span class="keyword">in</span> xrange(<span class="number">10</span>))</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>g(<span class="number">10</span>).get()</div><div class="line">[<span class="number">10</span>, <span class="number">11</span>, <span class="number">12</span>, <span class="number">13</span>, <span class="number">14</span>, <span class="number">15</span>, <span class="number">16</span>, <span class="number">17</span>, <span class="number">18</span>, <span class="number">19</span>]</div></pre></td></tr></table></figure></p>
+<h6 id="chain"><a href="#chain" class="headerlink" title="chain"></a>chain</h6><p>有序调用一系列task<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> celery <span class="keyword">import</span> chain</div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> proj.tasks <span class="keyword">import</span> add, mul</div><div class="line"></div><div class="line"><span class="comment"># (4 + 4) * 8</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>chain(add.s(<span class="number">4</span>, <span class="number">4</span>) | mul.s(<span class="number">8</span>))().get()</div><div class="line"><span class="number">64</span></div></pre></td></tr></table></figure></p>
+<p>偏函数：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># (? + 4) * 8</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>g = chain(add.s(<span class="number">4</span>) | mul.s(<span class="number">8</span>))</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>g(<span class="number">4</span>).get()</div><div class="line"><span class="number">64</span></div></pre></td></tr></table></figure></p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span>(add.s(<span class="number">4</span>, <span class="number">4</span>) | mul.s(<span class="number">8</span>))().get()</div><div class="line"><span class="number">64</span></div></pre></td></tr></table></figure>
+<h6 id="chord"><a href="#chord" class="headerlink" title="chord"></a>chord</h6><p>带有一个回调函数的一组task。<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> celery <span class="keyword">import</span> chord</div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> proj.tasks <span class="keyword">import</span> add, xsum</div><div class="line"></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>chord((add.s(i, i) <span class="keyword">for</span> i <span class="keyword">in</span> xrange(<span class="number">10</span>)), xsum.s())().get()</div><div class="line"><span class="number">90</span></div></pre></td></tr></table></figure></p>
+<p>被chain到其他task的group自动转为chord：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span>(group(add.s(i, i) <span class="keyword">for</span> i <span class="keyword">in</span> xrange(<span class="number">10</span>)) | xsum.s())().get()</div><div class="line"><span class="number">90</span></div></pre></td></tr></table></figure></p>
+<p>结合多种subtask使用：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span>upload_document.s(file) | group(apply_filter.s() <span class="keyword">for</span> filter <span class="keyword">in</span> filters)</div></pre></td></tr></table></figure></p>
+<h4 id="路由"><a href="#路由" class="headerlink" title="路由"></a>路由</h4><p>主要是针对consumer/worker和producer各自的队列</p>
+<h4 id="远程控制"><a href="#远程控制" class="headerlink" title="远程控制"></a>远程控制</h4><p>使用RabbitMQ、或者Redis作为broker的话可以在运行时控制与查看worker的状态。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ celery -A proj inspect active</div></pre></td></tr></table></figure></p>
+<p>这是查看当前正在运行的task。</p>
+<p>参考：</p>
+<ul>
+<li><a href="http://docs.celeryproject.org/en/latest/getting-started/first-steps-with-celery.html" target="_blank" rel="external">http://docs.celeryproject.org/en/latest/getting-started/first-steps-with-celery.html</a></li>
+<li><a href="http://docs.celeryproject.org/en/latest/getting-started/next-steps.html" target="_blank" rel="external">http://docs.celeryproject.org/en/latest/getting-started/next-steps.html</a> </li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/12/05/celery上手/" data-title="celery上手 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/12/05/azkaban源码追踪(1)-——-上传zip文件/" title="azkaban源码追踪(1)-——-上传zip文件">
+  <strong>上一篇：</strong><br/>
+  <span>
+  azkaban源码追踪(1)-——-上传zip文件</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/12/05/Ember-data-定制化adapter/"  title="Ember-data-定制化adapter">
+ <strong>下一篇：</strong><br/> 
+ <span>Ember-data-定制化adapter
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/12/05/celery上手/" data-title="celery上手" data-url="http://willcup.com/2016/12/05/celery上手/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#实际使用celery"><span class="toc-number">1.</span> <span class="toc-text">实际使用celery</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Canvas：工作流"><span class="toc-number">1.0.1.</span> <span class="toc-text">Canvas：工作流</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#primitive"><span class="toc-number">1.0.2.</span> <span class="toc-text">primitive</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#groups"><span class="toc-number">1.0.2.0.1.</span> <span class="toc-text">groups</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#chain"><span class="toc-number">1.0.2.0.2.</span> <span class="toc-text">chain</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#chord"><span class="toc-number">1.0.2.0.3.</span> <span class="toc-text">chord</span></a></li></ol></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#路由"><span class="toc-number">1.0.3.</span> <span class="toc-text">路由</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#远程控制"><span class="toc-number">1.0.4.</span> <span class="toc-text">远程控制</span></a></li></ol></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

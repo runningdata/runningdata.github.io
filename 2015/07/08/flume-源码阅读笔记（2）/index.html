@@ -3,6 +3,16 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
   
     <title>flume 源码阅读笔记（2） | Will&#39;s Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
@@ -21,7 +31,7 @@ Channel连接source和sink，可以看做是MQ或者buffer，保证自身线程�
 <meta property="og:description" content="通过寻找LifecycleAware的子类就可以发现，所有flume的component都继承了这个接口。下面是几个主要的
 
 Channel连接source和sink，可以看做是MQ或者buffer，保证自身线程安全。实在是懒得翻译，直接copy文档A channel connects a Source to a Sink. The source acts as producer while th">
-<meta property="og:updated_time" content="2016-10-28T02:54:06.781Z">
+<meta property="og:updated_time" content="2017-12-27T13:39:20.405Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="flume 源码阅读笔记（2）">
 <meta name="twitter:description" content="通过寻找LifecycleAware的子类就可以发现，所有flume的component都继承了这个接口。下面是几个主要的
@@ -63,8 +73,6 @@ Channel连接source和sink，可以看做是MQ或者buffer，保证自身线程�
 						<li><a href="/">首页</a></li>
 					
 						<li><a href="/archives">归档</a></li>
-					
-						<li><a href="/node_modules">测试</a></li>
 					
 						<li><a href="/about">关于</a></li>
 					
@@ -242,6 +250,10 @@ var duoshuoQuery = {short_name:"ruoyuchen"};
 		<ul class="clearfix">
 		
 			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
 			
 		
@@ -254,7 +266,7 @@ var duoshuoQuery = {short_name:"ruoyuchen"};
 			
 		
 			
-				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
 			
 		
 			
@@ -262,11 +274,7 @@ var duoshuoQuery = {short_name:"ruoyuchen"};
 			
 		
 			
-				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
 			
 		
 			
@@ -274,7 +282,7 @@ var duoshuoQuery = {short_name:"ruoyuchen"};
 			
 		
 			
-				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
 			
 		
 			
@@ -294,15 +302,19 @@ var duoshuoQuery = {short_name:"ruoyuchen"};
 			
 		
 			
-				<li><a href="/tags/2015a/" title="2015a">2015a<sup>1</sup></a></li>
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
 			
 		
 			
@@ -310,15 +322,11 @@ var duoshuoQuery = {short_name:"ruoyuchen"};
 			
 		
 			
-				<li><a href="/tags/django/" title="django">django<sup>1</sup></a></li>
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Flume/" title="Flume">Flume<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
 			
 		
 		</ul>

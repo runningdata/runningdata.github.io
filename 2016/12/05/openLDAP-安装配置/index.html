@@ -1,0 +1,618 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>openLDAP-安装配置 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="介绍LDAP是一个许多传统高级系统管理员喜欢的服务，但是门槛高。这里及你进介绍一些实用的规则，最下面会有一些参考。
+LDAP在局域网中的角色openLDAP实现了Lightweight Directory Access Protocol协议。目录本身是一个树结构的、可读的数据库。
+我们使用openLDAP提供了一个网络验证中心，每个用户登录的时候都要到这里验证身份，如果是第一次的就自动创建他们的h">
+<meta property="og:type" content="article">
+<meta property="og:title" content="openLDAP-安装配置">
+<meta property="og:url" content="http://willcup.com/2016/12/05/openLDAP-安装配置/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="介绍LDAP是一个许多传统高级系统管理员喜欢的服务，但是门槛高。这里及你进介绍一些实用的规则，最下面会有一些参考。
+LDAP在局域网中的角色openLDAP实现了Lightweight Directory Access Protocol协议。目录本身是一个树结构的、可读的数据库。
+我们使用openLDAP提供了一个网络验证中心，每个用户登录的时候都要到这里验证身份，如果是第一次的就自动创建他们的h">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.789Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="openLDAP-安装配置">
+<meta name="twitter:description" content="介绍LDAP是一个许多传统高级系统管理员喜欢的服务，但是门槛高。这里及你进介绍一些实用的规则，最下面会有一些参考。
+LDAP在局域网中的角色openLDAP实现了Lightweight Directory Access Protocol协议。目录本身是一个树结构的、可读的数据库。
+我们使用openLDAP提供了一个网络验证中心，每个用户登录的时候都要到这里验证身份，如果是第一次的就自动创建他们的h">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/openLDAP-安装配置/" title="openLDAP-安装配置" itemprop="url">openLDAP-安装配置</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:09:38.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#介绍"><span class="toc-text">介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#LDAP在局域网中的角色"><span class="toc-text">LDAP在局域网中的角色</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#粘结层：将LDAP于系统软件整合起来"><span class="toc-text">粘结层：将LDAP于系统软件整合起来</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#NSS"><span class="toc-text">NSS</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#PAM"><span class="toc-text">PAM</span></a></li></ol></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Conventions【约定】"><span class="toc-text">Conventions【约定】</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-OpenLDAP"><span class="toc-text">2. OpenLDAP</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-server安装"><span class="toc-text">2.1 server安装</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#2-1-1初始配置"><span class="toc-text">2.1.1初始配置</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2-1-1-1-CN-CONFIG配置"><span class="toc-text">2.1.1.1 CN=CONFIG配置</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2-1-1-2-spapd-conf配置【失效】"><span class="toc-text">2.1.1.2 spapd.conf配置【失效】</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2-1-1-3-client端配置"><span class="toc-text">2.1.1.3 client端配置</span></a></li></ol></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-2-initial-test-初始测试"><span class="toc-text">2.1.2 initial test 初始测试</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#创建基本树结构"><span class="toc-text">创建基本树结构</span></a></li></ol></li></ol></li></ol>
+		
+		</div>
+		
+		<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>LDAP是一个许多传统高级系统管理员喜欢的服务，但是门槛高。<br>这里及你进介绍一些实用的规则，最下面会有一些参考。</p>
+<h4 id="LDAP在局域网中的角色"><a href="#LDAP在局域网中的角色" class="headerlink" title="LDAP在局域网中的角色"></a>LDAP在局域网中的角色</h4><p>openLDAP实现了Lightweight Directory Access Protocol协议。目录本身是一个树结构的、可读的数据库。</p>
+<p>我们使用openLDAP提供了一个网络验证中心，每个用户登录的时候都要到这里验证身份，如果是第一次的就自动创建他们的home目录。</p>
+<p>这篇文章会提到怎样使用openLDAP作为验证中心，并为用户提供元数据。但是，文中使用明文用户名密码在wire中传播的方式是不安全的。因此推荐大家结合Kerberos使用openLDAP。</p>
+<p>下面介绍LDAP的安装。</p>
+<p>技术角度来看，LDAP目录是由一系列的有层级的entry组成。每个entry都属于某个指定的Object Classes，而且每个entry都包多含个kv键值对，也就是attribute。<br>entry是使用DN(distinguished name)来区分彼此的。DN由一系列组件构成，这些组件之间用逗号隔开，表示从树的top节点到这个entry的全路径。例如，公司：dc=example,dc=com。员工:cn=person,ou=People,dc=example,dc=com。</p>
+<p>entry的objectClasses决定哪些attribute必须有，哪些可以没有。</p>
+<p>上面的cn=persion，就是键值对的形式。上面的键(cn,ou,dc)分别代表着Common Name, Organizational Unit以及Domain Component。这是一些常用的术语。</p>
+<p>先说位一下我们安装的几个注意点：</p>
+<ul>
+<li>LDAP与传统的系统用户或者其他数据无关。但是，我们安装过程中会存储一部分信息在/etc/paswd和/etc/group中，然后让这些信息在一个网络中心位置共享。</li>
+<li>可以配置LDAP存储用户的密码。密码主要用来验证用户是否有权限访问指定的目录，还有就是验证用户是否知道正确的密码。当某个用户打开一个LDAP client来查看目录的时候，他的DB和密码就用来验证他的权限。当LDAP用来验证用户的时候，他的DB和密码只是用来建立LDAP目录的连接。成功连接就意味着用户知道正确的密码。</li>
+</ul>
+<h4 id="粘结层：将LDAP于系统软件整合起来"><a href="#粘结层：将LDAP于系统软件整合起来" class="headerlink" title="粘结层：将LDAP于系统软件整合起来"></a>粘结层：将LDAP于系统软件整合起来</h4><h6 id="NSS"><a href="#NSS" class="headerlink" title="NSS"></a>NSS</h6><h6 id="PAM"><a href="#PAM" class="headerlink" title="PAM"></a>PAM</h6><h4 id="Conventions【约定】"><a href="#Conventions【约定】" class="headerlink" title="Conventions【约定】"></a>Conventions【约定】</h4><ul>
+<li>Debian GNU平台，或者Ubuntu。</li>
+<li>有sudo免密命令。</li>
+<li>安装过程中会有很多提示问题，运行：sudo dpkg-reconfigure debconf。然后舒服interface=Dialog，还有priority=low</li>
+<li>查看日志：<blockquote>
+<p>cd /var/log; sudo tail -F daemon.log sulog user.log auth.log debug kern.log syslog dmesg messages kerberos/{krb5kdc,kadmin,krb5lib}.log</p>
+</blockquote>
+</li>
+<li>我们的测试系统叫做monarch.spinlock.hr，ip地址是192.168.7.12。server和client都会安在同一个机器上，为了明确区分client相对于monarch.spinlock.hr，server对应ldap1.spinlock.hr。按照下面配置/etc/hosts：<blockquote>
+<p>192.168.7.12    monarch.spinlock.hr monarch krb1.spinlock.hr krb1 ldap1.spinlock.hr ldap1<br><strong>注意</strong><br>有的机器域名会被设置成127.0.0.1，这可能会出现问题。需要保证/etc/hosts里只能是: 127.0.0.1   localhost</p>
+</blockquote>
+</li>
+<li>最后，测试是不是成功了。<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"> ping -c1 localhost</div><div class="line">PING localhost (127.0.0.1) 56(84) bytes of data.</div><div class="line">....</div><div class="line"></div><div class="line">ping -c1 monarch</div><div class="line">PING monarch.spinlock.hr (192.168.7.12) 56(84) bytes of data.</div><div class="line">....</div><div class="line"></div><div class="line">ping -c1 ldap1</div><div class="line">PING ldap1.spinlock.hr (192.168.7.12) 56(84) bytes of data.</div><div class="line">....</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="2-OpenLDAP"><a href="#2-OpenLDAP" class="headerlink" title="2. OpenLDAP"></a>2. OpenLDAP</h2><h4 id="2-1-server安装"><a href="#2-1-server安装" class="headerlink" title="2.1 server安装"></a>2.1 server安装</h4><p>openLDAP的server叫做slapd。</p>
+<blockquote>
+<p>sudo apt-get install slapd ladp-tuils</p>
+</blockquote>
+<p>Debconf如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">Omit OpenLDAP server configuration? No</div><div class="line"></div><div class="line">DNS domain name: spinlock.hr</div><div class="line"></div><div class="line">Organization name? spinlock.hr</div><div class="line"></div><div class="line">Administrator password: PASSWORD</div><div class="line"></div><div class="line">Confirm password: PASSWORD</div><div class="line"></div><div class="line">Database backend to use: HDB</div><div class="line"></div><div class="line">Do you want the database to be removed when slapd is purged? No</div><div class="line"></div><div class="line">Allow LDAPv2 protocol? No</div></pre></td></tr></table></figure></p>
+<p>安装完成后slapd会自动启动。</p>
+<h6 id="2-1-1初始配置"><a href="#2-1-1初始配置" class="headerlink" title="2.1.1初始配置"></a>2.1.1初始配置</h6><p>server端的配置主要包含ObjectClasses、attribute、syntax、matching rules以及其他的LDAP数据结构的细节。配置文件目录是/etc/ldap/slapd.d/，每次启动的时候都会加载这些配置文件。</p>
+<p>这些配置文件是以LDIF的形式保存的，预期是想使用标准的LDAP数据修改工具进行修改，然后slapd就会把新的配置存储在LDIF文件中，以保证下次重启生效。其实手动修改也是可以的。这种只能在运行时修改配置的方式叫做olc(on-line configuration)，也叫cn=config以及slapd.d。</p>
+<p>以前版本的openLDAP是使用标准的txt配置文件/etc/ladp/slapd.conf，虽然目前也还是支持的，但是并不推荐使用这个文件。因为修改之后需要重启才能生效，cn=config是当前默认的方式。</p>
+<p><strong><em>注意</em></strong></p>
+<p>如果你的系统上游/etc/ldap/slapd.conf文件，但是没有/etc/ldap/slapd.d目录的话，运行以下命令：</p>
+<blockquote>
+<p>sudo slaptest -f /etc/ldap/slapd.conf -F /etc/ldap/slapd.d</p>
+</blockquote>
+<p>然后确认你的slapd是使用-F /etc/ldap/slapd.d启动的，而不是-f /etc/ldap/slapd.conf</p>
+<blockquote>
+<p>grep -e -F /etc/init.d/slapd<br>ps aux | grep slapd</p>
+</blockquote>
+<h6 id="2-1-1-1-CN-CONFIG配置"><a href="#2-1-1-1-CN-CONFIG配置" class="headerlink" title="2.1.1.1 CN=CONFIG配置"></a>2.1.1.1 CN=CONFIG配置</h6><p>cn=config是一个特殊的LDAP数据库，它保存着OpenLDAP server的配置，运行时可读可写。对它的修改直接影响当前运行的server，也会修改/etc/ldap/slapd.d/下对应的配置文件。</p>
+<p>修改配置的时候我们需要利用已经存在的默认的cn=config配置，能让本地root用户连接到/var/run/slapd/ldapi的slapd socket修改cn=config数据库。</p>
+<p>有了这个途径，我们先验证一下所有的LDAP schema定义(core,cosine,nis,inetorgperson)都已经加载成功。<br>在这一步出现重复entry问题的话不要紧张，目的在于知道我们的client以local user的身份验证身份，然后连接到slapd socket “-Y EXTERNAL -H ldapi:///“:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">sudo ldapadd -c -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/core.ldif</div><div class="line">sudo ldapadd -c -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/cosine.ldif</div><div class="line">sudo ldapadd -c -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/nis.ldif</div><div class="line">sudo ldapadd -c -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/inetorgperson.ldif</div></pre></td></tr></table></figure></p>
+<p>然后我们把默认的olcLogLevel: none替换成olcLogLevel: 256:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">echo &quot;dn: cn=config</div><div class="line">changetype: modify</div><div class="line">replace: olcLogLevel</div><div class="line">olcLogLevel: 256&quot; &gt; /var/tmp/loglevel.ldif</div><div class="line"></div><div class="line">sudo ldapmodify -Y EXTERNAL -H ldapi:/// -f /var/tmp/loglevel.ldif</div></pre></td></tr></table></figure></p>
+<p>然后为attribute uid添加索引”eq”:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">echo &quot;</div><div class="line">dn: olcDatabase=&#123;1&#125;hdb,cn=config</div><div class="line">changetype: modify</div><div class="line">add: olcDbIndex</div><div class="line">olcDbIndex: uid eq</div><div class="line">&quot; &gt; /var/tmp/uid_eq.ldif</div><div class="line"></div><div class="line">sudo ldapmodify -Y EXTERNAL -H ldapi:/// -f /var/tmp/uid_eq.ldif</div></pre></td></tr></table></figure></p>
+<p>最后，以同样的方式允许LDAP管理员用户对于cn=config可读可写，dc=spinlock,dc=hr数据树就也可写了。只要用户知道正确的管理员DN和密码，就可以很方便快捷地修改slapd的配置。使用图形化的LDAP client来查看和修改配置对于初学者来说会更好上手一些：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">echo &quot;dn: olcDatabase=&#123;0&#125;config,cn=config</div><div class="line">changetype: modify</div><div class="line">add: olcAccess</div><div class="line">olcAccess: to * by dn=&quot;cn=admin,dc=spinlock,dc=hr&quot; write&quot; &gt; /var/tmp/access.ldif</div><div class="line"></div><div class="line">sudo ldapmodify -c -Y EXTERNAL -H ldapi:/// -f /var/tmp/access.ldif</div></pre></td></tr></table></figure></p>
+<h6 id="2-1-1-2-spapd-conf配置【失效】"><a href="#2-1-1-2-spapd-conf配置【失效】" class="headerlink" title="2.1.1.2 spapd.conf配置【失效】"></a>2.1.1.2 spapd.conf配置【失效】</h6><h6 id="2-1-1-3-client端配置"><a href="#2-1-1-3-client端配置" class="headerlink" title="2.1.1.3 client端配置"></a>2.1.1.3 client端配置</h6><p>server已经可以运行了。下面配置所有LDAP client的配置文件 /etc/ldap/ldap.conf。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">BASE  dc=spinlock, dc=hr </div><div class="line">URI ldap://192.168.7.12/</div></pre></td></tr></table></figure></p>
+<h4 id="2-1-2-initial-test-初始测试"><a href="#2-1-2-initial-test-初始测试" class="headerlink" title="2.1.2 initial test 初始测试"></a>2.1.2 initial test 初始测试</h4><p>可以测试一下我们安装的成果了。我们的openLDAP server只包含基本的读取操作。从LDAP的角度来看，读取操作被成为search。要使用命令行工具执行search，我们需要安装ldapsearch和slapcat。</p>
+<p>ldapsearch使用LDAP协议执行在线操作。</p>
+<p>SLAPCAT执行离线操作，直接修改本地文件系统里的文件。因此，这些命令只能在openLDAP server的本机执行，而且还需要特殊权限。向数据库写数据之前，需要先停掉openLDAP server。</p>
+<p>在以上两个命令的输出中，一会注意到有两个LDAP entry，一个代表树的top节点，另一个代表LDAP 管理员的entry。在slapcat的输出中，不会像ldapsearch一样把额外的attributes打印出来。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">ldapsearch -x</div><div class="line"></div><div class="line"># extended LDIF</div><div class="line">#</div><div class="line"># LDAPv3</div><div class="line"># base &lt;dc=spinlock, dc=hr&gt; (default) with scope subtree</div><div class="line"># filter: (objectclass=*)</div><div class="line"># requesting: ALL</div><div class="line">#</div><div class="line"></div><div class="line"># spinlock.hr</div><div class="line">dn: dc=spinlock,dc=hr</div><div class="line">objectClass: top</div><div class="line">objectClass: dcObject</div><div class="line">objectClass: organization</div><div class="line">o: spinlock.hr</div><div class="line">dc: spinlock</div><div class="line"></div><div class="line"># admin, spinlock.hr</div><div class="line">dn: cn=admin,dc=spinlock,dc=hr</div><div class="line">objectClass: simpleSecurityObject</div><div class="line">objectClass: organizationalRole</div><div class="line">cn: admin</div><div class="line">description: LDAP administrator</div><div class="line"></div><div class="line"># search result</div><div class="line">search: 2</div><div class="line">result: 0 Success</div><div class="line"></div><div class="line"># numResponses: 3</div><div class="line"># numEntries: 2</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">sudo slapcat</div><div class="line"></div><div class="line">dn: dc=spinlock,dc=hr</div><div class="line">objectClass: top</div><div class="line">objectClass: dcObject</div><div class="line">objectClass: organization</div><div class="line">o: spinlock.hr</div><div class="line">dc: spinlock</div><div class="line">structuralObjectClass: organization</div><div class="line">entryUUID: 350a2db6-87d3-102c-8c1c-1ffeac40db98</div><div class="line">creatorsName:</div><div class="line">modifiersName:</div><div class="line">createTimestamp: 20080316183324Z</div><div class="line">modifyTimestamp: 20080316183324Z</div><div class="line">entryCSN: 20080316183324.797498Z#000000#000#000000</div><div class="line"></div><div class="line">dn: cn=admin,dc=spinlock,dc=hr</div><div class="line">objectClass: simpleSecurityObject</div><div class="line">objectClass: organizationalRole</div><div class="line">cn: admin</div><div class="line">description: LDAP administrator</div><div class="line">userPassword:: e2NyeXB0fVdSZDJjRFdRODluNHM=</div><div class="line">structuralObjectClass: organizationalRole</div><div class="line">entryUUID: 350b330a-87d3-102c-8c1d-1ffeac40db98</div><div class="line">creatorsName:</div><div class="line">modifiersName:</div><div class="line">createTimestamp: 20080316183324Z</div><div class="line">modifyTimestamp: 20080316183324Z</div></pre></td></tr></table></figure>
+<h4 id="创建基本树结构"><a href="#创建基本树结构" class="headerlink" title="创建基本树结构"></a>创建基本树结构</h4>  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/12/05/openLDAP-安装配置/" data-title="openLDAP-安装配置 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/12/05/ambari上hive-view添加用户/" title="ambari上hive-view添加用户">
+  <strong>上一篇：</strong><br/>
+  <span>
+  ambari上hive-view添加用户</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/12/05/azkaban源码追踪(1)-——-上传zip文件/"  title="azkaban源码追踪(1)-——-上传zip文件">
+ <strong>下一篇：</strong><br/> 
+ <span>azkaban源码追踪(1)-——-上传zip文件
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/12/05/openLDAP-安装配置/" data-title="openLDAP-安装配置" data-url="http://willcup.com/2016/12/05/openLDAP-安装配置/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#介绍"><span class="toc-number">1.</span> <span class="toc-text">介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#LDAP在局域网中的角色"><span class="toc-number">1.0.1.</span> <span class="toc-text">LDAP在局域网中的角色</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#粘结层：将LDAP于系统软件整合起来"><span class="toc-number">1.0.2.</span> <span class="toc-text">粘结层：将LDAP于系统软件整合起来</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#NSS"><span class="toc-number">1.0.2.0.1.</span> <span class="toc-text">NSS</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#PAM"><span class="toc-number">1.0.2.0.2.</span> <span class="toc-text">PAM</span></a></li></ol></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Conventions【约定】"><span class="toc-number">1.0.3.</span> <span class="toc-text">Conventions【约定】</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-OpenLDAP"><span class="toc-number">2.</span> <span class="toc-text">2. OpenLDAP</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-server安装"><span class="toc-number">2.0.1.</span> <span class="toc-text">2.1 server安装</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#2-1-1初始配置"><span class="toc-number">2.0.1.0.1.</span> <span class="toc-text">2.1.1初始配置</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2-1-1-1-CN-CONFIG配置"><span class="toc-number">2.0.1.0.2.</span> <span class="toc-text">2.1.1.1 CN=CONFIG配置</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2-1-1-2-spapd-conf配置【失效】"><span class="toc-number">2.0.1.0.3.</span> <span class="toc-text">2.1.1.2 spapd.conf配置【失效】</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2-1-1-3-client端配置"><span class="toc-number">2.0.1.0.4.</span> <span class="toc-text">2.1.1.3 client端配置</span></a></li></ol></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-2-initial-test-初始测试"><span class="toc-number">2.0.2.</span> <span class="toc-text">2.1.2 initial test 初始测试</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#创建基本树结构"><span class="toc-number">2.0.3.</span> <span class="toc-text">创建基本树结构</span></a></li></ol></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

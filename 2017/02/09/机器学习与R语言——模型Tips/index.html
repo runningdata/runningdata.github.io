@@ -1,0 +1,601 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>机器学习与R语言——模型Tips | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="通用=对于NA缺失值的处理，连续型的可以给以均值、枚举型应该给一个unknown的计数。
+距离类的算法，需要将各个特征进行标准化【z-score、max-min】
+kmeans聚类=选择类的数量：根据业务判断
+聚类结果的各类中的数量不应相差过于悬殊【也跟业务有关】
+可以根据各个cluster中的特征z-score看出各个cluster自己的特性，并为之冠以业务名称。
+模型性能评价=我们通常只用了分">
+<meta property="og:type" content="article">
+<meta property="og:title" content="机器学习与R语言——模型Tips">
+<meta property="og:url" content="http://willcup.com/2017/02/09/机器学习与R语言——模型Tips/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="通用=对于NA缺失值的处理，连续型的可以给以均值、枚举型应该给一个unknown的计数。
+距离类的算法，需要将各个特征进行标准化【z-score、max-min】
+kmeans聚类=选择类的数量：根据业务判断
+聚类结果的各类中的数量不应相差过于悬殊【也跟业务有关】
+可以根据各个cluster中的特征z-score看出各个cluster自己的特性，并为之冠以业务名称。
+模型性能评价=我们通常只用了分">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.797Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="机器学习与R语言——模型Tips">
+<meta name="twitter:description" content="通用=对于NA缺失值的处理，连续型的可以给以均值、枚举型应该给一个unknown的计数。
+距离类的算法，需要将各个特征进行标准化【z-score、max-min】
+kmeans聚类=选择类的数量：根据业务判断
+聚类结果的各类中的数量不应相差过于悬殊【也跟业务有关】
+可以根据各个cluster中的特征z-score看出各个cluster自己的特性，并为之冠以业务名称。
+模型性能评价=我们通常只用了分">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/02/09/机器学习与R语言——模型Tips/" title="机器学习与R语言——模型Tips" itemprop="url">机器学习与R语言——模型Tips</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-02-09T06:21:36.000Z" itemprop="datePublished"> 发表于 2017-02-09</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#混淆矩阵"><span class="toc-text">混淆矩阵</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#抽样"><span class="toc-text">抽样</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#提高模型的性能"><span class="toc-text">提高模型的性能</span></a></li></ol>
+		
+		</div>
+		
+		<p>通用<br>=<br>对于NA缺失值的处理，连续型的可以给以均值、枚举型应该给一个unknown的计数。</p>
+<p>距离类的算法，需要将各个特征进行标准化【z-score、max-min】</p>
+<p>kmeans聚类<br>=<br>选择类的数量：根据业务判断</p>
+<p>聚类结果的各类中的数量不应相差过于悬殊【也跟业务有关】</p>
+<p>可以根据各个cluster中的特征z-score看出各个cluster自己的特性，并为之冠以业务名称。</p>
+<p>模型性能评价<br>=<br>我们通常只用了分类结果，但是隐藏的概率没有看到。</p>
+<p>例如，一个分类器可以同99%的把握确信包含“免费”和“铃声”等词语的短信是垃圾短信，但是只有51%的把握确信包含“今晚”的短信是垃圾短信。这两种情况都会被预测为垃圾短信，但是对两者做判断的确信程度就很大。一个是99，另一个才只有51，后者就极容易出现错误判断。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&gt; head(subset(sms_results, actual_type != predict_type))</div></pre></td></tr></table></figure></p>
+<h4 id="混淆矩阵"><a href="#混淆矩阵" class="headerlink" title="混淆矩阵"></a>混淆矩阵</h4><p>通常使用二元的混淆矩阵：</p>
+<p>准确率、错误率<br>kappa统计量<br>灵敏度（真阳性lv）、特异性（真阴性率）<br>精确度（阳性预测值）、召回率<br>F度量（综合精确度和召回率）</p>
+<p>使用ROC曲线来可视化模型的可用性，ROC曲线是Y为真阳性比例、X为假阳性比例的线图。<br>AUC是ROC曲线下的面积，一般作为评价分类器的统计量。(Area Under the ROC)</p>
+<h4 id="抽样"><a href="#抽样" class="headerlink" title="抽样"></a>抽样</h4><p>分层抽样：在从全量数据中抽取训练集或测试集的时候有个问题，就是每个类别中的数量可能过大或过小，因此我们应该从每个类别中按同样比例随机抽取数据。</p>
+<p>K折交叉验证的方法默认就是使用分层抽样进行每次数据集的划分的。</p>
+<p>较小数据集的时候，自助法抽样比K折的效果更好一些。</p>
+<h4 id="提高模型的性能"><a href="#提高模型的性能" class="headerlink" title="提高模型的性能"></a>提高模型的性能</h4><p>可以使用caret进行自动参数调整，考虑三个问题：</p>
+<ul>
+<li>需要使用数据来训练哪种机器学习模型</li>
+<li>哪些模型参数是可以调整的，能调整的空间有多大</li>
+<li>使用何种评价标准来评估模型从而找到最优的候选者</li>
+<li></li>
+</ul>
+<p>朴素贝叶斯<br>=<br>假设数据集的所有特征都具有相同的重要性和独立性。</p>
+<p>在贝叶斯算法中，概率值是相乘的，所以概率为0的值将导致该消息是垃圾邮件的后验概率为0.这种问题使用一种叫做拉普拉斯估计(Laplace estimator)的方法解决，本质上就是给频率表中的每个技术都加上一个较小的数，保证每一类中每个特征发生的概率是非零的。</p>
+<p>决策树<br>=<br>boosting算法思想：通过将很多能力弱的学习算法组合在一起，就可以创建一个团队，这比任何一个单独学习算法都强的多。每个模型都有一组特定的优点和缺点，对于特定的问题，可能更好，也可能更差，而使用优缺互补的多种学习方法的结合，就可以显著提高分类器的准确性。</p>
+<p>C5.0中是添加一个trials参数，表示在模型增强团队中使用的独立决策树的数量。trials设置了一个上限，如果该算法识别出额外的试验似乎没有提高模型准确性，那么它将停止添加决策树。</p>
+<p>为啥默认不用boosting呢？一是时间因素，二是如果训练数据集很杂乱，那么boosting可能根本不会改善模型性能。</p>
+<p>针对具体业务，设置风险矩阵cost matrix，添加到模型训练过程中，虽然整体预测准确率会降低，但是能够降低业务风险。</p>
+<p>规则学习<br>=<br>规则学习经常以一种类似决策树学习的方式被使用。分类规则代表的是if-else逻辑语句形式的知识，可以用来对未标记的案例指定一个分类。</p>
+<p>与决策树不同的是，决策树必须从上倒下地应用，而规则是单独存在的事实。根据相同数据建立的模型，规则学习的结果通常比决策树的结果更简洁、更直接、更容易理解。</p>
+<p>规则学习擅长识别偶发事件。</p>
+<p>决策树是分而治之，规则学习是独立而治之，区别是考虑决策节点的时候是否受过去决策历史的影响。</p>
+<p>分类规则也可以直接从决策树获得。从一个叶子节点开始沿着树枝回到树根，就获得一系列的决策，这些决策可以组合成一个单一的规则。</p>
+<p>当训练模型事，如果制定rules=TRUE,C5.0函数就利用分类规则生成模型了。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/02/09/机器学习与R语言——模型Tips/" data-title="机器学习与R语言——模型Tips | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/02/17/安装dockercenter的ucp/" title="安装dockercenter的ucp">
+  <strong>上一篇：</strong><br/>
+  <span>
+  安装dockercenter的ucp</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/02/08/R数据结构/"  title="R数据结构">
+ <strong>下一篇：</strong><br/> 
+ <span>R数据结构
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/02/09/机器学习与R语言——模型Tips/" data-title="机器学习与R语言——模型Tips" data-url="http://willcup.com/2017/02/09/机器学习与R语言——模型Tips/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#混淆矩阵"><span class="toc-number">1.</span> <span class="toc-text">混淆矩阵</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#抽样"><span class="toc-number">2.</span> <span class="toc-text">抽样</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#提高模型的性能"><span class="toc-number">3.</span> <span class="toc-text">提高模型的性能</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

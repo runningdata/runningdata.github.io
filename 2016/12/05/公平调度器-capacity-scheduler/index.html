@@ -1,0 +1,579 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>公平调度器-capacity-scheduler | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="概览公平调度器是Hadoop上的一个可配置的调度器，支持多租户共享集群资源，最大化利用集群资源。传统来说，每个组织都有自己的私有资源，这些资源能够在一些极端峰值状态足够满足自己部门的SLA。这样其实是有问题的，所有的集群都需要管理，而且每个部门的资源平均使用率并不高。集群共享其实是一个比较划算的事情，每个部门既能完成工作，又不用去单独管理各自的集群。但是，各部门又有些担心如果共享集群资源的话，其他">
+<meta property="og:type" content="article">
+<meta property="og:title" content="公平调度器-capacity-scheduler">
+<meta property="og:url" content="http://willcup.com/2016/12/05/公平调度器-capacity-scheduler/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="概览公平调度器是Hadoop上的一个可配置的调度器，支持多租户共享集群资源，最大化利用集群资源。传统来说，每个组织都有自己的私有资源，这些资源能够在一些极端峰值状态足够满足自己部门的SLA。这样其实是有问题的，所有的集群都需要管理，而且每个部门的资源平均使用率并不高。集群共享其实是一个比较划算的事情，每个部门既能完成工作，又不用去单独管理各自的集群。但是，各部门又有些担心如果共享集群资源的话，其他">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.797Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="公平调度器-capacity-scheduler">
+<meta name="twitter:description" content="概览公平调度器是Hadoop上的一个可配置的调度器，支持多租户共享集群资源，最大化利用集群资源。传统来说，每个组织都有自己的私有资源，这些资源能够在一些极端峰值状态足够满足自己部门的SLA。这样其实是有问题的，所有的集群都需要管理，而且每个部门的资源平均使用率并不高。集群共享其实是一个比较划算的事情，每个部门既能完成工作，又不用去单独管理各自的集群。但是，各部门又有些担心如果共享集群资源的话，其他">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/公平调度器-capacity-scheduler/" title="公平调度器-capacity-scheduler" itemprop="url">公平调度器-capacity-scheduler</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:11:05.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#概览"><span class="toc-text">概览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#特性"><span class="toc-text">特性</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#配置"><span class="toc-text">配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#queue属性"><span class="toc-text">queue属性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#其他属性"><span class="toc-text">其他属性</span></a></li></ol></li></ol></li></ol>
+		
+		</div>
+		
+		<h2 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h2><p>公平调度器是Hadoop上的一个可配置的调度器，支持多租户共享集群资源，最大化利用集群资源。传统来说，每个组织都有自己的私有资源，这些资源能够在一些极端峰值状态足够满足自己部门的SLA。这样其实是有问题的，所有的集群都需要管理，而且每个部门的资源平均使用率并不高。集群共享其实是一个比较划算的事情，每个部门既能完成工作，又不用去单独管理各自的集群。但是，各部门又有些担心如果共享集群资源的话，其他部门的东西会不会对自己的SLA造成影响。CapacityScheduler就是解决这个问题而生的，它可以让多个部门共享一个大的集群资源，而且各个部门的资源不会被其他部门使用，这保证了部门之间资源共享的灵活性，而且很划算。</p>
+<p>多个组织之间共享集群资源，很重要的一点是保证每个组织有一个自保的机制，保证自己的资源不受其他部门资源调度的影响。CapacityScheduler提供了一套严格的保证机制来限制应用、用户、queue等不能无限制地访问集群资源。另外，CapacityScheduler也限制了一个用户或者queue的应用的初始化与pending资源来保证集群的稳定性和公平性。</p>
+<p>CapacityScheduler提供的主要概念是queue的概念。一般queue都是管理员创建的，反映了共享集群的各个经济单体。</p>
+<p>为了进一步的控制资源共享情况，CapacityScheduler支持纵向队列，也就是资源还可以在sub-queue子队列里进行分配。<br>To provide further control and predictability on sharing of resources, the CapacityScheduler supports hierarchical queues to ensure resources are shared among the sub-queues of an organization before other queues are allowed to use free resources, there-by providing affinity for sharing free resources among applications of a given organization.</p>
+<h2 id="特性"><a href="#特性" class="headerlink" title="特性"></a>特性</h2><p>如下:</p>
+<ul>
+<li>Hierarchical Queues 纵向队列 -<br>在其他queue使用空闲资源之前，支持资源可被当前组织的sub-queue优先抢占，以此来提供更高的可控性和可预测性。<ul>
+<li>保证容量 - 保证总资源的某个百分比的容量随时听候某queue的调遣。所有提交到这个queue的应用都可以访问这部分资源。 管理员可以灵活配置soft limit和hard limit限制每个queue的容量占比。</li>
+<li>安全 - 每个queue都有严格的ACLs策略控制谁可以提交应用到哪个queue。另外，也不能让某些普通用户看到或者修改运行在其他queue里的应用。 管理员角色粒度可以对应一个queue或整个scheduler系统。</li>
+<li>弹性 - 任何队列资源不够的话，都可以使用空闲资源区的资源。 When there is demand for these resources from queues running below capacity at a future point in time, as tasks scheduled on these resources complete, they will be assigned to applications on queues running below the capacity (pre-emption is not supported). This ensures that resources are available in a predictable and elastic manner to queues, thus preventing artifical silos of resources in the cluster which helps utilization.</li>
+<li>多租户 - Comprehensive set of limits are provided to prevent a single application, user and queue from monopolizing resources of the queue or the cluster as a whole to ensure that the cluster isn’t overwhelmed.<br>Operability</li>
+<li>运行时配置优先 - The queue definitions and properties such as capacity, ACLs can be changed, at runtime, by administrators in a secure manner to minimize disruption to users. Also, a console is provided for users and administrators to view current allocation of resources to various queues in the system. Administrators can add additional queues at runtime, but queues cannot be deleted at runtime.</li>
+<li>清空应用 - .如果一个queue是STOPPED状态，就不能向它或者它的任何sub-queue提交应用了。 正在运行的应用会继续运行到完成，因此queue可以被优雅的清空。管理员也可以启动或者停掉某个queue。</li>
+<li>基于资源的调度 - 可以多分配一些配置，主要是为了支持一些资源敏感的应用。<br>Queue Mapping based on User or Group - This feature allows users to map a job to a specific queue based on the user or group.<h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4></li>
+</ul>
+</li>
+</ul>
+<p>配置ResourceManager使用CapacityScheduler</p>
+<p>conf/yarn-site.xml:<br>|  属性 | 值  |<br>|—|—|<br>| yarn.resourcemanager.scheduler.class  |org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler |<br>|   |   |<br>|   |   |</p>
+<p>配置queues</p>
+<p>etc/hadoop/capacity-scheduler.xml是CapacityScheduler的主配置文件.<br>CapacityScheduler又一个预定义的queue: root, 所有的队列都是这个队列的子队列sub-queue.其他的队列通过设置 <strong>yarn.scheduler.capacity.root.queues</strong>属性，弄一个逗号隔开的字符串就行.<br>CapacityScheduler使用queue path配置queue的层次. queue path是queue层级的全路径, 以root开始, 使用. (点)作为分隔符.<br>指定queue的所有sub-queue可以这样指定: <strong>yarn.scheduler.capacity.<queue-path>.queues</queue-path></strong>. 子队列并不自动继承queue的属性。<br>下面是一个例子，a\b\c为root的子队列，然后a\b还有自己的子队列:<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.scheduler.capacity.root.queues<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>a,b,c<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>The queues at the this level (root is the root queue).</div><div class="line">  <span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.scheduler.capacity.root.a.queues<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>a1,a2<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>The queues at the this level (root is the root queue).</div><div class="line">  <span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.scheduler.capacity.root.b.queues<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>b1,b2,b3<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>The queues at the this level (root is the root queue).</div><div class="line">  <span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<h4 id="queue属性"><a href="#queue属性" class="headerlink" title="queue属性"></a>queue属性</h4><p>Resource Allocation<br>Property    Description<br>yarn.scheduler.capacity.<queue-path>.capacity    Queue capacity in percentage (%) as a float (e.g. 12.5). The sum of capacities for all queues, at each level, must be equal to 100. Applications in the queue may consume more resources than the queue’s capacity if there are free resources, providing elasticity.<br>yarn.scheduler.capacity.<queue-path>.maximum-capacity    Maximum queue capacity in percentage (%) as a float. This limits the elasticity for applications in the queue. Defaults to -1 which disables it.<br>yarn.scheduler.capacity.<queue-path>.minimum-user-limit-percent    Each queue enforces a limit on the percentage of resources allocated to a user at any given time, if there is demand for resources. The user limit can vary between a minimum and maximum value. The the former (the minimum value) is set to this property value and the latter (the maximum value) depends on the number of users who have submitted applications. For e.g., suppose the value of this property is 25. If two users have submitted applications to a queue, no single user can use more than 50% of the queue resources. If a third user submits an application, no single user can use more than 33% of the queue resources. With 4 or more users, no user can use more than 25% of the queues resources. A value of 100 implies no user limits are imposed. The default is 100. Value is specified as a integer.<br>yarn.scheduler.capacity.<queue-path>.user-limit-factor    The multiple of the queue capacity which can be configured to allow a single user to acquire more resources. By default this is set to 1 which ensures that a single user can never take more than the queue’s configured capacity irrespective of how idle th cluster is. Value is specified as a float.<br>yarn.scheduler.capacity.<queue-path>.maximum-allocation-mb    The per queue maximum limit of memory to allocate to each container request at the Resource Manager. This setting overrides the cluster configuration yarn.scheduler.maximum-allocation-mb. This value must be smaller than or equal to the cluster maximum.<br>yarn.scheduler.capacity.<queue-path>.maximum-allocation-vcores    The per queue maximum limit of virtual cores to allocate to each container request at the Resource Manager. This setting overrides the cluster configuration yarn.scheduler.maximum-allocation-vcores. This value must be smaller than or equal to the cluster maximum.<br>Running and Pending Application Limits<br>The CapacityScheduler supports the following parameters to control the running and pending applications:<br>Property    Description<br>yarn.scheduler.capacity.maximum-applications / yarn.scheduler.capacity.<queue-path>.maximum-applications    Maximum number of applications in the system which can be concurrently active both running and pending. Limits on each queue are directly proportional to their queue capacities and user limits. This is a hard limit and any applications submitted when this limit is reached will be rejected. Default is 10000. This can be set for all queues withyarn.scheduler.capacity.maximum-applications and can also be overridden on a per queue basis by setting yarn.scheduler.capacity.<queue-path>.maximum-applications. Integer value expected.<br>yarn.scheduler.capacity.maximum-am-resource-percent /yarn.scheduler.capacity.<queue-path>.maximum-am-resource-percent    Maximum percent of resources in the cluster which can be used to run application masters - controls number of concurrent active applications. Limits on each queue are directly proportional to their queue capacities and user limits. Specified as a float - ie 0.5 = 50%. Default is 10%. This can be set for all queues with yarn.scheduler.capacity.maximum-am-resource-percent and can also be overridden on a per queue basis by setting yarn.scheduler.capacity.<queue-path>.maximum-am-resource-percent<br>Queue Administration &amp; Permissions<br>The CapacityScheduler supports the following parameters to the administer the queues:<br>Property    Description<br>yarn.scheduler.capacity.<queue-path>.state    The state of the queue. Can be one of RUNNING or STOPPED. If a queue is in STOPPED state, new applications cannot be submitted to itself or any of its child queues. Thus, if the root queue is STOPPEDno applications can be submitted to the entire cluster. Existing applications continue to completion, thus the queue can be drained gracefully. Value is specified as Enumeration.<br>yarn.scheduler.capacity.root.<queue-path>.acl_submit_applications    The ACL which controls who can submit applications to the given queue. If the given user/group has necessary ACLs on the given queue or one of the parent queues in the hierarchy they can submit applications. ACLs for this property are inherited from the parent queue if not specified.<br>yarn.scheduler.capacity.root.<queue-path>.acl_administer_queue    The ACL which controls who can administer applications on the given queue. If the given user/group has necessary ACLs on the given queue or one of the parent queues in the hierarchy they can administer applications. ACLs for this property are inherited from the parent queue if not specified.<br>Note: An ACL is of the form user1, user2spacegroup1, group2. The special value of <em> implies anyone. The special value of space implies no one. The default is </em> for the root queue if not specified.<br>Queue Mapping based on User or Group<br>The CapacityScheduler supports the following parameters to configure the queue mapping based on user or group:<br>Property    Description<br>yarn.scheduler.capacity.queue-mappings    This configuration specifies the mapping of user or group to aspecific queue. You can map a single user or a list of users to queues. Syntax: [u or g]:[name]:[queue_name][,next_mapping]*. Here, u or gindicates whether the mapping is for a user or group. The value is u for user and g for group. name indicates the user name or group name. To specify the user who has submitted the application, %user can be used. queue_name indicates the queue name for which the application has to be mapped. To specify queue name same as user name, %user can be used. To specify queue name same as the name of the primary group for which the user belongs to, %primary_group can be used.<br>yarn.scheduler.capacity.queue-mappings-override.enable    This function is used to specify whether the user specified queues can be overridden. This is a Boolean value and the default value is false.<br>Example:<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.scheduler.capacity.queue-mappings<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>u:user1:queue1,g:group1:queue2,u:%user:%user,u:user2:%primary_group<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span></div><div class="line">    Here, <span class="tag">&lt;<span class="name">user1</span>&gt;</span> is mapped to <span class="tag">&lt;<span class="name">queue1</span>&gt;</span>, <span class="tag">&lt;<span class="name">group1</span>&gt;</span> is mapped to <span class="tag">&lt;<span class="name">queue2</span>&gt;</span>, </div><div class="line">    maps users to queues with the same name as user, <span class="tag">&lt;<span class="name">user2</span>&gt;</span> is mapped </div><div class="line">    to queue name same as <span class="tag">&lt;<span class="name">primary</span> <span class="attr">group</span>&gt;</span> respectively. The mappings will be </div><div class="line">    evaluated from left to right, and the first valid mapping will be used.</div><div class="line">  <span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div></pre></td></tr></table></figure></queue-path></queue-path></queue-path></queue-path></queue-path></queue-path></queue-path></queue-path></queue-path></queue-path></queue-path></queue-path></queue-path></p>
+<h4 id="其他属性"><a href="#其他属性" class="headerlink" title="其他属性"></a>其他属性</h4><p>Resource Calculator<br>Property    Description<br>yarn.scheduler.capacity.resource-calculator    The ResourceCalculator implementation to be used to compare Resources in the scheduler. The default i.e. org.apache.hadoop.yarn.util.resource.DefaultResourseCalculator only uses Memory while DominantResourceCalculator uses Dominant-resource to compare multi-dimensional resources such as Memory, CPU etc. A Java ResourceCalculator class name is expected.<br>Data Locality<br>Property    Description<br>yarn.scheduler.capacity.node-locality-delay    Number of missed scheduling opportunities after which the CapacityScheduler attempts to schedule rack-local containers. Typically, this should be set to number of nodes in the cluster. By default is setting approximately number of nodes in one rack which is 40. Positive integer value is expected.<br>Reviewing the configuration of the CapacityScheduler</p>
+<p>Once the installation and configuration is completed, you can review it after starting the YARN cluster from the web-ui.<br>Start the YARN cluster in the normal manner.<br>Open the ResourceManager web UI.<br>The /scheduler web-page should show the resource usages of individual queues.<br>Changing Queue Configuration</p>
+<p>Changing queue properties and adding new queues is very simple. You need to edit conf/capacity-scheduler.xml and run yarn rmadmin -refreshQueues.<br>$ vi $HADOOP_CONF_DIR/capacity-scheduler.xml<br>$ $HADOOP_YARN_HOME/bin/yarn rmadmin -refreshQueues<br>Note: Queues cannot be deleted, only addition of new queues is supported - the updated queue configuration should be a valid one i.e. queue-capacity at each level should be equal to 100%.</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/12/05/公平调度器-capacity-scheduler/" data-title="公平调度器-capacity-scheduler | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/12/05/mondrian-定义schema/" title="mondrian-定义schema">
+  <strong>上一篇：</strong><br/>
+  <span>
+  mondrian-定义schema</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/12/05/metamap部署/"  title="metamap部署">
+ <strong>下一篇：</strong><br/> 
+ <span>metamap部署
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/12/05/公平调度器-capacity-scheduler/" data-title="公平调度器-capacity-scheduler" data-url="http://willcup.com/2016/12/05/公平调度器-capacity-scheduler/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#概览"><span class="toc-number">1.</span> <span class="toc-text">概览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#特性"><span class="toc-number">2.</span> <span class="toc-text">特性</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#配置"><span class="toc-number">2.0.1.</span> <span class="toc-text">配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#queue属性"><span class="toc-number">2.0.2.</span> <span class="toc-text">queue属性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#其他属性"><span class="toc-number">2.0.3.</span> <span class="toc-text">其他属性</span></a></li></ol></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

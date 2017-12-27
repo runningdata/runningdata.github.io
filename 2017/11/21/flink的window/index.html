@@ -1,0 +1,578 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>flink的window | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="滑动窗口,sliding windows，比如我们每30s统计一下上一分钟的和。
+当只有一个窗口处理器的时候，我们就只能串行处理一个数据流。每个流里的书都要去向某个指定的window。在Flink中对于Windows on a full stream are【一个完整的流的窗口】 称为 AllWindows。对很多app来说，数据流都要分发进入多个逻辑流，然后会有window operator处理">
+<meta property="og:type" content="article">
+<meta property="og:title" content="flink的window">
+<meta property="og:url" content="http://willcup.com/2017/11/21/flink的window/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="滑动窗口,sliding windows，比如我们每30s统计一下上一分钟的和。
+当只有一个窗口处理器的时候，我们就只能串行处理一个数据流。每个流里的书都要去向某个指定的window。在Flink中对于Windows on a full stream are【一个完整的流的窗口】 称为 AllWindows。对很多app来说，数据流都要分发进入多个逻辑流，然后会有window operator处理">
+<meta property="og:image" content="https://flink.apache.org/img/blog/window-intro/window-sliding-window.png">
+<meta property="og:image" content="https://flink.apache.org/img/blog/window-intro/windows-keyed.png">
+<meta property="og:image" content="https://flink.apache.org/img/blog/window-intro/window-mechanics.png">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.781Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="flink的window">
+<meta name="twitter:description" content="滑动窗口,sliding windows，比如我们每30s统计一下上一分钟的和。
+当只有一个窗口处理器的时候，我们就只能串行处理一个数据流。每个流里的书都要去向某个指定的window。在Flink中对于Windows on a full stream are【一个完整的流的窗口】 称为 AllWindows。对很多app来说，数据流都要分发进入多个逻辑流，然后会有window operator处理">
+<meta name="twitter:image" content="https://flink.apache.org/img/blog/window-intro/window-sliding-window.png">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/11/21/flink的window/" title="flink的window" itemprop="url">flink的window</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-11-21T07:28:54.000Z" itemprop="datePublished"> 发表于 2017-11-21</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#基于时间的窗口"><span class="toc-text">基于时间的窗口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于计数的窗口"><span class="toc-text">基于计数的窗口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#深入了解"><span class="toc-text">深入了解</span></a></li></ol>
+		
+		</div>
+		
+		<p>滑动窗口,sliding windows，比如我们每30s统计一下上一分钟的和。<br><img src="https://flink.apache.org/img/blog/window-intro/window-sliding-window.png" alt=""></p>
+<p>当只有一个窗口处理器的时候，我们就只能串行处理一个数据流。每个流里的书都要去向某个指定的window。在Flink中对于Windows on a full stream are【一个完整的流的窗口】 称为 AllWindows。对很多app来说，数据流都要分发进入多个逻辑流，然后会有window operator处理每个逻辑流。假设我们从多个交通传感器获取交通工具的流量，每个交通传感器都监控不同地址的流量。我们可以把这些信息流通过交通传感器的id进行分组，然后分别并发的计算每个交通传感器所在位置的流量信息。在Flink中，我们把这种partitioned window叫做simple window，因为这是对分布式数据流很常见的处理方式。下图展示了一个通过(sernsorID, count)的流进行数据收集的滚动窗口<br><img src="https://flink.apache.org/img/blog/window-intro/windows-keyed.png" alt=""></p>
+<p>通常，一个window在无穷的数据流中定义了一组有穷数据。这组数据可以是基于时间、计数、时间与技术结合、自定义的一些逻辑去分window。Flink的DataStream API提供了简洁的操作供常用的窗口操作，也留了接口让用户提供自定义的分窗口的逻辑。下面我们详细看一下基于时间与计数的窗口机制。</p>
+<h2 id="基于时间的窗口"><a href="#基于时间的窗口" class="headerlink" title="基于时间的窗口"></a>基于时间的窗口</h2><p>下面是一个每分钟滚动一次的窗口，对所有的数据执行某个函数操作。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">// (sensorId, carCnt)形式的数据流</div><div class="line">val vehicleCnts: DataStream[(Int, Int)] = ...</div><div class="line"></div><div class="line">// 0，1是在数据中的位置</div><div class="line">val tumblingCnts: DataStream[(Int, Int)] = vehicleCnts</div><div class="line">  // 通过sensorId分区</div><div class="line">  .keyBy(0) </div><div class="line">  // 1分钟的窗口时间</div><div class="line">  .timeWindow(Time.minutes(1))</div><div class="line">  // 计算carCnt的和</div><div class="line">  .sum(1) </div><div class="line"></div><div class="line">val slidingCnts: DataStream[(Int, Int)] = vehicleCnts</div><div class="line">  .keyBy(0) </div><div class="line">  // 每30秒触发一次1分钟的数据窗口的执行</div><div class="line">  .timeWindow(Time.minutes(1), Time.seconds(30))</div><div class="line">  .sum(1)</div></pre></td></tr></table></figure></p>
+<p>还有一个时间的概念我们要说明</p>
+<ul>
+<li>processing time。窗口是根据当前主机的1分钟去构建与计算窗口内数据的。</li>
+<li>event time。event产生时的时间。相比processing time更好一些</li>
+<li>Ingestion time。是processing  time和event time的杂交品种。一旦数据到达，就把当前机器的时间戳赋给这个数据记录，然后基于这个时间戳，使用event time去持续处理。</li>
+</ul>
+<h2 id="基于计数的窗口"><a href="#基于计数的窗口" class="headerlink" title="基于计数的窗口"></a>基于计数的窗口</h2><p>一个100个event作为窗口的程序。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">// (sensorId, carCnt)形式的数据流</div><div class="line">val vehicleCnts: DataStream[(Int, Int)] = ...</div><div class="line"></div><div class="line">val tumblingCnts: DataStream[(Int, Int)] = vehicleCnts</div><div class="line">  // 用sensorId分区</div><div class="line">  .keyBy(0)</div><div class="line">  // 100个数据为一个窗口</div><div class="line">  .countWindow(100)</div><div class="line">  .sum(1)</div><div class="line"></div><div class="line">val slidingCnts: DataStream[(Int, Int)] = vehicleCnts</div><div class="line">  .keyBy(0)</div><div class="line">  // 100个数据作为一个窗口，每10个触发一次窗口处理</div><div class="line">  .countWindow(100, 10)</div><div class="line">  .sum(1)</div></pre></td></tr></table></figure></p>
+<h2 id="深入了解"><a href="#深入了解" class="headerlink" title="深入了解"></a>深入了解</h2><p>Flink内置的基于时间、计数的窗口已经覆盖了大多数的应用，但是对于一些需要自定义窗口划分逻辑的，需要使用DataStream API暴露的接口，这些接口给了窗口构建与计算的很有条理的控制方式。</p>
+<p>下图是Flink窗口机制的详细图<br><img src="https://flink.apache.org/img/blog/window-intro/window-mechanics.png" alt=""></p>
+<p>到达window operator的数据会先发给<code>WindowAssigner</code>. <code>WindowAssigner</code>把数据分配给一个或者多个window，也有可能要创建新的window。一个<code>Window</code>是一个一组数据、元数据(对于<code>TimeWindow</code>来说是起止时间)的唯一标识符。注意数据是可以被加入到多个window的，也就是说可能会同时存在多个window。</p>
+<p>每个window拥有一个<code>Trigger</code>，它来决定当前window什么时候计算或者清空。这个trigger在每条数据到来的时候都会检验，如果前面注册的timer超时就会触发操作：执行计算、清空窗口、先计算再清空。<strong>如果只是触发计算，那么所有的数据就还留在window里</strong>，下次触发的时候还可以计算。<strong>一个window在被清空之前一直都可以被计算，这也代表着内存占用</strong>。</p>
+<p>计算函数接收window的所有数据，输出一个或多个结果。DataStream API接受不同类型的计算函数，包括一些预定义的sum、min、max，ReduceFunction、FlodFunciton、WindowFunction等。最常见的是<code>WindowFunction</code>，它接收window对象的元数据，一组window对象，window key(如果是分区的window)作为参数。</p>
+<p>这些组件构成了Flink的窗口机制。我们现在一步步看一下怎样实现自定义窗口逻辑。我们以DataStream[IN]类型的stream开始，用一个key选择器函数来抽取key，获得一个Keydtream[IN, KEY].<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">val input: DataStream[IN] = ...</div><div class="line"></div><div class="line">val keyed: KeyedStream[IN, KEY] = input</div><div class="line">  .keyBy(myKeySel: (IN) =&gt; KEY)</div><div class="line"></div><div class="line"></div><div class="line">// 通过WindowAssigner创建一个分窗口的stream。WindowAssigner 有默认的Trigger实现</div><div class="line">var windowed: WindowedStream[IN, KEY, WINDOW] = keyed</div><div class="line">  .window(myAssigner: WindowAssigner[IN, WINDOW])</div><div class="line">  </div><div class="line">// 不适用WindowAssigner默认的trigger</div><div class="line">windowed = windowed</div><div class="line">  .trigger(myTrigger: Trigger[IN, WINDOW])</div><div class="line"></div><div class="line">// 指定可选的evictor</div><div class="line">windowed = windowed</div><div class="line">  .evictor(myEvictor: Evictor[IN, WINDOW])</div><div class="line"></div><div class="line">// 最后，把window function传递给windowed stream</div><div class="line">val output: DataStream[OUT] = windowed</div><div class="line">  .apply(myWinFunc: WindowFunction[IN, OUT, KEY, WINDOW])</div></pre></td></tr></table></figure></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/11/21/flink的window/" data-title="flink的window | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/11/21/flink的容错机制/" title="flink的容错机制">
+  <strong>上一篇：</strong><br/>
+  <span>
+  flink的容错机制</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/11/20/centos上搭建ftp服务器/"  title="centos上搭建ftp服务器">
+ <strong>下一篇：</strong><br/> 
+ <span>centos上搭建ftp服务器
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/11/21/flink的window/" data-title="flink的window" data-url="http://willcup.com/2017/11/21/flink的window/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#基于时间的窗口"><span class="toc-number">1.</span> <span class="toc-text">基于时间的窗口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于计数的窗口"><span class="toc-number">2.</span> <span class="toc-text">基于计数的窗口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#深入了解"><span class="toc-number">3.</span> <span class="toc-text">深入了解</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

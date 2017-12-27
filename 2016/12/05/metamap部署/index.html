@@ -1,0 +1,646 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>metamap部署 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="vituralEnv先创建执行环境1virtualenv metamap
+这个命令会在当前目录下生成一个metamap目录，后来查实了一下，其实后面是指定要生成的目标记录的(virtualenv /path/to/tartget/metamap)，便于统一管理所有的env环境。
+进入我们刚刚创建的环境:12root@will-vm:/usr/local/metamap# source metama">
+<meta property="og:type" content="article">
+<meta property="og:title" content="metamap部署">
+<meta property="og:url" content="http://willcup.com/2016/12/05/metamap部署/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="vituralEnv先创建执行环境1virtualenv metamap
+这个命令会在当前目录下生成一个metamap目录，后来查实了一下，其实后面是指定要生成的目标记录的(virtualenv /path/to/tartget/metamap)，便于统一管理所有的env环境。
+进入我们刚刚创建的环境:12root@will-vm:/usr/local/metamap# source metama">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.785Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="metamap部署">
+<meta name="twitter:description" content="vituralEnv先创建执行环境1virtualenv metamap
+这个命令会在当前目录下生成一个metamap目录，后来查实了一下，其实后面是指定要生成的目标记录的(virtualenv /path/to/tartget/metamap)，便于统一管理所有的env环境。
+进入我们刚刚创建的环境:12root@will-vm:/usr/local/metamap# source metama">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/metamap部署/" title="metamap部署" itemprop="url">metamap部署</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:10:52.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#vituralEnv"><span class="toc-text">vituralEnv</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Gunicorn"><span class="toc-text">Gunicorn</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Django"><span class="toc-text">Django</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Nginx"><span class="toc-text">Nginx</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#未解决的问题"><span class="toc-text">未解决的问题</span></a></li></ol>
+		
+		</div>
+		
+		<h2 id="vituralEnv"><a href="#vituralEnv" class="headerlink" title="vituralEnv"></a>vituralEnv</h2><p>先创建执行环境<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">virtualenv metamap</div></pre></td></tr></table></figure></p>
+<p>这个命令会在当前目录下生成一个metamap目录，后来查实了一下，其实后面是指定要生成的目标记录的(<code>virtualenv /path/to/tartget/metamap</code>)，便于统一管理所有的env环境。</p>
+<p>进入我们刚刚创建的环境:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap# source metamap/bin/activate</div><div class="line">(metamap) root@will-vm:/usr/local/metamap#</div></pre></td></tr></table></figure></p>
+<p>我这里没有使用绝对路径，所以就成了当前目录。目录结构如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line">(metamap) root@will-vm:/usr/local/metamap# tree -L 2 metamap</div><div class="line">metamap</div><div class="line">├── bin</div><div class="line">│   ├── activate</div><div class="line">│   ├── activate.csh</div><div class="line">│   ├── activate.fish</div><div class="line">│   ├── activate_this.py</div><div class="line">│   ├── django-admin</div><div class="line">│   ├── django-admin.py</div><div class="line">│   ├── django-admin.pyc</div><div class="line">│   ├── easy_install</div><div class="line">│   ├── easy_install-2.7</div><div class="line">│   ├── pip</div><div class="line">│   ├── pip2</div><div class="line">│   ├── pip2.7</div><div class="line">│   ├── python</div><div class="line">│   ├── python2 -&gt; python</div><div class="line">│   ├── python2.7 -&gt; python</div><div class="line">│   ├── python-config</div><div class="line">│   └── wheel</div><div class="line">├── include</div><div class="line">│   └── python2.7 -&gt; /usr/include/python2.7</div><div class="line">├── lib</div><div class="line">│   └── python2.7</div><div class="line">├── local</div><div class="line">│   ├── bin -&gt; /usr/local/metamap/metamap/bin</div><div class="line">│   ├── include -&gt; /usr/local/metamap/metamap/include</div><div class="line">│   └── lib -&gt; /usr/local/metamap/metamap/lib</div><div class="line">└── pip-selfcheck.json</div></pre></td></tr></table></figure></p>
+<p>另外还会在新的env中安装三个基础依赖包：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">(metamap) root@will-vm:/usr/local/metamap# pip list</div><div class="line">pip (8.1.2)</div><div class="line">setuptools (25.1.3)</div><div class="line">wheel (0.29.0)</div></pre></td></tr></table></figure></p>
+<p>使用pip freeze &gt; requirements.txt来导出当前环境中的所有python依赖。</p>
+<p>然后使用pip install -r path/to/requirements.txt安装，发现有一些是跟os有关的，比如包含Ubuntu的，根本就没有必要安装。所以就只保留了有印象的几个依赖。</p>
+<p>最后requirements.txt只剩下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">tlr4-python2-runtime==4.5.3</div><div class="line">Django==1.9.7</div><div class="line">MySQL-python==1.2.5</div><div class="line">pyhs2==0.6.0</div></pre></td></tr></table></figure></p>
+<p>如果要退出virtualenv，就使用deactivate。</p>
+<h2 id="Gunicorn"><a href="#Gunicorn" class="headerlink" title="Gunicorn"></a>Gunicorn</h2><p>在vituralenv里安装<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pip install gunicorn</div></pre></td></tr></table></figure></p>
+<p>进入我们的django项目根目录，也就是manage.py所在的目录：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line">(metamap) root@will-vm:/usr/local/metamap/metamap_django# gunicorn_django -b 0.0.0.0:8089</div><div class="line">!!!</div><div class="line">!!! WARNING: This command is deprecated.</div><div class="line">!!! </div><div class="line">!!!     You should now run your application with the WSGI interface</div><div class="line">!!!     installed with your project. Ex.:</div><div class="line">!!! </div><div class="line">!!!         gunicorn myproject.wsgi:application</div><div class="line">!!! </div><div class="line">!!!     See https://docs.djangoproject.com/en/1.8/howto/deployment/wsgi/gunicorn/</div><div class="line">!!!     for more info.</div><div class="line">!!!</div><div class="line"></div><div class="line">[2016-08-03 19:13:32 +0000] [13020] [INFO] Starting gunicorn 19.6.0</div><div class="line">[2016-08-03 19:13:32 +0000] [13020] [INFO] Listening at: http://0.0.0.0:8089 (13020)</div><div class="line">[2016-08-03 19:13:32 +0000] [13020] [INFO] Using worker: sync</div><div class="line">[2016-08-03 19:13:32 +0000] [13025] [INFO] Booting worker with pid: 13025</div><div class="line">[2016-08-03 19:13:32 +0000] [13025] [ERROR] Exception in worker process</div><div class="line">Traceback (most recent call last):</div><div class="line">  File &quot;/usr/local/metamap/metamap/local/lib/python2.7/site-packages/gunicorn/arbiter.py&quot;, line 557, in spawn_worker</div><div class="line">    worker.init_process()</div><div class="line">  File &quot;/usr/local/metamap/metamap/local/lib/python2.7/site-packages/gunicorn/workers/base.py&quot;, line 126, in init_process</div><div class="line">    self.load_wsgi()</div><div class="line">  File &quot;/usr/local/metamap/metamap/local/lib/python2.7/site-packages/gunicorn/workers/base.py&quot;, line 136, in load_wsgi</div><div class="line">    self.wsgi = self.app.wsgi()</div><div class="line">  File &quot;/usr/local/metamap/metamap/local/lib/python2.7/site-packages/gunicorn/app/base.py&quot;, line 67, in wsgi</div><div class="line">    self.callable = self.load()</div><div class="line">  File &quot;/usr/local/metamap/metamap/local/lib/python2.7/site-packages/gunicorn/app/djangoapp.py&quot;, line 105, in load</div><div class="line">    mod = util.import_module(&quot;gunicorn.app.django_wsgi&quot;)</div><div class="line">  File &quot;/usr/lib/python2.7/importlib/__init__.py&quot;, line 37, in import_module</div><div class="line">    __import__(name)</div><div class="line">  File &quot;/usr/local/metamap/metamap/local/lib/python2.7/site-packages/gunicorn/app/django_wsgi.py&quot;, line 21, in &lt;module&gt;</div><div class="line">    from django.core.management.validation import get_validation_errors</div><div class="line">ImportError: No module named validation</div><div class="line">[2016-08-03 19:13:32 +0000] [13025] [INFO] Worker exiting (pid: 13025)</div><div class="line">[2016-08-03 19:13:32 +0000] [13020] [INFO] Shutting down: Master</div><div class="line">[2016-08-03 19:13:32 +0000] [13020] [INFO] Reason: Worker failed to boot.</div></pre></td></tr></table></figure></p>
+<p>查了一下，是版本问题，改用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">(metamap) root@will-vm:/usr/local/metamap/metamap_django# gunicorn metamap_django.wsgi:application -b 0.0.0.0:8089</div><div class="line">[2016-08-03 19:16:10 +0000] [13097] [INFO] Starting gunicorn 19.6.0</div><div class="line">[2016-08-03 19:16:10 +0000] [13097] [INFO] Listening at: http://0.0.0.0:8089 (13097)</div><div class="line">[2016-08-03 19:16:10 +0000] [13097] [INFO] Using worker: sync</div><div class="line">[2016-08-03 19:16:10 +0000] [13102] [INFO] Booting worker with pid: 13102</div></pre></td></tr></table></figure></p>
+<p>wsgi为我们生成django项目时，跟settings.py同目录的wsgi.py。然后就可以到浏览器访问了。</p>
+<p>看一下我们django自动生成的这个文件内容，可以看到还有：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> os</div><div class="line"></div><div class="line"><span class="keyword">from</span> django.core.wsgi <span class="keyword">import</span> get_wsgi_application</div><div class="line"></div><div class="line">os.environ.setdefault(<span class="string">"DJANGO_SETTINGS_MODULE"</span>, <span class="string">"metamap_django.settings"</span>)</div><div class="line"></div><div class="line">application = get_wsgi_application()</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_wsgi_application</span><span class="params">()</span>:</span></div><div class="line">    <span class="string">"""</span></div><div class="line">    The public interface to Django's WSGI support. Should return a WSGI</div><div class="line">    callable.</div><div class="line"></div><div class="line">    Allows us to avoid making django.core.handlers.WSGIHandler public API, in</div><div class="line">    case the internal WSGI implementation changes or moves in the future.</div><div class="line">    """</div><div class="line">    django.setup()</div><div class="line">    <span class="keyword">return</span> WSGIHandler()</div></pre></td></tr></table></figure></p>
+<p>晚上整体浏览了一遍Gunicorn官网，整理以下几点注意的地方：</p>
+<ul>
+<li>可以指定django的settings文件</li>
+<li>gunicorn 官网中指定的几个管理master和worker的signal其实都是Linux的kill命令的参数 <code>kill -TERM cat /tmp/xx.pid</code></li>
+<li>worker和thread是不一样的概念，前者是进程，后者是线程，worker中包含thread。具体并发数需要压测结果来确定</li>
+<li>为了防止出现内存泄露问题，可以为worker指定类似max_request之类的参数在一定阶段重启当前worker</li>
+<li>Gunicorn可以动态增加worker实现调优</li>
+<li>命令行可以加入运行目录并生成pid</li>
+<li><p>环境中添加python插件setproctitle之后就可以为gunicorn进程命名了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"> (metamap) root@will-vm:/usr/local/metamap/metamap_django# ps -ef | grep gunicorn</div><div class="line">root      2258 10709  0 11:38 pts/26   00:00:00 tailf /tmp/gunicorn_error.log</div><div class="line">root      2494  2264  0 11:38 pts/27   00:00:00 tailf /tmp/gunicorn_access.log</div><div class="line">root      3190  2444  0 11:57 ?        00:00:00 gunicorn: master [will&apos;s metamap]                                                                                                    </div><div class="line">root      3195  3190  2 11:57 ?        00:00:00 gunicorn: worker [will&apos;s metamap]                                                                                                    </div><div class="line">root      3198  3190  2 11:57 ?        00:00:00 gunicorn: worker [will&apos;s metamap]                                                                                                    </div><div class="line">root      3199  3190  2 11:57 ?        00:00:00 gunicorn: worker [will&apos;s metamap]                                                                                                    </div><div class="line">root      3205  3190  2 11:57 ?        00:00:00 gunicorn: worker [will&apos;s metamap]                                                                                                    </div><div class="line">root      3207  3190  2 11:57 ?        00:00:00 gunicorn: worker [will&apos;s metamap]                                                                                                    </div><div class="line">root      3223 17309  0 11:57 pts/25   00:00:00 grep --color=auto gunicorn</div></pre></td></tr></table></figure>
+</li>
+<li><p>–statsd-host=localhost:8125会启动一个针对gunicorn的监控系统</p>
+</li>
+<li>master只负责管理worker，不处理请求，worker是真正处理请求的进程</li>
+<li>可接受配置文件-c, 具体可配置项，参考<a href="http://docs.gunicorn.org/en/latest/settings.html" target="_blank" rel="external">这里</a></li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># !/usr/bin/env python</span></div><div class="line"><span class="comment"># -*- coding: utf-8 -*</span></div><div class="line"><span class="string">'''</span></div><div class="line">created by will</div><div class="line">'''</div><div class="line"></div><div class="line"><span class="keyword">import</span> multiprocessing</div><div class="line"></div><div class="line">print(<span class="string">'gunicorn config is running....'</span>)</div><div class="line"></div><div class="line">bind = <span class="string">"0.0.0.0:8088"</span></div><div class="line">workers = multiprocessing.cpu_count() * <span class="number">2</span> + <span class="number">1</span></div><div class="line">pidfile = <span class="string">'/tmp/gunicorn.pid'</span></div><div class="line">accesslog = <span class="string">'/tmp/gunicorn_access.log'</span></div><div class="line">errorlog = <span class="string">'/tmp/gunicorn_error.log'</span></div><div class="line">loglevel = <span class="string">'info'</span></div><div class="line">capture_output = <span class="keyword">True</span></div><div class="line">statsd_host = <span class="string">'0.0.0.0:8888'</span></div><div class="line">proc_name = <span class="string">'will\'s metamap'</span></div><div class="line">daemon = <span class="keyword">True</span></div></pre></td></tr></table></figure>
+<p>然后运行的时候指定此文件的位置即可。</p>
+<p>注意：</p>
+<ul>
+<li>启动指定wsgi位置的时候，需要是<code>gunicorn metamap_django.wsgi:application</code>，要注意的是metamap_django与wsgi之间是<code>.</code>，而不是能是文件路径<code>/</code>，否则启动gunicorn的时候报错:import by filename is not supported gunicorn</li>
+<li>执行 kill -HUP cat /tmp/xx/pid来管理master和worker进程</li>
+<li>如果要使用supervisord管理进程的话，最好就不要设置<code>daemon</code>为True了</li>
+<li>有些东西跟官网说的不一致，比如: statsd_host，django_settings指定settings文件位置，access-log等</li>
+</ul>
+<p>参考：</p>
+<ul>
+<li><a href="http://ju.outofmemory.cn/entry/105202" target="_blank" rel="external">http://ju.outofmemory.cn/entry/105202</a></li>
+<li><a href="http://zqpythonic.qiniucdn.com/data/20130901152951/index.html" target="_blank" rel="external">http://zqpythonic.qiniucdn.com/data/20130901152951/index.html</a></li>
+</ul>
+<h2 id="Django"><a href="#Django" class="headerlink" title="Django"></a>Django</h2><p>注意一下几点：</p>
+<ol>
+<li><p>为django创建多个settings文件，如prod.py,test.py等,之后在gunicorn的配置文件里指定需要的配置文件即可</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># !/usr/bin/env python</span></div><div class="line"><span class="comment"># -*- coding: utf-8 -*</span></div><div class="line"><span class="string">'''</span></div><div class="line">created by will</div><div class="line">'''</div><div class="line"></div><div class="line"><span class="keyword">import</span> multiprocessing, os</div><div class="line"></div><div class="line">print(<span class="string">'gunicorn config is running....'</span>)</div><div class="line"></div><div class="line">bind = <span class="string">"0.0.0.0:8088"</span></div><div class="line">workers = multiprocessing.cpu_count() * <span class="number">2</span> + <span class="number">1</span></div><div class="line">pidfile = <span class="string">'/tmp/gunicorn.pid'</span></div><div class="line"><span class="comment"># accesslog = '/tmp/gunicorn_access.log'</span></div><div class="line">errorlog = <span class="string">'/tmp/gunicorn_error.log'</span></div><div class="line">loglevel = <span class="string">'info'</span></div><div class="line">capture_output = <span class="keyword">True</span></div><div class="line"><span class="comment"># statsd_host = 'localhost:8077'</span></div><div class="line">proc_name = <span class="string">'will\'s metamap'</span></div><div class="line">daemon = <span class="keyword">True</span></div><div class="line"><span class="comment"># 测试确定，这里设置这个参数不生效</span></div><div class="line"><span class="comment"># django_settings = 'metamap.config.prod'</span></div><div class="line"></div><div class="line">os.environ.setdefault(<span class="string">"DJANGO_SETTINGS_MODULE"</span>, <span class="string">"metamap.config.prod"</span>)</div></pre></td></tr></table></figure>
+</li>
+<li><p>修改settings里的几个选项</p>
+</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DEBUG</td>
+<td>改为False，不然程序出错的方法栈会直接展示在前端用户那里，不友好。</td>
+</tr>
+<tr>
+<td>ALLOWED_HOSTS</td>
+<td>添加可以访问你的项目的几个域名或主机地址，防止<a href="https://docs.djangoproject.com/es/1.9/topics/security/#host-headers-virtual-hosting" target="_blank" rel="external"> HTTP Host header attacks</a></td>
+</tr>
+<tr>
+<td>ADMINS</td>
+<td>当程序出错的时候django会发送错误给这些邮件列表</td>
+</tr>
+</tbody>
+</table>
+<p>参考：<a href="https://docs.djangoproject.com/es/1.9/topics/settings/" target="_blank" rel="external">https://docs.djangoproject.com/es/1.9/topics/settings/</a></p>
+<ol>
+<li>确认有处理view里抛出的异常的逻辑，如果没有的话，自定义一个处理异常的middleware，注册到setting离去。</li>
+</ol>
+<p>参考：<a href="https://docs.djangoproject.com/ja/1.9/topics/http/middleware/" target="_blank" rel="external">https://docs.djangoproject.com/ja/1.9/topics/http/middleware/</a></p>
+<ol>
+<li>将django的所有的静态文件整理到指定文件夹<br>在settings.py里设置static_root，然后执行<code>./manage.py collectstatic</code>，这个命令就会把所有的静态资源整理到static_root里面。</li>
+</ol>
+<p>参考：<a href="https://docs.djangoproject.com/en/1.10/howto/static-files/#deployment" target="_blank" rel="external">https://docs.djangoproject.com/en/1.10/howto/static-files/#deployment</a></p>
+<h2 id="Nginx"><a href="#Nginx" class="headerlink" title="Nginx"></a>Nginx</h2><p>nginx的主要功能是分发动态请求，以及处理静态资源请求。</p>
+<p>配置文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">#user  nobody;</div><div class="line">worker_processes  1;</div><div class="line"></div><div class="line">events &#123;</div><div class="line">    worker_connections  1024;</div><div class="line">&#125;</div><div class="line"></div><div class="line">http &#123;</div><div class="line">    include       mime.types;</div><div class="line">    default_type  application/octet-stream;</div><div class="line"></div><div class="line">    #log_format  main  &apos;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &apos;</div><div class="line">    #                  &apos;$status $body_bytes_sent &quot;$http_referer&quot; &apos;</div><div class="line">    #                  &apos;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&apos;;</div><div class="line"></div><div class="line">    access_log  /tmp/nginx.access.log combined;</div><div class="line"></div><div class="line">    sendfile        on;</div><div class="line">    </div><div class="line">    keepalive_timeout  65;</div><div class="line"></div><div class="line">    #gzip  on;</div><div class="line"></div><div class="line">     upstream app_server &#123;</div><div class="line"></div><div class="line">        # 指定后台地址</div><div class="line">        server 192.168.244.128:8088 fail_timeout=0;</div><div class="line">      &#125;</div><div class="line"></div><div class="line">      server &#123;</div><div class="line">        listen 80;</div><div class="line">        client_max_body_size 4G;</div><div class="line"></div><div class="line">        # 指定域名</div><div class="line">        server_name 192.168.244.128;</div><div class="line"></div><div class="line">        keepalive_timeout 5;</div><div class="line"></div><div class="line">        # static文件夹所在的根目录</div><div class="line">        root /usr/local/metamap;</div><div class="line"></div><div class="line">        location / &#123;</div><div class="line">          # 如果是静态资源就自己处理，如果不是就发送给proxy_to_app</div><div class="line">          # try_files-&gt;按顺序检查文件是否存在，返回第一个找到的文件或文件夹（结尾加斜线表示为文件夹），如果所有的文件或文件夹都找不到，会进行一个内部重定向到最后一个参数</div><div class="line">          try_files $uri @proxy_to_app;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        location @proxy_to_app &#123;</div><div class="line">          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</div><div class="line">          # enable this if and only if you use HTTPS</div><div class="line">          # proxy_set_header X-Forwarded-Proto https;</div><div class="line">          proxy_set_header Host $http_host;</div><div class="line">          # we don&apos;t want nginx trying to do something clever with</div><div class="line">          # redirects, we set the Host: header above already.</div><div class="line">          proxy_redirect off;</div><div class="line">          proxy_pass http://app_server;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        error_page 500 502 503 504 /50x.html;</div><div class="line">        location = /50x.html &#123;</div><div class="line">          root html;</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="未解决的问题"><a href="#未解决的问题" class="headerlink" title="未解决的问题"></a>未解决的问题</h2><p>不定时出现找不到静态资源的问题：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">2016-08-04 10:04:10,128 [MainThread:-1219164416] [django.request:182] [base:get_response] [WARNING]- Not Found: /static/js/bootstrap.js</div><div class="line">2016-08-04 10:04:10,126 [MainThread:-1219164416] [django.request:182] [base:get_response] [WARNING]- Not Found: /static/js/jquery.js</div><div class="line">2016-08-04 10:04:10,148 [MainThread:-1219164416] [django.request:182] [base:get_response] [WARNING]- Not Found: /static/css/bootstrap.css</div><div class="line">2016-08-04 10:04:10,140 [MainThread:-1219164416] [django.request:182] [base:get_response] [WARNING]- Not Found: /static/style.css</div></pre></td></tr></table></figure></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/12/05/metamap部署/" data-title="metamap部署 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/12/05/公平调度器-capacity-scheduler/" title="公平调度器-capacity-scheduler">
+  <strong>上一篇：</strong><br/>
+  <span>
+  公平调度器-capacity-scheduler</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/12/05/celery队列路由/"  title="celery队列路由">
+ <strong>下一篇：</strong><br/> 
+ <span>celery队列路由
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/12/05/metamap部署/" data-title="metamap部署" data-url="http://willcup.com/2016/12/05/metamap部署/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#vituralEnv"><span class="toc-number">1.</span> <span class="toc-text">vituralEnv</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Gunicorn"><span class="toc-number">2.</span> <span class="toc-text">Gunicorn</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Django"><span class="toc-number">3.</span> <span class="toc-text">Django</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Nginx"><span class="toc-number">4.</span> <span class="toc-text">Nginx</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#未解决的问题"><span class="toc-number">5.</span> <span class="toc-text">未解决的问题</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

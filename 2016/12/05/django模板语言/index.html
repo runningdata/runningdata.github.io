@@ -1,0 +1,630 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>django模板语言 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="本文从技术角度解释一下Django template系统，看一下它是怎样运行的，以及怎样继承它。
+希望你已经看了前面的文章。
+概览在python中使用template系统包含三个步骤：
+
+配置一个Engine；
+把template代码编译成Template；
+在Context中渲染这个Template
+
+Django项目一般都是使用高级API来实现上面的步骤。
+
+对于TEMPLATES配置的每个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="django模板语言">
+<meta property="og:url" content="http://willcup.com/2016/12/05/django模板语言/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="本文从技术角度解释一下Django template系统，看一下它是怎样运行的，以及怎样继承它。
+希望你已经看了前面的文章。
+概览在python中使用template系统包含三个步骤：
+
+配置一个Engine；
+把template代码编译成Template；
+在Context中渲染这个Template
+
+Django项目一般都是使用高级API来实现上面的步骤。
+
+对于TEMPLATES配置的每个">
+<meta property="og:updated_time" content="2017-12-27T13:41:24.781Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="django模板语言">
+<meta name="twitter:description" content="本文从技术角度解释一下Django template系统，看一下它是怎样运行的，以及怎样继承它。
+希望你已经看了前面的文章。
+概览在python中使用template系统包含三个步骤：
+
+配置一个Engine；
+把template代码编译成Template；
+在Context中渲染这个Template
+
+Django项目一般都是使用高级API来实现上面的步骤。
+
+对于TEMPLATES配置的每个">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/django模板语言/" title="django模板语言" itemprop="url">django模板语言</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:08:33.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#概览"><span class="toc-text">概览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#配置engine"><span class="toc-text">配置engine</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#加载Template"><span class="toc-text">加载Template</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#渲染context"><span class="toc-text">渲染context</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#变量"><span class="toc-text">变量</span></a></li></ol>
+		
+		</div>
+		
+		<p>本文从技术角度解释一下Django template系统，看一下它是怎样运行的，以及怎样继承它。</p>
+<p>希望你已经看了前面的文章。</p>
+<h2 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h2><p>在python中使用template系统包含三个步骤：</p>
+<ol>
+<li>配置一个<a href="https://docs.djangoproject.com/en/1.9/ref/templates/api/#django.template.Engine" target="_blank" rel="external">Engine</a>；</li>
+<li>把template代码编译成<a href="https://docs.djangoproject.com/en/1.9/ref/templates/api/#django.template.Template" target="_blank" rel="external">Template</a>；</li>
+<li>在<a href="https://docs.djangoproject.com/en/1.9/ref/templates/api/#django.template.Context" target="_blank" rel="external">Context</a>中渲染这个Template</li>
+</ol>
+<p>Django项目一般都是使用<a href="https://docs.djangoproject.com/en/1.9/topics/templates/#template-engines" target="_blank" rel="external">高级API</a>来实现上面的步骤。</p>
+<ol>
+<li>对于<a href="https://docs.djangoproject.com/en/1.9/ref/settings/#std:setting-TEMPLATES" target="_blank" rel="external">TEMPLATES</a>配置的每个<a href="https://docs.djangoproject.com/en/1.9/topics/templates/#django.template.backends.django.DjangoTemplates" target="_blank" rel="external"> DjangoTemplates</a>，Django都实例化一个<code>Engine</code>. DjangoTemplates包装了一个<code>Engine</code>，使它能够适配后台的通用模板API。</li>
+<li><a href="https://docs.djangoproject.com/en/1.9/topics/templates/#module-django.template.loader" target="_blank" rel="external">django.template.loader</a> moduel有一个<code>get_template()</code>方法用来加载template。返回一个包装了<a href="https://docs.djangoproject.com/en/1.9/ref/templates/api/#django.template.Template" target="_blank" rel="external">django.template.Template</a>的<code>django.template.backends.django.Template</code>.</li>
+<li>上一步骤中的<code>Template</code>有一个<code>render()</code>方法，它又包含一个context，有时也包含一个针对<code>Context</code>的request，负责在指定Template进行渲染。</li>
+</ol>
+<h2 id="配置engine"><a href="#配置engine" class="headerlink" title="配置engine"></a>配置engine</h2><p><strong>class Engine(dirs=None, app_dirs=False, allowed_include_roots=None, context_processors=None, debug=False, loaders=None, string_if_invalid=’’, file_charset=’utf-8’, libraries=None, builtins=None)<a href="https://docs.djangoproject.com/en/1.9/_modules/django/template/engine/#Engine" target="_blank" rel="external">source</a></strong></p>
+<ul>
+<li><strong>dirs</strong> template文件所在的文件夹们，默认是空</li>
+<li><strong>loaders</strong> 多个template loader类。<a href="https://docs.djangoproject.com/en/1.9/ref/templates/api/#template-loaders" target="_blank" rel="external">详见</a></li>
+<li><strong>app_dirs</strong> 只在<strong>loaders</strong>里配置了’django.template.loaders.app_directories.Loader’ 才有效果</li>
+<li><strong>libraries</strong></li>
+</ul>
+<h2 id="加载Template"><a href="#加载Template" class="headerlink" title="加载Template"></a>加载Template</h2><p>创建<code>Template</code>的推荐方式是调用<code>Engine</code>的<code>get_template()</code>, <code>select_template()</code>或者<code>from_string()</code>.</p>
+<p>在django项目里是只能配置一个Template的，但我们也可以脱离配置直接使用Template。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> django.template <span class="keyword">import</span> Template</div><div class="line"></div><div class="line">template = Template(<span class="string">"My name is &#123;&#123; my_name &#125;&#125;."</span>)</div></pre></td></tr></table></figure></p>
+<h2 id="渲染context"><a href="#渲染context" class="headerlink" title="渲染context"></a>渲染context</h2><p>编译好Template之后，就可以用它来渲染任意的context了。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> django.template <span class="keyword">import</span> Context, Template</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>template = Template(<span class="string">"My name is &#123;&#123; my_name &#125;&#125;."</span>)</div><div class="line"></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>context = Context(&#123;<span class="string">"my_name"</span>: <span class="string">"Adrian"</span>&#125;)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>template.render(context)</div><div class="line"><span class="string">"My name is Adrian."</span></div><div class="line"></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>context = Context(&#123;<span class="string">"my_name"</span>: <span class="string">"Dolores"</span>&#125;)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>template.render(context)</div><div class="line"><span class="string">"My name is Dolores."</span></div></pre></td></tr></table></figure></p>
+<p>调用Template的render方法来渲染context。</p>
+<h2 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h2><p>变量只能是字母、数字、下划线、点。<br>点有个特殊的含义，叫做lookup。每次遇到点的时候，template系统就会按照以下此次序进行lookup：</p>
+<ul>
+<li>字典lookup。例子：foo[‘sdf’]</li>
+<li>属性lookup。例子：foo.bar</li>
+<li>数组索引lookup。例子：frr[sdf]<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> django.template <span class="keyword">import</span> Context, Template</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>t = Template(<span class="string">"My name is &#123;&#123; person.first_name &#125;&#125;."</span>)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>d = &#123;<span class="string">"person"</span>: &#123;<span class="string">"first_name"</span>: <span class="string">"Joe"</span>, <span class="string">"last_name"</span>: <span class="string">"Johnson"</span>&#125;&#125;</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>t.render(Context(d))</div><div class="line"><span class="string">"My name is Joe."</span></div><div class="line"></div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="class"><span class="keyword">class</span> <span class="title">PersonClass</span>:</span> <span class="keyword">pass</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>p = PersonClass()</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>p.first_name = <span class="string">"Ron"</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>p.last_name = <span class="string">"Nasty"</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>t.render(Context(&#123;<span class="string">"person"</span>: p&#125;))</div><div class="line"><span class="string">"My name is Ron."</span></div><div class="line"></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>t = Template(<span class="string">"The first stooge in the list is &#123;&#123; stooges.0 &#125;&#125;."</span>)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>c = Context(&#123;<span class="string">"stooges"</span>: [<span class="string">"Larry"</span>, <span class="string">"Curly"</span>, <span class="string">"Moe"</span>]&#125;)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>t.render(c)</div><div class="line"><span class="string">"The first stooge in the list is Larry."</span></div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>当某个变量可以被调用的时候，都会被尝试调用。例如<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="class"><span class="keyword">class</span> <span class="title">PersonClass2</span>:</span></div><div class="line"><span class="meta">... </span>    <span class="function"><span class="keyword">def</span> <span class="title">name</span><span class="params">(self)</span>:</span></div><div class="line"><span class="meta">... </span>        <span class="keyword">return</span> <span class="string">"Samantha"</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>t = Template(<span class="string">"My name is &#123;&#123; person.name &#125;&#125;."</span>)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>t.render(Context(&#123;<span class="string">"person"</span>: PersonClass2&#125;))</div><div class="line"><span class="string">"My name is Samantha."</span></div></pre></td></tr></table></figure></p>
+<p>可以被调用的变量比直接查找lookup的变量稍微复杂点儿。记住下面几条</p>
+<ul>
+<li><p>如果返回异常的话，会被传递上去，除非设置了<code>silent_variable_failure</code>为True，设置这个属性的话，当异常发生时，就会使用engine配置的<code>string_if_invalid</code>选项；</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span>t = Template(<span class="string">"My name is &#123;&#123; person.first_name &#125;&#125;."</span>)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="class"><span class="keyword">class</span> <span class="title">PersonClass3</span>:</span></div><div class="line"><span class="meta">... </span>    <span class="function"><span class="keyword">def</span> <span class="title">first_name</span><span class="params">(self)</span>:</span></div><div class="line"><span class="meta">... </span>        <span class="keyword">raise</span> AssertionError(<span class="string">"foo"</span>)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>p = PersonClass3()</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>t.render(Context(&#123;<span class="string">"person"</span>: p&#125;))</div><div class="line">Traceback (most recent call last):</div><div class="line">...</div><div class="line">AssertionError: foo</div><div class="line"></div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="class"><span class="keyword">class</span> <span class="title">SilentAssertionError</span><span class="params">(Exception)</span>:</span></div><div class="line"><span class="meta">... </span>    silent_variable_failure = <span class="keyword">True</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="class"><span class="keyword">class</span> <span class="title">PersonClass4</span>:</span></div><div class="line"><span class="meta">... </span>    <span class="function"><span class="keyword">def</span> <span class="title">first_name</span><span class="params">(self)</span>:</span></div><div class="line"><span class="meta">... </span>        <span class="keyword">raise</span> SilentAssertionError</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>p = PersonClass4()</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>t.render(Context(&#123;<span class="string">"person"</span>: p&#125;))</div><div class="line"><span class="string">"My name is ."</span></div></pre></td></tr></table></figure>
+</li>
+<li><p>只能调用无参函数</p>
+</li>
+<li>显然如果前端能调用的话，就可能发生side effect，所以要确保措施。比如</li>
+</ul>
+<p>要解决这个问题，就需要在敏感方法上加上<code>alters_data</code>属性，django默认动态生成的model对象都自动设置了这个属性<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">sensitive_function</span><span class="params">(self)</span>:</span></div><div class="line">    self.database_record.delete()</div><div class="line">sensitive_function.alters_data = <span class="keyword">True</span></div></pre></td></tr></table></figure></p>
+<ul>
+<li>有时我们想关闭这个属性，那么久告诉template系统不要调用。在这个属性上设置<code>do_not_call_in_templates</code>为True。跟上面的区别是，上面会直接返回<code>string_if_invalid</code>，而这个还是可以访问，但是不能调用，也就是当变量而不是当方法使用。</li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/12/05/django模板语言/" data-title="django模板语言 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/12/05/ambari-hive-storage-based-authorization/" title="ambari-hive-storage-based-authorization">
+  <strong>上一篇：</strong><br/>
+  <span>
+  ambari-hive-storage-based-authorization</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/12/05/nodejs学习笔记/"  title="nodejs学习笔记">
+ <strong>下一篇：</strong><br/> 
+ <span>nodejs学习笔记
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/12/05/django模板语言/" data-title="django模板语言" data-url="http://willcup.com/2016/12/05/django模板语言/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#概览"><span class="toc-number">1.</span> <span class="toc-text">概览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#配置engine"><span class="toc-number">2.</span> <span class="toc-text">配置engine</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#加载Template"><span class="toc-number">3.</span> <span class="toc-text">加载Template</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#渲染context"><span class="toc-number">4.</span> <span class="toc-text">渲染context</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#变量"><span class="toc-number">5.</span> <span class="toc-text">变量</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
