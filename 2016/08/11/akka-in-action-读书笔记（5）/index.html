@@ -1,0 +1,653 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>akka in action 读书笔记（5） | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="这一章聊一下akka的Future。Actor提供了一个机制替代了并发object系统，Future提供了一个机制来替代并发function系统。
+5.1 Futrue用例Actor被用来处理message，获取state，基于收到的不同message执行不同代码。借助于监管和监控，他们成为生命力极强的对象，即便出现错误也可以继续生存。
+Future是用来不用object，而使用function就">
+<meta property="og:type" content="article">
+<meta property="og:title" content="akka in action 读书笔记（5）">
+<meta property="og:url" content="http://willcup.com/2016/08/11/akka-in-action-读书笔记（5）/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="这一章聊一下akka的Future。Actor提供了一个机制替代了并发object系统，Future提供了一个机制来替代并发function系统。
+5.1 Futrue用例Actor被用来处理message，获取state，基于收到的不同message执行不同代码。借助于监管和监控，他们成为生命力极强的对象，即便出现错误也可以继续生存。
+Future是用来不用object，而使用function就">
+<meta property="og:image" content="http://willcup.com/imgs/akka/akka_5_placeholder_for_async.png">
+<meta property="og:image" content="http://willcup.com/imgs/akka/akka_5_chain_async_func.png">
+<meta property="og:image" content="http://willcup.com/imgs/akka/akka_5_aggr_result_sync_vs_async.png">
+<meta property="og:image" content="http://willcup.com/imgs/akka/akka_5_weather_info_async.png">
+<meta property="og:image" content="http://willcup.com/imgs/akka/akka_5_combine_web_request_actors.png">
+<meta property="og:image" content="http://willcup.com/imgs/akka/akka_5_sync_call_code.png">
+<meta property="og:image" content="http://willcup.com/imgs/akka/akka_5_async_chain_call_code.png">
+<meta property="og:image" content="http://willcup.com/imgs/akka/akka_5_async_chain_call_code.png">
+<meta property="og:image" content="http://willcup.com/imgs/akka/akka_5_async_chain_call_return_code.png">
+<meta property="og:image" content="http://willcup.com/imgs/akka/akka_5_async_chain_all_code.png">
+<meta property="og:image" content="http://willcup.com/imgs/akka/akka_5_refactor.png">
+<meta property="og:image" content="http://willcup.com/imgs/akka/akka_5_accumulate_info_tickit_info.png">
+<meta property="og:image" content="http://willcup.com/imgs/akka/akka_5_ignore_failed_resp.png">
+<meta property="og:image" content="http://willcup.com/imgs/akka/akka_5_ticket_flow.png">
+<meta property="og:image" content="http://willcup.com/imgs/akka/akka_5_weather_flow.png">
+<meta property="og:image" content="http://willcup.com/imgs/akka/akka_5_travel_flow.png">
+<meta property="og:updated_time" content="2016-10-28T02:54:06.773Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="akka in action 读书笔记（5）">
+<meta name="twitter:description" content="这一章聊一下akka的Future。Actor提供了一个机制替代了并发object系统，Future提供了一个机制来替代并发function系统。
+5.1 Futrue用例Actor被用来处理message，获取state，基于收到的不同message执行不同代码。借助于监管和监控，他们成为生命力极强的对象，即便出现错误也可以继续生存。
+Future是用来不用object，而使用function就">
+<meta name="twitter:image" content="http://willcup.com/imgs/akka/akka_5_placeholder_for_async.png">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/node_modules">测试</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/08/11/akka-in-action-读书笔记（5）/" title="akka in action 读书笔记（5）" itemprop="url">akka in action 读书笔记（5）</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-08-11T08:35:33.000Z" itemprop="datePublished"> 发表于 2016-08-11</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-Futrue用例"><span class="toc-text">5.1 Futrue用例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-2-Futrue中无阻塞"><span class="toc-text">5.2 Futrue中无阻塞</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-3-失败"><span class="toc-text">5.3 失败</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-4-整合Futrue"><span class="toc-text">5.4 整合Futrue</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-5-Futrue和Actor"><span class="toc-text">5.5 Futrue和Actor </span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-6-总结"><span class="toc-text">5.6 总结</span></a></li></ol>
+		
+		</div>
+		
+		<p>这一章聊一下akka的Future。Actor提供了一个机制替代了并发object系统，Future提供了一个机制来替代并发function系统。</p>
+<h2 id="5-1-Futrue用例"><a href="#5-1-Futrue用例" class="headerlink" title="5.1 Futrue用例"></a>5.1 Futrue用例</h2><p>Actor被用来处理message，获取state，基于收到的不同message执行不同代码。借助于监管和监控，他们成为生命力极强的对象，即便出现错误也可以继续生存。</p>
+<p>Future是用来不用object，而使用function就能解决问题的工具。它是一个function结果的占位符，在未来的某一个时刻生效，是一个异步结果。</p>
+<p><img src="/imgs/akka/akka_5_placeholder_for_async.png" alt="异步函数结果的占位符"></p>
+<p>Future是只读的，而且可以被读多次，不能被外界修改。</p>
+<p>注意：Future并不是对java.util.concurrent.Futrue的封装。后者的get方法还是会引起block的。</p>
+<p>Future对于pipeline的处理方式很友好，就是经过function1的结果传递给function2使用。</p>
+<p>以买票的例子来说，假设我们创建了一个web页面，提供一些额外的信息，比如天气预报、交通状况、出行计划、停车等。下面是event的处理流程：<br><img src="/imgs/akka/akka_5_chain_async_func.png" alt="异步函数链"></p>
+<p>图中getEvent和getTraffic都是异步请求web服务的function，顺序执行。getTrafficInfo接收一个Event参数，当Future[Event]获得结果后就会触发getTrafficInfo的执行。这与在并发线程中执行getEvent方法等待返回结果是不同的。我们定义了一个一定会被执行的getTrafficInfo函数，而且不用任何等待。</p>
+<p>下图展示了一个简单的例子：<br><img src="/imgs/akka/akka_5_aggr_result_sync_vs_async.png" alt="同步与异步的对比"></p>
+<p>可见异步的话只需要花费4和2中的最长时间，而同步就需要2+4。</p>
+<p>下图展示了另一个用例，利用异步最快获取天气信息：</p>
+<p><img src="/imgs/akka/akka_5_weather_info_async.png" alt="异步最快获取天气信息"></p>
+<p>假设X服务出现超时问题的话，就直接不用管它的结果了。</p>
+<p>这些场景使用actor并不是不可以，只是直接使用actor的话会特别麻烦。假设使用actor实现上面那个获取天气和交通信息的功能，需要包含以下步骤：</p>
+<p><img src="/imgs/akka/akka_5_combine_web_request_actors.png" alt="使用actor组合web请求"></p>
+<p>我们需要为天气和交通服务分别创建两个actor，这样他们才能被同时调用。调用方式被定义在TicketInfo Actor中。这里也并不能实现非阻塞。</p>
+<p>如果应用包含以下特性，就可以考虑使用future：</p>
+<ul>
+<li>不要block</li>
+<li>调用一次某个function之后，在未来的某个时间点使用调用结果</li>
+<li>组合许多一次调用的function结果</li>
+<li>调用一些相互竞争的function，只使用其中的一部分结果，比如：最快的天气信息</li>
+<li>当function出现错误的时候，需要返回默认值，以便后面的function能够继续调用</li>
+<li>pipeline对结果相互依赖的function</li>
+</ul>
+<h2 id="5-2-Futrue中无阻塞"><a href="#5-2-Futrue中无阻塞" class="headerlink" title="5.2 Futrue中无阻塞"></a>5.2 Futrue中无阻塞</h2><p>是时候写一下TicketInfoService完成上面获取天气和交通信息了。</p>
+<p>异步与同步的方法在与程序中的处理流，下面是一个同步的程序：<br><img src="/imgs/akka/akka_5_sync_call_code.png" alt="同步调用代码"></p>
+<p>这里既没有使用futrue，也没有使用scala的懒加载，所以每行都需要等返回值才能继续。</p>
+<p>再看一下异步的程序：<br><img src="/imgs/akka/akka_5_async_chain_call_code.png" alt="异步调用代码"></p>
+<p>callEventService实际上是在另一个线程里调用的，这个线程其实是阻塞的，后面我们会解决这个问题。futrue是将一段代码进行一部执行调用的Futrue.apply的简写。</p>
+<p>以上代码其实是一个闭包，把request从main线程传递给一个新的线程去执行某个方法。</p>
+<p>下面把交通信息串进来：<br><img src="/imgs/akka/akka_5_async_chain_call_code.png" alt="处理异步结果，继续异步调用"></p>
+<p>这段代码块只有在futrueEvent可用的时候才会执行。如果我们也需要这段程序有返回值咋办</p>
+<p><img src="/imgs/akka/akka_5_async_chain_call_return_code.png" alt="返回Future[Route]"></p>
+<p>也可以直接串起来。</p>
+<p><img src="/imgs/akka/akka_5_async_chain_all_code.png" alt="直接串起来"></p>
+<p>重构一下getEvent和getRoute方法：<br><img src="/imgs/akka/akka_5_refactor.png" alt="重构之后"></p>
+<p>其实要真正的异步的话，callEventService和callTrafficService应该也是异步返回Futrue才对，这个可以借助spray-client，在后面的rest相关章节我们会介绍。</p>
+<p>需要注意一个细节，就是钥匙用futrue的话需要引入对ExecutionContext的隐式转换，不然编译不过去。<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> scala.concurrent.<span class="type">Implicits</span>.global</div></pre></td></tr></table></figure></p>
+<p>ExecutionContext是在某个线程池执行任务的抽象，可以类比java.util.concurrent.Executor。</p>
+<p>这里介绍了成功调用的案例，下面说一下怎样从失败中恢复。</p>
+<h2 id="5-3-失败"><a href="#5-3-失败" class="headerlink" title="5.3 失败"></a>5.3 失败</h2><p>假如在异步处理的过程中出现了Exception咋办？启动一个scala REPL，执行以下代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">scala&gt; :paste</div><div class="line">// Entering paste mode (ctrl-D to finish)</div><div class="line"></div><div class="line">import scala.concurrent._</div><div class="line">import ExecutionContext.Implicits.global</div><div class="line"></div><div class="line">val futureFail = future &#123; throw new Exception(&quot;error!&quot;)&#125;</div><div class="line">futureFail.foreach(value=&gt; println(value))</div><div class="line"></div><div class="line">// Exiting paste mode, now interpreting.</div><div class="line"></div><div class="line">futureFail: scala.concurrent.Future[Nothing] =</div><div class="line">scala.concurrent.impl.Promise$DefaultPromise@193cd8e1</div><div class="line"></div><div class="line">scala&gt;</div></pre></td></tr></table></figure></p>
+<p>可以看到并没有打印我们期望的结果，命令行也没有打印方法栈。由于前面没有执行成功，所以foreach代码没有执行。</p>
+<p>我们可以使用OnComplete接口<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">scala&gt; :paste</div><div class="line"><span class="comment">// Entering paste mode (ctrl-D to finish)</span></div><div class="line"></div><div class="line"><span class="keyword">import</span> scala.util._</div><div class="line"><span class="keyword">import</span> scala.util.control.<span class="type">NonFatal</span></div><div class="line"><span class="keyword">import</span> scala.concurrent._</div><div class="line"><span class="keyword">import</span> <span class="type">ExecutionContext</span>.<span class="type">Implicits</span>.global</div><div class="line"></div><div class="line"><span class="keyword">val</span> futureFail = future &#123; <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">Exception</span>(<span class="string">"error!"</span>)&#125;</div><div class="line">futureFail.onComplete &#123;</div><div class="line"><span class="keyword">case</span> <span class="type">Success</span>(value) =&gt; println(value)</div><div class="line"><span class="keyword">case</span> <span class="type">Failure</span>(<span class="type">NonFatal</span>(e)) =&gt; println(e)</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Exiting paste mode, now interpreting.</span></div><div class="line"></div><div class="line">java.lang.<span class="type">Exception</span>: error!</div></pre></td></tr></table></figure></p>
+<p>OnComplete回调函数总是会被调用，而且返回值是Unit。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">futureFail.onFailure &#123;</div><div class="line"><span class="keyword">case</span> <span class="type">NonFatal</span>(e) =&gt; println(e)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>TicketInfo服务同样也应该保持一些信息，以便出现异常后记录抛出的异常信息。下图是TicketInfo里保存的事件信息：<br><img src="/imgs/akka/akka_5_accumulate_info_tickit_info.png" alt="TicketInfo保存的事件信息"></p>
+<p>getEvent和getTraffic改用TicketInfo作为返回值与接收值，这样TicketInfo可以一路积攒信息，TicketInfo是一个case class。</p>
+<p>注意：在使用futrue的过程中一定要全程使用不可变数据。</p>
+<p>下图说明了GetTraffic调用失败的时候会发生什么：<br><img src="/imgs/akka/akka_5_ignore_failed_resp.png" alt="忽略失败的服务的response"></p>
+<p>我们可以定义recover方法，当出现异常的时候就返回这个方法的返回值。下面代码说明了怎样使用：<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">val</span> futureStep1 = getEvent(ticketNr)<span class="comment">//返回Future[TicketInfo]</span></div><div class="line"><span class="keyword">val</span> futureStep2 = futureStep1.flatMap &#123; ticketInfo =&gt; <span class="comment">// 使用flatMap我们可以直接返回Future[TicketInfo]而不是一个TicketInfo</span></div><div class="line">  getTraffic(ticketInfo).recover &#123; <span class="comment">//返回Future[TicketInfo]</span></div><div class="line">    <span class="keyword">case</span> e:<span class="type">TrafficServiceException</span> =&gt; ticketInfo <span class="comment">//使用一个包含初始TicketInfo的Future来恢复</span></div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>getTraffic啥的都是创建TicketInfo的copy。</p>
+<p>还有一个recoverWith用来返回 Future[TicketInfo]而不是TicketInfo。注意上面的recover方法是同步调用的。</p>
+<p>上面代码中还有一个问题，如果getEvent就失败了咋办？flatMap根本就不会执行。<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">val</span> futureStep1 = getEvent(ticketNr)</div><div class="line"><span class="keyword">val</span> futureStep2 = futureStep1.flatMap &#123; ticketInfo =&gt;</div><div class="line">    getTraffic(ticketInfo).recover &#123;</div><div class="line">      <span class="keyword">case</span> e:<span class="type">TrafficServiceException</span> =&gt; ticketInfo</div><div class="line">    &#125;</div><div class="line">&#125;.recover &#123;</div><div class="line">  <span class="keyword">case</span> <span class="type">NonFatal</span>(e) =&gt; <span class="type">TicketInfo</span>(ticketNr)</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>如果getEvent失败的话，就直接返回包含ticketNr的空TicketInfo。</p>
+<h2 id="5-4-整合Futrue"><a href="#5-4-整合Futrue" class="headerlink" title="5.4 整合Futrue"></a>5.4 整合Futrue</h2><p>下面是买票服务中的所有的case class。<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> com.goticks</div><div class="line"></div><div class="line"><span class="keyword">import</span> org.joda.time.&#123;<span class="type">Duration</span>, <span class="type">DateTime</span>&#125;</div><div class="line"></div><div class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">TicketInfo</span>(<span class="params">ticketNr:<span class="type">String</span>,</span></span></div><div class="line">                      userLocation:<span class="type">Location</span>,</div><div class="line">                      event:<span class="type">Option</span>[<span class="type">Event</span>]=<span class="type">None</span>,</div><div class="line">                      travelAdvice:<span class="type">Option</span>[<span class="type">TravelAdvice</span>]=<span class="type">None</span>,</div><div class="line">                      weather:<span class="type">Option</span>[<span class="type">Weather</span>]=<span class="type">None</span>,</div><div class="line">                      suggestions:<span class="type">Seq</span>[<span class="type">Event</span>]=<span class="type">Seq</span>())</div><div class="line"></div><div class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Event</span>(<span class="params">name:<span class="type">String</span>,location:<span class="type">Location</span>, time:<span class="type">DateTime</span></span>)</span></div><div class="line"></div><div class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Artist</span>(<span class="params">name:<span class="type">String</span>, calendarUri:<span class="type">String</span></span>)</span></div><div class="line"></div><div class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Location</span>(<span class="params">lat:<span class="type">Double</span>, lon:<span class="type">Double</span></span>)</span></div><div class="line"></div><div class="line"><span class="comment">// 简单起见，所有的route都弄成了一个简单的字符串</span></div><div class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">RouteByCar</span>(<span class="params">route:<span class="type">String</span>, timeToLeave:<span class="type">DateTime</span>, origin:<span class="type">Location</span>, destination:<span class="type">Location</span>,</span></span></div><div class="line">                 estimatedDuration:<span class="type">Duration</span>, trafficJamTime:<span class="type">Duration</span>)</div><div class="line"></div><div class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">PublicTransportAdvice</span>(<span class="params">advice:<span class="type">String</span>, timeToLeave:<span class="type">DateTime</span>, origin:<span class="type">Location</span>, destination:<span class="type">Location</span>,</span></span></div><div class="line">                                 estimatedDuration:<span class="type">Duration</span>)</div><div class="line"></div><div class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">TravelAdvice</span>(<span class="params">routeByCar:<span class="type">Option</span>[<span class="type">RouteByCar</span>]=<span class="type">None</span>,</span></span></div><div class="line">                        publicTransportAdvice: <span class="type">Option</span>[<span class="type">PublicTransportAdvice</span>]=<span class="type">None</span>)</div><div class="line"></div><div class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Weather</span>(<span class="params">temperature:<span class="type">Int</span>, precipitation:<span class="type">Boolean</span></span>)</span></div></pre></td></tr></table></figure></p>
+<p>下图是TicketInfoService的处理流：<br><img src="/imgs/akka/akka_5_ticket_flow.png" alt="TicketInfoService的处理流"></p>
+<p>combinators在图中以菱形表示。所有的future最终都被整合进了Future[TicketInfo]。</p>
+<p>我们以最快选取天气信息先开始讲解，下面是这块逻辑使用combinator的地方：<br><img src="/imgs/akka/akka_5_weather_flow.png" alt="天气信息流"></p>
+<p>两个天气服务都返回Future[Weather]，然后我们需要的是Future[TicketInfo]。下面是代码：<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">getWeather</span></span>(ticketInfo:<span class="type">TicketInfo</span>):<span class="type">Future</span>[<span class="type">TicketInfo</span>] = &#123;</div><div class="line"></div><div class="line">  <span class="keyword">val</span> futureWeatherX = callWeatherXService(ticketInfo).recover(withNone) <span class="comment">// 恢复代码封装在withNone里了</span></div><div class="line"></div><div class="line">  <span class="keyword">val</span> futureWeatherY = callWeatherYService(ticketInfo).recover(withNone)</div><div class="line"></div><div class="line">  <span class="type">Future</span>.firstCompletedOf(<span class="type">Seq</span>(futureWeatherX, futureWeatherY)).map&#123; weatherResponse =&gt;</div><div class="line">    ticketInfo.copy(weather = weatherResponse)<span class="comment">// 复制到ticketInfo里</span></div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>firstCompletedOf只返回第一个返回结果的服务的response，成功失败无所谓，也就是说加入先返回的是失败，那么后面即便有成功返回也不会生效了。【可以考虑firstSucceededOf】</p>
+<p>下面是公共交通信息和行车路由服务，它们应该并行，然后等两者都结束调用就将结果combine进TravelAdvice。下图展示了这个combinator：<br><img src="/imgs/akka/akka_5_travel_flow.png" alt="旅行路径建议流"></p>
+<p>getTraffic和getPublicTransport的Futrue各自返回一种类型数据：RouteByCar以及PublicTransportAdvice。这两个值先被放进一个tuple，然后把这个tuple map放进TravelAdvice里面。<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">TravelAdvice</span>(<span class="params">routeByCar:<span class="type">Option</span>[<span class="type">RouteByCar</span>]=<span class="type">None</span>,</span></span></div><div class="line">                        publicTransportAdvice: <span class="type">Option</span>[<span class="type">PublicTransportAdvice</span>]=<span class="type">None</span>)</div></pre></td></tr></table></figure></p>
+<p>基于这个信息，用户就可以决定是使用公共交通工具出行，还是自驾游。下面是zip combinator的代码：<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"> <span class="function"><span class="keyword">def</span> <span class="title">getTravelAdvice</span></span>(info:<span class="type">TicketInfo</span>, event:<span class="type">Event</span>):<span class="type">Future</span>[<span class="type">TicketInfo</span>] = &#123;</div><div class="line"></div><div class="line">   <span class="keyword">val</span> futureRoute = callTrafficService(info.userLocation, event.location, event.time).recover(withNone)</div><div class="line"></div><div class="line">   <span class="keyword">val</span> futurePublicTransport = callPublicTransportService(info.userLocation, event.location, event.time).recover(withNone)</div><div class="line"></div><div class="line"><span class="comment">// 先把 Future[RouteByCar] 和 Future[PublicTransportAdvice] zip成tuple放入Future[(RouteByCar, PublicTransportAdvice)]</span></div><div class="line"><span class="comment">// 然后再将这两者map放入Future[TicketInfo]</span></div><div class="line">   futureRoute.zip(futurePublicTransport).map &#123; <span class="keyword">case</span>(routeByCar, publicTransportAdvice) =&gt;</div><div class="line">     <span class="keyword">val</span> travelAdvice = <span class="type">TravelAdvice</span>(routeByCar, publicTransportAdvice)</div><div class="line">     info.copy(travelAdvice = <span class="type">Some</span>(travelAdvice))</div><div class="line">   &#125;</div><div class="line"> &#125;</div></pre></td></tr></table></figure></p>
+<p>也可以使用for替换map，有时可读性更强一些.<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">for</span>((routeByCar, publicTransportAdvice) &lt;- futureRoute.zip(futurePublicTransport);</div><div class="line">     travelAdvice = <span class="type">TravelAdvice</span>(routeByCar, publicTransportAdvice)</div><div class="line">) <span class="keyword">yield</span> info.copy(travelAdvice = <span class="type">Some</span>(travelAdvice))</div></pre></td></tr></table></figure></p>
+<p>下一个部分我们看一下推荐类似活动给用户。我们使用了两个web服务，一个是类似的艺术服务，返回用户感兴趣的类似艺术的信息。使用这个信息来调用一个日历服务，以便计划下一站的去向。<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 返回对每种艺术活动的计划列表 Future[Seq[Events]]</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">getSuggestions</span></span>(event:<span class="type">Event</span>):<span class="type">Future</span>[<span class="type">Seq</span>[<span class="type">Event</span>]] = &#123;</div><div class="line"></div><div class="line">  <span class="keyword">val</span> futureArtists = callSimilarArtistsService(event).recover(withEmptySeq) <span class="comment">// 返回类似艺术活动的列表：Future[Seq[Events]]</span></div><div class="line"></div><div class="line">  <span class="keyword">for</span>(artists &lt;- futureArtists.recover(withEmptySeq); <span class="comment">// 'artists' evaluates at some point to a Seq[Artist]</span></div><div class="line">      events &lt;- getPlannedEvents(event, artists).recover(withEmptySeq) <span class="comment">// 'events' evaluates at some point to a Seq[Events], a planned event for every called artist.</span></div><div class="line">  ) <span class="keyword">yield</span> events</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>getPlannedEvents使用Future.sequence方法把Seq[Future[Event]]构建成一个Future[Seq[Event]]作为返回值。也就是说把一串futrue放进一个futrue，这个futrue包含一串对象。下面是代码：<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">getPlannedEvents</span></span>(event:<span class="type">Event</span>, artists:<span class="type">Seq</span>[<span class="type">Artist</span>]) = &#123;</div><div class="line">   <span class="keyword">val</span> events = artists.map(artist=&gt; callArtistCalendarService(artist, event.location)) <span class="comment">// events是一个 Seq[Future[Event]]</span></div><div class="line">   <span class="type">Future</span>.sequence(events) <span class="comment">// 把 Seq[Future[Event]]转为Future[Seq[Event]]。当异步调用callArtistCalendarService都完成后，就可以对futrue取值了</span></div><div class="line"> &#125;</div></pre></td></tr></table></figure></p>
+<p>与sequence方法相似的还有一个traverse方法。下面是例子：<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">getPlannedEventsWithTraverse</span></span>(event:<span class="type">Event</span>, artists:<span class="type">Seq</span>[<span class="type">Artist</span>]) = &#123;</div><div class="line">  <span class="type">Future</span>.traverse(artists) &#123; artist=&gt;  <span class="comment">// traverse方法接受一个方法块返回一个futrue对象。</span></div><div class="line">    callArtistCalendarService(artist, event.location)</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>使用sequence的话，我们必须事先创建一个Seq[Future[Event]]，才能转化出Future[Seq[Event]]。traverse就不用什么中间步骤了。</p>
+<p>终于到了TicketInfoService数据流的最后一步了。包含Weather的TicketInfo要和包含TravelAdvice的TicketInfo对象整合起来。我们使用fold方法来自完成：<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">val</span> ticketInfos = <span class="type">Seq</span>(infoWithTravelAdvice, infoWithWeather)</div><div class="line"></div><div class="line"><span class="keyword">val</span> infoWithTravelAndWeather = <span class="type">Future</span>.fold(ticketInfos)(info) &#123; (acc, elem) =&gt;</div><div class="line">  <span class="keyword">val</span> (travelAdvice, weather) = (elem.travelAdvice, elem.weather)</div><div class="line"></div><div class="line">  acc.copy(travelAdvice = travelAdvice.orElse(acc.travelAdvice),</div><div class="line">            weather = weather.orElse(acc.weather))</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>fold方法需要一个初始值、一个方法块。集合中的每个元素都要经过这个方法块对初始值产生影响。</p>
+<p>整体代码如下：<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div></pre></td><td class="code"><pre><div class="line"> <span class="function"><span class="keyword">def</span> <span class="title">getTicketInfo</span></span>(ticketNr:<span class="type">String</span>, location:<span class="type">Location</span>):<span class="type">Future</span>[<span class="type">TicketInfo</span>] = &#123;</div><div class="line">   <span class="keyword">val</span> emptyTicketInfo = <span class="type">TicketInfo</span>(ticketNr, location)</div><div class="line">   <span class="keyword">val</span> eventInfo = getEvent(ticketNr, location).recover(withPrevious(emptyTicketInfo))</div><div class="line"></div><div class="line">   eventInfo.flatMap &#123; info =&gt;</div><div class="line"></div><div class="line">     <span class="keyword">val</span> infoWithWeather = getWeather(info)</div><div class="line"></div><div class="line">     <span class="keyword">val</span> infoWithTravelAdvice = info.event.map &#123; event =&gt;</div><div class="line">       getTravelAdvice(info, event)</div><div class="line">     &#125;.getOrElse(eventInfo)</div><div class="line"></div><div class="line"></div><div class="line">     <span class="keyword">val</span> suggestedEvents = info.event.map &#123; event =&gt;</div><div class="line">       getSuggestions(event)</div><div class="line">     &#125;.getOrElse(<span class="type">Future</span>.successful(<span class="type">Seq</span>()))</div><div class="line"></div><div class="line">     <span class="keyword">val</span> ticketInfos = <span class="type">Seq</span>(infoWithTravelAdvice, infoWithWeather)</div><div class="line"></div><div class="line">     <span class="keyword">val</span> infoWithTravelAndWeather = <span class="type">Future</span>.fold(ticketInfos)(info) &#123; (acc, elem) =&gt;</div><div class="line">       <span class="keyword">val</span> (travelAdvice, weather) = (elem.travelAdvice, elem.weather)</div><div class="line"></div><div class="line">       acc.copy(travelAdvice = travelAdvice.orElse(acc.travelAdvice),</div><div class="line">                 weather = weather.orElse(acc.weather))</div><div class="line">     &#125;</div><div class="line"></div><div class="line"></div><div class="line">     <span class="keyword">for</span>(info &lt;- infoWithTravelAndWeather;</div><div class="line">       suggestions &lt;- suggestedEvents</div><div class="line">     ) <span class="keyword">yield</span> info.copy(suggestions = suggestions)</div><div class="line">   &#125;</div><div class="line"> &#125;</div><div class="line"></div><div class="line"><span class="comment">// 在TicketInfoService处理流中的错误恢复方法</span></div><div class="line"> <span class="class"><span class="keyword">type</span> <span class="title">Recovery</span>[<span class="type">T</span>] </span>= <span class="type">PartialFunction</span>[<span class="type">Throwable</span>,<span class="type">T</span>]</div><div class="line"></div><div class="line"> <span class="comment">// recover with None</span></div><div class="line"> <span class="function"><span class="keyword">def</span> <span class="title">withNone</span></span>[<span class="type">T</span>]:<span class="type">Recovery</span>[<span class="type">Option</span>[<span class="type">T</span>]] = &#123; <span class="keyword">case</span> <span class="type">NonFatal</span>(e) =&gt; <span class="type">None</span> &#125;</div><div class="line"></div><div class="line"> <span class="comment">// recover with empty sequence</span></div><div class="line"> <span class="function"><span class="keyword">def</span> <span class="title">withEmptySeq</span></span>[<span class="type">T</span>]:<span class="type">Recovery</span>[<span class="type">Seq</span>[<span class="type">T</span>]] = &#123; <span class="keyword">case</span> <span class="type">NonFatal</span>(e) =&gt; <span class="type">Seq</span>() &#125;</div><div class="line"></div><div class="line"> <span class="comment">// recover with the ticketInfo that was built in the previous step</span></div><div class="line"> <span class="function"><span class="keyword">def</span> <span class="title">withPrevious</span></span>(previous:<span class="type">TicketInfo</span>):<span class="type">Recovery</span>[<span class="type">TicketInfo</span>] = &#123;</div><div class="line">   <span class="keyword">case</span> <span class="type">NonFatal</span>(e) =&gt; previous</div><div class="line"> &#125;</div></pre></td></tr></table></figure></p>
+<p>这段代码概括了TicketInfoService使用Futrue的逻辑。没有使用任何阻塞调用。combinator方法使这些异步掉用的结果很方便的整合起来。</p>
+<h2 id="5-5-Futrue和Actor"><a href="#5-5-Futrue和Actor" class="headerlink" title="5.5 Futrue和Actor "></a>5.5 Futrue和Actor </h2><p>在前面的Up and Running 章节，我们使用Spray作为REST服务，它是使用Actor来处理HTTP 请求的，ask方法的返回值也是一个Futrue对象。<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 引入ask模型，它在ActorRef上添加了ask方法</span></div><div class="line"><span class="keyword">import</span> akka.pattern.ask</div><div class="line"><span class="comment">// context包含了actor的dispatcher定义。</span></div><div class="line"><span class="keyword">import</span> context._</div><div class="line"><span class="comment">// 为ask方法必须定义一个超时</span></div><div class="line"><span class="keyword">implicit</span> <span class="keyword">val</span> timeout = <span class="type">Timeout</span>(<span class="number">5</span> seconds)</div><div class="line"><span class="comment">// 抓获上下文中的sender</span></div><div class="line"><span class="keyword">val</span> capturedSender = sender</div><div class="line"></div><div class="line"><span class="comment">// 向TicketSeller请求GetEvents的本地方法</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">askEvent</span></span>(ticketSeller:<span class="type">ActorRef</span>): <span class="type">Future</span>[<span class="type">Event</span>] = &#123;</div><div class="line">   <span class="comment">// ask方法返回一个Futrue.我们使用mapTo方法将返回的Futrue[Any]转为Future[Int]。</span></div><div class="line">   <span class="keyword">val</span> futureInt = ticketSeller.ask(<span class="type">GetEvents</span>).mapTo[<span class="type">Int</span>] </div><div class="line">   </div><div class="line">   <span class="comment">// 查一下所有的子元素，对于指定event都还剩下多少票</span></div><div class="line">   futureInt.map &#123; nrOfTickets =&gt;</div><div class="line">      <span class="type">Event</span>(ticketSeller.actorRef.path.name, nrOfTickets)</div><div class="line">   &#125;</div><div class="line">&#125;</div><div class="line"><span class="keyword">val</span> futures = context.children.map &#123;</div><div class="line">  ticketSeller =&gt; askEvent(ticketSeller)</div><div class="line">&#125;</div><div class="line"><span class="type">Future</span>.sequence(futures).map &#123;</div><div class="line">  <span class="comment">// 给sender回送消息。这个sender就是发送原始GetEvents请求的sender。</span></div><div class="line">  events =&gt; capturedSender ! <span class="type">Events</span>(events.toList)</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这个例子比在第二章中的代码要清楚多了。每个消息的sender都不一样，这里结合闭包使用变量从context中获取当前message的sender，回送消息。</p>
+<p>注意以下当在actor中使用futrue的时候，ActorContext会提供一个Actor的当前view。又由于actor是有状态的，所以闭包中的变量对于外部线程应该是不可变的。最容易达成这种效果的方式是使用不可变对象，然后在将这个值close over进futrue之前就获取这个不可变数据结构的引用，也就是上面例子中的capturedSender。</p>
+<p>另一种模式是pipeTo：<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//引入pipe模型</span></div><div class="line"><span class="keyword">import</span> akka.pattern.pipe</div><div class="line">path(<span class="string">"events"</span>) &#123;</div><div class="line">  get &#123; requestContext =&gt;</div><div class="line">    <span class="comment">// 创建一个actor，为所有的request使用一个response完成HTTP请求</span></div><div class="line">    <span class="keyword">val</span> responder = createResponder(requestContext)</div><div class="line">    <span class="comment">// ask方法的Futrue返回值被pipe到responder actor</span></div><div class="line">    boxOffice.ask(<span class="type">GetEvents</span>).pipeTo(responder)</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Responder</span>(<span class="params">requestContext:<span class="type">RequestContext</span>,</span></span></div><div class="line">	ticketMaster:<span class="type">ActorRef</span>)</div><div class="line"> <span class="keyword">extends</span> <span class="type">Actor</span> <span class="keyword">with</span> <span class="type">ActorLogging</span> &#123;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">receive</span> </span>= &#123;</div><div class="line"></div><div class="line">    <span class="keyword">case</span> <span class="type">Events</span>(events) =&gt;</div><div class="line">        requestContext.complete(<span class="type">StatusCodes</span>.<span class="type">OK</span>, events)</div><div class="line">        self ! <span class="type">PoisonPill</span></div><div class="line"></div><div class="line">    <span class="comment">// other messages omitted..</span></div><div class="line"> &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>当我们想用一个actor来处理futrue对象，或者某些actor的ask结果还需要进一步处理的时候，就可以使用pipeTo方法了。</p>
+<h2 id="5-6-总结"><a href="#5-6-总结" class="headerlink" title="5.6 总结"></a>5.6 总结</h2><p>这一章介绍了一个futrue。使用futrue可以创建一个异步处理流，省去不必要的阻塞和线程等待，最大化资源使用率，最小化无作为延迟。</p>
+<p>Futrue是一个function返回值的placeholder。</p>
+<p>combinator方法可以方便地把futrue的值整合在一起。function可以并行执行，然后通过combinator变成一个有意义的结果。</p>
+<p>futrue包含的对象应该是不可变的。</p>
+<p>Futrue可以与Actor结合使用，但是要注意使用时close over的状态变量。sender的引用应该在进入闭包钱就获取。Futrue是ask方法的返回值类型，也是pipeTo方法的返回值类型。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/akka/">akka</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/08/11/akka-in-action-读书笔记（5）/" data-title="akka in action 读书笔记（5） | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/08/15/akka-in-action-读书笔记（6）/" title="akka in action 读书笔记（6）">
+  <strong>上一篇：</strong><br/>
+  <span>
+  akka in action 读书笔记（6）</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/08/09/akka-in-action-读书笔记（4）/"  title="akka in action 读书笔记（4）">
+ <strong>下一篇：</strong><br/> 
+ <span>akka in action 读书笔记（4）
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/08/11/akka-in-action-读书笔记（5）/" data-title="akka in action 读书笔记（5）" data-url="http://willcup.com/2016/08/11/akka-in-action-读书笔记（5）/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-Futrue用例"><span class="toc-number">1.</span> <span class="toc-text">5.1 Futrue用例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-2-Futrue中无阻塞"><span class="toc-number">2.</span> <span class="toc-text">5.2 Futrue中无阻塞</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-3-失败"><span class="toc-number">3.</span> <span class="toc-text">5.3 失败</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-4-整合Futrue"><span class="toc-number">4.</span> <span class="toc-text">5.4 整合Futrue</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-5-Futrue和Actor"><span class="toc-number">5.</span> <span class="toc-text">5.5 Futrue和Actor </span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-6-总结"><span class="toc-number">6.</span> <span class="toc-text">5.6 总结</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/2015a/" title="2015a">2015a<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/django/" title="django">django<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Flume/" title="Flume">Flume<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

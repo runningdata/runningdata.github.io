@@ -1,0 +1,599 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Morphlines: 集成Hadoop ETL app的利器 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="Morphlines replaces Java programming with simple configuration steps, reducing the cost and effort of doing custom ETL  .
+
+
+使用Morphlines我们可以不用进行实际的繁琐编程而进行ETL工作，不用了解MR技术。一个morphline是指的一个配置文件，通过这个配置文件">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Morphlines: 集成Hadoop ETL app的利器">
+<meta property="og:url" content="http://willcup.com/2015/08/05/Morphlines-集成Hadoop-ETL-app的利器/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="Morphlines replaces Java programming with simple configuration steps, reducing the cost and effort of doing custom ETL  .
+
+
+使用Morphlines我们可以不用进行实际的繁琐编程而进行ETL工作，不用了解MR技术。一个morphline是指的一个配置文件，通过这个配置文件">
+<meta property="og:image" content="http://willcup.com/imgs/morphlines/morphline-1.1 处理流程.png">
+<meta property="og:image" content="http://willcup.com/imgs/morphlines/morphline-1.2 record数据模型.png">
+<meta property="og:updated_time" content="2016-10-28T02:54:06.773Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Morphlines: 集成Hadoop ETL app的利器">
+<meta name="twitter:description" content="Morphlines replaces Java programming with simple configuration steps, reducing the cost and effort of doing custom ETL  .
+
+
+使用Morphlines我们可以不用进行实际的繁琐编程而进行ETL工作，不用了解MR技术。一个morphline是指的一个配置文件，通过这个配置文件">
+<meta name="twitter:image" content="http://willcup.com/imgs/morphlines/morphline-1.1 处理流程.png">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/node_modules">测试</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/08/05/Morphlines-集成Hadoop-ETL-app的利器/" title="Morphlines: 集成Hadoop ETL app的利器" itemprop="url">Morphlines: 集成Hadoop ETL app的利器</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2015-08-04T18:53:16.000Z" itemprop="datePublished"> 发表于 2015-08-05</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#数据处理模型"><span class="toc-text">数据处理模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#数据模型"><span class="toc-text">数据模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#用例"><span class="toc-text">用例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#嵌入host系统"><span class="toc-text">嵌入host系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#语法"><span class="toc-text">语法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#目前可用command"><span class="toc-text">目前可用command</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#syslog案例"><span class="toc-text">syslog案例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#其他文档"><span class="toc-text">其他文档</span></a></li></ol>
+		
+		</div>
+		
+		<blockquote>
+<p><strong> Morphlines replaces Java programming with simple configuration steps, reducing the cost and effort of doing custom ETL </strong> .</p>
+</blockquote>
+<hr>
+<p>使用Morphlines我们可以不用进行实际的繁琐编程而进行ETL工作，不用了解MR技术。一个morphline是指的一个配置文件，通过这个配置文件，我们可以从任意的数据源消费数据，然后通过一个的transformation chain，最终将处理结果送进某个Hadoop组件中去。相比编程java而言，我们只需要配置一下就可以了 。</p>
+<p>Morphlines是一个可嵌入的java工具包，一个morphline是transformation command的一个内置container。command是morphline的Plugin，也就是加载数据、解析数据、转化数据或者其他针对某record进行某些操作。这里说的record是指的内存中的name-values对，它也可以有一些blob附件或者pojo附件。这个框架已经以一种直接而简单的方式将现有的功能与一些第三方系统进行了集成，而且扩展性较好。</p>
+<p>Morphlines是服务于cloudera search的。它致力于flume和MR的ETL，前者是实时流，后者是批处理。</p>
+<p>这篇文章，我们会通过一个例子讲明如果使用Morphlines怎样收集syslog的输出，并使之能在solr中进行查询。但是在此之前，我们还是先认识一下Morphlines的数据模型和数据处理模型。</p>
+<h3 id="数据处理模型"><a href="#数据处理模型" class="headerlink" title="数据处理模型"></a>数据处理模型</h3><p>Morphlines可以说是Unix pipeline的进化，它将要处理的数据泛化。一个morphline负责的工作：消费record(可以是flume events, HDFS文件，RDBMS 表，或者Apache avro 对象等)，将消费的record转为流，将这些流以管道的形式通过一些列的配置好的transformation，最后进入目的地，例如本例中的solr。<br><img src="/imgs/morphlines/morphline-1.1 处理流程.png" alt="1 处理流程"></p>
+<p>如上图所示，Flume Source读取syslog后将event弄到Morphlines Sink里去，然后Morphlines Sink把flume的event转为一个record，交给后面的一连串command进行处理。第一个command readLine抽取log行，第二个command grok使用正则抽取log行里的一部分关键信息。第三个command loadSolr就把上个command输出的结构化的信息索引进入solr了。在这个过程中，原始数据或者半结构化数据根据app的模型需求通过一些列转化成为结构化数据被存储。</p>
+<p>Morphlines已经有了一些常用的转化和IO操作功能，但是我们仍然可以通过Plugin system加入一些新的转化和IO操作类型，也可以集成其他的第三方框架。</p>
+<p>使用Morphlines可以很简单地实现ETL应用间的ETL逻辑的重用。</p>
+<p>SDK是在运行时编译的。所有的command都在同一个线程内执行，也就是说pipline是通过某个方法调用另一个方法实现的。不存在队列，不存在线程间对象传递，不存在context切换，不存在command之间的序列化问题。</p>
+<h3 id="数据模型"><a href="#数据模型" class="headerlink" title="数据模型"></a>数据模型</h3><p>Morphlines操作海量数据。一个command可能对一个record进行transformation之后会产生零个或多个record。数据模型如下：一个record包含一些列的name-value对，所有record包含的filed应该是一样的(可以理解成command的产出是有一定的schema的)，而一个name可以对应多个value，一个value可以是任何java对象。这个灵活的数据模型其实和Lucene/solr的数据模型很像。</p>
+<p><img src="/imgs/morphlines/morphline-1.2 record数据模型.png" alt="2. record数据模型与实例"></p>
+<p>一个morphline可以处理结构化数据和二进制数据。还有一些可选的附件属性，这些附件属性可以结合Email那些东西进行理解。</p>
+<p>这种通用的数据模型可以支持很多应用。典型应用就是Apache flume Morphlines Solr Sink。它把flume event的body放进了morphline record的_attachment_body字段中，event的header信息全部写成record的name-value对。另一个例子就是MapReduceIndexerTool的Mapper，将当前正在处理的HDFS文件的InputStream写入morphline record的_attachment_body字段中，把HDFS文件的元数据信息写成了record的name-value对。</p>
+<h3 id="用例"><a href="#用例" class="headerlink" title="用例"></a>用例</h3><p>command可以操作record的所有字段，包括解析、添加、删除、重命名、分割，甚至还能删除整个record。command有一个返回值来指示处理结果成功或失败。</p>
+<p>例如一个多行的输入可以被一个command把每行切分为一个record输出，也就是产生多个record输出，然后另一个command在针对每一行使用正则切分为单词或短语(根据业务需求)，产生更多的record输出。</p>
+<p>command可以对record做的操作包括：抽取、清理、转化、join、integrate、enrich、以各种方式装饰record。例如，可以使record与外部数据(RDBMS, KVDB,本地文件等)join。</p>
+<p>command还可以消费record，然后把它们传送给某个外部系统。</p>
+<h3 id="嵌入host系统"><a href="#嵌入host系统" class="headerlink" title="嵌入host系统"></a>嵌入host系统</h3><p>一个Morphline没有任何的持久化、分布式计算、可靠性、节点失败恢复等概念——它只是一个当前线程中的transformation chain而已。morphline没必要管理多线程、多节点，因为这些已经有MR,Flume，Storm等去做了。但是morphline还是会给command子树传递一些通知消息：BEGIN_TRANSACTION, COMMIT_TRANSACTION, ROLLBACK_TRANSACTION, SHUTDOWN.</p>
+<h3 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h3><p>配置文件使用HOCON格式，参考<a href="http://github.com/typesafehub/config/blob/master/HOCON.md" target="_blank" rel="external">http://github.com/typesafehub/config/blob/master/HOCON.md</a></p>
+<h3 id="目前可用command"><a href="#目前可用command" class="headerlink" title="目前可用command"></a>目前可用command</h3><p>详见<a href="http://kitesdk.org/docs/current/kite-morphlines/morphlinesReferenceGuide.html" target="_blank" rel="external">http://kitesdk.org/docs/current/kite-morphlines/morphlinesReferenceGuide.html</a></p>
+<h3 id="syslog案例"><a href="#syslog案例" class="headerlink" title="syslog案例"></a>syslog案例</h3><p><strong>需求</strong>：抽取syslog的内容，并索引到solr里。</p>
+<blockquote>
+<p>Feb  4 10:46:14 syslog sshd[607]: listening on 0.0.0.0 port 22.</p>
+</blockquote>
+<p>以上为log示例. 我们需要抽取的record如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">priority : 164</div><div class="line">timestamp : Feb  4 10:46:14</div><div class="line">hostname : syslog</div><div class="line">program : sshd</div><div class="line">pid : 607</div><div class="line">msg : listening on 0.0.0.0 port 22.</div><div class="line">message : Feb  4 10:46:14 syslog sshd[607]: listening on 0.0.0.0 port 22.</div></pre></td></tr></table></figure>
+<p>morphline配置 morphline.conf内容如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div></pre></td><td class="code"><pre><div class="line">morphlines : [</div><div class="line">  &#123;</div><div class="line">    # Name used to identify a morphline. E.g. used if there are multiple</div><div class="line">    # morphlines in a morphline config file</div><div class="line">    id : morphline1</div><div class="line"> </div><div class="line">    # Import all morphline commands in these java packages and their</div><div class="line">    # subpackages. Other commands that may be present on the classpath are</div><div class="line">    # not visible to this morphline.</div><div class="line">    importCommands : [&quot;com.cloudera.**&quot;, &quot;org.apache.solr.**&quot;]</div><div class="line"> </div><div class="line">    commands : [</div><div class="line">      &#123;</div><div class="line">        # Parse input attachment and emit a record for each input line               </div><div class="line">        readLine &#123;</div><div class="line">          charset : UTF-8</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line"> </div><div class="line">      &#123;</div><div class="line">        grok &#123;</div><div class="line">          # Consume the output record of the previous command and pipe another</div><div class="line">          # record downstream.</div><div class="line">          #</div><div class="line">          # A grok-dictionary is a config file that contains prefabricated</div><div class="line">          # regular expressions that can be referred to by name. grok patterns</div><div class="line">          # specify such a regex name, plus an optional output field name.</div><div class="line">          # The syntax is %&#123;REGEX_NAME:OUTPUT_FIELD_NAME&#125;</div><div class="line">          # The input line is expected in the &quot;message&quot; input field.</div><div class="line">          dictionaryFiles : [src/test/resources/grok-dictionaries]</div><div class="line">          expressions : &#123;</div><div class="line">            message : &quot;&quot;&quot;%&#123;SYSLOGTIMESTAMP:timestamp&#125; %&#123;SYSLOGHOST:hostname&#125; %&#123;DATA:program&#125;(?:\[%&#123;POSINT:pid&#125;\])?: %&#123;GREEDYDATA:msg&#125;&quot;&quot;&quot;</div><div class="line">          &#125;</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line"> </div><div class="line">      # Consume the output record of the previous command, convert</div><div class="line">      # the timestamp, and pipe another record downstream.</div><div class="line">      #</div><div class="line">      # convert timestamp field to native Solr timestamp format</div><div class="line">      # e.g. 2012-09-06T07:14:34Z to 2012-09-06T07:14:34.000Z</div><div class="line">      &#123;</div><div class="line">        convertTimestamp &#123;</div><div class="line">          field : timestamp</div><div class="line">          inputFormats : [&quot;yyyy-MM-dd&apos;T&apos;HH:mm:ss.SSS&apos;Z&apos;&quot;, &quot;&quot;MMM d HH:mm:ss&quot;]</div><div class="line">          inputTimezone : America/Los_Angeles</div><div class="line">          outputFormat : &quot;yyyy-MM-dd&apos;T&apos;HH:mm:ss.SSS&apos;Z&apos;&quot;</div><div class="line">          outputTimezone : UTC</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line"> </div><div class="line">      # Consume the output record of the previous command, transform it</div><div class="line">      # and pipe the record downstream.</div><div class="line">      #</div><div class="line">      # This command deletes record fields that are unknown to Solr</div><div class="line">      # schema.xml. Recall that Solr throws an exception on any attempt to</div><div class="line">      # load a document that contains a field that isn&apos;t specified in</div><div class="line">      # schema.xml.</div><div class="line">      &#123;</div><div class="line">        sanitizeUnknownSolrFields &#123;</div><div class="line">          # Location from which to fetch Solr schema</div><div class="line">          solrLocator : &#123;           </div><div class="line">            collection : collection1       # Name of solr collection</div><div class="line">            zkHost : &quot;127.0.0.1:2181/solr&quot; # ZooKeeper ensemble</div><div class="line">          &#125;</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line"> </div><div class="line">      # log the record at INFO level to SLF4J</div><div class="line">      &#123; logInfo &#123; format : &quot;output record: &#123;&#125;&quot;, args : [&quot;@&#123;&#125;&quot;] &#125; &#125;</div><div class="line"> </div><div class="line">      # load the record into a Solr server or MapReduce Reducer</div><div class="line">      &#123;</div><div class="line">        loadSolr &#123;</div><div class="line">          solrLocator : &#123;           </div><div class="line">            collection : collection1       # Name of solr collection</div><div class="line">            zkHost : &quot;127.0.0.1:2181/solr&quot; # ZooKeeper ensemble</div><div class="line">          &#125;</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    ]</div><div class="line">  &#125;</div><div class="line">]</div></pre></td></tr></table></figure>
+<p>想要看到每个command处理的record的内容的话，可以配置log4j.properties：</p>
+<blockquote>
+<p>log4j.logger.com.cloudera.cdk.morphline=TRACE</p>
+</blockquote>
+<h3 id="其他文档"><a href="#其他文档" class="headerlink" title="其他文档"></a>其他文档</h3><ul>
+<li><a href="http://www.cloudera.com/content/cloudera/en/documentation/cloudera-search/v1-latest/Cloudera-Search-User-Guide/csug_morphline_example.html" target="_blank" rel="external">http://www.cloudera.com/content/cloudera/en/documentation/cloudera-search/v1-latest/Cloudera-Search-User-Guide/csug_morphline_example.html</a></li>
+<li><a href="http://www.slideshare.net/cloudera/using-morphlines-for-onthefly-etl" target="_blank" rel="external">http://www.slideshare.net/cloudera/using-morphlines-for-onthefly-etl</a></li>
+<li><a href="https://flume.apache.org/FlumeUserGuide.html#morphlinesolrsink" target="_blank" rel="external">https://flume.apache.org/FlumeUserGuide.html#morphlinesolrsink</a></li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Morphlines/">Morphlines</a><a href="/tags/ETL/">ETL</a><a href="/tags/Flume/">Flume</a><a href="/tags/Solr/">Solr</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2015/08/05/Morphlines-集成Hadoop-ETL-app的利器/" data-title="Morphlines: 集成Hadoop ETL app的利器 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/08/06/solr上手-3/" title="solr上手（三）">
+  <strong>上一篇：</strong><br/>
+  <span>
+  solr上手（三）</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/08/04/solr上手-2/"  title="solr上手（二）">
+ <strong>下一篇：</strong><br/> 
+ <span>solr上手（二）
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2015/08/05/Morphlines-集成Hadoop-ETL-app的利器/" data-title="Morphlines: 集成Hadoop ETL app的利器" data-url="http://willcup.com/2015/08/05/Morphlines-集成Hadoop-ETL-app的利器/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#数据处理模型"><span class="toc-number">1.</span> <span class="toc-text">数据处理模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#数据模型"><span class="toc-number">2.</span> <span class="toc-text">数据模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#用例"><span class="toc-number">3.</span> <span class="toc-text">用例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#嵌入host系统"><span class="toc-number">4.</span> <span class="toc-text">嵌入host系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#语法"><span class="toc-number">5.</span> <span class="toc-text">语法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#目前可用command"><span class="toc-number">6.</span> <span class="toc-text">目前可用command</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#syslog案例"><span class="toc-number">7.</span> <span class="toc-text">syslog案例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#其他文档"><span class="toc-number">8.</span> <span class="toc-text">其他文档</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/2015a/" title="2015a">2015a<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/django/" title="django">django<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Flume/" title="Flume">Flume<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,586 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>使用harbor安装docker registry | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="1.安装docker和docker compose123456sudo curl -sSL https://get.docker.com/ | sh# 设置Docker以非Root用户运行，确保安全。sudo usermod -aG docker your-user# 安装Compose：curl -L https://github.com/docker/compose/releases/down">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用harbor安装docker registry">
+<meta property="og:url" content="http://willcup.com/2017/01/18/使用harbor安装docker-registry/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="1.安装docker和docker compose123456sudo curl -sSL https://get.docker.com/ | sh# 设置Docker以非Root用户运行，确保安全。sudo usermod -aG docker your-user# 安装Compose：curl -L https://github.com/docker/compose/releases/down">
+<meta property="og:image" content="http://willcup.com/imgs/harbor/harbor_login.png">
+<meta property="og:image" content="http://willcup.com/imgs/harbor/harbor_images.png">
+<meta property="og:image" content="http://willcup.com/imgs/harbor/harbor_images_log.png">
+<meta property="og:updated_time" content="2017-01-18T08:05:40.688Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用harbor安装docker registry">
+<meta name="twitter:description" content="1.安装docker和docker compose123456sudo curl -sSL https://get.docker.com/ | sh# 设置Docker以非Root用户运行，确保安全。sudo usermod -aG docker your-user# 安装Compose：curl -L https://github.com/docker/compose/releases/down">
+<meta name="twitter:image" content="http://willcup.com/imgs/harbor/harbor_login.png">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/node_modules">测试</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/01/18/使用harbor安装docker-registry/" title="使用harbor安装docker registry" itemprop="url">使用harbor安装docker registry</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-01-18T07:56:21.000Z" itemprop="datePublished"> 发表于 2017-01-18</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-安装docker和docker-compose"><span class="toc-text">1.安装docker和docker compose</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-获取SSL证书-可选"><span class="toc-text">2.获取SSL证书[可选]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-安装harbor"><span class="toc-text">3. 安装harbor</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-上传镜像"><span class="toc-text">4.上传镜像</span></a></li></ol>
+		
+		</div>
+		
+		<h2 id="1-安装docker和docker-compose"><a href="#1-安装docker和docker-compose" class="headerlink" title="1.安装docker和docker compose"></a>1.安装docker和docker compose</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">sudo curl -sSL https://get.docker.com/ | sh</div><div class="line"># 设置Docker以非Root用户运行，确保安全。</div><div class="line">sudo usermod -aG docker your-user</div><div class="line"># 安装Compose：</div><div class="line">curl -L https://github.com/docker/compose/releases/download/1.7.0-rc1/docker-compose-`uname -s`-`uname -m` &gt; /usr/local/bin/docker-compose</div><div class="line">chmod +x /usr/local/bin/docker-compose</div></pre></td></tr></table></figure>
+<h2 id="2-获取SSL证书-可选"><a href="#2-获取SSL证书-可选" class="headerlink" title="2.获取SSL证书[可选]"></a>2.获取SSL证书[可选]</h2><p>如果使用域名绑定私有仓库，就必须开启SSL</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">git clone https://github.com/letsencrypt/letsencrypt</div><div class="line">cd letsencrypt</div><div class="line">./letsencrypt-auto certonly -d docker.will.me</div></pre></td></tr></table></figure>
+<h2 id="3-安装harbor"><a href="#3-安装harbor" class="headerlink" title="3. 安装harbor"></a>3. 安装harbor</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">wget https://github.com/vmware/harbor/releases/download/0.5.0/harbor-offline-installer-0.5.0.tgz</div><div class="line">tar zxvf harbor-offline-installer-0.5.0.tgz</div></pre></td></tr></table></figure>
+<p>修改一下harbor.cfg里的hostname<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">hostname = 10.1.5.129</div></pre></td></tr></table></figure></p>
+<p>其他的都没敢改，因为安装文档也没有特别深入的说明，暂时跑个demo而已，不要太拼。</p>
+<p>但是目前有疑问的有两点：</p>
+<blockquote>
+<ol>
+<li>mysql的连接没有指定，只有一个db_password, 那元数据存在哪？</li>
+<li>没有指定docker image的数据文件存储位置，理论上这会是一个比较大的数据量</li>
+</ol>
+</blockquote>
+<p>带着疑问，先开始安装：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div></pre></td><td class="code"><pre><div class="line">[root@controller harbor]# ./install.sh </div><div class="line"></div><div class="line">[Step 0]: checking installation environment ...</div><div class="line"></div><div class="line">Note: docker version: 1.12.6</div><div class="line"></div><div class="line">Note: docker-compose version: 1.7.0</div><div class="line"></div><div class="line">[Step 1]: loading Harbor images ...</div><div class="line">dd60b611baaa: Loading layer [==================================================&gt;] 133.2 MB/133.2 MB</div><div class="line">e541edf73dfb: Loading layer [==================================================&gt;] 3.072 kB/3.072 kB</div><div class="line">Loaded image: vmware/harbor-log:0.5.0&gt;                                          ]    512 B/3.072 kB</div><div class="line">f96222d75c55: Loading layer [==================================================&gt;] 128.9 MB/128.9 MB</div><div class="line">5a3deeae1518: Loading layer [==================================================&gt;] 4.608 kB/4.608 kB</div><div class="line">Loaded image: vmware/harbor-db:0.5.0                                            ]    512 B/4.608 kB</div><div class="line">7b612c5c8104: Loading layer [==================================================&gt;] 1.536 kB/1.536 kB</div><div class="line">5c07a2fe7c73: Loading layer [==================================================&gt;] 20.94 MB/20.94 MB</div><div class="line">Loaded image: vmware/harbor-jobservice:0.5.0                                    ] 229.4 kB/20.94 MB</div><div class="line">fe4c16cbf7a4: Loading layer [==================================================&gt;] 128.9 MB/128.9 MB</div><div class="line">c4a8b7411af4: Loading layer [==================================================&gt;] 60.57 MB/60.57 MB</div><div class="line">3f117c44afbb: Loading layer [==================================================&gt;] 3.584 kB/3.584 kB</div><div class="line">Loaded image: nginx:1.11.5r [=======&gt;                                           ]    512 B/3.584 kB</div><div class="line">4fe15f8d0ae6: Loading layer [==================================================&gt;] 5.046 MB/5.046 MB</div><div class="line">3bb5bc5ad373: Loading layer [==================================================&gt;] 2.048 kB/2.048 kB</div><div class="line">Loaded image: registry:2.5.0[============&gt;                                      ]    512 B/2.048 kB</div><div class="line">Loaded image: photon:1.0</div><div class="line">41be4a382617: Loading layer [==================================================&gt;] 58.31 MB/58.31 MB</div><div class="line">32ec73a38f19: Loading layer [==================================================&gt;] 23.62 MB/23.62 MB</div><div class="line">Loaded image: vmware/harbor-ui:0.5.0                                            ] 262.1 kB/23.62 MB</div><div class="line"></div><div class="line"></div><div class="line">[Step 2]: preparing environment ...</div><div class="line">generated and saved secret key</div><div class="line">Generated configuration file: ./common/config/nginx/nginx.conf</div><div class="line">Generated configuration file: ./common/config/ui/env</div><div class="line">Generated configuration file: ./common/config/ui/app.conf</div><div class="line">Generated configuration file: ./common/config/registry/config.yml</div><div class="line">Generated configuration file: ./common/config/db/env</div><div class="line">Generated configuration file: ./common/config/jobservice/env</div><div class="line">Generated configuration file: ./common/config/jobservice/app.conf</div><div class="line">Generated configuration file: ./common/config/ui/private_key.pem</div><div class="line">Generated configuration file: ./common/config/registry/root.crt</div><div class="line">The configuration files are ready, please use docker-compose to start the service.</div><div class="line"></div><div class="line"></div><div class="line">[Step 3]: checking existing instance of Harbor ...</div><div class="line"></div><div class="line"></div><div class="line">[Step 4]: starting Harbor ...</div><div class="line">Creating network &quot;harbor_default&quot; with the default driver</div><div class="line">Creating harbor-log</div><div class="line">Creating registry</div><div class="line">Creating harbor-db</div><div class="line">Creating harbor-ui</div><div class="line">Creating harbor-jobservice</div><div class="line">Creating nginx</div><div class="line"></div><div class="line">✔ ----Harbor has been installed and started successfully.----</div><div class="line"></div><div class="line">Now you should be able to visit the admin portal at http://10.1.5.129. </div><div class="line">For more details, please visit https://github.com/vmware/harbor .</div></pre></td></tr></table></figure></p>
+<p>可以看到这是安装了一系列的docker iamge啊，难怪有离线和在线之分了。</p>
+<p>闲着没事儿，看一下install.sh都干了啥<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"># 检查docker和docker-compose是不是符合版本要求</div><div class="line">check_docker</div><div class="line">check_dockercompose</div><div class="line"></div><div class="line"># load harbor的压缩包到当前docker的images库里</div><div class="line">if [ -f harbor*.tgz ]</div><div class="line">then</div><div class="line">        h2 &quot;[Step $item]: loading Harbor images ...&quot;; let item+=1</div><div class="line">        docker load -i ./harbor*.tgz</div><div class="line">fi</div><div class="line">echo &quot;&quot;</div><div class="line"></div><div class="line"># prepare就是读取harbor.cfg配置文件，准备环境变量</div><div class="line">h2 &quot;[Step $item]: preparing environment ...&quot;;  let item+=1</div><div class="line">if [ -n &quot;$host&quot; ]</div><div class="line">then</div><div class="line">        sed &quot;s/^hostname = .*/hostname = $host/g&quot; -i ./harbor.cfg</div><div class="line">fi</div><div class="line">./prepare</div><div class="line"></div><div class="line"># 查看有没有正在运行的harbor实例，有的话就停掉</div><div class="line">h2 &quot;[Step $item]: checking existing instance of Harbor ...&quot;; let item+=1</div><div class="line">if [ -n &quot;$(docker-compose -f docker-compose*.yml ps -q)&quot;  ]</div><div class="line">then</div><div class="line">        note &quot;stopping existing Harbor instance ...&quot;</div><div class="line">        docker-compose -f docker-compose*.yml down</div><div class="line">fi</div><div class="line">echo &quot;&quot;</div><div class="line"></div><div class="line"># 启动新的harbor实例</div><div class="line">h2 &quot;[Step $item]: starting Harbor ...&quot;</div><div class="line">docker-compose -f docker-compose*.yml up -d</div></pre></td></tr></table></figure></p>
+<p>以上是主要步骤，其他的全都是不重要的。</p>
+<p>查看一下当前的docker进程：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">[root@controller harbor]# docker ps</div><div class="line">CONTAINER ID        IMAGE                            COMMAND                  CREATED             STATUS              PORTS                                      NAMES</div><div class="line">b8ed2fce6816        nginx:1.11.5                     &quot;nginx -g &apos;daemon off&quot;   5 minutes ago       Up 4 minutes        0.0.0.0:80-&gt;80/tcp, 0.0.0.0:443-&gt;443/tcp   nginx</div><div class="line">8408e2b03a4b        vmware/harbor-jobservice:0.5.0   &quot;/harbor/harbor_jobse&quot;   5 minutes ago       Up 4 minutes                                                   harbor-jobservice</div><div class="line">48b280c1caba        vmware/harbor-ui:0.5.0           &quot;/harbor/harbor_ui&quot;      6 minutes ago       Up 5 minutes                                                   harbor-ui</div><div class="line">0235e55493d0        vmware/harbor-db:0.5.0           &quot;docker-entrypoint.sh&quot;   6 minutes ago       Up 5 minutes        3306/tcp                                   harbor-db</div><div class="line">5bc55096ba78        library/registry:2.5.0           &quot;/entrypoint.sh serve&quot;   6 minutes ago       Up 5 minutes        5000/tcp                                   registry</div><div class="line">805f744b40ae        vmware/harbor-log:0.5.0          &quot;/bin/sh -c &apos;crond &amp;&amp;&quot;   6 minutes ago       Up 6 minutes        0.0.0.0:1514-&gt;514/tcp                      harbor-log</div></pre></td></tr></table></figure></p>
+<p>该起来的全起来了，下面看一下harbor-db的参数，把数据弄到哪里去了？</p>
+<p>docker-compose.yml配置文件<br><figure class="highlight yml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div></pre></td><td class="code"><pre><div class="line"><span class="attr">version:</span> <span class="string">'2'</span></div><div class="line"><span class="attr">services:</span></div><div class="line"><span class="attr">  log:</span></div><div class="line"><span class="attr">    image:</span> vmware/harbor-log:<span class="number">0.5</span><span class="number">.0</span></div><div class="line"><span class="attr">    container_name:</span> harbor-log</div><div class="line"><span class="attr">    restart:</span> always</div><div class="line"><span class="attr">    volumes:</span></div><div class="line"><span class="bullet">      -</span> /var/log/harbor/:/var/log/docker/</div><div class="line"><span class="attr">    ports:</span></div><div class="line"><span class="bullet">      -</span> <span class="number">1514</span>:<span class="number">514</span></div><div class="line"><span class="attr">  registry:</span></div><div class="line"><span class="attr">    image:</span> library/registry:<span class="number">2.5</span><span class="number">.0</span></div><div class="line"><span class="attr">    container_name:</span> registry</div><div class="line"><span class="attr">    restart:</span> always</div><div class="line"><span class="attr">    volumes:</span></div><div class="line"><span class="bullet">      -</span> /data/registry:/storage</div><div class="line"><span class="bullet">      -</span> ./common/config/registry/:/etc/registry/</div><div class="line"><span class="attr">    environment:</span></div><div class="line"><span class="bullet">      -</span> GODEBUG=netdns=cgo</div><div class="line"><span class="attr">    command:</span></div><div class="line">      [<span class="string">"serve"</span>, <span class="string">"/etc/registry/config.yml"</span>]</div><div class="line"><span class="attr">    depends_on:</span></div><div class="line"><span class="bullet">      -</span> log</div><div class="line"><span class="attr">    logging:</span></div><div class="line"><span class="attr">      driver:</span> <span class="string">"syslog"</span></div><div class="line"><span class="attr">      options:</span></div><div class="line"><span class="attr">        syslog-address:</span> <span class="string">"tcp://127.0.0.1:1514"</span></div><div class="line"><span class="attr">        tag:</span> <span class="string">"registry"</span></div><div class="line"><span class="attr">  mysql:</span></div><div class="line"><span class="attr">    image:</span> vmware/harbor-db:<span class="number">0.5</span><span class="number">.0</span></div><div class="line"><span class="attr">    container_name:</span> harbor-db</div><div class="line"><span class="attr">    restart:</span> always</div><div class="line"><span class="attr">    volumes:</span></div><div class="line"><span class="bullet">      -</span> /data/database:/var/lib/mysql</div><div class="line"><span class="attr">    env_file:</span></div><div class="line"><span class="bullet">      -</span> ./common/config/db/env</div><div class="line"><span class="attr">    depends_on:</span></div><div class="line"><span class="bullet">      -</span> log</div><div class="line"><span class="attr">    logging:</span></div><div class="line"><span class="attr">      driver:</span> <span class="string">"syslog"</span></div><div class="line"><span class="attr">      options:</span></div><div class="line"><span class="attr">        syslog-address:</span> <span class="string">"tcp://127.0.0.1:1514"</span></div><div class="line"><span class="attr">        tag:</span> <span class="string">"mysql"</span></div><div class="line"><span class="attr">  ui:</span></div><div class="line"><span class="attr">    image:</span> vmware/harbor-ui:<span class="number">0.5</span><span class="number">.0</span></div><div class="line"><span class="attr">    container_name:</span> harbor-ui</div><div class="line"><span class="attr">    env_file:</span></div><div class="line"><span class="bullet">      -</span> ./common/config/ui/env</div><div class="line"><span class="attr">    restart:</span> always</div><div class="line"><span class="attr">    volumes:</span></div><div class="line"><span class="bullet">      -</span> ./common/config/ui/app.conf:/etc/ui/app.conf</div><div class="line"><span class="bullet">      -</span> ./common/config/ui/private_key.pem:/etc/ui/private_key.pem</div><div class="line"><span class="bullet">      -</span> /data:/harbor_storage</div><div class="line"><span class="attr">    depends_on:</span></div><div class="line"><span class="bullet">      -</span> log</div><div class="line"><span class="attr">    logging:</span></div><div class="line"><span class="attr">      driver:</span> <span class="string">"syslog"</span></div><div class="line"><span class="attr">      options:</span></div><div class="line"><span class="attr">        syslog-address:</span> <span class="string">"tcp://127.0.0.1:1514"</span></div><div class="line"><span class="attr">        tag:</span> <span class="string">"ui"</span></div><div class="line"><span class="attr">  jobservice:</span></div><div class="line"><span class="attr">    image:</span> vmware/harbor-jobservice:<span class="number">0.5</span><span class="number">.0</span></div><div class="line"><span class="attr">    container_name:</span> harbor-jobservice</div><div class="line"><span class="attr">    env_file:</span></div><div class="line"><span class="bullet">      -</span> ./common/config/jobservice/env</div><div class="line"><span class="attr">    restart:</span> always</div><div class="line"><span class="attr">    volumes:</span></div><div class="line"><span class="bullet">      -</span> /data/job_logs:/var/log/jobs</div><div class="line"><span class="bullet">      -</span> ./common/config/jobservice/app.conf:/etc/jobservice/app.conf</div><div class="line"><span class="attr">    depends_on:</span></div><div class="line"><span class="bullet">      -</span> ui</div><div class="line"><span class="attr">    logging:</span></div><div class="line"><span class="attr">      driver:</span> <span class="string">"syslog"</span></div><div class="line"><span class="attr">      options:</span></div><div class="line"><span class="attr">        syslog-address:</span> <span class="string">"tcp://127.0.0.1:1514"</span></div><div class="line"><span class="attr">        tag:</span> <span class="string">"jobservice"</span></div><div class="line"><span class="attr">  proxy:</span></div><div class="line"><span class="attr">    image:</span> nginx:<span class="number">1.11</span><span class="number">.5</span></div><div class="line"><span class="attr">    container_name:</span> nginx</div><div class="line"><span class="attr">    restart:</span> always</div><div class="line"><span class="attr">    volumes:</span></div><div class="line"><span class="bullet">      -</span> ./common/config/nginx:/etc/nginx</div><div class="line"><span class="attr">    ports:</span></div><div class="line"><span class="bullet">      -</span> <span class="number">80</span>:<span class="number">80</span></div><div class="line"><span class="bullet">      -</span> <span class="number">443</span>:<span class="number">443</span></div><div class="line"><span class="attr">    depends_on:</span></div><div class="line"><span class="bullet">      -</span> mysql</div><div class="line"><span class="bullet">      -</span> registry</div><div class="line"><span class="bullet">      -</span> ui</div><div class="line"><span class="bullet">      -</span> log</div><div class="line"><span class="attr">    logging:</span></div><div class="line"><span class="attr">      driver:</span> <span class="string">"syslog"</span></div><div class="line"><span class="attr">      options:</span></div><div class="line"><span class="attr">        syslog-address:</span> <span class="string">"tcp://127.0.0.1:1514"</span></div><div class="line"><span class="attr">        tag:</span> <span class="string">"proxy"</span></div></pre></td></tr></table></figure></p>
+<p>mysql数据放到/data/database了。</p>
+<p>还有registry的挂载位置。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">[root@controller harbor]# ll /server/harbor/common/config/registry</div><div class="line">total 8</div><div class="line">-rw-r--r-- 1 root root  694 Jan 18 03:05 config.yml</div><div class="line">-rw-r--r-- 1 root root 2151 Jan 18 03:05 root.crt</div><div class="line">[root@controller harbor]# ll /data/database</div><div class="line">total 110608</div><div class="line">-rw-rw---- 1 systemd-bus-proxy ssh_keys       56 Jan 18 03:07 auto.cnf</div><div class="line">-rw-rw---- 1 systemd-bus-proxy ssh_keys 12582912 Jan 18 03:25 ibdata1</div><div class="line">-rw-rw---- 1 systemd-bus-proxy ssh_keys 50331648 Jan 18 03:25 ib_logfile0</div><div class="line">-rw-rw---- 1 systemd-bus-proxy ssh_keys 50331648 Jan 18 03:06 ib_logfile1</div><div class="line">drwx------ 2 systemd-bus-proxy ssh_keys     4096 Jan 18 03:07 mysql</div><div class="line">drwx------ 2 systemd-bus-proxy ssh_keys     4096 Jan 18 03:07 performance_schema</div><div class="line">drwx------ 2 systemd-bus-proxy ssh_keys     4096 Jan 18 03:07 registry</div></pre></td></tr></table></figure></p>
+<p>参考：<br><a href="https://github.com/vmware/harbor/blob/master/docs/installation_guide.md" target="_blank" rel="external">https://github.com/vmware/harbor/blob/master/docs/installation_guide.md</a></p>
+<h2 id="4-上传镜像"><a href="#4-上传镜像" class="headerlink" title="4.上传镜像"></a>4.上传镜像</h2><p>netstat -ntlp 发现80端口被启动了，应该就是它。下面就登陆一下harbor看一下。</p>
+<p><img src="/imgs/harbor/harbor_login.png" alt="登陆界面"></p>
+<p>找一个安装了docker的机器，在/etc/docker/daemon.json文件中指定insecure-registries【因为我们上面并没有启用HTTPS协议】<br><figure class="highlight json"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">&#123;</div><div class="line">  <span class="attr">"insecure-registries"</span>: [<span class="string">"10.1.5.129"</span>],</div><div class="line">  <span class="attr">"registry-mirrors"</span>: [<span class="string">"https://docker.mirrors.ustc.edu.cn"</span>,<span class="string">"http://3a35aff6.m.daocloud.io"</span>,<span class="string">"http://ethanzhu.m.tenxcloud.net"</span>]</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>把本地的镜像上传到<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">[root@dnode2 ~]# docker tag willr 10.1.5.129/library/willr:0.1</div><div class="line">[root@dnode2 ~]# docker login 10.1.5.129</div><div class="line">Username: admin</div><div class="line">Password: </div><div class="line">Login Succeeded</div><div class="line">[root@dnode2 ~]# docker images</div><div class="line">REPOSITORY                   TAG                 IMAGE ID            CREATED             SIZE</div><div class="line">10.1.5.129/library/willr     0.1                 2a33c792d4aa        5 hours ago         718.7 MB</div><div class="line">willr                        latest              2a33c792d4aa        5 hours ago         718.7 MB</div><div class="line">&lt;none&gt;                       &lt;none&gt;              3dabf60e7d97        17 hours ago        714.7 MB</div><div class="line">uhopper/hadoop-nodemanager   2.7.2               046a3f819f63        41 hours ago        715.4 MB</div><div class="line">r-base                       3.3.2               dbee2cbef542        4 weeks ago         682.8 MB</div><div class="line">r-base                       latest              dbee2cbef542        4 weeks ago         682.8 MB</div><div class="line">[root@dnode2 ~]# docker push 10.1.5.129/library/willr:0.1</div><div class="line">The push refers to a repository [10.1.5.129/library/willr]</div><div class="line">0748650e84ed: Pushed </div><div class="line">72547fe7a086: Pushing [==================================================&gt;] 509.8 MB</div><div class="line">2cd05b2f5db4: Pushed </div><div class="line">72547fe7a086: Pushed </div><div class="line">c610e92140d8: Pushed </div><div class="line">3b04b5a81444: Pushed </div><div class="line">29d255cec883: Pushed </div><div class="line">29d255cec883: Preparing </div><div class="line"></div><div class="line">0.1: digest: sha256:9eb5d67aa235a1d7724b659310e8947c7e6cf967bef7ae02b955225fc7eb193a size: 1791</div><div class="line">[root@dnode2 ~]#</div></pre></td></tr></table></figure></p>
+<p>页面中的显示<br><img src="/imgs/harbor/harbor_images.png" alt="镜像信息"></p>
+<p><img src="/imgs/harbor/harbor_images_log.png" alt="镜像操作log"></p>
+<p>参考：</p>
+<ul>
+<li><a href="http://www.jianshu.com/p/141855241f2d" target="_blank" rel="external">http://www.jianshu.com/p/141855241f2d</a></li>
+<li><a href="https://vmware.github.io/harbor/index_cn.html" target="_blank" rel="external">https://vmware.github.io/harbor/index_cn.html</a></li>
+<li><a href="https://my.oschina.net/u/1540325/blog/702260" target="_blank" rel="external">https://my.oschina.net/u/1540325/blog/702260</a></li>
+<li><a href="http://www.zimug.com/317.html" target="_blank" rel="external">http://www.zimug.com/317.html</a></li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/docker/">docker</a><a href="/tags/harbor/">harbor</a><a href="/tags/registry/">registry</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/01/18/使用harbor安装docker-registry/" data-title="使用harbor安装docker registry | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/03/24/iptables手记/" title="iptables手记">
+  <strong>上一篇：</strong><br/>
+  <span>
+  iptables手记</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/08/19/akka-in-action-读书笔记（8）/"  title="akka in action 读书笔记（8）">
+ <strong>下一篇：</strong><br/> 
+ <span>akka in action 读书笔记（8）
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/01/18/使用harbor安装docker-registry/" data-title="使用harbor安装docker registry" data-url="http://willcup.com/2017/01/18/使用harbor安装docker-registry/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-安装docker和docker-compose"><span class="toc-number">1.</span> <span class="toc-text">1.安装docker和docker compose</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-获取SSL证书-可选"><span class="toc-number">2.</span> <span class="toc-text">2.获取SSL证书[可选]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-安装harbor"><span class="toc-number">3.</span> <span class="toc-text">3. 安装harbor</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-上传镜像"><span class="toc-number">4.</span> <span class="toc-text">4.上传镜像</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/2015a/" title="2015a">2015a<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/django/" title="django">django<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Flume/" title="Flume">Flume<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

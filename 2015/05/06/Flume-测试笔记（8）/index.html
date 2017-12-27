@@ -1,0 +1,547 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Flume 测试笔记（8） | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="已经打通了经脉，还需要考虑负载均衡以及容灾问题。鉴于现在log的数据压力不是很大，而且投入的机器也不是很多，暂时只考虑容灾，暂时不考虑负载均衡。
+1.flume代码逻辑flume里原生一个Failover Sink Processor，维护failedSinks和liveSinks两个东西来进行工作。首先会测试配置的所有sink，&amp;gt;工作时只取liveSink里的一个作为activeSink，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Flume 测试笔记（8）">
+<meta property="og:url" content="http://willcup.com/2015/05/06/Flume-测试笔记（8）/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="已经打通了经脉，还需要考虑负载均衡以及容灾问题。鉴于现在log的数据压力不是很大，而且投入的机器也不是很多，暂时只考虑容灾，暂时不考虑负载均衡。
+1.flume代码逻辑flume里原生一个Failover Sink Processor，维护failedSinks和liveSinks两个东西来进行工作。首先会测试配置的所有sink，&amp;gt;工作时只取liveSink里的一个作为activeSink，">
+<meta property="og:updated_time" content="2016-10-28T02:54:06.773Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Flume 测试笔记（8）">
+<meta name="twitter:description" content="已经打通了经脉，还需要考虑负载均衡以及容灾问题。鉴于现在log的数据压力不是很大，而且投入的机器也不是很多，暂时只考虑容灾，暂时不考虑负载均衡。
+1.flume代码逻辑flume里原生一个Failover Sink Processor，维护failedSinks和liveSinks两个东西来进行工作。首先会测试配置的所有sink，&amp;gt;工作时只取liveSink里的一个作为activeSink，">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/node_modules">测试</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/05/06/Flume-测试笔记（8）/" title="Flume 测试笔记（8）" itemprop="url">Flume 测试笔记（8）</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2015-05-05T16:04:52.000Z" itemprop="datePublished"> 发表于 2015-05-06</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-flume代码逻辑"><span class="toc-text">1.flume代码逻辑</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-flume官网文档"><span class="toc-text">2. flume官网文档</span></a></li></ol>
+		
+		</div>
+		
+		<p>已经打通了经脉，还需要考虑负载均衡以及容灾问题。鉴于现在log的数据压力不是很大，而且投入的机器也不是很多，暂时只考虑容<br>灾，暂时不考虑负载均衡。</p>
+<h2 id="1-flume代码逻辑"><a href="#1-flume代码逻辑" class="headerlink" title="1.flume代码逻辑"></a>1.flume代码逻辑</h2><p>flume里原生一个Failover Sink Processor，维护failedSinks和liveSinks两个东西来进行工作。首先会测试配置的所有sink，&gt;工作时只取liveSink里的一个作为activeSink，进行实质性的工作。</p>
+<p>FailoverSinkProcessor中的逻辑如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line">@Override</div><div class="line">  public Status process() throws EventDeliveryException &#123;</div><div class="line">    // Retry any failed sinks that have gone through their &quot;cooldown&quot; period</div><div class="line">    Long now = System.currentTimeMillis();</div><div class="line">    while(!failedSinks.isEmpty() &amp;&amp; failedSinks.peek().getRefresh() &lt; now) &#123;</div><div class="line">      FailedSink cur = failedSinks.poll();</div><div class="line">      Status s;</div><div class="line">      try &#123;</div><div class="line">        s = cur.getSink().process();</div><div class="line">        if (s  == Status.READY) &#123;</div><div class="line">          liveSinks.put(cur.getPriority(), cur.getSink());</div><div class="line">          activeSink = liveSinks.get(liveSinks.lastKey());</div><div class="line">          logger.debug(&quot;Sink &#123;&#125; was recovered from the fail list&quot;,</div><div class="line">                  cur.getSink().getName());</div><div class="line">        &#125; else &#123;</div><div class="line">          // if it&apos;s a backoff it needn&apos;t be penalized.</div><div class="line">          failedSinks.add(cur);</div><div class="line">        &#125;</div><div class="line">        return s;</div><div class="line">      &#125; catch (Exception e) &#123;</div><div class="line">        cur.incFails();</div><div class="line">        failedSinks.add(cur);</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    Status ret = null;</div><div class="line">    while(activeSink != null) &#123;</div><div class="line">      try &#123;</div><div class="line">        ret = activeSink.process();</div><div class="line">        return ret;</div><div class="line">      &#125; catch (Exception e) &#123;</div><div class="line">        logger.warn(&quot;Sink &#123;&#125; failed and has been sent to failover list&quot;,</div><div class="line">                activeSink.getName(), e);</div><div class="line">        activeSink = moveActiveToDeadAndGetNext();</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    throw new EventDeliveryException(&quot;All sinks failed to process, &quot; +</div><div class="line">        &quot;nothing left to failover to&quot;);</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
+<p>分析一下执行逻辑，在初始化的时候，failedSink是空的【可以参见configure方法】。在执行第二个while循环的时候，当有activeSink处理失败，就会把这个sink加到failedSinks里去，然后获取liveSinks里的下一个sink作为activeSink。但是这个process方法并没有返回执行的逻辑，那么就应该被重复调用，才可能执行到上面的第一个while循环。<br>SinkRunner中的逻辑：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">      logger.debug(<span class="string">"Polling sink runner starting"</span>);</div><div class="line"></div><div class="line">      <span class="keyword">while</span> (!shouldStop.get()) &#123; <span class="comment">//只要shouldStop为false便会一次次的执行</span></div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">          <span class="keyword">if</span> (policy.process().equals(Sink.Status.BACKOFF)) &#123; <span class="comment">//这里的policy就是SinkProcessor</span></div><div class="line">            counterGroup.incrementAndGet(<span class="string">"runner.backoffs"</span>);</div><div class="line"></div><div class="line">            Thread.sleep(Math.min(</div><div class="line">                counterGroup.incrementAndGet(<span class="string">"runner.backoffs.consecutive"</span>)</div><div class="line">                * backoffSleepIncrement, maxBackoffSleep));</div><div class="line">          &#125; <span class="keyword">else</span> &#123;</div><div class="line">            counterGroup.set(<span class="string">"runner.backoffs.consecutive"</span>, <span class="number">0L</span>);</div><div class="line">          &#125;</div><div class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">          logger.debug(<span class="string">"Interrupted while processing an event. Exiting."</span>);</div><div class="line">          counterGroup.incrementAndGet(<span class="string">"runner.interruptions"</span>);</div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">          logger.error(<span class="string">"Unable to deliver event. Exception follows."</span>, e);</div><div class="line">          <span class="keyword">if</span> (e <span class="keyword">instanceof</span> EventDeliveryException) &#123;</div><div class="line">            counterGroup.incrementAndGet(<span class="string">"runner.deliveryErrors"</span>);</div><div class="line">          &#125; <span class="keyword">else</span> &#123;</div><div class="line">            counterGroup.incrementAndGet(<span class="string">"runner.errors"</span>);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">try</span> &#123;</div><div class="line">            Thread.sleep(maxBackoffSleep);</div><div class="line">          &#125; <span class="keyword">catch</span> (InterruptedException ex) &#123;</div><div class="line">            Thread.currentThread().interrupt();</div><div class="line">          &#125;</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">      logger.debug(<span class="string">"Polling runner exiting. Metrics:&#123;&#125;"</span>, counterGroup);</div><div class="line">    &#125;</div></pre></td></tr></table></figure></p>
+<p>这样看来，其实flume的FailoverSinkProcessor也是会自动发现恢复了的Sink的。</p>
+<h2 id="2-flume官网文档"><a href="#2-flume官网文档" class="headerlink" title="2. flume官网文档"></a>2. flume官网文档</h2><blockquote>
+<p>Failover Sink Processor maintains <strong>a prioritized list of sinks</strong>, guaranteeing that so long as one is available events will be processed (delivered).The failover mechanism works by relegating failed sinks to a pool where they are assigned a cool down period, increasing with sequential failures before they are retried. Once a sink successfully sends an event, it is restored to the live pool.</p>
+<p>To configure, set a <strong>sink groups</strong> processor to failover and set priorities for all individual sinks. All specified priorities must be <strong>unique</strong>. Furthermore, upper limit to failover time can be set (in milliseconds) using maxpenalty property.</p>
+<p>Example for agent named a1:<br>a1.sinkgroups = g1<br>a1.sinkgroups.g1.sinks = k1 k2<br>a1.sinkgroups.g1.processor.type = failover<br>a1.sinkgroups.g1.processor.priority.k1 = 5<br>a1.sinkgroups.g1.processor.priority.k2 = 10<br>a1.sinkgroups.g1.processor.maxpenalty = 10000</p>
+</blockquote>
+<p>我们看到，这里又涉及到了sink group这个东西，其实主要是为了做负载均衡和容灾时更加方便一些，也很好理解，就是把sink分个组而已，然后负载均衡和容灾可以指定一个组就可以了，也就针对这个组里的sink进行对应的策略实施。找了一个比较好的例子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"># channels</div><div class="line">agent.channels = mem_channel</div><div class="line">agent.channels.mem_channel.type = memory</div><div class="line"></div><div class="line"># sources</div><div class="line">agent.sources = event_source</div><div class="line">agent.sources.event_source.type = avro</div><div class="line">agent.sources.event_source.bind = 127.0.0.1</div><div class="line">agent.sources.event_source.port = 10000</div><div class="line">agent.sources.event_source.channels = mem_channel</div><div class="line"></div><div class="line"># sinks</div><div class="line">agent.sinks = main_sink backup_sink</div><div class="line"></div><div class="line">agent.sinks.main_sink.type = avro</div><div class="line">agent.sinks.main_sink.hostname = 127.0.0.1</div><div class="line">agent.sinks.main_sink.port = 10001</div><div class="line">agent.sinks.main_sink.channel = mem_channel</div><div class="line"></div><div class="line">agent.sinks.backup_sink.type = avro</div><div class="line">agent.sinks.backup_sink.hostname = 127.0.0.1</div><div class="line">agent.sinks.backup_sink.port = 10002</div><div class="line">agent.sinks.backup_sink.channel = mem_channel</div><div class="line"></div><div class="line"># sink groups    </div><div class="line">agent.sinkgroups = failover_group</div><div class="line">agent.sinkgroups.failover_group.sinks = main_sink backup_sink</div><div class="line">agent.sinkgroups.failover_group.processor.type = failover</div><div class="line">agent.sinkgroups.failover_group.processor.priority.main_sink = 10</div><div class="line">agent.sinkgroups.failover_group.processor.priority.backup_sink = 5</div></pre></td></tr></table></figure></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2015/05/06/Flume-测试笔记（8）/" data-title="Flume 测试笔记（8） | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/05/08/在pycharm中开发pySpark程序/" title="在pycharm中开发pySpark程序">
+  <strong>上一篇：</strong><br/>
+  <span>
+  在pycharm中开发pySpark程序</span>
+</a>
+</div>
+
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2015/05/06/Flume-测试笔记（8）/" data-title="Flume 测试笔记（8）" data-url="http://willcup.com/2015/05/06/Flume-测试笔记（8）/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-flume代码逻辑"><span class="toc-number">1.</span> <span class="toc-text">1.flume代码逻辑</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-flume官网文档"><span class="toc-number">2.</span> <span class="toc-text">2. flume官网文档</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/2015a/" title="2015a">2015a<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/django/" title="django">django<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Flume/" title="Flume">Flume<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,722 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>akka in action 读书笔记（2） | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="clone
+git clone https://github.com/RayRoestenburg/akka-in-action.git
+
+先切换到ch02分支上【这个项目的分支有点儿乱 】，找到目录里的chapter2目录，引入idea
+引入过程中IDE应该会自动下载sbt依赖，如果没有的话，到项目根目录下执行：
+
+sbt assembly
+
+此项目使用的依赖中除了Spray其他都是scala栈">
+<meta property="og:type" content="article">
+<meta property="og:title" content="akka in action 读书笔记（2）">
+<meta property="og:url" content="http://willcup.com/2015/08/10/akka-读书笔记（2）/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="clone
+git clone https://github.com/RayRoestenburg/akka-in-action.git
+
+先切换到ch02分支上【这个项目的分支有点儿乱 】，找到目录里的chapter2目录，引入idea
+引入过程中IDE应该会自动下载sbt依赖，如果没有的话，到项目根目录下执行：
+
+sbt assembly
+
+此项目使用的依赖中除了Spray其他都是scala栈">
+<meta property="og:image" content="http://willcup.com/imgs/akka/2.1 引入IDE.png">
+<meta property="og:image" content="http://willcup.com/imgs/akka/2.2 REST规范.png">
+<meta property="og:image" content="http://willcup.com/imgs/akka/2.3 Actor Creation Sequence Triggered by REST Request.png">
+<meta property="og:image" content="http://willcup.com/imgs/akka/2.4 Create an Event from the received JSON request.png">
+<meta property="og:image" content="http://willcup.com/imgs/akka/2.5 Buy a Ticket.png">
+<meta property="og:updated_time" content="2016-10-28T02:54:06.777Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="akka in action 读书笔记（2）">
+<meta name="twitter:description" content="clone
+git clone https://github.com/RayRoestenburg/akka-in-action.git
+
+先切换到ch02分支上【这个项目的分支有点儿乱 】，找到目录里的chapter2目录，引入idea
+引入过程中IDE应该会自动下载sbt依赖，如果没有的话，到项目根目录下执行：
+
+sbt assembly
+
+此项目使用的依赖中除了Spray其他都是scala栈">
+<meta name="twitter:image" content="http://willcup.com/imgs/akka/2.1 引入IDE.png">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/node_modules">测试</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/08/10/akka-读书笔记（2）/" title="akka in action 读书笔记（2）" itemprop="url">akka in action 读书笔记（2）</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2015-08-09T18:45:52.000Z" itemprop="datePublished"> 发表于 2015-08-10</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#clone"><span class="toc-text">clone</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sbt"><span class="toc-text">sbt</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#REST-server"><span class="toc-text">REST server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Actors"><span class="toc-text">Actors</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#TicketSeller"><span class="toc-text">TicketSeller</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#BoxOffice"><span class="toc-text">BoxOffice</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RestInterface"><span class="toc-text">RestInterface</span></a></li></ol></li></ol>
+		
+		</div>
+		
+		<h3 id="clone"><a href="#clone" class="headerlink" title="clone"></a>clone</h3><blockquote>
+<p>git clone <a href="https://github.com/RayRoestenburg/akka-in-action.git" target="_blank" rel="external">https://github.com/RayRoestenburg/akka-in-action.git</a></p>
+</blockquote>
+<p>先切换到ch02分支上【这个项目的分支有点儿乱 】，找到目录里的chapter2目录，引入idea<br><img src="/imgs/akka/2.1 引入IDE.png" alt="1 引入IDE"></p>
+<p>引入过程中IDE应该会自动下载sbt依赖，如果没有的话，到项目根目录下执行：</p>
+<blockquote>
+<p>sbt assembly</p>
+</blockquote>
+<p>此项目使用的依赖中除了Spray其他都是scala栈中的成员。当然后面可能会引入更多的其他依赖，比如根据不同的环境进行不同参数的调整。</p>
+<p>使用下面命令测试是否构建成功：</p>
+<blockquote>
+<p>java -jar target/scala-2.10/goticks-server.jar</p>
+</blockquote>
+<pre><code>Slf4jEventHandler started
+akka://com-goticks-Main/user/io-bridge started
+akka://com-goticks-Main/user/http-server started on /0.0.0.0:5000
+</code></pre><h3 id="sbt"><a href="#sbt" class="headerlink" title="sbt"></a>sbt</h3><p>sbt的配置文件就是项目根目录下的build.sbt文件。</p>
+<pre><code>import AssemblyKeys._
+import com.typesafe.sbt.SbtStartScript
+
+// 有两个jar需要用到上面两个import。一个类似maven里的shade，将项目打成一个大jar；另一个则是用来部署项目到Heroku上。
+
+name := &quot;goticks&quot;
+
+version := &quot;0.1-SNAPSHOT&quot;
+
+organization := &quot;com.goticks&quot;
+
+scalaVersion := &quot;2.11.2&quot;
+
+resolvers ++= Seq(&quot;Typesafe Repository&quot; at &quot;http://repo.typesafe.com/typesafe/releases/&quot;,
+              &quot;Spray Repository&quot;    at &quot;http://repo.spray.io&quot;)
+// 指定repositories
+
+libraryDependencies ++= {
+  val akkaVersion       = &quot;2.3.9&quot;
+  val sprayVersion      = &quot;1.3.2&quot;
+  Seq(
+    &quot;com.typesafe.akka&quot; %% &quot;akka-actor&quot;      % akkaVersion,
+    &quot;io.spray&quot;          %% &quot;spray-can&quot;       % sprayVersion,
+    &quot;io.spray&quot;          %% &quot;spray-routing&quot;   % sprayVersion,
+    &quot;io.spray&quot;          %% &quot;spray-json&quot;      % &quot;1.3.1&quot;,
+    &quot;com.typesafe.akka&quot; %% &quot;akka-slf4j&quot;      % akkaVersion,
+    &quot;ch.qos.logback&quot;    %  &quot;logback-classic&quot; % &quot;1.1.2&quot;,
+    &quot;com.typesafe.akka&quot; %% &quot;akka-testkit&quot;    % akkaVersion   % &quot;test&quot;,
+    &quot;org.scalatest&quot;     %% &quot;scalatest&quot;       % &quot;2.2.0&quot;       % &quot;test&quot;
+  )
+}
+
+// Assembly settings
+mainClass in Global := Some(&quot;com.goticks.Main&quot;)
+
+jarName in assembly := &quot;goticks-server.jar&quot;
+
+assemblySettings
+
+// StartScript settings
+seq(SbtStartScript.startScriptForClassesSettings: _*)
+</code></pre><h3 id="REST-server"><a href="#REST-server" class="headerlink" title="REST server"></a>REST server</h3><p>到根目录下启动server</p>
+<blockquote>
+<p>sbt run</p>
+</blockquote>
+<p><img src="/imgs/akka/2.2 REST规范.png" alt="2 REST规范"><br>存取[为方便测试，请事先安装Linux工具httpie]:</p>
+<pre><code>root@ubuntu:~/gitLearning/akka-in-action/chapter2# http PUT localhost:5000/events event=RHCP nrOfTickets:=10
+HTTP/1.1 200 OK
+Content-Length: 2
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 10 Aug 2015 06:28:08 GMT
+Server: GoTicks.com REST API
+
+OK
+
+root@ubuntu:~/gitLearning/akka-in-action/chapter2# http PUT localhost:5000/events event=DjMadlib nrOfTickets:=15
+HTTP/1.1 200 OK
+Content-Length: 2
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 10 Aug 2015 06:28:45 GMT
+Server: GoTicks.com REST API
+
+OK
+
+root@ubuntu:~/gitLearning/akka-in-action/chapter2# http GET localhost:5000/events
+HTTP/1.1 200 OK
+Content-Length: 92
+Content-Type: application/json; charset=UTF-8
+Date: Mon, 10 Aug 2015 06:28:52 GMT
+Server: GoTicks.com REST API
+
+[
+    {
+    &quot;event&quot;: &quot;DjMadlib&quot;, 
+    &quot;nrOfTickets&quot;: 15
+    }, 
+    {
+    &quot;event&quot;: &quot;RHCP&quot;, 
+    &quot;nrOfTickets&quot;: 10
+    }
+]
+
+root@ubuntu:~/gitLearning/akka-in-action/chapter2# http GET localhost:5000/ticket/RHCP
+HTTP/1.1 200 OK
+Content-Length: 32
+Content-Type: application/json; charset=UTF-8
+Date: Mon, 10 Aug 2015 06:29:32 GMT
+Server: GoTicks.com REST API
+
+{
+    &quot;event&quot;: &quot;RHCP&quot;, 
+    &quot;nr&quot;: 1
+}
+
+root@ubuntu:~/gitLearning/akka-in-action/chapter2# http GET localhost:5000/events
+HTTP/1.1 200 OK
+Content-Length: 91
+Content-Type: application/json; charset=UTF-8
+Date: Mon, 10 Aug 2015 06:29:46 GMT
+Server: GoTicks.com REST API
+
+[
+    {
+    &quot;event&quot;: &quot;DjMadlib&quot;, 
+    &quot;nrOfTickets&quot;: 15
+    }, 
+    {
+    &quot;event&quot;: &quot;RHCP&quot;, 
+    &quot;nrOfTickets&quot;: 9
+    }
+]
+</code></pre><p>以上已经包含了CRUD操作，当然这并不全面。我们没有考虑如果一个Event被卖出去了，那么它的状态应该马上变为不可卖，后面我们会再详细谈论此类问题。</p>
+<h3 id="Actors"><a href="#Actors" class="headerlink" title="Actors"></a>Actors</h3><p>你可以尝试跟着github上搞下来的源码自己一步步构建项目试试。现在我们已经知道了，actor可以有四种操作：create, send\receive, become, supervise。这里我们会接触到前两个。<br>先看看actor之间怎样相互作用传递信息: 创建event、改票、完成event。</p>
+<p>例子中的app只包含三个Actor类。首先，我们是创建这些Actor的容器ActorSystem, 之后Actor再去创建它的子Actor。下图是次序：</p>
+<p><img src="/imgs/akka/2.3 Actor Creation Sequence Triggered by REST Request.png" alt="3. Actor Creation Sequence Triggered by REST Request"></p>
+<p>RestInterface Actor负责处理HTTP request，其实就是一个HTTP请求的adapter。TicketSeller则负责一些tickets，所有关于票务买卖的event它都管。下图解释了一个request怎样通过actor system创建一个event：</p>
+<p><img src="/imgs/akka/2.4 Create an Event from the received JSON request.png" alt="4 Create an Event from the received JSON request"><br>注意：我看的版本里不是TicketMaster而是BoxOffice</p>
+<p><img src="/imgs/akka/2.5 Buy a Ticket.png" alt="5 Buy a Ticket"></p>
+<p>以上就是这个小APP里主要的业务流了，主要就是让customer能够跟可用的票之间能够建立连接，进行交互。</p>
+<p>下面让我们退回去看一下代码，首先是入口Main类</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> com.goticks</div><div class="line"></div><div class="line"><span class="keyword">import</span> scala.concurrent.duration._</div><div class="line"></div><div class="line"><span class="keyword">import</span> akka.actor._</div><div class="line"><span class="keyword">import</span> akka.io.<span class="type">IO</span></div><div class="line"><span class="keyword">import</span> akka.pattern.ask</div><div class="line"><span class="keyword">import</span> akka.util.<span class="type">Timeout</span></div><div class="line"></div><div class="line"><span class="keyword">import</span> spray.can.<span class="type">Http</span></div><div class="line"><span class="keyword">import</span> spray.can.<span class="type">Http</span>.<span class="type">Bound</span></div><div class="line"></div><div class="line"><span class="keyword">import</span> com.typesafe.config.<span class="type">ConfigFactory</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">object</span> <span class="title">Main</span> <span class="keyword">extends</span> <span class="title">App</span> </span>&#123;</div><div class="line">  <span class="keyword">val</span> config = <span class="type">ConfigFactory</span>.load() 	<span class="comment">// 加载配置文件</span></div><div class="line">  <span class="keyword">val</span> host = config.getString(<span class="string">"http.host"</span>)</div><div class="line">  <span class="keyword">val</span> port = config.getInt(<span class="string">"http.port"</span>)</div><div class="line"></div><div class="line">  <span class="keyword">implicit</span> <span class="keyword">val</span> system = <span class="type">ActorSystem</span>(<span class="string">"goticks"</span>)</div><div class="line"></div><div class="line">  <span class="keyword">val</span> api = system.actorOf(<span class="type">Props</span>(<span class="keyword">new</span> <span class="type">RestInterface</span>()), <span class="string">"httpInterface"</span>) <span class="comment">// 创建最高层的actor</span></div><div class="line"> </div><div class="line">  <span class="keyword">implicit</span> <span class="keyword">val</span> executionContext = system.dispatcher</div><div class="line">  <span class="keyword">implicit</span> <span class="keyword">val</span> timeout = <span class="type">Timeout</span>(<span class="number">10</span> seconds)</div><div class="line"></div><div class="line">  <span class="comment">// 启动Spray HTTP Server</span></div><div class="line">  <span class="type">IO</span>(<span class="type">Http</span>).ask(<span class="type">Http</span>.<span class="type">Bind</span>(listener = api, interface = host, port = port))</div><div class="line">    .mapTo[<span class="type">Http</span>.<span class="type">Event</span>]</div><div class="line">    .map &#123;</div><div class="line">      <span class="keyword">case</span> <span class="type">Http</span>.<span class="type">Bound</span>(address) =&gt;</div><div class="line">        println(<span class="string">s"REST interface bound to <span class="subst">$address</span>"</span>)</div><div class="line">      <span class="keyword">case</span> <span class="type">Http</span>.<span class="type">CommandFailed</span>(cmd) =&gt;</div><div class="line">        println(<span class="string">"REST interface could not bind to "</span> +</div><div class="line">          <span class="string">s"<span class="subst">$host</span>:<span class="subst">$port</span>, <span class="subst">$&#123;cmd.failureMessage&#125;</span>"</span>)</div><div class="line">        system.shutdown()</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个App内部沟通的消息类型都定义在TicketProtocol中：<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">object</span> <span class="title">TicketProtocol</span> </span>&#123;</div><div class="line">  <span class="keyword">import</span> spray.json._</div><div class="line"></div><div class="line">  <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Event</span>(<span class="params">event:<span class="type">String</span>, nrOfTickets:<span class="type">Int</span></span>)</span></div><div class="line"></div><div class="line">  <span class="keyword">case</span> <span class="class"><span class="keyword">object</span> <span class="title">GetEvents</span></span></div><div class="line"></div><div class="line">  <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Events</span>(<span class="params">events:<span class="type">List</span>[<span class="type">Event</span>]</span>)</span></div><div class="line"></div><div class="line">  <span class="keyword">case</span> <span class="class"><span class="keyword">object</span> <span class="title">EventCreated</span></span></div><div class="line"></div><div class="line">  <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">TicketRequest</span>(<span class="params">event:<span class="type">String</span></span>)</span></div><div class="line"></div><div class="line">  <span class="keyword">case</span> <span class="class"><span class="keyword">object</span> <span class="title">SoldOut</span></span></div><div class="line"></div><div class="line">  <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Tickets</span>(<span class="params">tickets:<span class="type">List</span>[<span class="type">Ticket</span>]</span>)</span></div><div class="line"></div><div class="line">  <span class="keyword">case</span> <span class="class"><span class="keyword">object</span> <span class="title">BuyTicket</span></span></div><div class="line"></div><div class="line">  <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Ticket</span>(<span class="params">event:<span class="type">String</span>, nr:<span class="type">Int</span></span>)</span></div><div class="line"></div><div class="line">  <span class="comment">//----------------------------------------------</span></div><div class="line">  <span class="comment">// JSON</span></div><div class="line">  <span class="comment">//----------------------------------------------</span></div><div class="line"></div><div class="line">  <span class="class"><span class="keyword">object</span> <span class="title">Event</span> <span class="keyword">extends</span> <span class="title">DefaultJsonProtocol</span> </span>&#123;</div><div class="line">    <span class="keyword">implicit</span> <span class="keyword">val</span> format = jsonFormat2(<span class="type">Event</span>.apply)</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="class"><span class="keyword">object</span> <span class="title">TicketRequest</span> <span class="keyword">extends</span> <span class="title">DefaultJsonProtocol</span> </span>&#123;</div><div class="line">    <span class="keyword">implicit</span> <span class="keyword">val</span> format = jsonFormat1(<span class="type">TicketRequest</span>.apply)</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="class"><span class="keyword">object</span> <span class="title">Ticket</span> <span class="keyword">extends</span> <span class="title">DefaultJsonProtocol</span> </span>&#123;</div><div class="line">    <span class="keyword">implicit</span> <span class="keyword">val</span> format = jsonFormat2(<span class="type">Ticket</span>.apply)</div><div class="line">  &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>作为一个典型的APP，我们有一个接口来解决围绕Event主体和Ticket整个生命周期的所有问题。记住，Akka会使用immutable message将这些部分链接起来，所以actor应该知道它需要的所有的信息。</p>
+<h4 id="TicketSeller"><a href="#TicketSeller" class="headerlink" title="TicketSeller"></a>TicketSeller</h4><p>TicketSeller是由BoxOffice创建的, 主要负责处理订单的，自己维护了一些ticket。每次有买票的请求，它就从自己的ticket list里拿出第一张来：<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">TicketSeller</span> <span class="keyword">extends</span> <span class="title">Actor</span> </span>&#123;</div><div class="line">  <span class="keyword">import</span> <span class="type">TicketProtocol</span>._</div><div class="line"></div><div class="line">  <span class="keyword">var</span> tickets = <span class="type">Vector</span>[<span class="type">Ticket</span>]()	<span class="comment">// 票</span></div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">receive</span> </span>= &#123;</div><div class="line"></div><div class="line">    <span class="keyword">case</span> <span class="type">GetEvents</span> =&gt; sender ! tickets.size	<span class="comment">// 返回当前票数</span></div><div class="line"></div><div class="line">    <span class="keyword">case</span> <span class="type">Tickets</span>(newTickets) =&gt; tickets = tickets ++ newTickets <span class="comment">//添加新票</span></div><div class="line"></div><div class="line">    <span class="keyword">case</span> <span class="type">BuyTicket</span> =&gt;	<span class="comment">// 有请求买票</span></div><div class="line">      <span class="keyword">if</span> (tickets.isEmpty) &#123;</div><div class="line">        sender ! <span class="type">SoldOut</span></div><div class="line">        self ! <span class="type">PoisonPill</span>	<span class="comment">// 如果卖光了就服毒自杀，这会导致当前actor被清理</span></div><div class="line">      &#125;</div><div class="line"></div><div class="line">      tickets.headOption.foreach &#123; ticket =&gt;</div><div class="line">        tickets = tickets.tail</div><div class="line">        sender ! ticket</div><div class="line">      &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="BoxOffice"><a href="#BoxOffice" class="headerlink" title="BoxOffice"></a>BoxOffice</h4><p>BoxOffice 需要为每个event都创建TicketSeller，并把买票请求代理给他们。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">BoxOffice</span> <span class="keyword">extends</span> <span class="title">Actor</span> <span class="keyword">with</span> <span class="title">CreateTicketSellers</span> <span class="keyword">with</span> <span class="title">ActorLogging</span> </span>&#123;</div><div class="line">  <span class="keyword">import</span> <span class="type">TicketProtocol</span>._</div><div class="line">  <span class="keyword">import</span> context._</div><div class="line">  <span class="keyword">implicit</span> <span class="keyword">val</span> timeout = <span class="type">Timeout</span>(<span class="number">5</span> seconds)</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">receive</span> </span>= &#123;</div><div class="line"></div><div class="line">    <span class="keyword">case</span> <span class="type">Event</span>(name, nrOfTickets) =&gt;</div><div class="line">      log.info(<span class="string">s"Creating new event <span class="subst">$&#123;name&#125;</span> with <span class="subst">$&#123;nrOfTickets&#125;</span> tickets."</span>)</div><div class="line"></div><div class="line">      <span class="keyword">if</span>(context.child(name).isEmpty) &#123;	<span class="comment">// 如果这个name的TicketSeller还没有的话</span></div><div class="line">        <span class="keyword">val</span> ticketSeller = createTicketSeller(name)</div><div class="line"></div><div class="line">        <span class="comment">// 塞进初始数量的票</span></div><div class="line">        <span class="keyword">val</span> tickets = <span class="type">Tickets</span>((<span class="number">1</span> to nrOfTickets).map(nr=&gt; <span class="type">Ticket</span>(name, nr)).toList)</div><div class="line">        ticketSeller ! tickets</div><div class="line">      &#125;</div><div class="line"></div><div class="line">      sender ! <span class="type">EventCreated</span></div><div class="line"></div><div class="line">    <span class="keyword">case</span> <span class="type">TicketRequest</span>(name) =&gt;</div><div class="line">      log.info(<span class="string">s"Getting a ticket for the <span class="subst">$&#123;name&#125;</span> event."</span>)</div><div class="line"></div><div class="line">      <span class="comment">// 将BuyTicket message传递给TicketSeller</span></div><div class="line">      context.child(name) <span class="keyword">match</span> &#123;</div><div class="line">        <span class="keyword">case</span> <span class="type">Some</span>(ticketSeller) =&gt; ticketSeller.forward(<span class="type">BuyTicket</span>)</div><div class="line">        <span class="keyword">case</span> <span class="type">None</span>               =&gt; sender ! <span class="type">SoldOut</span> <span class="comment">// 如果找不到对应的ticketSeller，就返回SoldOut message给sender，也就是RestInterface</span></div><div class="line">      &#125;</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">    <span class="comment">// 向所有的ticketSeller收集当前票数，然后弄成一个list。ask是一个异步操作，因为我们不希望BoxOffice阻塞，而停止处理其他request。</span></div><div class="line">    <span class="keyword">case</span> <span class="type">GetEvents</span> =&gt;</div><div class="line">      <span class="keyword">import</span> akka.pattern.ask</div><div class="line"></div><div class="line">      <span class="keyword">val</span> capturedSender = sender</div><div class="line"></div><div class="line">      <span class="comment">// 向TicketSeller传递GetEvents message的本地方法</span></div><div class="line">      <span class="function"><span class="keyword">def</span> <span class="title">askAndMapToEvent</span></span>(ticketSeller:<span class="type">ActorRef</span>) =  &#123;</div><div class="line">      	<span class="comment">// 不阻塞的获取每个name下的票数，futureInt会在执行完后获取到应得的value</span></div><div class="line">        <span class="keyword">val</span> futureInt = ticketSeller.ask(<span class="type">GetEvents</span>).mapTo[<span class="type">Int</span>]</div><div class="line"></div><div class="line">        futureInt.map(nrOfTickets =&gt;</div><div class="line">          <span class="comment">// 将future的值转化为Event</span></div><div class="line">          <span class="type">Event</span>(ticketSeller.actorRef.path.name, nrOfTickets))</div><div class="line">      &#125;</div><div class="line"></div><div class="line">  	  <span class="comment">// 遍历所有的ticketSeller</span></div><div class="line">      <span class="keyword">val</span> futures = context.children.map(ticketSeller =&gt;</div><div class="line">        askAndMapToEvent(ticketSeller))</div><div class="line"></div><div class="line">      <span class="comment">// 所有future都得到值后，发送信息。</span></div><div class="line">      <span class="type">Future</span>.sequence(futures).map &#123; events =&gt;</div><div class="line">        capturedSender ! <span class="type">Events</span>(events.toList)</div><div class="line">      &#125;</div><div class="line"></div><div class="line">  &#125;</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 注意是使用context创建的actor：谁创建的，谁就是这个新actor的supervisor</span></div><div class="line"><span class="class"><span class="keyword">trait</span> <span class="title">CreateTicketSellers</span> </span>&#123; self:<span class="type">Actor</span> =&gt;</div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">createTicketSeller</span></span>(name:<span class="type">String</span>) =  context.actorOf(<span class="type">Props</span>[<span class="type">TicketSeller</span>], name)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>上例中我们使用ask返回的是一个Future对象，这个东西是在未来某个时间点才会有值的。获取一个future引用，定义当这个值<strong>可用后</strong>要做的操作，而不是阻塞等待执行完毕，也不要直接使用这个future。第七章我们会深入探索Future的特性，弄清楚这些非阻塞的异步请求的运作原理。</p>
+<h4 id="RestInterface"><a href="#RestInterface" class="headerlink" title="RestInterface"></a>RestInterface</h4><p>RestInterface使用了Spray routing DSL，后面第九章会详解：当service越来越大，复杂的路由也越来越多。我们这个例子里倒是很少，因为只是卖票而已。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> com.goticks</div><div class="line"></div><div class="line"><span class="keyword">import</span> akka.actor._</div><div class="line"></div><div class="line"><span class="keyword">import</span> spray.routing._</div><div class="line"><span class="keyword">import</span> spray.http.<span class="type">StatusCodes</span></div><div class="line"><span class="keyword">import</span> spray.httpx.<span class="type">SprayJsonSupport</span>._</div><div class="line"><span class="keyword">import</span> spray.routing.<span class="type">RequestContext</span></div><div class="line"><span class="keyword">import</span> akka.util.<span class="type">Timeout</span></div><div class="line"><span class="keyword">import</span> scala.concurrent.duration._</div><div class="line"><span class="keyword">import</span> scala.language.postfixOps</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">RestInterface</span> <span class="keyword">extends</span> <span class="title">HttpServiceActor</span></span></div><div class="line">  <span class="keyword">with</span> <span class="type">RestApi</span> &#123;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">receive</span> </span>= runRoute(routes)</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">trait</span> <span class="title">RestApi</span> <span class="keyword">extends</span> <span class="title">HttpService</span> <span class="keyword">with</span> <span class="title">ActorLogging</span> </span>&#123; actor: <span class="type">Actor</span> =&gt;</div><div class="line">  <span class="keyword">import</span> context.dispatcher</div><div class="line">  <span class="keyword">import</span> com.goticks.<span class="type">TicketProtocol</span>._</div><div class="line"></div><div class="line">  <span class="keyword">implicit</span> <span class="keyword">val</span> timeout = <span class="type">Timeout</span>(<span class="number">10</span> seconds)</div><div class="line">  <span class="keyword">import</span> akka.pattern.ask</div><div class="line">  <span class="keyword">import</span> akka.pattern.pipe</div><div class="line"></div><div class="line">  <span class="comment">// 初始化就创建一个BoxOffice</span></div><div class="line">  <span class="keyword">val</span> boxOffice = context.actorOf(<span class="type">Props</span>[<span class="type">BoxOffice</span>])</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">routes</span></span>: <span class="type">Route</span> =</div><div class="line"></div><div class="line">    path(<span class="string">"events"</span>) &#123;</div><div class="line">      put &#123;</div><div class="line">        entity(as[<span class="type">Event</span>]) &#123; event =&gt; requestContext =&gt;</div><div class="line">          <span class="keyword">val</span> responder = createResponder(requestContext)</div><div class="line">          boxOffice.ask(event).pipeTo(responder)</div><div class="line">        &#125;</div><div class="line">      &#125; ~</div><div class="line">      get &#123; requestContext =&gt;</div><div class="line">        <span class="keyword">val</span> responder = createResponder(requestContext)</div><div class="line">        boxOffice.ask(<span class="type">GetEvents</span>).pipeTo(responder)</div><div class="line">      &#125;</div><div class="line">    &#125; ~</div><div class="line">    path(<span class="string">"ticket"</span>) &#123;</div><div class="line">      <span class="comment">/**</span></div><div class="line">      entity方法把request直接解析成一个TicketRequest对象，不用我们自己再去编写代码来映射到对象。</div><div class="line">      response被pipe到一个使用pipe模型的responder。</div><div class="line">      */</div><div class="line">      get &#123;</div><div class="line">        entity(as[<span class="type">TicketRequest</span>]) &#123; ticketRequest =&gt; requestContext =&gt;</div><div class="line">          <span class="keyword">val</span> responder = createResponder(requestContext)</div><div class="line">          boxOffice.ask(ticketRequest).pipeTo(responder)</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    &#125; ~</div><div class="line">    path(<span class="string">"ticket"</span> / <span class="type">Segment</span>) &#123; eventName =&gt; requestContext =&gt;</div><div class="line">      <span class="keyword">val</span> req = <span class="type">TicketRequest</span>(eventName)</div><div class="line">      <span class="keyword">val</span> responder = createResponder(requestContext)</div><div class="line">      boxOffice.ask(req).pipeTo(responder)</div><div class="line">    &#125;</div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">createResponder</span></span>(requestContext:<span class="type">RequestContext</span>) = &#123;</div><div class="line">    context.actorOf(<span class="type">Props</span>(<span class="keyword">new</span> <span class="type">Responder</span>(requestContext)))</div><div class="line">  &#125;</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 围绕一个HTTP request生命周期的Responder，发送消息给BoxOffice，同时也处理来自TicketSeller和BoxOffice的response。</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Responder</span>(<span class="params">requestContext:<span class="type">RequestContext</span></span>) <span class="keyword">extends</span> <span class="title">Actor</span> <span class="keyword">with</span> <span class="title">ActorLogging</span> </span>&#123;</div><div class="line">  <span class="keyword">import</span> <span class="type">TicketProtocol</span>._</div><div class="line">  <span class="keyword">import</span> spray.httpx.<span class="type">SprayJsonSupport</span>._</div><div class="line"></div><div class="line">  <span class="comment">// responder接收到TicketSeller返回的以下四类消息后就算完成了HTTP request。之后自杀。</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">receive</span> </span>= &#123;</div><div class="line"></div><div class="line">    <span class="keyword">case</span> ticket:<span class="type">Ticket</span> =&gt;</div><div class="line">      requestContext.complete(<span class="type">StatusCodes</span>.<span class="type">OK</span>, ticket)</div><div class="line">      self ! <span class="type">PoisonPill</span></div><div class="line"></div><div class="line">    <span class="keyword">case</span> <span class="type">EventCreated</span> =&gt;</div><div class="line">      requestContext.complete(<span class="type">StatusCodes</span>.<span class="type">OK</span>)</div><div class="line">      self ! <span class="type">PoisonPill</span></div><div class="line"></div><div class="line">    <span class="keyword">case</span> <span class="type">SoldOut</span> =&gt;</div><div class="line">      requestContext.complete(<span class="type">StatusCodes</span>.<span class="type">NotFound</span>)</div><div class="line">      self ! <span class="type">PoisonPill</span></div><div class="line"></div><div class="line">    <span class="keyword">case</span> <span class="type">Events</span>(events) =&gt;</div><div class="line">      requestContext.complete(<span class="type">StatusCodes</span>.<span class="type">OK</span>, events)</div><div class="line">      self ! <span class="type">PoisonPill</span></div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/akka/">akka</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2015/08/10/akka-读书笔记（2）/" data-title="akka in action 读书笔记（2） | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/10/10/内部JIRA+wiki笔记/" title="mt JIRA+wiki笔记">
+  <strong>上一篇：</strong><br/>
+  <span>
+  mt JIRA+wiki笔记</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/08/06/solr上手-4/"  title="solr上手（四）">
+ <strong>下一篇：</strong><br/> 
+ <span>solr上手（四）
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2015/08/10/akka-读书笔记（2）/" data-title="akka in action 读书笔记（2）" data-url="http://willcup.com/2015/08/10/akka-读书笔记（2）/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#clone"><span class="toc-number">1.</span> <span class="toc-text">clone</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sbt"><span class="toc-number">2.</span> <span class="toc-text">sbt</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#REST-server"><span class="toc-number">3.</span> <span class="toc-text">REST server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Actors"><span class="toc-number">4.</span> <span class="toc-text">Actors</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#TicketSeller"><span class="toc-number">4.1.</span> <span class="toc-text">TicketSeller</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#BoxOffice"><span class="toc-number">4.2.</span> <span class="toc-text">BoxOffice</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RestInterface"><span class="toc-number">4.3.</span> <span class="toc-text">RestInterface</span></a></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/2015a/" title="2015a">2015a<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/django/" title="django">django<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Flume/" title="Flume">Flume<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

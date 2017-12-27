@@ -1,0 +1,596 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>flume-源码阅读笔记（4） | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="这一章详细分析一下source的运行方式
+1. 入口前面我们提到了source的启动入口为：1234567891011for (Entry&amp;lt;String, SourceRunner&amp;gt; entry : materializedConfiguration        .getSourceRunners().entrySet()) &amp;#123;      try&amp;#123;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="flume-源码阅读笔记（4）">
+<meta property="og:url" content="http://willcup.com/2015/07/10/flume-源码阅读笔记（4）/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="这一章详细分析一下source的运行方式
+1. 入口前面我们提到了source的启动入口为：1234567891011for (Entry&amp;lt;String, SourceRunner&amp;gt; entry : materializedConfiguration        .getSourceRunners().entrySet()) &amp;#123;      try&amp;#123;">
+<meta property="og:updated_time" content="2016-10-28T02:54:06.781Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="flume-源码阅读笔记（4）">
+<meta name="twitter:description" content="这一章详细分析一下source的运行方式
+1. 入口前面我们提到了source的启动入口为：1234567891011for (Entry&amp;lt;String, SourceRunner&amp;gt; entry : materializedConfiguration        .getSourceRunners().entrySet()) &amp;#123;      try&amp;#123;">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/node_modules">测试</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/07/10/flume-源码阅读笔记（4）/" title="flume-源码阅读笔记（4）" itemprop="url">flume-源码阅读笔记（4）</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2015-07-09T19:53:24.000Z" itemprop="datePublished"> 发表于 2015-07-10</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-入口"><span class="toc-text">1. 入口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-SourceRunner"><span class="toc-text">2. SourceRunner</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#PollableSourceRunner"><span class="toc-text">PollableSourceRunner</span></a></li></ol></li></ol>
+		
+		</div>
+		
+		<p>这一章详细分析一下source的运行方式</p>
+<h2 id="1-入口"><a href="#1-入口" class="headerlink" title="1. 入口"></a>1. 入口</h2><p>前面我们提到了source的启动入口为：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">for</span> (Entry&lt;String, SourceRunner&gt; entry : materializedConfiguration</div><div class="line">        .getSourceRunners().entrySet()) &#123;</div><div class="line">      <span class="keyword">try</span>&#123;</div><div class="line">        logger.info(<span class="string">"Starting Source "</span> + entry.getKey());</div><div class="line">        <span class="comment">// 下面这行就会以每3秒一次的频率调用SourceRunner</span></div><div class="line">        supervisor.supervise(entry.getValue(),</div><div class="line">          <span class="keyword">new</span> SupervisorPolicy.AlwaysRestartPolicy(), LifecycleState.START);</div><div class="line">      &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">        logger.error(<span class="string">"Error while starting &#123;&#125;"</span>, entry.getValue(), e);</div><div class="line">      &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure></p>
+<p>注意，上面的value不是Source，而是SourceRunner，那么我们的中心就围绕它展开了。</p>
+<h2 id="2-SourceRunner"><a href="#2-SourceRunner" class="headerlink" title="2. SourceRunner"></a>2. SourceRunner</h2><p>简而言之就是source的驱动器和控制器，对source进行了一层包裹。根据source的不同分为PollableSourceRunner和EventDrivenSourceRunner。</p>
+<p>先看一下SourceRunner的元素：</p>
+<ul>
+<li>source : Source</li>
+<li>forSource(Source)<br> 静态工厂方法，根据传入的source的类型实例化SourceRunner的实例，也就是上面提到的两种</li>
+</ul>
+<p>PollableSourceRunner管理的是<strong>PollableSource</strong>，这种source是需要外界来抽取event的，例如KafkaSource，需要去消费。</p>
+<p>EventDrivenSourceRunner管理的是<strong>EventDrivenSource</strong>，这种source自己就满足消息机制，可以向channel产生event，不需要外界来抽取。 很容易看出来，这种是稍微省心点儿的~~~</p>
+<p>SourceRunner里的元素比较少，还是分析它的两个子类吧。为方便对比，先看稍微简单一些的</p>
+<p>###　EventDrivenSourceRunner<br>元素只有一个lifecycleState : LifecycleState<br>启动代码：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> </span>&#123;</div><div class="line">    Source source = getSource();</div><div class="line">    ChannelProcessor cp = source.getChannelProcessor();</div><div class="line">    cp.initialize();	<span class="comment">// 初始化interceptorChain</span></div><div class="line">    source.start();		<span class="comment">// 启动source</span></div><div class="line">    lifecycleState = LifecycleState.START;</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
+<p>上面可见，source是在这里启动的。我们来参照一个具体实现ExecSource：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> </span>&#123;</div><div class="line">   executor = Executors.newSingleThreadExecutor();</div><div class="line"></div><div class="line">   <span class="comment">// 好，我们发现了一个Runnable</span></div><div class="line">   runner = <span class="keyword">new</span> ExecRunnable(shell, command, getChannelProcessor(), sourceCounter,</div><div class="line">       restart, restartThrottle, logStderr, bufferCount, batchTimeout, charset);</div><div class="line"></div><div class="line">   <span class="comment">// <span class="doctag">FIXME:</span> Use a callback-like executor / future to signal us upon failure.</span></div><div class="line">   runnerFuture = executor.submit(runner);</div><div class="line"></div><div class="line">   <span class="comment">/*</span></div><div class="line">    * NB: This comes at the end rather than the beginning of the method because</div><div class="line">    * it sets our state to running. We want to make sure the executor is alive</div><div class="line">    * and well first.</div><div class="line">    */</div><div class="line">   sourceCounter.start();</div><div class="line">   <span class="keyword">super</span>.start();</div><div class="line"></div><div class="line">   logger.debug(<span class="string">"Exec source started"</span>);</div><div class="line"> &#125;</div></pre></td></tr></table></figure></p>
+<p>看一下上面代码里的runnable：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">      <span class="keyword">do</span> &#123;</div><div class="line">        .......</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">          <span class="comment">// fork进程，执行shell</span></div><div class="line">          <span class="keyword">if</span>(shell != <span class="keyword">null</span>) &#123;</div><div class="line">            String[] commandArgs = formulateShellCommand(shell, command);</div><div class="line">            process = Runtime.getRuntime().exec(commandArgs);</div><div class="line">          &#125;  <span class="keyword">else</span> &#123;</div><div class="line">            String[] commandArgs = command.split(<span class="string">"\\s+"</span>);</div><div class="line">            process = <span class="keyword">new</span> ProcessBuilder(commandArgs).start();</div><div class="line">          &#125;</div><div class="line">          ....</div><div class="line"></div><div class="line">          <span class="comment">// 首先如果当前eventList不为空，先处理</span></div><div class="line">          future = timedFlushService.scheduleWithFixedDelay(<span class="keyword">new</span> Runnable() &#123;</div><div class="line">              <span class="meta">@Override</span></div><div class="line">              <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">                <span class="keyword">try</span> &#123;</div><div class="line">                  <span class="keyword">synchronized</span> (eventList) &#123;</div><div class="line">                    <span class="keyword">if</span>(!eventList.isEmpty() &amp;&amp; timeout()) &#123;</div><div class="line">                      flushEventBatch(eventList); <span class="comment">// 批处理咯</span></div><div class="line">                    &#125;</div><div class="line">                  &#125;</div><div class="line">                &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">                  ...</div><div class="line">                &#125;</div><div class="line">              &#125;</div><div class="line">          &#125;,</div><div class="line">          batchTimeout, batchTimeout, TimeUnit.MILLISECONDS);</div><div class="line"></div><div class="line">          <span class="comment">// 读取shell进程输出	</span></div><div class="line">          <span class="keyword">while</span> ((line = reader.readLine()) != <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">synchronized</span> (eventList) &#123;</div><div class="line">              sourceCounter.incrementEventReceivedCount();</div><div class="line">              eventList.add(EventBuilder.withBody(line.getBytes(charset)));</div><div class="line">              <span class="keyword">if</span>(eventList.size() &gt;= bufferCount || timeout()) &#123;</div><div class="line">                flushEventBatch(eventList); <span class="comment">// 批处理咯</span></div><div class="line">              &#125;</div><div class="line">            &#125;</div><div class="line">          &#125;</div><div class="line"></div><div class="line">         .....</div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">          ....</div><div class="line">        &#125; <span class="keyword">finally</span> &#123;</div><div class="line">         ....</div><div class="line">        &#125;</div><div class="line">        ......</div><div class="line">      &#125; <span class="keyword">while</span>(restart);</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>前面总是看到ChannelProcessor，还被迷惑地以为这个东西是给channel用的，后来自己才想明白，<strong>channel只是个容器</strong>。主动方应该是Source和Sink才对。。。果然，ChannelProcessor是给Source用的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">flushEventBatch</span><span class="params">(List&lt;Event&gt; eventList)</span></span>&#123;</div><div class="line">      channelProcessor.processEventBatch(eventList);</div><div class="line">      sourceCounter.addToEventAcceptedCount(eventList.size());</div><div class="line">      eventList.clear();</div><div class="line">      lastPushToChannel = systemClock.currentTimeMillis();</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>ChannelProcessor提供的元素如下：</p>
+<ul>
+<li>interceptorChain : InterceptorChain</li>
+<li>selector : ChannelSelector</li>
+<li>processEventBatch(List<event>)</event></li>
+<li>processEvent(Event)</li>
+</ul>
+<p>PS: 猛然发现，前面其实我们已经通过channelProcessor的initialize方法初始化了<strong>interceptorChain</strong>，没错，interceptor就是交给它管理的。因为ChannelProcessor是处理event的实际作用点，所以对于event的过滤与处理也应该是在这里。</p>
+<p><strong>event处理流程</strong>：</p>
+<ul>
+<li>通过interceptor</li>
+<li>分类到各个channel -&gt; 通过channelSelector找到对应关系</li>
+<li>遍历channel，调用对应的transaction及其方法，进行put操作，关闭事务</li>
+</ul>
+<p>展示一下事务这部分，以便联想起前面总结的事务部分内容，也可以串起来：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">processEvent</span><span class="params">(Event event)</span> </span>&#123;</div><div class="line">	...</div><div class="line">	<span class="comment">// Process required channels</span></div><div class="line">    List&lt;Channel&gt; requiredChannels = selector.getRequiredChannels(event);</div><div class="line">    <span class="keyword">for</span> (Channel reqChannel : requiredChannels) &#123;</div><div class="line">      Transaction tx = reqChannel.getTransaction();</div><div class="line">      Preconditions.checkNotNull(tx, <span class="string">"Transaction object must not be null"</span>);</div><div class="line">      <span class="keyword">try</span> &#123;</div><div class="line">        tx.begin(); <span class="comment">// 开始</span></div><div class="line"></div><div class="line">        <span class="comment">// 这里就是调用前面提到BasicTransactionSemantics的API了</span></div><div class="line">        reqChannel.put(event); </div><div class="line"></div><div class="line">        tx.commit();	<span class="comment">//提交</span></div><div class="line">      &#125; <span class="keyword">catch</span> (Throwable t) &#123;</div><div class="line">        tx.rollback();	<span class="comment">// 回滚</span></div><div class="line">        ....</div><div class="line">      &#125; <span class="keyword">finally</span> &#123;</div><div class="line">        <span class="keyword">if</span> (tx != <span class="keyword">null</span>) &#123;</div><div class="line">          tx.close();	<span class="comment">// 关闭</span></div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<hr>
+<h3 id="PollableSourceRunner"><a href="#PollableSourceRunner" class="headerlink" title="PollableSourceRunner"></a>PollableSourceRunner</h3><p>元素：</p>
+<ul>
+<li>runner : <strong>PollingRunner</strong>   // 关键就在这上面了</li>
+<li>runnerThread : Thread</li>
+<li>lifecycleState : LifecycleState</li>
+<li>shouldStop : AtomicBoolean</li>
+</ul>
+<p>看一下它实现的start方法<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">PollableSource source = (PollableSource) getSource();</div><div class="line">   ChannelProcessor cp = source.getChannelProcessor();</div><div class="line">   cp.initialize();</div><div class="line">   source.start();</div><div class="line"></div><div class="line">   <span class="comment">// 至此前面与EventDrivenSourceRunner的处理是一模一样的</span></div><div class="line"></div><div class="line">   runner = <span class="keyword">new</span> PollingRunner();</div><div class="line"></div><div class="line">   runner.source = source;</div><div class="line">   runner.counterGroup = counterGroup;</div><div class="line">   runner.shouldStop = shouldStop;</div><div class="line"></div><div class="line">   runnerThread = <span class="keyword">new</span> Thread(runner);</div><div class="line">   runnerThread.setName(getClass().getSimpleName() + <span class="string">"-"</span> + </div><div class="line">       source.getClass().getSimpleName() + <span class="string">"-"</span> + source.getName());</div><div class="line">   runnerThread.start();</div><div class="line"></div><div class="line">   lifecycleState = LifecycleState.START;</div></pre></td></tr></table></figure></p>
+<p>可以看到，后面起了一个线程，runnable就是PollingRunner。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">		....</div><div class="line">      <span class="keyword">while</span> (!shouldStop.get()) &#123;</div><div class="line">        ......</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">          <span class="keyword">if</span> (source.process().equals(PollableSource.Status.BACKOFF)) &#123; <span class="comment">//只有一行关键</span></div><div class="line">            ...</div><div class="line">          &#125; <span class="keyword">else</span> &#123;</div><div class="line">            counterGroup.set(<span class="string">"runner.backoffs.consecutive"</span>, <span class="number">0L</span>);</div><div class="line">          &#125;</div><div class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">          ......</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>明白了哈？就是执行了一下PollableSource里的process方法。前面提到了，这个接口的子类并非自身就是消息驱动的那种，<strong>需要别人来抽取event</strong>。所以前面的东西只是做准备，而PollingRunner来负责event的抽取以及将event放入channel的工作。</p>
+<p>再次找个实现类，KafkaSource<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> Status <span class="title">process</span><span class="params">()</span> <span class="keyword">throws</span> EventDeliveryException </span>&#123;</div><div class="line">	....</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">      <span class="keyword">while</span> (eventList.size() &lt; batchUpperLimit &amp;&amp;</div><div class="line">              System.currentTimeMillis() &lt; batchEndTime) &#123;</div><div class="line">        iterStatus = hasNext();</div><div class="line">        <span class="keyword">if</span> (iterStatus) &#123;</div><div class="line">          <span class="comment">// get next message</span></div><div class="line">          MessageAndMetadata&lt;<span class="keyword">byte</span>[], <span class="keyword">byte</span>[]&gt; messageAndMetadata = it.next();</div><div class="line">          kafkaMessage = messageAndMetadata.message();</div><div class="line">          kafkaKey = messageAndMetadata.key();</div><div class="line"></div><div class="line">          <span class="comment">// Add headers to event (topic, timestamp, and key)</span></div><div class="line">          headers = <span class="keyword">new</span> HashMap&lt;String, String&gt;();</div><div class="line">          headers.put(KafkaSourceConstants.TIMESTAMP,</div><div class="line">                  String.valueOf(System.currentTimeMillis()));</div><div class="line">          headers.put(KafkaSourceConstants.TOPIC, topic);</div><div class="line">          <span class="keyword">if</span> (kafkaKey != <span class="keyword">null</span>) &#123;</div><div class="line">            headers.put(KafkaSourceConstants.KEY, <span class="keyword">new</span> String(kafkaKey));</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">if</span> (log.isDebugEnabled()) &#123;</div><div class="line">            log.debug(<span class="string">"Message: &#123;&#125;"</span>, <span class="keyword">new</span> String(kafkaMessage));</div><div class="line">          &#125;</div><div class="line">          event = EventBuilder.withBody(kafkaMessage, headers);</div><div class="line">          eventList.add(event);</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">      .....</div><div class="line">      <span class="keyword">if</span> (eventList.size() &gt; <span class="number">0</span>) &#123;</div><div class="line">        getChannelProcessor().processEventBatch(eventList);</div><div class="line">        counter.addToEventAcceptedCount(eventList.size());</div><div class="line">        eventList.clear();</div><div class="line">        <span class="keyword">if</span> (log.isDebugEnabled()) &#123;</div><div class="line">          log.debug(<span class="string">"Wrote &#123;&#125; events to channel"</span>, eventList.size());</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (!kafkaAutoCommitEnabled) &#123;</div><div class="line">          <span class="comment">// commit the read transactions to Kafka to avoid duplicates</span></div><div class="line">          <span class="keyword">long</span> commitStartTime = System.nanoTime();</div><div class="line">          consumer.commitOffsets();</div><div class="line">          <span class="keyword">long</span> commitEndTime = System.nanoTime();</div><div class="line">          counter.addToKafkaCommitTimer((commitEndTime-commitStartTime)/(<span class="number">1000</span>*<span class="number">1000</span>));</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">      ......</div><div class="line">      <span class="keyword">return</span> Status.READY;</div><div class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">      ......</div><div class="line">    &#125;</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
+<p>看了这段代码后，可确定kafka的event就是由PollingRunner搞的。另外发现一个事儿，就是<strong>ChannelProcessor专门负责处理event后，放入channel</strong>。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/源码/">源码</a><a href="/tags/flume/">flume</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2015/07/10/flume-源码阅读笔记（4）/" data-title="flume-源码阅读笔记（4） | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/07/12/sbt使用遇到的问题-一-——repository/" title="sbt使用遇到的问题(一)——repository">
+  <strong>上一篇：</strong><br/>
+  <span>
+  sbt使用遇到的问题(一)——repository</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/07/10/flume-源码阅读笔记（3）/"  title="flume源码阅读笔记 （3）">
+ <strong>下一篇：</strong><br/> 
+ <span>flume源码阅读笔记 （3）
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2015/07/10/flume-源码阅读笔记（4）/" data-title="flume-源码阅读笔记（4）" data-url="http://willcup.com/2015/07/10/flume-源码阅读笔记（4）/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-入口"><span class="toc-number">1.</span> <span class="toc-text">1. 入口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-SourceRunner"><span class="toc-number">2.</span> <span class="toc-text">2. SourceRunner</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#PollableSourceRunner"><span class="toc-number">2.1.</span> <span class="toc-text">PollableSourceRunner</span></a></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/2015a/" title="2015a">2015a<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/django/" title="django">django<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Flume/" title="Flume">Flume<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

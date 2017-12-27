@@ -1,0 +1,553 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>flume 源码阅读笔记（1） | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="#1 . 启动脚本最开始肯定是从启动脚本flume-ng下手了1234FLUME_AGENT_CLASS=&amp;quot;org.apache.flume.node.Application&amp;quot; # 这个是主要入口FLUME_AVRO_CLIENT_CLASS=&amp;quot;org.apache.flume.client.avro.AvroCLIClient&amp;quot;FLUME_VERSION_">
+<meta property="og:type" content="article">
+<meta property="og:title" content="flume 源码阅读笔记（1）">
+<meta property="og:url" content="http://willcup.com/2015/07/08/flume-源码阅读笔记（1）/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="#1 . 启动脚本最开始肯定是从启动脚本flume-ng下手了1234FLUME_AGENT_CLASS=&amp;quot;org.apache.flume.node.Application&amp;quot; # 这个是主要入口FLUME_AVRO_CLIENT_CLASS=&amp;quot;org.apache.flume.client.avro.AvroCLIClient&amp;quot;FLUME_VERSION_">
+<meta property="og:updated_time" content="2016-10-28T02:54:06.781Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="flume 源码阅读笔记（1）">
+<meta name="twitter:description" content="#1 . 启动脚本最开始肯定是从启动脚本flume-ng下手了1234FLUME_AGENT_CLASS=&amp;quot;org.apache.flume.node.Application&amp;quot; # 这个是主要入口FLUME_AVRO_CLIENT_CLASS=&amp;quot;org.apache.flume.client.avro.AvroCLIClient&amp;quot;FLUME_VERSION_">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/node_modules">测试</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/07/08/flume-源码阅读笔记（1）/" title="flume 源码阅读笔记（1）" itemprop="url">flume 源码阅读笔记（1）</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2015-07-08T12:15:48.000Z" itemprop="datePublished"> 发表于 2015-07-08</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<p>#1 . 启动脚本<br>最开始肯定是从启动脚本flume-ng下手了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">FLUME_AGENT_CLASS=&quot;org.apache.flume.node.Application&quot; # 这个是主要入口</div><div class="line">FLUME_AVRO_CLIENT_CLASS=&quot;org.apache.flume.client.avro.AvroCLIClient&quot;</div><div class="line">FLUME_VERSION_CLASS=&quot;org.apache.flume.tools.VersionInfo&quot;</div><div class="line">FLUME_TOOLS_CLASS=&quot;org.apache.flume.tools.FlumeToolsMain&quot;</div></pre></td></tr></table></figure></p>
+<hr>
+<p>#2. 主程序入口Application<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div></pre></td><td class="code"><pre><div class="line">Options options = <span class="keyword">new</span> Options();</div><div class="line">..... <span class="comment">//一大堆命令行参数</span></div><div class="line"></div><div class="line"> CommandLineParser parser = <span class="keyword">new</span> GnuParser();</div><div class="line"> CommandLine commandLine = parser.parse(options, args);</div><div class="line"> <span class="comment">// 以上两行，对命令行参数解析完毕</span></div><div class="line"></div><div class="line"> <span class="comment">// 打印帮助信息</span></div><div class="line"> <span class="keyword">if</span> (commandLine.hasOption(<span class="string">'h'</span>)) &#123;</div><div class="line">   <span class="keyword">new</span> HelpFormatter().printHelp(<span class="string">"flume-ng agent"</span>, options, <span class="keyword">true</span>);</div><div class="line">   <span class="keyword">return</span>;</div><div class="line"> &#125;</div><div class="line"></div><div class="line"> String agentName = commandLine.getOptionValue(<span class="string">'n'</span>);</div><div class="line"> <span class="keyword">boolean</span> reload = !commandLine.hasOption(<span class="string">"no-reload-conf"</span>);</div><div class="line"></div><div class="line"> <span class="comment">// 是否有zookeeper的相关配置</span></div><div class="line"> <span class="keyword">if</span> (commandLine.hasOption(<span class="string">'z'</span>) || commandLine.hasOption(<span class="string">"zkConnString"</span>)) &#123;</div><div class="line">   isZkConfigured = <span class="keyword">true</span>;</div><div class="line"> &#125;</div><div class="line"> </div><div class="line"> <span class="comment">// 主角登场</span></div><div class="line"> Application application = <span class="keyword">null</span>;</div><div class="line"> <span class="keyword">if</span> (isZkConfigured) &#123;</div><div class="line">   <span class="comment">// get options</span></div><div class="line">   String zkConnectionStr = commandLine.getOptionValue(<span class="string">'z'</span>);</div><div class="line">   String baseZkPath = commandLine.getOptionValue(<span class="string">'p'</span>);</div><div class="line"></div><div class="line">   <span class="keyword">if</span> (reload) &#123;</div><div class="line">     EventBus eventBus = <span class="keyword">new</span> EventBus(agentName + <span class="string">"-event-bus"</span>);</div><div class="line">     List&lt;LifecycleAware&gt; components = Lists.newArrayList();</div><div class="line">     PollingZooKeeperConfigurationProvider zookeeperConfigurationProvider =</div><div class="line">       <span class="keyword">new</span> PollingZooKeeperConfigurationProvider(</div><div class="line">         agentName, zkConnectionStr, baseZkPath, eventBus);</div><div class="line">     components.add(zookeeperConfigurationProvider);</div><div class="line">     application = <span class="keyword">new</span> Application(components);</div><div class="line">     eventBus.register(application);</div><div class="line">   &#125; <span class="keyword">else</span> &#123;</div><div class="line">     StaticZooKeeperConfigurationProvider zookeeperConfigurationProvider =</div><div class="line">       <span class="keyword">new</span> StaticZooKeeperConfigurationProvider(</div><div class="line">         agentName, zkConnectionStr, baseZkPath);</div><div class="line">     application = <span class="keyword">new</span> Application();</div><div class="line">     application.handleConfigurationEvent(zookeeperConfigurationProvider</div><div class="line">       .getConfiguration());</div><div class="line">   &#125;</div><div class="line"> &#125; <span class="keyword">else</span> &#123;</div><div class="line">   File configurationFile = <span class="keyword">new</span> File(commandLine.getOptionValue(<span class="string">'f'</span>));</div><div class="line">   <span class="comment">/*</span></div><div class="line">    * 如果配置文件不存在，就直接报错</div><div class="line">    */</div><div class="line">   <span class="keyword">if</span> (!configurationFile.exists()) &#123;</div><div class="line">     ...</div><div class="line">   &#125;</div><div class="line">   List&lt;LifecycleAware&gt; components = Lists.newArrayList();</div><div class="line"></div><div class="line">   <span class="keyword">if</span> (reload) &#123;</div><div class="line">     EventBus eventBus = <span class="keyword">new</span> EventBus(agentName + <span class="string">"-event-bus"</span>);</div><div class="line">     PollingPropertiesFileConfigurationProvider configurationProvider =</div><div class="line">       <span class="keyword">new</span> PollingPropertiesFileConfigurationProvider(</div><div class="line">         agentName, configurationFile, eventBus, <span class="number">30</span>);</div><div class="line">     components.add(configurationProvider);</div><div class="line">     application = <span class="keyword">new</span> Application(components);</div><div class="line">     eventBus.register(application);</div><div class="line">   &#125; <span class="keyword">else</span> &#123;</div><div class="line">     PropertiesFileConfigurationProvider configurationProvider =</div><div class="line">       <span class="keyword">new</span> PropertiesFileConfigurationProvider(</div><div class="line">         agentName, configurationFile);</div><div class="line">     <span class="comment">// 下面为典型启动过程</span></div><div class="line">     application = <span class="keyword">new</span> Application();</div><div class="line">     application.handleConfigurationEvent(configurationProvider</div><div class="line">       .getConfiguration());</div><div class="line">   &#125;</div><div class="line"> &#125;</div><div class="line"> application.start(); <span class="comment">// 程序启动</span></div><div class="line"></div><div class="line"> <span class="comment">// 后面是shutdown hook，作清理工作</span></div></pre></td></tr></table></figure></p>
+<p>综上来看，有营养的代码很少，就是读个配置文件，然后直接就启动程序了。那么application的初始化和start方法里都有些什么操作呢？</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"> <span class="comment">// 1. 构造方法里只是注册一个LifecycleSupervisor，也就是管理生命周期的</span></div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="title">Application</span><span class="params">()</span> </span>&#123;</div><div class="line">   <span class="keyword">this</span>(<span class="keyword">new</span> ArrayList&lt;LifecycleAware&gt;(<span class="number">0</span>));</div><div class="line"> &#125;</div><div class="line"></div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="title">Application</span><span class="params">(List&lt;LifecycleAware&gt; components)</span> </span>&#123;</div><div class="line">   <span class="keyword">this</span>.components = components;</div><div class="line">   supervisor = <span class="keyword">new</span> LifecycleSupervisor();</div><div class="line"> &#125;</div><div class="line"></div><div class="line"><span class="comment">// 2. 根据conf重启所有components</span></div><div class="line"> <span class="meta">@Subscribe</span></div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">handleConfigurationEvent</span><span class="params">(MaterializedConfiguration conf)</span> </span>&#123;</div><div class="line">   stopAllComponents();</div><div class="line">   startAllComponents(conf); <span class="comment">// 这个conf来自于配置文件，你懂得，这些component肯定就是source channel sink 之类的了</span></div><div class="line"> &#125;</div><div class="line"> </div><div class="line"> <span class="comment">// 3. 使用1中初始化的supervisor对所有component进行监管</span></div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> </span>&#123;</div><div class="line">   <span class="keyword">for</span>(LifecycleAware component : components) &#123;</div><div class="line">     supervisor.supervise(component,</div><div class="line">         <span class="keyword">new</span> SupervisorPolicy.AlwaysRestartPolicy(), LifecycleState.START);</div><div class="line">   &#125;</div><div class="line"> &#125;</div></pre></td></tr></table></figure>
+<p>好，启动component的入口也明晰了<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startAllComponents</span><span class="params">(MaterializedConfiguration materializedConfiguration)</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (Entry&lt;String, Channel&gt; entry :</div><div class="line">      materializedConfiguration.getChannels().entrySet()) &#123;</div><div class="line">      <span class="keyword">try</span>&#123;</div><div class="line">        logger.info(<span class="string">"Starting Channel "</span> + entry.getKey());</div><div class="line">        <span class="comment">// 1. 将channel交给supervisor来进行生命周期管理，这里是启动</span></div><div class="line">        supervisor.supervise(entry.getValue(),</div><div class="line">            <span class="keyword">new</span> SupervisorPolicy.AlwaysRestartPolicy(), LifecycleState.START);</div><div class="line">      &#125; <span class="keyword">catch</span> (Exception e)&#123;</div><div class="line">        logger.error(<span class="string">"Error while starting &#123;&#125;"</span>, entry.getValue(), e);</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// 2. 启动sink 和 souce之前，确保所有的channel无误地启动完毕</span></div><div class="line">    <span class="keyword">for</span>(Channel ch: materializedConfiguration.getChannels().values())&#123;</div><div class="line">      <span class="keyword">while</span>(ch.getLifecycleState() != LifecycleState.START</div><div class="line">          &amp;&amp; !supervisor.isComponentInErrorState(ch))&#123;</div><div class="line">          logger.info(<span class="string">"Waiting for channel: "</span> + ch.getName() +</div><div class="line">              <span class="string">" to start. Sleeping for 500 ms"</span>);</div><div class="line">          Thread.sleep(<span class="number">500</span>);</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// 3. 同上方式，启动sink</span></div><div class="line">    </div><div class="line">    <span class="comment">// 4. 同上方式，启动source</span></div><div class="line"></div><div class="line">    <span class="comment">// 监控： 目前支持ganlia和http jetty两种，需要在命令行指定type</span></div><div class="line">    <span class="comment">// $ bin/flume-ng agent --conf-file example.conf --name a1 -Dflume.monitoring.type=ganglia -Dflume.monitoring.hosts=com.example:1234,com.example2:5455</span></div><div class="line">    <span class="keyword">this</span>.loadMonitoring();</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
+<p>至此启动流程就完毕了。太简单了也~~~</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/源码/">源码</a><a href="/tags/flume/">flume</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2015/07/08/flume-源码阅读笔记（1）/" data-title="flume 源码阅读笔记（1） | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/07/08/flume-源码阅读笔记（2）/" title="flume 源码阅读笔记（2）">
+  <strong>上一篇：</strong><br/>
+  <span>
+  flume 源码阅读笔记（2）</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/05/08/在pycharm中开发pySpark程序/"  title="在pycharm中开发pySpark程序">
+ <strong>下一篇：</strong><br/> 
+ <span>在pycharm中开发pySpark程序
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2015/07/08/flume-源码阅读笔记（1）/" data-title="flume 源码阅读笔记（1）" data-url="http://willcup.com/2015/07/08/flume-源码阅读笔记（1）/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/2015a/" title="2015a">2015a<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/django/" title="django">django<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Flume/" title="Flume">Flume<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

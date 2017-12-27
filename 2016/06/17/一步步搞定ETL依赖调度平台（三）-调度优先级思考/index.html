@@ -1,0 +1,571 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>一步步搞定ETL依赖调度平台（三）-调度优先级思考 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="从《azkaban源码追踪（三）-上传zip的坑》可以看到azkaban本身的调度基本是广度优先执行的。
+1.猎聘
+优先级生成策略是从叶子节点向上遍历，每个节点的优先级=所有子节点优先级+edge数(也就是子节点数)。其实思想就是谁下面的小弟多，谁的优先级就越大。
+但这通常并不完全适用于对于指定的单个叶子节点最优先的需求，极端点儿想的话，可能出现老的ETL有100多个相关成一个flow，可是新增的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一步步搞定ETL依赖调度平台（三）-调度优先级思考">
+<meta property="og:url" content="http://willcup.com/2016/06/17/一步步搞定ETL依赖调度平台（三）-调度优先级思考/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="从《azkaban源码追踪（三）-上传zip的坑》可以看到azkaban本身的调度基本是广度优先执行的。
+1.猎聘
+优先级生成策略是从叶子节点向上遍历，每个节点的优先级=所有子节点优先级+edge数(也就是子节点数)。其实思想就是谁下面的小弟多，谁的优先级就越大。
+但这通常并不完全适用于对于指定的单个叶子节点最优先的需求，极端点儿想的话，可能出现老的ETL有100多个相关成一个flow，可是新增的">
+<meta property="og:image" content="http://willcup.com/imgs/azkaban/schedule-lp-tree.png">
+<meta property="og:image" content="http://willcup.com/imgs/azkaban/schedule-mt-tree.png">
+<meta property="og:updated_time" content="2016-10-28T02:54:06.785Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="一步步搞定ETL依赖调度平台（三）-调度优先级思考">
+<meta name="twitter:description" content="从《azkaban源码追踪（三）-上传zip的坑》可以看到azkaban本身的调度基本是广度优先执行的。
+1.猎聘
+优先级生成策略是从叶子节点向上遍历，每个节点的优先级=所有子节点优先级+edge数(也就是子节点数)。其实思想就是谁下面的小弟多，谁的优先级就越大。
+但这通常并不完全适用于对于指定的单个叶子节点最优先的需求，极端点儿想的话，可能出现老的ETL有100多个相关成一个flow，可是新增的">
+<meta name="twitter:image" content="http://willcup.com/imgs/azkaban/schedule-lp-tree.png">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/node_modules">测试</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/06/17/一步步搞定ETL依赖调度平台（三）-调度优先级思考/" title="一步步搞定ETL依赖调度平台（三）-调度优先级思考" itemprop="url">一步步搞定ETL依赖调度平台（三）-调度优先级思考</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-06-17T03:21:50.000Z" itemprop="datePublished"> 发表于 2016-06-17</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-猎聘"><span class="toc-text">1.猎聘</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-美团"><span class="toc-text">2.美团</span></a></li></ol>
+		
+		</div>
+		
+		<p>从《azkaban源码追踪（三）-上传zip的坑》可以看到azkaban本身的调度基本是广度优先执行的。</p>
+<h3 id="1-猎聘"><a href="#1-猎聘" class="headerlink" title="1.猎聘"></a>1.猎聘</h3><p><img src="/imgs/azkaban/schedule-lp-tree.png" alt="猎聘的调度tree"></p>
+<p>优先级生成策略是从叶子节点向上遍历，每个节点的优先级=所有子节点优先级+edge数(也就是子节点数)。其实思想就是谁下面的小弟多，谁的优先级就越大。</p>
+<p>但这通常并不完全适用于对于指定的单个叶子节点最优先的需求，极端点儿想的话，可能出现老的ETL有100多个相关成一个flow，可是新增的优先级特别高的需求super_etl在另一个只有1个节点的flow，或者在同一个flow，但是它没有小弟（这种其实蛮常见的）。那么super_etl的默认priority是1，根本没有地位！！！</p>
+<blockquote>
+<p>LP的人说了：我们可以给它人工指定优先级啊！<br>额。。。。是的，但是其他的tree是在一直生长的，按照你们的策略来看，这个super_etl的优先级要一直改变。<br>LP的人又说了：我们可以动态指定！<br>额。。。。是的，但是后面出现了super_etl01,super_etl02的时候，可能就会特别特别麻烦了。</p>
+</blockquote>
+<p>再看一下，计划顺序与实际执行顺序的对比。本来C的优先级是比B高的，可猎聘给出的实际执行却是先执行B后执行c，音频中苏总说是并发问题，个人看来稍稍有些含糊其辞了。推测猎聘的实际调度的时候并不完全以priority为指导，而仍然是azkaban广度遍历优先，同一个level之内才是priority优先执行。</p>
+<p>参考:<a href="http://mp.weixin.qq.com/s?src=3&amp;timestamp=1466131251&amp;ver=1&amp;signature=YfS7PgVR0SjjLt4KwIQ297t4SDiLrrJu5C7uuMXpkCvuhvjXk-DU*eJGfIBSfjDm-WlVuwaIbGtbfda-k-5rRgUewAlvjSUQBBNY4jnjuvQD1puqdaVzUqIq9ds*x1r-6dUnU6OiSERzBt5UWfjdUkekpmc7hNqTm1pklClkSkE=" target="_blank" rel="external">http://mp.weixin.qq.com/s?src=3&amp;timestamp=1466131251&amp;ver=1&amp;signature=YfS7PgVR0SjjLt4KwIQ297t4SDiLrrJu5C7uuMXpkCvuhvjXk-DU*eJGfIBSfjDm-WlVuwaIbGtbfda-k-5rRgUewAlvjSUQBBNY4jnjuvQD1puqdaVzUqIq9ds*x1r-6dUnU6OiSERzBt5UWfjdUkekpmc7hNqTm1pklClkSkE=</a></p>
+<h3 id="2-美团"><a href="#2-美团" class="headerlink" title="2.美团"></a>2.美团</h3><p><img src="/imgs/azkaban/schedule-mt-tree.png" alt="美团的调度tree"></p>
+<p>调度策略就不该是递归调度，而应该完全按照优先级别去调度。想来想去，这才是真正的优先级调度。东家靠谱儿！</p>
+<p>参考：<a href="http://mp.weixin.qq.com/s?src=3&amp;timestamp=1466131231&amp;ver=1&amp;signature=YfS7PgVR0SjjLt4KwIQ297t4SDiLrrJu5C7uuMXpkCtKEZcZ58gspxJhkgDlgXAkqQvXpI3IbmE4HzkI33W*4PJCOUoKyzSna56Q8uSQgUNnSl7vsxqLcREVfDBU0nPguiAiwnosiXyE9wB7T-edr3QrRn8rKMhB3oxjQDrS1RQ=" target="_blank" rel="external">http://mp.weixin.qq.com/s?src=3&amp;timestamp=1466131231&amp;ver=1&amp;signature=YfS7PgVR0SjjLt4KwIQ297t4SDiLrrJu5C7uuMXpkCtKEZcZ58gspxJhkgDlgXAkqQvXpI3IbmE4HzkI33W*4PJCOUoKyzSna56Q8uSQgUNnSl7vsxqLcREVfDBU0nPguiAiwnosiXyE9wB7T-edr3QrRn8rKMhB3oxjQDrS1RQ=</a></p>
+<p>综上：后面本人要开发的调度系统优先级策略会借用美团的思想。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/ETL/">ETL</a><a href="/tags/调度平台/">调度平台</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/06/17/一步步搞定ETL依赖调度平台（三）-调度优先级思考/" data-title="一步步搞定ETL依赖调度平台（三）-调度优先级思考 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/06/20/ambari-view中文翻译/" title="ambari-views中文翻译">
+  <strong>上一篇：</strong><br/>
+  <span>
+  ambari-views中文翻译</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/06/16/azkaban源码追踪（三）-上传zip的坑/"  title="azkaban源码追踪（三）-上传zip的坑">
+ <strong>下一篇：</strong><br/> 
+ <span>azkaban源码追踪（三）-上传zip的坑
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/06/17/一步步搞定ETL依赖调度平台（三）-调度优先级思考/" data-title="一步步搞定ETL依赖调度平台（三）-调度优先级思考" data-url="http://willcup.com/2016/06/17/一步步搞定ETL依赖调度平台（三）-调度优先级思考/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-猎聘"><span class="toc-number">1.</span> <span class="toc-text">1.猎聘</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-美团"><span class="toc-number">2.</span> <span class="toc-text">2.美团</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/2015a/" title="2015a">2015a<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/django/" title="django">django<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Flume/" title="Flume">Flume<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

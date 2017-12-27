@@ -1,0 +1,593 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>一步步搞定ETL依赖调度平台（一） | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="1. 依赖解析
+sql AST解析。相关工具antlr,这是一个定义与解析特定语言的工具。
+hive denpendency： explain dependency select * from a.
+其他sql解析工具，功能类似hive dependency
+
+鉴于我们的数据仓库使用hive搭建，使用hive dependency的兼容性更有保证。注意两点：1.如果a表不存在与hive中，就会报错">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一步步搞定ETL依赖调度平台（一）">
+<meta property="og:url" content="http://willcup.com/2016/06/15/一步步搞定ETL依赖调度平台（一）/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="1. 依赖解析
+sql AST解析。相关工具antlr,这是一个定义与解析特定语言的工具。
+hive denpendency： explain dependency select * from a.
+其他sql解析工具，功能类似hive dependency
+
+鉴于我们的数据仓库使用hive搭建，使用hive dependency的兼容性更有保证。注意两点：1.如果a表不存在与hive中，就会报错">
+<meta property="og:updated_time" content="2016-10-28T02:54:06.785Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="一步步搞定ETL依赖调度平台（一）">
+<meta name="twitter:description" content="1. 依赖解析
+sql AST解析。相关工具antlr,这是一个定义与解析特定语言的工具。
+hive denpendency： explain dependency select * from a.
+其他sql解析工具，功能类似hive dependency
+
+鉴于我们的数据仓库使用hive搭建，使用hive dependency的兼容性更有保证。注意两点：1.如果a表不存在与hive中，就会报错">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/node_modules">测试</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/06/15/一步步搞定ETL依赖调度平台（一）/" title="一步步搞定ETL依赖调度平台（一）" itemprop="url">一步步搞定ETL依赖调度平台（一）</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-06-15T10:48:43.000Z" itemprop="datePublished"> 发表于 2016-06-15</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-依赖解析"><span class="toc-text">1. 依赖解析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-存库"><span class="toc-text">2. 存库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-每日调度"><span class="toc-text">3.每日调度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-参考"><span class="toc-text">4.参考</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-TODO"><span class="toc-text">5. TODO</span></a></li></ol>
+		
+		</div>
+		
+		<h3 id="1-依赖解析"><a href="#1-依赖解析" class="headerlink" title="1. 依赖解析"></a>1. 依赖解析</h3><ul>
+<li>sql AST解析。相关工具antlr,这是一个定义与解析特定语言的工具。</li>
+<li>hive denpendency： explain dependency select * from a.</li>
+<li>其他sql解析工具，功能类似hive dependency</li>
+</ul>
+<p>鉴于我们的数据仓库使用hive搭建，使用hive dependency的兼容性更有保证。注意两点：1.如果a表不存在与hive中，就会报错找不到table。也就是说ETL开发的时候，它的依赖必须已经存在与hive库里；2. 由于依赖解析功能在ETL开发平台上，所以必须通过hiveserver2进行访问，效率可能不高，但是ETL平台对此要求也不会太高。</p>
+<p>需要额外说一下antlr的好处：一是可以深入剖析sql，在这一层做字段级别的权限控制；二是可以做一些sql的分析，反馈给ETL开发者一些优化建议；</p>
+<h3 id="2-存库"><a href="#2-存库" class="headerlink" title="2. 存库"></a>2. 存库</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="comment">-- ----------------------------</span></div><div class="line"><span class="comment">-- Table structure for etl</span></div><div class="line"><span class="comment">-- ----------------------------</span></div><div class="line"><span class="keyword">DROP</span> <span class="keyword">TABLE</span> <span class="keyword">IF</span> <span class="keyword">EXISTS</span> <span class="string">`etl`</span>;</div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="string">`etl`</span> (</div><div class="line">  <span class="string">`id`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> AUTO_INCREMENT,</div><div class="line">  <span class="string">`query`</span> <span class="built_in">varchar</span>(<span class="number">2000</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'sql语句'</span>,</div><div class="line">  <span class="string">`meta`</span> <span class="built_in">varchar</span>(<span class="number">20</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'数据库'</span>,</div><div class="line">  <span class="string">`tbl_name`</span> <span class="built_in">varchar</span>(<span class="number">30</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'表名'</span>,</div><div class="line">  <span class="string">`author`</span> <span class="built_in">varchar</span>(<span class="number">30</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'创建人'</span>,</div><div class="line">  <span class="string">`pre_sql`</span> <span class="built_in">varchar</span>(<span class="number">2000</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'先执行的sql'</span>,</div><div class="line">  <span class="string">`priority`</span> <span class="built_in">int</span>(<span class="number">5</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">DEFAULT</span> <span class="string">'5'</span>,</div><div class="line">  <span class="string">`on_schedule`</span> tinyint(<span class="number">4</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'0 不调度 1 调度中'</span>,</div><div class="line">  <span class="string">`valid`</span> tinyint(<span class="number">4</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span>,</div><div class="line">  <span class="string">`ctime`</span> <span class="built_in">bigint</span>(<span class="number">20</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span>,</div><div class="line">  <span class="string">`utime`</span> <span class="built_in">bigint</span>(<span class="number">20</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span>,</div><div class="line">  PRIMARY <span class="keyword">KEY</span> (<span class="string">`id`</span>)</div><div class="line">) <span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span> AUTO_INCREMENT=<span class="number">19</span> <span class="keyword">DEFAULT</span> <span class="keyword">CHARSET</span>=utf8;</div><div class="line"></div><div class="line"></div><div class="line"><span class="comment">-- ----------------------------</span></div><div class="line"><span class="comment">-- Table structure for tbl_blood</span></div><div class="line"><span class="comment">-- ----------------------------</span></div><div class="line"><span class="keyword">DROP</span> <span class="keyword">TABLE</span> <span class="keyword">IF</span> <span class="keyword">EXISTS</span> <span class="string">`tbl_blood`</span>;</div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="string">`tbl_blood`</span> (</div><div class="line">  <span class="string">`id`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> AUTO_INCREMENT,</div><div class="line">  <span class="string">`tbl_name`</span> <span class="built_in">varchar</span>(<span class="number">20</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span>,</div><div class="line">  <span class="string">`parent_tbl`</span> <span class="built_in">varchar</span>(<span class="number">20</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span>,</div><div class="line">  <span class="string">`related_etl_id`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span>,</div><div class="line">  <span class="string">`valid`</span> tinyint(<span class="number">4</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">DEFAULT</span> <span class="string">'0'</span>,</div><div class="line">  <span class="string">`ctime`</span> <span class="built_in">bigint</span>(<span class="number">20</span>) <span class="keyword">DEFAULT</span> <span class="string">'0'</span>,</div><div class="line">  <span class="string">`utime`</span> <span class="built_in">bigint</span>(<span class="number">20</span>) <span class="keyword">DEFAULT</span> <span class="string">'0'</span>,</div><div class="line">  PRIMARY <span class="keyword">KEY</span> (<span class="string">`id`</span>)</div><div class="line">) <span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span> AUTO_INCREMENT=<span class="number">21</span> <span class="keyword">DEFAULT</span> <span class="keyword">CHARSET</span>=utf8;</div></pre></td></tr></table></figure>
+<p>每当新建一个ETL的时候都会分析它的依赖，如果分析失败，就不会插入ETL。</p>
+<p>另外补充一个字段和表关系的，从hive meta库查询sql<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">SELECT</span></div><div class="line">	db.DB_ID <span class="keyword">AS</span> db_id,</div><div class="line">	db.<span class="string">`NAME`</span> <span class="keyword">AS</span> db_name,</div><div class="line">	a.TBL_ID <span class="keyword">AS</span> tbl_id,</div><div class="line">	a.TBL_NAME <span class="keyword">AS</span> tbl_name,</div><div class="line">	a.TBL_TYPE <span class="keyword">AS</span> tbl_type,</div><div class="line">	d.TYPE_NAME <span class="keyword">AS</span> col_type_name,</div><div class="line">	d.<span class="string">`COMMENT`</span> <span class="keyword">AS</span> col_comment,</div><div class="line">	d.COLUMN_NAME <span class="keyword">AS</span> column_name</div><div class="line"><span class="keyword">FROM</span></div><div class="line">	TBLS a</div><div class="line"><span class="keyword">LEFT</span> <span class="keyword">JOIN</span> SDS b <span class="keyword">ON</span> a.SD_ID = b.SD_ID</div><div class="line"><span class="keyword">LEFT</span> <span class="keyword">JOIN</span> COLUMNS_V2 d <span class="keyword">ON</span> b.CD_ID = d.CD_ID</div><div class="line"><span class="keyword">LEFT</span> <span class="keyword">JOIN</span> DBS db <span class="keyword">ON</span> a.DB_ID = db.DB_ID</div></pre></td></tr></table></figure></p>
+<hr>
+<h3 id="3-每日调度"><a href="#3-每日调度" class="headerlink" title="3.每日调度"></a>3.每日调度</h3><p>有了以上两步之后剩下的就是每日调度问题。分以下几个步骤：</p>
+<ol>
+<li>通过azkaban api创建一个project: etl_20160615;</li>
+<li>调用java程序根据tbl_blood和etl内容生成azkaban的项目文件20160615.zip;</li>
+<li>通过azkaban api上传此文件到etl_20160615的project上</li>
+<li>通过azkaban api遍历etl_20160615项目下的所有flow，进行调度。</li>
+</ol>
+<p>生成azkaban文件的逻辑：</p>
+<ol>
+<li>找出没有被任何其他ETL以来的叶子节点</li>
+<li>遍历所有叶子节点，找到这个叶子节点的所有有效依赖，放入dependencies里，如果尚未生成该ETL的job文件</li>
+<li>向上递归执行，直到没有dependency的节点，也就是最上一层节点就停止。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> String <span class="title">generateAzkabanDAG</span><span class="params">()</span> <span class="keyword">throws</span> MetaException, ArchiveException </span>&#123;</div><div class="line">       <span class="keyword">try</span> &#123;</div><div class="line">           String serFolder = DateUtil.getTodayDateTime();</div><div class="line">           List&lt;TblBlood&gt; leafBlood = tblBloodDao.selectAllLeaf();</div><div class="line">           Set&lt;String&gt; doneBlood = <span class="keyword">new</span> HashSet&lt;String&gt;();</div><div class="line">           String serFolderLocation = AZKABAN_BASE_LOCATION + serFolder;</div><div class="line">           <span class="keyword">if</span> (leafBlood.size() &gt; <span class="number">0</span>) &#123;</div><div class="line">               loadLeafBloods(leafBlood, doneBlood, serFolderLocation);</div><div class="line">           &#125;</div><div class="line">           </div><div class="line">           ZipUtils.addFilesToZip(<span class="keyword">new</span> File(serFolderLocation), </div><div class="line">                   <span class="keyword">new</span> File(serFolderLocation + <span class="string">".zip"</span>));</div><div class="line">       &#125; <span class="keyword">catch</span> (IOException e) &#123;</div><div class="line">           log.error(<span class="string">"error happends when generateAzkabanDAG"</span>);</div><div class="line">           <span class="keyword">throw</span> <span class="keyword">new</span> MetaException(<span class="string">"error happends when generateAzkabanDAG"</span>);</div><div class="line">       &#125;</div><div class="line">       <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">   &#125;</div><div class="line"></div><div class="line">   </div><div class="line"></div><div class="line">   <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">loadLeafBloods</span><span class="params">(List&lt;TblBlood&gt; leafBlood, Set&lt;String&gt; doneBlood, String serFolder)</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">       <span class="keyword">for</span> (TblBlood leaf : leafBlood) &#123;</div><div class="line">           List&lt;TblBlood&gt; parentNode = tblBloodDao.selectParentByTblName(leaf.getTblName());</div><div class="line">           <span class="keyword">if</span> (!doneBlood.contains(leaf.getTblName())) &#123;</div><div class="line">               generateJobFile(leaf, parentNode, serFolder);</div><div class="line">               doneBlood.add(leaf.getTblName());</div><div class="line">           &#125;</div><div class="line">           loadLeafBloods(parentNode, doneBlood, serFolder);</div><div class="line">       &#125;</div><div class="line">   &#125;</div><div class="line"></div><div class="line"></div><div class="line">   <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">generateJobFile</span><span class="params">(TblBlood currentBlood,  List&lt;TblBlood&gt; parentNode, String serFolder)</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line"></div><div class="line">       String jobName = currentBlood.getTblName();</div><div class="line">       String jobType = <span class="string">"command"</span>;</div><div class="line">       String command = <span class="string">"echo 'I am command for ' "</span> + jobName;</div><div class="line">       String content;</div><div class="line">       Set&lt;String&gt; dependencies = <span class="keyword">new</span> HashSet&lt;String&gt;();</div><div class="line">       <span class="keyword">for</span> (TblBlood blood : parentNode) &#123;</div><div class="line">           dependencies.add(blood.getTblName());</div><div class="line">       &#125;</div><div class="line">       String jobDependencies = joiner.join(dependencies);</div><div class="line">       content = <span class="string">"# "</span> + jobName + <span class="string">"\n"</span></div><div class="line">               + <span class="string">"type="</span> + jobType +<span class="string">"\n"</span></div><div class="line">                       + <span class="string">"command="</span> + command + <span class="string">"\n"</span>;</div><div class="line">       <span class="keyword">if</span> (StringUtils.isNotBlank(jobDependencies)) &#123;</div><div class="line">           content += <span class="string">"dependencies="</span> + jobDependencies +<span class="string">"\n"</span>;</div><div class="line">       &#125;</div><div class="line">       File file = <span class="keyword">new</span> File(serFolder + <span class="string">"/"</span> + jobName.replace(<span class="string">"@"</span>, <span class="string">"-"</span>) + <span class="string">".job"</span>);</div><div class="line">       FileUtils.write(file, content, <span class="string">"utf8"</span>, <span class="keyword">false</span>);</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+<h3 id="4-参考"><a href="#4-参考" class="headerlink" title="4.参考"></a>4.参考</h3><p><a href="http://azkaban.github.io/azkaban/docs/latest/#ajax-api" target="_blank" rel="external">http://azkaban.github.io/azkaban/docs/latest/#ajax-api</a></p>
+<h3 id="5-TODO"><a href="#5-TODO" class="headerlink" title="5. TODO"></a>5. TODO</h3><ul>
+<li>flow和job目前都是不支持优先级的，需要探查下azkaban中同一个flow里job执行次序是怎样的。</li>
+<li>目前字段解析只能通过部分从hive meta抽，获取到字段与当前表的关系，不能逐个找到字段与字段之间的血统关系。如果使用antlr的话可以分析到每一个as之前是什么，理论上是可以实现字段的血统关系的。</li>
+<li>对于每月、每周、每小时的个别ETL的支持策略</li>
+<li>支持ETL变量传入和临时调试</li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/ETL/">ETL</a><a href="/tags/调度平台/">调度平台</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/06/15/一步步搞定ETL依赖调度平台（一）/" data-title="一步步搞定ETL依赖调度平台（一） | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/06/16/一步步搞定ETL依赖调度平台（二）-与azkaban整合/" title="一步步搞定ETL依赖调度平台（二）-zakaban整合实施">
+  <strong>上一篇：</strong><br/>
+  <span>
+  一步步搞定ETL依赖调度平台（二）-zakaban整合实施</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/06/15/azkaban源码追踪-单次调度flow/"  title="azkaban源码追踪（二）-单次调度flow">
+ <strong>下一篇：</strong><br/> 
+ <span>azkaban源码追踪（二）-单次调度flow
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/06/15/一步步搞定ETL依赖调度平台（一）/" data-title="一步步搞定ETL依赖调度平台（一）" data-url="http://willcup.com/2016/06/15/一步步搞定ETL依赖调度平台（一）/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-依赖解析"><span class="toc-number">1.</span> <span class="toc-text">1. 依赖解析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-存库"><span class="toc-number">2.</span> <span class="toc-text">2. 存库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-每日调度"><span class="toc-number">3.</span> <span class="toc-text">3.每日调度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-参考"><span class="toc-number">4.</span> <span class="toc-text">4.参考</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-TODO"><span class="toc-number">5.</span> <span class="toc-text">5. TODO</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/2015a/" title="2015a">2015a<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/django/" title="django">django<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Flume/" title="Flume">Flume<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

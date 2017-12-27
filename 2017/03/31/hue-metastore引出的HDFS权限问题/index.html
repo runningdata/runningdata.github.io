@@ -1,0 +1,584 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>hue metastore引出的HDFS权限问题 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="需求支持的某个事业部提出一个需求：在hue里开放修改表或者字段的权限。
+在hue里就给她一个人开了相应的权限，账户名是wcq。因为不知道wcq的密码，所以使用的mm的测试账户登陆的，在hue里给了两个人相同的权限组：lv和metastoremanger。
+问题然而奇怪的现象就发生了：wcq在hue的metastore管理界面修改表的字段之后，看网络请求是成功了的。然而，刷新页面以后就没有了。mm这">
+<meta property="og:type" content="article">
+<meta property="og:title" content="hue metastore引出的HDFS权限问题">
+<meta property="og:url" content="http://willcup.com/2017/03/31/hue-metastore引出的HDFS权限问题/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="需求支持的某个事业部提出一个需求：在hue里开放修改表或者字段的权限。
+在hue里就给她一个人开了相应的权限，账户名是wcq。因为不知道wcq的密码，所以使用的mm的测试账户登陆的，在hue里给了两个人相同的权限组：lv和metastoremanger。
+问题然而奇怪的现象就发生了：wcq在hue的metastore管理界面修改表的字段之后，看网络请求是成功了的。然而，刷新页面以后就没有了。mm这">
+<meta property="og:image" content="http://willcup.com/imgs/hue_acl/hue_dfs_acl_1.png">
+<meta property="og:image" content="http://willcup.com/imgs/hue_acl/hue_dfs_acl_2.png">
+<meta property="og:image" content="http://willcup.com/imgs/hue_acl/hue_dfs_acl_3.png">
+<meta property="og:image" content="http://willcup.com/imgs/hue_acl/hue_dfs_acl_4.png">
+<meta property="og:updated_time" content="2017-03-31T10:00:40.469Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="hue metastore引出的HDFS权限问题">
+<meta name="twitter:description" content="需求支持的某个事业部提出一个需求：在hue里开放修改表或者字段的权限。
+在hue里就给她一个人开了相应的权限，账户名是wcq。因为不知道wcq的密码，所以使用的mm的测试账户登陆的，在hue里给了两个人相同的权限组：lv和metastoremanger。
+问题然而奇怪的现象就发生了：wcq在hue的metastore管理界面修改表的字段之后，看网络请求是成功了的。然而，刷新页面以后就没有了。mm这">
+<meta name="twitter:image" content="http://willcup.com/imgs/hue_acl/hue_dfs_acl_1.png">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/node_modules">测试</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/03/31/hue-metastore引出的HDFS权限问题/" title="hue metastore引出的HDFS权限问题" itemprop="url">hue metastore引出的HDFS权限问题</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-03-31T08:32:29.000Z" itemprop="datePublished"> 发表于 2017-03-31</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#需求"><span class="toc-text">需求</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题"><span class="toc-text">问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#追查"><span class="toc-text">追查</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#查一下网络请求有什么异常？"><span class="toc-text">查一下网络请求有什么异常？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#hue源码确认逻辑"><span class="toc-text">hue源码确认逻辑</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#执行相应逻辑"><span class="toc-text">执行相应逻辑</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#解决"><span class="toc-text">解决</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#遗留"><span class="toc-text">遗留</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-text">参考</span></a></li></ol>
+		
+		</div>
+		
+		<h2 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h2><p>支持的某个事业部提出一个需求：<strong>在hue里开放修改表或者字段的权限</strong>。</p>
+<p>在hue里就给她一个人开了相应的权限，账户名是wcq。因为不知道wcq的密码，所以使用的mm的测试账户登陆的，<strong>在hue里给了两个人相同的权限组：lv和metastoremanger</strong>。</p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>然而奇怪的现象就发生了：<strong>wcq在hue的metastore管理界面修改表的字段之后，看网络请求是成功了的。然而，刷新页面以后就没有了。mm这个账户确都可以使用。</strong></p>
+<h2 id="追查"><a href="#追查" class="headerlink" title="追查"></a>追查</h2><p>经查验，mm这个用户在HDFS中除了是lv组的用户，而且还是hdfs组的用户，而<strong>hdfs组是超级用户组，拥有任何权限</strong>。所以这两个用户所在的组并不是对等的，只是在hue里对等而已。</p>
+<p>理论上如果hue直接操作hive元数据库的话是不会有此问题的。</p>
+<h4 id="查一下网络请求有什么异常？"><a href="#查一下网络请求有什么异常？" class="headerlink" title="查一下网络请求有什么异常？"></a>查一下网络请求有什么异常？</h4><p>发送的request包摘要：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Request URL:http://10.1.5.83/metastore/table/dim_tinyv/data_dict/alter_column</div><div class="line">Request Method:POST</div><div class="line"></div><div class="line">column:id</div><div class="line">comment:ss</div></pre></td></tr></table></figure></p>
+<p>返回的response内容：<br><figure class="highlight json"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">    <span class="attr">"status"</span>: <span class="number">0</span>,</div><div class="line">    <span class="attr">"message"</span>: <span class="string">""</span>,</div><div class="line">    <span class="attr">"data"</span>: &#123;</div><div class="line">        <span class="attr">"comment"</span>: <span class="string">""</span>,</div><div class="line">        <span class="attr">"type"</span>: <span class="string">"int"</span>,</div><div class="line">        <span class="attr">"name"</span>: <span class="string">"id"</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="hue源码确认逻辑"><a href="#hue源码确认逻辑" class="headerlink" title="hue源码确认逻辑"></a>hue源码确认逻辑</h4><p>以url为线索查看hue相关源码<code>apps/metastore/src/metastore/urls.py</code>中找到<code>alter_table</code>，在<code>apps/metastore/src/metastore/views.py</code>里：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line">check_has_write_access_permission</div><div class="line"><span class="meta">@require_http_methods(["POST"])</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">alter_column</span><span class="params">(request, database, table)</span>:</span></div><div class="line">  db = dbms.get(request.user)</div><div class="line">  response = &#123;<span class="string">'status'</span>: <span class="number">-1</span>, <span class="string">'message'</span>: <span class="string">''</span>&#125;</div><div class="line">  <span class="keyword">try</span>:</div><div class="line">    column = request.POST.get(<span class="string">'column'</span>, <span class="keyword">None</span>)</div><div class="line"></div><div class="line">    <span class="keyword">if</span> column <span class="keyword">is</span> <span class="keyword">None</span>:</div><div class="line">      <span class="keyword">raise</span> PopupException(_(<span class="string">'alter_column requires a column parameter'</span>))</div><div class="line"></div><div class="line">    column_obj = db.get_column(database, table, column)</div><div class="line">    <span class="keyword">if</span> column_obj:</div><div class="line">      new_column_name = request.POST.get(<span class="string">'new_column_name'</span>, column_obj.name)</div><div class="line">      new_column_type = request.POST.get(<span class="string">'new_column_type'</span>, column_obj.type)</div><div class="line">      comment = request.POST.get(<span class="string">'comment'</span>, <span class="keyword">None</span>)</div><div class="line">      partition_spec = request.POST.get(<span class="string">'partition_spec'</span>, <span class="keyword">None</span>)</div><div class="line"></div><div class="line">      column_obj = db.alter_column(database, table, column, new_column_name, new_column_type, comment=comment, partition_spec=partition_spec)</div><div class="line"></div><div class="line">      response[<span class="string">'status'</span>] = <span class="number">0</span></div><div class="line">      response[<span class="string">'data'</span>] = &#123;</div><div class="line">        <span class="string">'name'</span>: column_obj.name,</div><div class="line">        <span class="string">'type'</span>: column_obj.type,</div><div class="line">        <span class="string">'comment'</span>: column_obj.comment</div><div class="line">      &#125;</div><div class="line">    <span class="keyword">else</span>:</div><div class="line">      <span class="keyword">raise</span> PopupException(_(<span class="string">'Column `%s`.`%s` `%s` not found'</span>) % (database, table, column))</div><div class="line">  <span class="keyword">except</span> Exception, ex:</div><div class="line">    response[<span class="string">'status'</span>] = <span class="number">1</span></div><div class="line">    response[<span class="string">'message'</span>] = _(<span class="string">"Failed to alter column `%s`.`%s` `%s`: %s"</span>) % (database, table, column, str(ex))</div><div class="line"></div><div class="line">  <span class="keyword">return</span> JsonResponse(response)</div></pre></td></tr></table></figure>
+<p>看到是使用了dbms里返回的数据库执行的语句，找到<code>apps/beeswax/src/beeswax/server/dbms.py</code>，对应代码：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">get</span><span class="params">(user, query_server=None)</span>:</span></div><div class="line">  <span class="keyword">global</span> DBMS_CACHE</div><div class="line">  <span class="keyword">global</span> DBMS_CACHE_LOCK</div><div class="line"></div><div class="line">  <span class="keyword">if</span> query_server <span class="keyword">is</span> <span class="keyword">None</span>:</div><div class="line">    query_server = get_query_server_config()</div><div class="line"></div><div class="line">  DBMS_CACHE_LOCK.acquire()</div><div class="line">  <span class="keyword">try</span>:</div><div class="line">    DBMS_CACHE.setdefault(user.username, &#123;&#125;)</div><div class="line"></div><div class="line">    <span class="keyword">if</span> query_server[<span class="string">'server_name'</span>] <span class="keyword">not</span> <span class="keyword">in</span> DBMS_CACHE[user.username]:</div><div class="line">      <span class="comment"># Avoid circular dependency</span></div><div class="line">      <span class="keyword">from</span> beeswax.server.hive_server2_lib <span class="keyword">import</span> HiveServerClientCompatible</div><div class="line"></div><div class="line">      <span class="keyword">if</span> query_server[<span class="string">'server_name'</span>] == <span class="string">'impala'</span>:</div><div class="line">        <span class="keyword">from</span> impala.dbms <span class="keyword">import</span> ImpalaDbms</div><div class="line">        <span class="keyword">from</span> impala.server <span class="keyword">import</span> ImpalaServerClient</div><div class="line">        DBMS_CACHE[user.username][query_server[<span class="string">'server_name'</span>]] = ImpalaDbms(HiveServerClientCompatible(ImpalaServerClient(query_server, user)), QueryHistory.SERVER_TYPE[<span class="number">1</span>][<span class="number">0</span>])</div><div class="line">      <span class="keyword">else</span>:</div><div class="line">        <span class="keyword">from</span> beeswax.server.hive_server2_lib <span class="keyword">import</span> HiveServerClient</div><div class="line">        DBMS_CACHE[user.username][query_server[<span class="string">'server_name'</span>]] = HiveServer2Dbms(HiveServerClientCompatible(HiveServerClient(query_server, user)), QueryHistory.SERVER_TYPE[<span class="number">1</span>][<span class="number">0</span>])</div><div class="line"></div><div class="line">    <span class="keyword">return</span> DBMS_CACHE[user.username][query_server[<span class="string">'server_name'</span>]]</div><div class="line">  <span class="keyword">finally</span>:</div><div class="line">    DBMS_CACHE_LOCK.release()</div></pre></td></tr></table></figure></p>
+<p>可以看到是使用hiveserver2建立连接，搞定的。并不是最开始猜测的直接操作hive的元数据库。</p>
+<p>修改数据字段的方法也在这里：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">alter_column</span><span class="params">(self, database, table_name, column_name, new_column_name, column_type, comment=None,</span></span></div><div class="line">                   partition_spec=None, cascade=False):</div><div class="line">    hql = <span class="string">'ALTER TABLE `%s`.`%s`'</span> % (database, table_name)</div><div class="line"></div><div class="line">    <span class="keyword">if</span> partition_spec:</div><div class="line">      hql += <span class="string">' PARTITION (%s)'</span> % partition_spec</div><div class="line"></div><div class="line">    hql += <span class="string">' CHANGE COLUMN `%s` `%s` %s'</span> % (column_name, new_column_name, column_type.upper())</div><div class="line"></div><div class="line">    <span class="keyword">if</span> comment:</div><div class="line">      hql += <span class="string">" COMMENT '%s'"</span> % comment</div><div class="line"></div><div class="line">    <span class="keyword">if</span> cascade:</div><div class="line">      hql += <span class="string">' CASCADE'</span></div><div class="line"></div><div class="line">    timeout = SERVER_CONN_TIMEOUT.get()</div><div class="line">    query = hql_query(hql)</div><div class="line">    handle = self.execute_and_wait(query, timeout_sec=timeout)</div><div class="line"></div><div class="line">    <span class="keyword">if</span> handle:</div><div class="line">      self.close(handle)</div><div class="line">    <span class="keyword">else</span>:</div><div class="line">      msg = _(<span class="string">"Failed to execute alter column statement: %s"</span>) % hql</div><div class="line">      <span class="keyword">raise</span> QueryServerException(msg)</div><div class="line"></div><div class="line">    <span class="keyword">return</span> self.get_column(database, table_name, new_column_name)</div></pre></td></tr></table></figure></p>
+<h4 id="执行相应逻辑"><a href="#执行相应逻辑" class="headerlink" title="执行相应逻辑"></a>执行相应逻辑</h4><p>这样的话，我们直接在命令行里，切换到wcq用户执行hive命令行，应该是一样的。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">hive&gt; alter table default.batting CHANGE COLUMN dtdontquery dtdontquery string COMMENT &apos;ss&apos;;</div><div class="line">FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. java.security.AccessControlException: Permission denied: user=wcq, access=WRITE, inode=&quot;/apps/hive/warehouse/batting&quot;:root:jlc:drwxr-xr-x</div></pre></td></tr></table></figure></p>
+<p>此阶段结论：<strong>hue通过hiveserver执行hql语句，而且hive本身修改表元数据的时候也会验证是否有对HDFS目录有写权限</strong>。</p>
+<h2 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h2><p>那么应该怎样解决呢？</p>
+<p>当前的目录权限都是给的：<code>drwxr-x---</code>，也就是只有owner有写权限, 指定组的用户有读权限，匿名用户没有任何权限。</p>
+<p>这样授权的理由在于，以事业部为组，所有同一个事业部的人都可读，但是只能通过我们的数据平台用户来进行写操作【当前是root】。</p>
+<p>既不想违背这个初衷，又要满足新的需求，再不进行任何自主研发的前提下，只能<strong>启用HDFS的ACL</strong>，才能添加额外的权限。</p>
+<p>hue中也支持*ACL修改，而且执行遍历目录修改.</p>
+<p>步骤如下：<br><img src="/imgs/hue_acl/hue_dfs_acl_1.png" alt=""><br><img src="/imgs/hue_acl/hue_dfs_acl_2.png" alt=""><br><img src="/imgs/hue_acl/hue_dfs_acl_3.png" alt=""><br><img src="/imgs/hue_acl/hue_dfs_acl_4.png" alt=""></p>
+<h2 id="遗留"><a href="#遗留" class="headerlink" title="遗留"></a>遗留</h2><p>对官网说的mask不太理解。字面意思好像是用来过滤所有用户、组、匿名组的权限的。</p>
+<p>以官网例子来看：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">user::rw-</div><div class="line"> user:bruce:rwx                  #effective:r--</div><div class="line"> group::r-x                      #effective:r--</div><div class="line"> group:sales:rwx                 #effective:r--</div><div class="line"> mask::r--</div><div class="line"> other::r--</div></pre></td></tr></table></figure></p>
+<p>因为上面指定的mask是只读，所以即便其他指定了额外的权限也是白费的，生效的只有只读。所以这样理解，mask就是这个文件可以有的所有权限的总和。如果不单独设置mask的话，其默认值也是这样算出来的。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="https://hadoop.apache.org/docs/r2.7.2/hadoop-project-dist/hadoop-hdfs/HdfsPermissionsGuide.html#The_Super-User" target="_blank" rel="external">https://hadoop.apache.org/docs/r2.7.2/hadoop-project-dist/hadoop-hdfs/HdfsPermissionsGuide.html#The_Super-User</a></li>
+<li><a href="https://hadoop.apache.org/docs/r2.7.2/hadoop-project-dist/hadoop-common/FileSystemShell.html#setfacl" target="_blank" rel="external">https://hadoop.apache.org/docs/r2.7.2/hadoop-project-dist/hadoop-common/FileSystemShell.html#setfacl</a></li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/hdfs/">hdfs</a><a href="/tags/hue/">hue</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2017/03/31/hue-metastore引出的HDFS权限问题/" data-title="hue metastore引出的HDFS权限问题 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/11/09/sbt简记/" title="scalatra入门">
+  <strong>上一篇：</strong><br/>
+  <span>
+  scalatra入门</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/03/24/iptables手记/"  title="iptables手记">
+ <strong>下一篇：</strong><br/> 
+ <span>iptables手记
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2017/03/31/hue-metastore引出的HDFS权限问题/" data-title="hue metastore引出的HDFS权限问题" data-url="http://willcup.com/2017/03/31/hue-metastore引出的HDFS权限问题/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#需求"><span class="toc-number">1.</span> <span class="toc-text">需求</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题"><span class="toc-number">2.</span> <span class="toc-text">问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#追查"><span class="toc-number">3.</span> <span class="toc-text">追查</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#查一下网络请求有什么异常？"><span class="toc-number">3.0.1.</span> <span class="toc-text">查一下网络请求有什么异常？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#hue源码确认逻辑"><span class="toc-number">3.0.2.</span> <span class="toc-text">hue源码确认逻辑</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#执行相应逻辑"><span class="toc-number">3.0.3.</span> <span class="toc-text">执行相应逻辑</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#解决"><span class="toc-number">4.</span> <span class="toc-text">解决</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#遗留"><span class="toc-number">5.</span> <span class="toc-text">遗留</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/2015a/" title="2015a">2015a<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/django/" title="django">django<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Flume/" title="Flume">Flume<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,1114 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>ambari-views中文翻译 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="简述ambari views可以在ambari-web中提供插件定制化的可视化、管理、监控等特性。
+当用户添加了一个第三方的插件到ambari的时候，我们可以添加一个view来支持这个插件的UI，也就是说可以发布一个应用到ambari container里来。
+每个view实例使用name和version来在ambari container里唯一标识自己。
+Views in Ambari 是顶级的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ambari-views中文翻译">
+<meta property="og:url" content="http://willcup.com/2016/06/20/ambari-view中文翻译/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="简述ambari views可以在ambari-web中提供插件定制化的可视化、管理、监控等特性。
+当用户添加了一个第三方的插件到ambari的时候，我们可以添加一个view来支持这个插件的UI，也就是说可以发布一个应用到ambari container里来。
+每个view实例使用name和version来在ambari container里唯一标识自己。
+Views in Ambari 是顶级的">
+<meta property="og:image" content="http://willcup.com/instance_response.png">
+<meta property="og:image" content="http://willcup.com/ui.png">
+<meta property="og:updated_time" content="2016-10-28T02:54:06.777Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ambari-views中文翻译">
+<meta name="twitter:description" content="简述ambari views可以在ambari-web中提供插件定制化的可视化、管理、监控等特性。
+当用户添加了一个第三方的插件到ambari的时候，我们可以添加一个view来支持这个插件的UI，也就是说可以发布一个应用到ambari container里来。
+每个view实例使用name和version来在ambari container里唯一标识自己。
+Views in Ambari 是顶级的">
+<meta name="twitter:image" content="http://willcup.com/instance_response.png">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/node_modules">测试</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/06/20/ambari-view中文翻译/" title="ambari-views中文翻译" itemprop="url">ambari-views中文翻译</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-06-20T07:26:42.000Z" itemprop="datePublished"> 发表于 2016-06-20</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#简述"><span class="toc-text">简述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#例子"><span class="toc-text">例子</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基础"><span class="toc-text">基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#View-Instances"><span class="toc-text">View Instances</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#View-Context"><span class="toc-text">View Context</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#UI-Components"><span class="toc-text">UI Components</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#WEB-INF-web-xml"><span class="toc-text">WEB-INF/web.xml</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Servlets"><span class="toc-text">Servlets</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Resources"><span class="toc-text">Resources</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Service-Class"><span class="toc-text">Service Class</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Managed-Resources"><span class="toc-text">Managed Resources</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Service-Class-1"><span class="toc-text">Service Class</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Resource-Class"><span class="toc-text">Resource Class</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Resource-Provider-Class"><span class="toc-text">Resource Provider Class</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#权限"><span class="toc-text">权限</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#定制权限"><span class="toc-text">定制权限</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impersonation"><span class="toc-text">Impersonation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#持久化"><span class="toc-text">持久化</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#DataStore"><span class="toc-text">DataStore</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Events"><span class="toc-text">Events</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#View生命周期Events"><span class="toc-text">View生命周期Events</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#自定义event"><span class="toc-text">自定义event</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Listeners"><span class="toc-text">Listeners</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#ViewController"><span class="toc-text">ViewController</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#打包"><span class="toc-text">打包</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#依赖"><span class="toc-text">依赖</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#view-xml"><span class="toc-text">view.xml</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#参数"><span class="toc-text">参数</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#resource"><span class="toc-text">resource</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#权限-1"><span class="toc-text">权限</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#持久化-1"><span class="toc-text">持久化</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#entity"><span class="toc-text">entity</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#instance"><span class="toc-text">instance</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#property"><span class="toc-text">property</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#发布"><span class="toc-text">发布</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#解压包"><span class="toc-text">解压包</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用"><span class="toc-text">使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#API"><span class="toc-text">API</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Get-Views"><span class="toc-text">Get Views</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Get-View"><span class="toc-text">Get View</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Get-Versions"><span class="toc-text">Get Versions</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Get-Version"><span class="toc-text">Get Version</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Get-Instances"><span class="toc-text">Get Instances</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#获取实例"><span class="toc-text">获取实例</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#创建实例"><span class="toc-text">创建实例</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#更新实例"><span class="toc-text">更新实例</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#删除实例"><span class="toc-text">删除实例</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Resources-1"><span class="toc-text">Resources</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Managed-Resources-1"><span class="toc-text">Managed Resources</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#设置view权限"><span class="toc-text">设置view权限</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#查询view权限"><span class="toc-text">查询view权限</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#View-UI"><span class="toc-text">View UI</span></a></li></ol></li></ol>
+		
+		</div>
+		
+		<h2 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h2><p>ambari views可以在ambari-web中提供插件定制化的可视化、管理、监控等特性。</p>
+<p>当用户添加了一个第三方的插件到ambari的时候，我们可以添加一个view来支持这个插件的UI，也就是说可以发布一个应用到ambari container里来。</p>
+<p>每个view实例使用name和version来在ambari container里唯一标识自己。</p>
+<p>Views in Ambari 是顶级的resource，并不直接跟cluster实例产生直接关联。</p>
+<h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2><p>官网的例子在ambari-views/examples.</p>
+<h2 id="基础"><a href="#基础" class="headerlink" title="基础"></a>基础</h2><h3 id="View-Instances"><a href="#View-Instances" class="headerlink" title="View Instances"></a>View Instances</h3><p>一个view可以有多个实例，每个实例可能有各自不同的属性。</p>
+<h3 id="View-Context"><a href="#View-Context" class="headerlink" title="View Context"></a>View Context</h3><p>view context让view componenets访问ambari container提供的运行时context。这个context会一直伴随这view实例，从出生到死亡。</p>
+<p>一个view context可能会被container注入到多个不同的view componenet里去，比如resources, resource provider, servlets等。</p>
+<p>context接口提供给view instance以下信息:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * Get the current user name.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> the current user name</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> String <span class="title">getUsername</span><span class="params">()</span></span>;</div><div class="line">    </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Determine whether or not the access specified by the given permission name</div><div class="line"> * is permitted for the given user.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@param</span> userName        the user name</div><div class="line"> * <span class="doctag">@param</span> permissionName  the permission name</div><div class="line"> *</div><div class="line"> * <span class="doctag">@throws</span> SecurityException if the access specified by the given permission name</div><div class="line"> *         is not permitted</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">hasPermission</span><span class="params">(String userName, String permissionName)</span> <span class="keyword">throws</span> SecurityException</span>;</div><div class="line">    </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Get the view name.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> the view name</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> String <span class="title">getViewName</span><span class="params">()</span></span>;</div><div class="line">    </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Get the view definition associated with this context.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> the view definition</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> ViewDefinition <span class="title">getViewDefinition</span><span class="params">()</span></span>;</div><div class="line">    </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Get the view instance name.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> the view instance name; null if no instance is associated</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> String <span class="title">getInstanceName</span><span class="params">()</span></span>;</div><div class="line">    </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Get the view instance definition associated with this context.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> the view instance definition; null if no instance is associated</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> ViewInstanceDefinition <span class="title">getViewInstanceDefinition</span><span class="params">()</span></span>;</div><div class="line">    </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Get the property values specified to create the view instance.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> the view instance property values; null if no instance is associated</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> Map&lt;String, String&gt; <span class="title">getProperties</span><span class="params">()</span></span>;</div><div class="line">    </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Save an instance data value for the given key.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@param</span> key    the key</div><div class="line"> * <span class="doctag">@param</span> value  the value</div><div class="line"> *</div><div class="line"> * <span class="doctag">@throws</span> IllegalStateException if no instance is associated</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">putInstanceData</span><span class="params">(String key, String value)</span></span>;</div><div class="line">    </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Get the instance data value for the given key.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@param</span> key  the key</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> the instance data value; null if no instance is associated</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> String <span class="title">getInstanceData</span><span class="params">(String key)</span></span>;</div><div class="line">    </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Get the instance data values.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> the view instance property values; null if no instance is associated</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> Map&lt;String, String&gt; <span class="title">getInstanceData</span><span class="params">()</span></span>;</div><div class="line">    </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Remove the instance data value for the given key.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@param</span> key  the key</div><div class="line"> *</div><div class="line"> * <span class="doctag">@throws</span> IllegalStateException if no instance is associated</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">removeInstanceData</span><span class="params">(String key)</span></span>;</div><div class="line">    </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Get a property for the given key from the ambari configuration.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@param</span> key  the property key</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> the property value; null indicates that the configuration contains no mapping for the key</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> String <span class="title">getAmbariProperty</span><span class="params">(String key)</span></span>;</div><div class="line">    </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Get the view resource provider for the given resource type.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@param</span> type  the resource type</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> the resource provider; null if no instance is associated</div><div class="line"> */</div><div class="line"><span class="keyword">public</span> ResourceProvider&lt;?&gt; getResourceProvider(String type);</div><div class="line">    </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Get a URL stream provider.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> a stream provider</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> URLStreamProvider <span class="title">getURLStreamProvider</span><span class="params">()</span></span>;</div><div class="line">    </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Get a data store for view persistence entities.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> a data store; null if no instance is associated</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> DataStore <span class="title">getDataStore</span><span class="params">()</span></span>;</div><div class="line">    </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Get all of the available view definitions.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> the view definitions</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> Collection&lt;ViewDefinition&gt; <span class="title">getViewDefinitions</span><span class="params">()</span></span>;</div><div class="line">    </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Get all of the available view instance definitions.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> the view instance definitions</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> Collection&lt;ViewInstanceDefinition&gt; <span class="title">getViewInstanceDefinitions</span><span class="params">()</span></span>;</div><div class="line">    </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Get a view controller associated with this context.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> the view controller</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> ViewController <span class="title">getController</span><span class="params">()</span></span>;</div><div class="line">    </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Get the HTTP Impersonator.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> the HTTP Impersonator, which internally uses the App Cookie Manager</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> HttpImpersonator <span class="title">getHttpImpersonator</span><span class="params">()</span></span>;</div><div class="line">    </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Get the default settings for the Impersonator.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> the Impersonator settings.</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> ImpersonatorSetting <span class="title">getImpersonatorSetting</span><span class="params">()</span></span>;</div></pre></td></tr></table></figure></p>
+<h3 id="UI-Components"><a href="#UI-Components" class="headerlink" title="UI Components"></a>UI Components</h3><p>view包里可能包含一些web应用的组件，类似html或者javascript啥的。</p>
+<h5 id="WEB-INF-web-xml"><a href="#WEB-INF-web-xml" class="headerlink" title="WEB-INF/web.xml"></a>WEB-INF/web.xml</h5><p>web.xml 是把view发布为一个web app的主要文件。  </p>
+<p>例如：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">servlet</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>HelloServlet<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">servlet-class</span>&gt;</span>org.apache.ambari.view.hello.HelloServlet<span class="tag">&lt;/<span class="name">servlet-class</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">servlet</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">servlet-mapping</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>HelloServlet<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">url-pattern</span>&gt;</span>/ui<span class="tag">&lt;/<span class="name">url-pattern</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">servlet-mapping</span>&gt;</span></div></pre></td></tr></table></figure>
+<h5 id="Servlets"><a href="#Servlets" class="headerlink" title="Servlets"></a>Servlets</h5><p>Servlets contained in a view archive will be deployed as part of the view and mapped as described in the web.xml.</p>
+<p>在servlet的init方法中，可以view context当做一个servlet context使用。</p>
+<p>例如:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">private</span> ViewContext viewContext;</div><div class="line"></div><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ServletConfig config)</span> <span class="keyword">throws</span> ServletException </span>&#123;</div><div class="line">  <span class="keyword">super</span>.init(config);</div><div class="line"></div><div class="line">  ServletContext context = config.getServletContext();</div><div class="line">  viewContext = (ViewContext) context.getAttribute(ViewContext.CONTEXT_ATTRIBUTE);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>servlet可以使用view conetxt获取ambari container提供的一个信息。例如，在doGet()方法中，我们就可以使用view context instance访问当前的用户和view instance的属性。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doGet</span><span class="params">(HttpServletRequest request, HttpServletResponse response)</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">  response.setContentType(<span class="string">"text/html"</span>);</div><div class="line">  response.setStatus(HttpServletResponse.SC_OK);</div><div class="line"></div><div class="line">  PrintWriter writer = response.getWriter();</div><div class="line"></div><div class="line">  Map&lt;String, String&gt; properties = viewContext.getProperties();</div><div class="line"></div><div class="line">  String name = properties.get(<span class="string">"name"</span>);</div><div class="line">  <span class="keyword">if</span> (name == <span class="keyword">null</span>) &#123;</div><div class="line">    name = viewContext.getUsername();</div><div class="line">  &#125;</div><div class="line">  writer.println(<span class="string">"&lt;h1&gt;Hello "</span> + name + <span class="string">"!&lt;/h1&gt;"</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="Resources"><a href="#Resources" class="headerlink" title="Resources"></a>Resources</h3><p>Resources一般不会暴露出来。resource都定义在view.xml里面。每个resource都需要指定名称和service class.</p>
+<p>每个resource endpoint应该也可以被ambari api访问. <a href="#api">API</a>.</p>
+<h5 id="Service-Class"><a href="#Service-Class" class="headerlink" title="Service Class"></a>Service Class</h5><p>service类使用JAX-RS注解来定义resource的endpoint。注意需要注入ViewContext.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Inject</span></div><div class="line">ViewContext context;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * <span class="doctag">@see</span> org.apache.ambari.view.filebrowser.DownloadService</div><div class="line"> * <span class="doctag">@return</span> service</div><div class="line"> */</div><div class="line"><span class="meta">@Path</span>(<span class="string">"/download"</span>)</div><div class="line"><span class="function"><span class="keyword">public</span> DownloadService <span class="title">download</span><span class="params">()</span> </span>&#123;</div><div class="line">  <span class="keyword">return</span> <span class="keyword">new</span> DownloadService(context);</div><div class="line">&#125;  </div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * <span class="doctag">@see</span> org.apache.ambari.view.filebrowser.FileOperationService</div><div class="line"> * <span class="doctag">@return</span> service</div><div class="line"> */</div><div class="line"><span class="meta">@Path</span>(<span class="string">"/fileops"</span>)</div><div class="line"><span class="function"><span class="keyword">public</span> FileOperationService <span class="title">fileOps</span><span class="params">()</span> </span>&#123;</div><div class="line">  <span class="keyword">return</span> <span class="keyword">new</span> FileOperationService(context);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="Managed-Resources"><a href="#Managed-Resources" class="headerlink" title="Managed Resources"></a>Managed Resources</h4><p>managed resource是由ambari api框架管理的resource。除了name和service class之外，managed resource定义还需要plural name，resource class和provider class。 See <a href="#viewxml">view.xml</a>.</p>
+<p>使用managed resource的好处是任何通过rest api访问的查询都可以使用ambari api框架的一些既有的特性，包括partial response, query predicates, pagination, sub-resource queries等。See <a href="#API">API</a>.</p>
+<h5 id="Service-Class-1"><a href="#Service-Class-1" class="headerlink" title="Service Class"></a>Service Class</h5><p>service使用JAX-RS注解定义获取resource的action。</p>
+<p>下面的例子展示了service class怎样将request代理给api框架处理。注意要注入ViewResourceHandler，我们使用它在api框架中传递control。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Inject</span></div><div class="line">ViewResourceHandler resourceHandler;</div><div class="line"></div><div class="line">…</div><div class="line"><span class="meta">@GET</span></div><div class="line"><span class="meta">@Path</span>(<span class="string">"&#123;scriptId&#125;"</span>)</div><div class="line"><span class="meta">@Produces</span>(MediaType.APPLICATION_JSON)</div><div class="line"><span class="function"><span class="keyword">public</span> Response <span class="title">getScript</span><span class="params">(@Context HttpHeaders headers, @Context UriInfo ui,</span></span></div><div class="line">                          @PathParam(<span class="string">"scriptId"</span>) String scriptId) &#123;</div><div class="line">  <span class="keyword">return</span> resourceHandler.handleRequest(headers, ui, scriptId);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h5 id="Resource-Class"><a href="#Resource-Class" class="headerlink" title="Resource Class"></a>Resource Class</h5><p>resource class是一个包含属性和resource的JavaBean。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PigScript</span> </span>&#123;</div><div class="line">  <span class="keyword">private</span> String id;</div><div class="line">  <span class="keyword">private</span> String title;</div><div class="line">  <span class="keyword">private</span> String pigScript;</div><div class="line">  <span class="keyword">private</span> String pythonScript;</div><div class="line">  <span class="keyword">private</span> String templetonArguments;</div><div class="line">  <span class="keyword">private</span> Date dateCreated;</div><div class="line">  <span class="keyword">private</span> String owner;</div><div class="line">  … </div><div class="line">  <span class="function"><span class="keyword">public</span> String <span class="title">getId</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> id;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setId</span><span class="params">(String id)</span> </span>&#123;</div><div class="line">    <span class="keyword">this</span>.id = id;</div><div class="line">  &#125;</div><div class="line">  …  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="Resource-Provider-Class"><a href="#Resource-Provider-Class" class="headerlink" title="Resource Provider Class"></a>Resource Provider Class</h5><p>Resource provider class实现ResourceProvider接口. 给ambari api框架提供访问resource的方式。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ScriptResourceProvider</span> <span class="keyword">implements</span> <span class="title">ResourceProvider</span>&lt;<span class="title">PigScript</span>&gt; </span>&#123;</div><div class="line">  <span class="meta">@Inject</span></div><div class="line">  ViewContext viewContext;</div><div class="line"></div><div class="line"></div><div class="line">  <span class="meta">@Override</span></div><div class="line">  <span class="function"><span class="keyword">public</span> FileResource <span class="title">getResource</span><span class="params">(String resourceId, Set&lt;String&gt; propertyIds)</span> <span class="keyword">throws</span></span></div><div class="line">      SystemException, NoSuchResourceException, UnsupportedPropertyException &#123;</div><div class="line"></div><div class="line">    Map&lt;String, String&gt; properties = viewContext.getProperties();</div><div class="line"></div><div class="line">    String userScriptsPath = properties.get(<span class="string">"dataworker.userScriptsPath"</span>);</div><div class="line"></div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">      <span class="keyword">return</span> getResource(resourceId, userScriptsPath, propertyIds);</div><div class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</div><div class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> SystemException(<span class="string">"Can't get resource "</span> + resourceId + <span class="string">"."</span>, e);</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">  ... </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="权限"><a href="#权限" class="headerlink" title="权限"></a>权限</h3><p>administrator可以在任何view实例上设置VIEW.USE权限。  See <a href="#api">API</a>.</p>
+<h3 id="定制权限"><a href="#定制权限" class="headerlink" title="定制权限"></a>定制权限</h3><p>编辑 view.xml<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">  </div><div class="line"><span class="tag">&lt;<span class="name">view</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>RESTRICTED<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">label</span>&gt;</span>The Restricted View<span class="tag">&lt;/<span class="name">label</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">resource</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>restricted<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">service-class</span>&gt;</span>org.apache.ambari.view.restricted.RestrictedResource<span class="tag">&lt;/<span class="name">service-class</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">resource</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">resource</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>unrestricted<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">service-class</span>&gt;</span>org.apache.ambari.view.restricted.UnrestrictedResource<span class="tag">&lt;/<span class="name">service-class</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">resource</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">permission</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>RESTRICTED<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">description</span>&gt;</span></div><div class="line">      Access permission for a restricted view resource.</div><div class="line">    <span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">permission</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">instance</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>INSTANCE_1<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">instance</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">view</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>这个配置文件定义了一个叫做RESTRICTED的view，它有一个实例. 还定义了一个叫做RESTRICTED的权限，两个分别叫做 ‘unrestricted’和 ‘restricted’的resource.<br>administrator可以将RESTRICTED权限分配给任意的RESTRICTED view的实例。</p>
+<p>view的实现代码使用了view context来验证我们定义的权限。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Inject</span></div><div class="line">ViewContext context;</div><div class="line"></div><div class="line"><span class="meta">@GET</span></div><div class="line"><span class="meta">@Produces</span>(&#123;<span class="string">"text/html"</span>&#125;)</div><div class="line"><span class="function"><span class="keyword">public</span> Response <span class="title">getRestricted</span><span class="params">()</span> <span class="keyword">throws</span> IOException</span>&#123;</div><div class="line">    </div><div class="line">  String userName = context.getUsername();</div><div class="line">    </div><div class="line">  <span class="keyword">try</span> &#123;</div><div class="line">    context.hasPermission(userName, <span class="string">"RESTRICTED"</span>);</div><div class="line">  &#125; <span class="keyword">catch</span> (org.apache.ambari.view.SecurityException e) &#123;</div><div class="line">    <span class="keyword">return</span> Response.status(<span class="number">401</span>).build();</div><div class="line">  &#125;</div><div class="line">    </div><div class="line">  <span class="keyword">return</span> Response.ok(<span class="string">"&lt;b&gt;You have accessed a restricted resource.&lt;/b&gt;"</span>).type(<span class="string">"text/html"</span>).build();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="Impersonation"><a href="#Impersonation" class="headerlink" title="Impersonation"></a>Impersonation</h3><p>Views can utilize the viewContext to facilitate calls that require impersonating a user. For example, a service may expose an endpoint that accepts parameters like “doAs=johndoe” to perform some action on behalf of that user.<br>The HttpImpersonator Interface provides a contract for how to perform an HTTP GET request on a URL that supports some type of “doAs” parameter, and the username.<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">HttpImpersonator impersonator = viewContext.getHttpImpersonator();</div><div class="line">ImpersonatorSetting impersonatorSetting = viewContext.getImpersonatorSetting();</div><div class="line">String result = impersonator.requestURL(urlToRead, <span class="string">"GET"</span>, impersonatorSetting);</div></pre></td></tr></table></figure></p>
+<p>The ImpersonatorSetting class contains the variables that are added to the URL params. Its default constructor sets “doAs” as the default query parameter name, and the currently logged on user as its value; both of these can be changed with the overloaded constructors.</p>
+<h3 id="持久化"><a href="#持久化" class="headerlink" title="持久化"></a>持久化</h3><p>应用的数据并不像view实例的属性一样，他们或许包含任意字符串，view需要把这些数据持久化，而且还提供更新以及查询。</p>
+<p>view context包含从应用数据地图里put或者set数据的方法。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Save an instance data value for the given key.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@param</span> key    the key</div><div class="line"> * <span class="doctag">@param</span> value  the value</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">putInstanceData</span><span class="params">(String key, String value)</span></span>;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * Get the instance data value for the given key.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@param</span> key  the key</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> the instance data value</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> String <span class="title">getInstanceData</span><span class="params">(String key)</span></span>;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * Get the instance data values.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@return</span> the view instance property values</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> Map&lt;String, String&gt; <span class="title">getInstanceData</span><span class="params">()</span></span>;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * Remove the instance data value for the given key.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@param</span> key  the key</div><div class="line"> */</div></pre></td></tr></table></figure></p>
+<h5 id="DataStore"><a href="#DataStore" class="headerlink" title="DataStore"></a>DataStore</h5><p>data store 允许view instance存储javabean到ambari数据库里。</p>
+<p>view组件先通过view context获取一个datastore的实例。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div></pre></td><td class="code"><pre><div class="line">      <span class="comment">/**</span></div><div class="line">       * Get a data store for view persistence entities.</div><div class="line">       *</div><div class="line">       * <span class="doctag">@return</span> a data store</div><div class="line">       */</div><div class="line">      <span class="function"><span class="keyword">public</span> DataStore <span class="title">getDataStore</span><span class="params">()</span></span>;</div><div class="line"></div><div class="line">The DataStore object exposes a simple <span class="class"><span class="keyword">interface</span> <span class="title">for</span> <span class="title">persisting</span> <span class="title">view</span> <span class="title">entities</span>.  <span class="title">The</span> <span class="title">basic</span> <span class="title">CRUD</span> <span class="title">operations</span> <span class="title">are</span> <span class="title">supported</span> …  </span></div><div class="line"></div><div class="line">      /**</div><div class="line">       * <span class="title">Save</span> <span class="title">the</span> <span class="title">given</span> <span class="title">entity</span> <span class="title">to</span> <span class="title">persistent</span> <span class="title">storage</span>.  <span class="title">The</span> <span class="title">entity</span> <span class="title">must</span> <span class="title">be</span> <span class="title">declared</span> <span class="title">as</span> <span class="title">an</span></div><div class="line">       * &lt;<span class="title">entity</span>&gt; <span class="title">in</span> <span class="title">the</span> &lt;<span class="title">persistence</span>&gt; <span class="title">element</span> <span class="title">of</span> <span class="title">the</span> <span class="title">view</span>.<span class="title">xml</span>.</div><div class="line">       *</div><div class="line">       * @<span class="title">param</span> <span class="title">entity</span>  <span class="title">the</span> <span class="title">entity</span> <span class="title">to</span> <span class="title">be</span> <span class="title">persisted</span>.</div><div class="line">       *</div><div class="line">       * @<span class="title">throws</span> <span class="title">PersistenceException</span> <span class="title">thrown</span> <span class="title">if</span> <span class="title">the</span> <span class="title">given</span> <span class="title">entity</span> <span class="title">can</span> <span class="title">not</span> <span class="title">be</span> <span class="title">persisted</span></div><div class="line">       */</div><div class="line">      <span class="title">public</span> <span class="title">void</span> <span class="title">store</span>(<span class="title">Object</span> <span class="title">entity</span>) <span class="title">throws</span> <span class="title">PersistenceException</span>;</div><div class="line">    </div><div class="line">      <span class="comment">/**</span></div><div class="line">       * Remove the given entity from persistent storage.</div><div class="line">       *</div><div class="line">       * <span class="doctag">@param</span> entity  the entity to be removed.</div><div class="line">       *</div><div class="line">       * <span class="doctag">@throws</span> PersistenceException thrown if the given entity can not be removed</div><div class="line">       */</div><div class="line">      <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">remove</span><span class="params">(Object entity)</span> <span class="keyword">throws</span> PersistenceException</span>;</div><div class="line">    </div><div class="line">      <span class="comment">/**</span></div><div class="line">       * Find the entity of the given class type that is uniquely identified by the</div><div class="line">       * given primary key.</div><div class="line">       *</div><div class="line">       * <span class="doctag">@param</span> clazz       the entity class</div><div class="line">       * <span class="doctag">@param</span> primaryKey  the primary key</div><div class="line">       * <span class="doctag">@param</span> &lt;T&gt;         the entity type</div><div class="line">       *</div><div class="line">       * <span class="doctag">@return</span> the entity; null if the entity can't be found</div><div class="line">       *</div><div class="line">       * <span class="doctag">@throws</span> PersistenceException thrown if an error occurs trying to find the entity</div><div class="line">       */</div><div class="line">      <span class="keyword">public</span> &lt;T&gt; <span class="function">T <span class="title">find</span><span class="params">(Class&lt;T&gt; clazz, Object primaryKey)</span> <span class="keyword">throws</span> PersistenceException</span>;</div><div class="line">    </div><div class="line">      <span class="comment">/**</span></div><div class="line">       * Find all the entities for the given where clause.  Specifying null for the where</div><div class="line">       * clause should return all entities of the given class type.</div><div class="line">       *</div><div class="line">       * <span class="doctag">@param</span> clazz        the entity class</div><div class="line">       * <span class="doctag">@param</span> whereClause  the where clause; may be null</div><div class="line">       * <span class="doctag">@param</span> &lt;T&gt;          the entity type</div><div class="line">       *</div><div class="line">       * <span class="doctag">@return</span> all of the entities for the given where clause; empty collection if no</div><div class="line">       *         entities can be found</div><div class="line">       *</div><div class="line">       * <span class="doctag">@throws</span> PersistenceException</div><div class="line">       */</div><div class="line">      <span class="keyword">public</span> &lt;T&gt; <span class="function">Collection&lt;T&gt; <span class="title">findAll</span><span class="params">(Class&lt;T&gt; clazz, String whereClause)</span> <span class="keyword">throws</span> PersistenceException</span>;</div></pre></td></tr></table></figure></p>
+<p>每个entity被持久化之前，都应该已经在view.xml里定义过了。 See <a href="#viewxml">view.xml</a>.   </p>
+<h3 id="Events"><a href="#Events" class="headerlink" title="Events"></a>Events</h3><h5 id="View生命周期Events"><a href="#View生命周期Events" class="headerlink" title="View生命周期Events"></a>View生命周期Events</h5><p>实现View接口之后，每个view都可以监控自己的生命周期。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">View</span> </span>&#123;</div><div class="line"></div><div class="line">  ...</div><div class="line">  </div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onDeploy</span><span class="params">(ViewDefinition definition)</span></span>;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(ViewInstanceDefinition definition)</span></span>;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onDestroy</span><span class="params">(ViewInstanceDefinition definition)</span></span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>View实现类应该在view.xml文件里声明注册<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">view</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>FILES<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">label</span>&gt;</span>Files<span class="tag">&lt;/<span class="name">label</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.1.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></div><div class="line">  ...</div><div class="line">  <span class="tag">&lt;<span class="name">view-class</span>&gt;</span>org.apache.ambari.view.filebrowser.ViewImpl<span class="tag">&lt;/<span class="name">view-class</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">view</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>View的实现类在注册过之后，它的对应方法会在任何生命周期event发生的时候被触发。</p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>描述</th>
+<th>参数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Deploy</td>
+<td>The view has been successfully deployed.</td>
+<td>The deployed view definition.</td>
+</tr>
+<tr>
+<td>Create</td>
+<td>An instance of the view has been created.</td>
+<td>The new view instance definition.</td>
+</tr>
+<tr>
+<td>Destroy</td>
+<td>An instance of the view has been destroyed.</td>
+<td>The destroyed view instance definition.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="自定义event"><a href="#自定义event" class="headerlink" title="自定义event"></a>自定义event</h5><p>饿哦们也可以定义一些自定义事件。</p>
+<h5 id="Listeners"><a href="#Listeners" class="headerlink" title="Listeners"></a>Listeners</h5><p>view需要写一个listener接口的实现，然后注册这个listener到view框架。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Listener</span> </span>&#123;</div><div class="line"></div><div class="line">  ...</div><div class="line">  </div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">notify</span><span class="params">(Event event)</span></span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>listener的notify方法会在view发射一个event的时候被触发。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">JobsListener</span> <span class="keyword">implements</span> <span class="title">Listener</span> </span>&#123;</div><div class="line">  <span class="meta">@Override</span></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">notify</span><span class="params">(Event event)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (event.getId().equals(<span class="string">"NEW_JOB"</span>)) &#123;</div><div class="line">      ViewInstanceDefinition instance = event.getViewInstanceSubject();         </div><div class="line">      ...</div><div class="line">    &#125;      </div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h5 id="ViewController"><a href="#ViewController" class="headerlink" title="ViewController"></a>ViewController</h5><p>ViewController用来注册listener，还有就是发射event。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ViewController</span> </span>&#123;</div><div class="line"></div><div class="line">  ...</div><div class="line">  </div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fireEvent</span><span class="params">(String eventId, Map&lt;String, String&gt; eventProperties)</span></span>;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">registerListener</span><span class="params">(Listener listener, String viewName)</span></span>;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">unregisterListener</span><span class="params">(Listener listener, String viewName)</span></span>;    </div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>view组件可以访问通过注入的view context来时用view controller。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">    <span class="meta">@Inject</span></div><div class="line">    ViewContext context;</div><div class="line"></div><div class="line">    ...</div><div class="line">    ViewController controller = context.getController();</div><div class="line">```    </div><div class="line"></div><div class="line"></div><div class="line">view component可以注册监听其他view发射的event。</div><div class="line">```java</div><div class="line">    <span class="meta">@Inject</span></div><div class="line">    ViewContext context;</div><div class="line"></div><div class="line">    ...</div><div class="line">    Listener listener = <span class="keyword">new</span> JobsListener();</div><div class="line"></div><div class="line">    ...</div><div class="line">    ViewController controller = context.getController();</div><div class="line">    controller.registerListener(listener, <span class="string">"JOBS"</span>);</div></pre></td></tr></table></figure></p>
+<p>view component也可以发射自定义的view通知event.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Inject</span></div><div class="line">ViewContext context;</div><div class="line"></div><div class="line">...</div><div class="line">Map&lt;String, String&gt; jobEventProperties = <span class="keyword">new</span> HashMap&lt;String, String&gt;();</div><div class="line"></div><div class="line">jobEventProperties.put(<span class="string">"JobId"</span>, jobId);</div><div class="line">jobEventProperties.put(<span class="string">"JobOwner"</span>, jobOwner);</div><div class="line"></div><div class="line">...</div><div class="line">ViewController controller = context.getController();</div><div class="line">controller.fireEvent(<span class="string">"NEW_JOB"</span>, jobEventProperties);</div></pre></td></tr></table></figure>
+<h2 id="打包"><a href="#打包" class="headerlink" title="打包"></a>打包</h2><p>所有的view都应该打包，包含配置文件和不同的组件，比如resource和resource provider啥的，还有一些 html, JavaSript and servlets.</p>
+<h3 id="依赖"><a href="#依赖" class="headerlink" title="依赖"></a>依赖</h3><p>The view may include dependency classes and jars directly into the archive.  Classes should be included under <strong>WEB-INF/classes</strong>.  Jars should be included under <strong>WEB-INF/lib</strong>.</p>
+<h3 id="view-xml"><a href="#view-xml" class="headerlink" title="view.xml"></a>view.xml</h3><table>
+<thead>
+<tr>
+<th>元素</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>name</td>
+<td>The unique view name (required).</td>
+</tr>
+<tr>
+<td>label</td>
+<td>The user facing name.</td>
+</tr>
+<tr>
+<td>version</td>
+<td>The view version (required).</td>
+</tr>
+<tr>
+<td>description</td>
+<td>The description of the view.</td>
+</tr>
+<tr>
+<td>icon64</td>
+<td>The 64x64 icon to display for this view. If this property is not set, the 32x32 sized icon will be used.</td>
+</tr>
+<tr>
+<td>icon</td>
+<td>The 32x32 icon to display for this view. Suggested size is 32x32 and will be displayed as 8x8 and 16x16 as necessary. If this property is not set, a default view framework icon is used.</td>
+</tr>
+<tr>
+<td>system</td>
+<td>Indicates whether or not this is a system view.  Default is false. </td>
+</tr>
+<tr>
+<td>view-class</td>
+<td>The View class to receive framework events. </td>
+</tr>
+<tr>
+<td>masker-class</td>
+<td>The Masker class for masking view parameters. </td>
+</tr>
+<tr>
+<td>parameter</td>
+<td>Defines a configuration parameter that is used to when creating a view instance. </td>
+</tr>
+<tr>
+<td>resource</td>
+<td>Describe a resources exposed by the view.</td>
+</tr>
+<tr>
+<td>permission</td>
+<td>Defines a custom permission for the view. </td>
+</tr>
+<tr>
+<td>persistence</td>
+<td>Describe a view entities for persistence. </td>
+</tr>
+<tr>
+<td>instance</td>
+<td>Define an instances of a view.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h5><table>
+<thead>
+<tr>
+<th>元素</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>name</td>
+<td>The parameter name.</td>
+</tr>
+<tr>
+<td>description</td>
+<td>The parameter description.</td>
+</tr>
+<tr>
+<td>required</td>
+<td>Determines whether or not the parameter is required.</td>
+</tr>
+<tr>
+<td>masked</td>
+<td>Indicated this parameter value is to be “masked” in the Ambari Web UI (i.e. not shown in the clear). Omitting this element default to not-masked. Otherwise, if true, the parameter value will be “masked” in the Web UI.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="resource"><a href="#resource" class="headerlink" title="resource"></a>resource</h5><table>
+<thead>
+<tr>
+<th>元素</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>name</td>
+<td>The resource name (i.e file).</td>
+</tr>
+<tr>
+<td>plural-name</td>
+<td>The parameter description (i.e. files). *</td>
+</tr>
+<tr>
+<td>id-property</td>
+<td>The id field of the managed resource class. *</td>
+</tr>
+<tr>
+<td>resource-class</td>
+<td>The class of the JavaBean that contains the attributes of a managed resource. *</td>
+</tr>
+<tr>
+<td>provider-class</td>
+<td>The class of the managed resource provider. *</td>
+</tr>
+<tr>
+<td>service-class</td>
+<td>The class of the JAX-RS annotated service resource.</td>
+</tr>
+<tr>
+<td>sub-resource-name</td>
+<td>The sub-resource name.</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">resource</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>files<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">service-class</span>&gt;</span>org.apache.ambari.view.filebrowser.FileBrowserService<span class="tag">&lt;/<span class="name">service-class</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">resource</span>&gt;</span></div><div class="line"></div><div class="line">\* only required for a managed resource.  For example ...</div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">resource</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>script<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">plural-name</span>&gt;</span>scripts<span class="tag">&lt;/<span class="name">plural-name</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">id-property</span>&gt;</span>id<span class="tag">&lt;/<span class="name">id-property</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">resource-class</span>&gt;</span>org.apache.ambari.view.pig.resources.scripts.models.PigScript<span class="tag">&lt;/<span class="name">resource-class</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">provider-class</span>&gt;</span>org.apache.ambari.view.pig.resources.scripts.ScriptResourceProvider<span class="tag">&lt;/<span class="name">provider-class</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">service-class</span>&gt;</span>org.apache.ambari.view.pig.resources.scripts.ScriptService<span class="tag">&lt;/<span class="name">service-class</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">resource</span>&gt;</span></div></pre></td></tr></table></figure>
+<h5 id="权限-1"><a href="#权限-1" class="headerlink" title="权限"></a>权限</h5><table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>name</td>
+<td>The permission name.</td>
+</tr>
+<tr>
+<td>description</td>
+<td>The permission description.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="持久化-1"><a href="#持久化-1" class="headerlink" title="持久化"></a>持久化</h5><table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>entity</td>
+<td>An entity that may be persisted through the DataStore.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="entity"><a href="#entity" class="headerlink" title="entity"></a>entity</h5><table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>class</td>
+<td>The class ot the JavaBean that contains the attributes of an entity.</td>
+</tr>
+<tr>
+<td>id-property</td>
+<td>The id field of the entity.</td>
+</tr>
+</tbody>
+</table>
+<p>例子<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">&lt;persistence&gt;</div><div class="line">  &lt;entity&gt;</div><div class="line">    &lt;<span class="class"><span class="keyword">class</span>&gt;<span class="title">org</span>.<span class="title">apache</span>.<span class="title">ambari</span>.<span class="title">view</span>.<span class="title">employee</span>.<span class="title">EmployeeEntity</span>&lt;/<span class="title">class</span>&gt;</span></div><div class="line">    &lt;<span class="title">id</span>-<span class="title">property</span>&gt;<span class="title">id</span>&lt;/<span class="title">id</span>-<span class="title">property</span>&gt;</div><div class="line">  &lt;/<span class="title">entity</span>&gt;</div><div class="line">  &lt;<span class="title">entity</span>&gt;</div><div class="line">    &lt;<span class="title">class</span>&gt;<span class="title">org</span>.<span class="title">apache</span>.<span class="title">ambari</span>.<span class="title">view</span>.<span class="title">employee</span>.<span class="title">AddressEntity</span>&lt;/<span class="title">class</span>&gt;</div><div class="line">    &lt;<span class="title">id</span>-<span class="title">property</span>&gt;<span class="title">id</span>&lt;/<span class="title">id</span>-<span class="title">property</span>&gt;</div><div class="line">  &lt;/<span class="title">entity</span>&gt;</div><div class="line">  &lt;<span class="title">entity</span>&gt;</div><div class="line">    &lt;<span class="title">class</span>&gt;<span class="title">org</span>.<span class="title">apache</span>.<span class="title">ambari</span>.<span class="title">view</span>.<span class="title">employee</span>.<span class="title">ProjectEntity</span>&lt;/<span class="title">class</span>&gt;</div><div class="line">    &lt;<span class="title">id</span>-<span class="title">property</span>&gt;<span class="title">id</span>&lt;/<span class="title">id</span>-<span class="title">property</span>&gt;</div><div class="line">  &lt;/<span class="title">entity</span>&gt;</div><div class="line">&lt;/<span class="title">persistence</span>&gt;</div></pre></td></tr></table></figure></p>
+<h5 id="instance"><a href="#instance" class="headerlink" title="instance"></a>instance</h5><table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>name</td>
+<td>The unique instance name (required).</td>
+</tr>
+<tr>
+<td>label</td>
+<td>The display label of the view instance. If not set, the view definition label is used.</td>
+</tr>
+<tr>
+<td>description</td>
+<td>The description of the view instance. If not set, the view definition description is used.</td>
+</tr>
+<tr>
+<td>icon64</td>
+<td>Overrides the view icon64 for this specific view instance.</td>
+</tr>
+<tr>
+<td>icon</td>
+<td>Overrides the view icon for this specific view instance.</td>
+</tr>
+<tr>
+<td>visible</td>
+<td>If true, for the view instance to show up in the users view instance list.  The default value is true.</td>
+</tr>
+<tr>
+<td>property</td>
+<td>Specifies configuration parameters values for the view instance.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="property"><a href="#property" class="headerlink" title="property"></a>property</h5><table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>key</td>
+<td>The property key (must match view parameter name).</td>
+</tr>
+<tr>
+<td>value</td>
+<td>The property value.</td>
+</tr>
+</tbody>
+</table>
+<p>完整的 view.xml例子<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">view</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>FILES<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">label</span>&gt;</span>Files<span class="tag">&lt;/<span class="name">label</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.1.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">parameter</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>dataworker.defaultFs<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">description</span>&gt;</span>FileSystem URI<span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">required</span>&gt;</span>true<span class="tag">&lt;/<span class="name">required</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">parameter</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">parameter</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>dataworker.username<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">description</span>&gt;</span>The username (defaults to ViewContext username)<span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">required</span>&gt;</span>false<span class="tag">&lt;/<span class="name">required</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">parameter</span>&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">resource</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>files<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">service-class</span>&gt;</span>org.apache.ambari.view.filebrowser.FileBrowserService<span class="tag">&lt;/<span class="name">service-class</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">resource</span>&gt;</span></div><div class="line">    </div><div class="line">    <span class="tag">&lt;<span class="name">instance</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>FILES_1<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">key</span>&gt;</span>dataworker.defaultFs<span class="tag">&lt;/<span class="name">key</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">value</span>&gt;</span>hdfs://<span class="tag">&lt;<span class="name">server</span>&gt;</span>:8020<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">instance</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">view</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>这个例子中配置了一个叫FILES的view，也是有一个实例FILES_1。可以看到这个view有一个required的参数<strong>‘dataworker.defaultFs’</strong>以及一个optional参数<strong>‘dataworker.username’</strong>.  还有一个访问资源的入口<strong>‘files’</strong>. </p>
+<h2 id="发布"><a href="#发布" class="headerlink" title="发布"></a>发布</h2><p>要发布一个view，只需要将view的包放到ambari-server的views文件夹下，默认是在</p>
+<pre><code>/var/lib/ambari-server/resources/views
+</code></pre><h3 id="解压包"><a href="#解压包" class="headerlink" title="解压包"></a>解压包</h3><p>view被发布之后，会自动在views文件夹下解压包。默认位置是:</p>
+<pre><code>/var/lib/ambari-server/resources/views/work/:viewName{:viewVersion}
+</code></pre><p>例如，上面例子中的files view解压后目录就是：</p>
+<pre><code>/var/lib/ambari-server/resources/views/work/FILES{0.1.0}
+</code></pre><p>用户可以直接修改解压后的文件，在ambari下次启动的时候就可以生效了。</p>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><h3 id="API"><a href="#API" class="headerlink" title="API"></a>API</h3><h5 id="Get-Views"><a href="#Get-Views" class="headerlink" title="Get Views"></a>Get Views</h5><p>获取所有已经发布的view。注意view是顶级resource，不属于任何其他resource。</p>
+<pre><code>GET http://&lt;server&gt;:8080/api/v1/views/
+
+{
+  &quot;href&quot; : &quot;http://&lt;server&gt;:8080/api/v1/views/&quot;,
+  &quot;items&quot; : [
+    {
+      &quot;href&quot; : &quot;http://&lt;server&gt;:8080/api/v1/views/FILES&quot;,
+      &quot;ViewInfo&quot; : {
+        &quot;view_name&quot; : &quot;FILES&quot;
+      }
+    },
+    {
+      &quot;href&quot; : &quot;http://&lt;server&gt;:8080/api/v1/views/HELLO_WORLD&quot;,
+      &quot;ViewInfo&quot; : {
+        &quot;view_name&quot; : &quot;HELLO_WORLD&quot;
+      }
+    }
+  ]
+}
+</code></pre><h5 id="Get-View"><a href="#Get-View" class="headerlink" title="Get View"></a>Get View</h5><p>根据名称获取指定view，返回所有版本.</p>
+<pre><code>GET http://&lt;server&gt;:8080/api/v1/views/FILES/
+
+{
+  &quot;href&quot; : &quot;http://&lt;server&gt;:8080/api/v1/views/FILES/&quot;,
+  &quot;ViewInfo&quot; : {
+    &quot;view_name&quot; : &quot;FILES&quot;
+  },
+  &quot;versions&quot; : [
+    {
+      &quot;href&quot; : &quot;http://&lt;server&gt;:8080/api/v1/views/FILES/versions/0.1.0&quot;,
+      &quot;ViewVersionInfo&quot; : {
+        &quot;version&quot; : &quot;0.1.0&quot;,
+        &quot;view_name&quot; : &quot;FILES&quot;
+      }
+    }
+  ]
+}
+</code></pre><h5 id="Get-Versions"><a href="#Get-Versions" class="headerlink" title="Get Versions"></a>Get Versions</h5><p>获取一个view 的所有版本.</p>
+<pre><code>GET http://&lt;server&gt;:8080/api/v1/views/FILES/versions/
+
+{
+  &quot;href&quot; : &quot;http://&lt;server&gt;:8080/api/v1/views/FILES/versions/&quot;,
+  &quot;items&quot; : [
+    {
+      &quot;href&quot; : &quot;http://&lt;server&gt;:8080/api/v1/views/FILES/versions/0.1.0&quot;,
+      &quot;ViewVersionInfo&quot; : {
+        &quot;version&quot; : &quot;0.1.0&quot;,
+        &quot;view_name&quot; : &quot;FILES&quot;
+      }
+    }
+  ]
+}
+</code></pre><h5 id="Get-Version"><a href="#Get-Version" class="headerlink" title="Get Version"></a>Get Version</h5><p>获取某view的指定版本以及此版本下的所有实例.</p>
+<pre><code>GET http://&lt;server&gt;:8080/api/v1/views/FILES/versions/0.1.0/
+
+{
+  &quot;href&quot; : &quot;http://&lt;server&gt;:8080/api/v1/views/FILES/versions/0.1.0/&quot;,
+  &quot;ViewVersionInfo&quot; : {
+    &quot;archive&quot; : &quot;/var/lib/ambari-server/resources/views/work/FILES{0.1.0}&quot;,
+    &quot;label&quot; : &quot;Files&quot;,
+    &quot;parameters&quot; : [
+      {
+        &quot;name&quot; : &quot;dataworker.defaultFs&quot;,
+        &quot;description&quot; : &quot;FileSystem URI&quot;,
+        &quot;required&quot; : true
+      },
+      {
+        &quot;name&quot; : &quot;dataworker.username&quot;,
+        &quot;description&quot; : &quot;The username (defaults to ViewContext username)&quot;,
+        &quot;required&quot; : false
+      }
+    ],
+    &quot;version&quot; : &quot;0.1.0&quot;,
+    &quot;view_name&quot; : &quot;FILES&quot;
+  },
+  &quot;instances&quot; : [
+    {
+      &quot;href&quot; : &quot;http://&lt;server&gt;:8080/api/v1/views/FILES/versions/0.1.0/instances/FILES_1&quot;,
+      &quot;ViewInstanceInfo&quot; : {
+        &quot;instance_name&quot; : &quot;FILES_1&quot;,
+        &quot;version&quot; : &quot;0.1.0&quot;,
+        &quot;view_name&quot; : &quot;FILES&quot;
+      }
+    }
+  ]
+}
+</code></pre><h5 id="Get-Instances"><a href="#Get-Instances" class="headerlink" title="Get Instances"></a>Get Instances</h5><p>获取一个view 的所有实例.</p>
+<pre><code>GET http://&lt;server&gt;:8080/api/v1/views/FILES/versions/0.1.0/instances/
+
+{
+  &quot;href&quot; : &quot;http://&lt;server&gt;:8080/api/v1/views/FILES/versions/0.1.0/instances/&quot;,
+  &quot;items&quot; : [
+    {
+      &quot;href&quot; : &quot;http://&lt;server&gt;:8080/api/v1/views/FILES/versions/0.1.0/instances/FILES_1&quot;,
+      &quot;ViewInstanceInfo&quot; : {
+        &quot;instance_name&quot; : &quot;FILES_1&quot;,
+        &quot;version&quot; : &quot;0.1.0&quot;,
+        &quot;view_name&quot; : &quot;FILES&quot;
+      }
+    }
+  ]
+}
+</code></pre><h5 id="获取实例"><a href="#获取实例" class="headerlink" title="获取实例"></a>获取实例</h5><p>根据实例名称获取实例，此实例的所有resource也会被返回。</p>
+<pre><code>GET http://&lt;server&gt;:8080/api/v1/views/FILES/versions/0.1.0/instances/FILES_1
+
+{
+  &quot;href&quot; : &quot;http://&lt;server&gt;:8080/api/v1/views/FILES/versions/0.1.0/instances/FILES_1&quot;,
+  &quot;ViewInstanceInfo&quot; : {
+    &quot;context_path&quot; : &quot;/views/FILES/0.1.0/FILES_1&quot;,
+    &quot;instance_name&quot; : &quot;FILES_1&quot;,
+    &quot;version&quot; : &quot;0.1.0&quot;,
+    &quot;view_name&quot; : &quot;FILES&quot;,
+    &quot;instance_data&quot; : { },
+    &quot;properties&quot; : {
+      &quot;dataworker.defaultFs&quot; : &quot;hdfs://&lt;server&gt;:8020&quot;
+    }
+  },
+  &quot;resources&quot; : [
+    {
+      &quot;href&quot; : &quot;http://&lt;server&gt;:8080/api/v1/views/FILES/versions/0.1.0/instances/FILES_1/resources/files&quot;,
+      &quot;instance_name&quot; : &quot;FILES_1&quot;,
+      &quot;name&quot; : &quot;files&quot;,
+      &quot;version&quot; : &quot;0.1.0&quot;,
+      &quot;view_name&quot; : &quot;FILES&quot;
+    }
+  ]
+}
+</code></pre><h5 id="创建实例"><a href="#创建实例" class="headerlink" title="创建实例"></a>创建实例</h5><pre><code>POST http://&lt;server&gt;:8080/api/v1/views/FILES/versions/0.1.0/instances/FILES_2
+</code></pre><h5 id="更新实例"><a href="#更新实例" class="headerlink" title="更新实例"></a>更新实例</h5><pre><code>PUT http://&lt;server&gt;:8080/api/v1/views/FILES/versions/0.1.0/instances/FILES_2
+[{
+  &quot;ViewInstanceInfo&quot; : {
+      &quot;properties&quot; : {
+        &quot;dataworker.defaultFs&quot; : &quot;hdfs://MyServer:8020&quot;
+      }
+    }
+}]
+</code></pre><h5 id="删除实例"><a href="#删除实例" class="headerlink" title="删除实例"></a>删除实例</h5><pre><code>DELETE http://&lt;server&gt;:8080/api/v1/views/FILES/versions/0.1.0/instances/FILES_2
+</code></pre><h5 id="Resources-1"><a href="#Resources-1" class="headerlink" title="Resources"></a>Resources</h5><p>A view resource may be accessed through the REST API.  The href for each view resource can be found in a request for the parent view instance.  The resource endpoints and behavior depends on the implementation of the JAX-RS annotated service class specified for the resource element in the view.xml. </p>
+<pre><code>GET http://&lt;server&gt;:8080/api/v1/views/FILES/versions/0.1.0/instances/FILES_1/resources/files/fileops/listdir?path=%2F
+
+[{&quot;path&quot;:&quot;/app-logs&quot;,&quot;replication&quot;:0,&quot;isDirectory&quot;:true,&quot;len&quot;:0,&quot;owner&quot;:&quot;yarn&quot;,&quot;group&quot;:&quot;hadoop&quot;,&quot;permission&quot;:&quot;-rwxrwxrwx&quot;,&quot;accessTime&quot;:0,&quot;modificationTime&quot;:1400006792122,&quot;blockSize&quot;:0},{&quot;path&quot;:&quot;/mapred&quot;,&quot;replication&quot;:0,&quot;isDirectory&quot;:true,&quot;len&quot;:0,&quot;owner&quot;:&quot;mapred&quot;,&quot;group&quot;:&quot;hdfs&quot;,&quot;permission&quot;:&quot;-rwxr-xr-x&quot;,&quot;accessTime&quot;:0,&quot;modificationTime&quot;:1400006653817,&quot;blockSize&quot;:0},{&quot;path&quot;:&quot;/mr-history&quot;,&quot;replication&quot;:0,&quot;isDirectory&quot;:true,&quot;len&quot;:0,&quot;owner&quot;:&quot;hdfs&quot;,&quot;group&quot;:&quot;hdfs&quot;,&quot;permission&quot;:&quot;-rwxr-xr-x&quot;,&quot;accessTime&quot;:0,&quot;modificationTime&quot;:1400006653822,&quot;blockSize&quot;:0},{&quot;path&quot;:&quot;/tmp&quot;,&quot;replication&quot;:0,&quot;isDirectory&quot;:true,&quot;len&quot;:0,&quot;owner&quot;:&quot;hdfs&quot;,&quot;group&quot;:&quot;hdfs&quot;,&quot;permission&quot;:&quot;-rwxrwxrwx&quot;,&quot;accessTime&quot;:0,&quot;modificationTime&quot;:1400006720415,&quot;blockSize&quot;:0},{&quot;path&quot;:&quot;/user&quot;,&quot;replication&quot;:0,&quot;isDirectory&quot;:true,&quot;len&quot;:0,&quot;owner&quot;:&quot;hdfs&quot;,&quot;group&quot;:&quot;hdfs&quot;,&quot;permission&quot;:&quot;-rwxr-xr-x&quot;,&quot;accessTime&quot;:0,&quot;modificationTime&quot;:1400006610050,&quot;blockSize&quot;:0}]
+</code></pre><h5 id="Managed-Resources-1"><a href="#Managed-Resources-1" class="headerlink" title="Managed Resources"></a>Managed Resources</h5><p>Any managed resources for a view may also be accessed through the REST API.  Note that instances of a managed resource appear as sub-resources of an instance under the plural name specified for the resource in the view.xml.  In this example, a list of managed resources named <strong>‘scripts’</strong> is included in the response for the view instance … </p>
+<pre><code>GET http://&lt;server&gt;:8080/api/v1/views/PIG/versions/0.1.0/instances/INSTANCE_1
+
+{
+  &quot;href&quot; : &quot;http://&lt;server&gt;:8080/api/v1/views/PIG/versions/0.1.0/instances/INSTANCE_1&quot;,
+  &quot;ViewInstanceInfo&quot; : {
+    &quot;context_path&quot; : &quot;/views/PIG/0.1.0/INSTANCE_1&quot;,
+    &quot;instance_name&quot; : &quot;INSTANCE_1&quot;,
+    &quot;version&quot; : &quot;0.1.0&quot;,
+    &quot;view_name&quot; : &quot;PIG&quot;,
+    &quot;instance_data&quot; : { },
+    &quot;properties&quot; : {
+      … 
+    }
+  },
+  &quot;resources&quot; : [ ],
+  &quot;scripts&quot; : [
+    {
+      &quot;href&quot; : &quot;http://&lt;server&gt;:8080/api/v1/views/PIG/versions/0.1.0/instances/INSTANCE_1/scripts/script1&quot;,
+      &quot;id&quot; : &quot;script1&quot;,
+      &quot;instance_name&quot; : &quot;INSTANCE_1&quot;,
+      &quot;version&quot; : &quot;0.1.0&quot;,
+      &quot;view_name&quot; : &quot;PIG&quot;
+    },
+    {
+      &quot;href&quot; : &quot;http://&lt;server&gt;:8080/api/v1/views/FILES/versions/0.1.0/instances/INSTANCE_1/scripts/script2&quot;,
+      &quot;id&quot; : &quot;script2&quot;,
+      &quot;instance_name&quot; : &quot;INSTANCE_1&quot;,
+      &quot;version&quot; : &quot;0.1.0&quot;,
+      &quot;view_name&quot; : &quot;PIG&quot;
+    },
+    …
+  ]
+}
+</code></pre><p>获取单个managed resource …</p>
+<pre><code>GET http://&lt;server&gt;:8080/api/v1/views/PIG/versions/0.1.0/instances/INSTANCE_1/scripts/script1
+
+
+{
+  &quot;href&quot; : &quot;http://&lt;server&gt;:8080/api/v1/views/PIG/versions/0.1.0/instances/INSTANCE_1/scripts/script1&quot;,
+  &quot;id&quot; : &quot;script1&quot;,      
+  &quot;pigScript&quot; : &quot;… &quot;,
+  &quot;pythonScript&quot; : &quot;… &quot;,
+  &quot;templetonArguments&quot; : &quot;… &quot;,
+  &quot;dateCreated&quot; : … ,
+  &quot;owner&quot; : &quot;… &quot;,
+  &quot;instance_name&quot; : &quot;INSTANCE_1&quot;,
+  &quot;version&quot; : &quot;0.1.0&quot;,
+  &quot;view_name&quot; : &quot;PIG&quot;
+}
+</code></pre><p>由于resource是被ambari api框架管理的，也可以使用partial response和query predicate。</p>
+<pre><code>GET http://&lt;server&gt;:8080/api/v1/views/PIG/versions/0.1.0/instances/INSTANCE_1/scripts?fields=pythonScript&amp;owner=jsmith
+</code></pre><h5 id="设置view权限"><a href="#设置view权限" class="headerlink" title="设置view权限"></a>设置view权限</h5><p>To grant privileges to access the restricted resource we can create a privilege sub-resource for the view instance.  The following API will grant RESTICTED permission to the user ‘bob’ for the view instance ‘INSTANCE_1’ of the ‘RESTRICTED’ view. </p>
+<pre><code>POST http://&lt;server&gt;/api/v1/views/RESTRICTED/versions/1.0.0/instances/INSTANCE_1
+
+[
+  {
+    &quot;PrivilegeInfo&quot; : {
+      &quot;permission_name&quot; : &quot;RESTRICTED&quot;,
+      &quot;principal_name&quot; : &quot;bob&quot;,
+      &quot;principal_type&quot; : &quot;USER&quot;
+    }
+  }
+]
+</code></pre><h5 id="查询view权限"><a href="#查询view权限" class="headerlink" title="查询view权限"></a>查询view权限</h5><p>We can see a privilege sub resource for a view instance.</p>
+<pre><code>GET  http://&lt;server&gt;/api/v1/views/RESTRICTED/versions/1.0.0/instances/INSTANCE_1/privileges/5
+
+
+{
+  &quot;href&quot; : &quot;http://&lt;server&gt;/api/v1/views/RESTRICTED/versions/1.0.0/instances/INSTANCE_1/privileges/5&quot;,
+  &quot;PrivilegeInfo&quot; : {
+    &quot;instance_name&quot; : &quot;INSTANCE_1&quot;,
+    &quot;permission_name&quot; : &quot;RESTRICTED&quot;,
+    &quot;principal_name&quot; : &quot;bob&quot;,
+    &quot;principal_type&quot; : &quot;USER&quot;,
+    &quot;privilege_id&quot; : 5,
+    &quot;version&quot; : &quot;1.0.0&quot;,
+    &quot;view_name&quot; : &quot;RESTRICTED&quot;
+  }
+}
+</code></pre><h3 id="View-UI"><a href="#View-UI" class="headerlink" title="View UI"></a>View UI</h3><p>The context root of a view instance is …</p>
+<pre><code>/views/:viewName/:viewVersion/:viewInstance/
+</code></pre><p>For example, the context root can be found in the response for a view instance … </p>
+<p><img src="instance_response.png" alt="image"></p>
+<p>So, to access the UI of the above Files view the user would browse to …</p>
+<pre><code>http://&lt;server&gt;:8080/views/FILES/0.1.0/FILES_1/  
+</code></pre><p><img src="ui.png" alt="image"></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/源码/">源码</a><a href="/tags/ambari/">ambari</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/06/20/ambari-view中文翻译/" data-title="ambari-views中文翻译 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/06/20/ambari-web解读（一）-请求流程/" title="ambari-web解读（一）-请求流程">
+  <strong>上一篇：</strong><br/>
+  <span>
+  ambari-web解读（一）-请求流程</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/06/17/一步步搞定ETL依赖调度平台（三）-调度优先级思考/"  title="一步步搞定ETL依赖调度平台（三）-调度优先级思考">
+ <strong>下一篇：</strong><br/> 
+ <span>一步步搞定ETL依赖调度平台（三）-调度优先级思考
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/06/20/ambari-view中文翻译/" data-title="ambari-views中文翻译" data-url="http://willcup.com/2016/06/20/ambari-view中文翻译/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#简述"><span class="toc-number">1.</span> <span class="toc-text">简述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#例子"><span class="toc-number">2.</span> <span class="toc-text">例子</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基础"><span class="toc-number">3.</span> <span class="toc-text">基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#View-Instances"><span class="toc-number">3.1.</span> <span class="toc-text">View Instances</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#View-Context"><span class="toc-number">3.2.</span> <span class="toc-text">View Context</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#UI-Components"><span class="toc-number">3.3.</span> <span class="toc-text">UI Components</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#WEB-INF-web-xml"><span class="toc-number">3.3.0.1.</span> <span class="toc-text">WEB-INF/web.xml</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Servlets"><span class="toc-number">3.3.0.2.</span> <span class="toc-text">Servlets</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Resources"><span class="toc-number">3.4.</span> <span class="toc-text">Resources</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Service-Class"><span class="toc-number">3.4.0.1.</span> <span class="toc-text">Service Class</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Managed-Resources"><span class="toc-number">3.4.1.</span> <span class="toc-text">Managed Resources</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Service-Class-1"><span class="toc-number">3.4.1.1.</span> <span class="toc-text">Service Class</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Resource-Class"><span class="toc-number">3.4.1.2.</span> <span class="toc-text">Resource Class</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Resource-Provider-Class"><span class="toc-number">3.4.1.3.</span> <span class="toc-text">Resource Provider Class</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#权限"><span class="toc-number">3.5.</span> <span class="toc-text">权限</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#定制权限"><span class="toc-number">3.6.</span> <span class="toc-text">定制权限</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impersonation"><span class="toc-number">3.7.</span> <span class="toc-text">Impersonation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#持久化"><span class="toc-number">3.8.</span> <span class="toc-text">持久化</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#DataStore"><span class="toc-number">3.8.0.1.</span> <span class="toc-text">DataStore</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Events"><span class="toc-number">3.9.</span> <span class="toc-text">Events</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#View生命周期Events"><span class="toc-number">3.9.0.1.</span> <span class="toc-text">View生命周期Events</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#自定义event"><span class="toc-number">3.9.0.2.</span> <span class="toc-text">自定义event</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Listeners"><span class="toc-number">3.9.0.3.</span> <span class="toc-text">Listeners</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#ViewController"><span class="toc-number">3.9.0.4.</span> <span class="toc-text">ViewController</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#打包"><span class="toc-number">4.</span> <span class="toc-text">打包</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#依赖"><span class="toc-number">4.1.</span> <span class="toc-text">依赖</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#view-xml"><span class="toc-number">4.2.</span> <span class="toc-text">view.xml</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#参数"><span class="toc-number">4.2.0.1.</span> <span class="toc-text">参数</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#resource"><span class="toc-number">4.2.0.2.</span> <span class="toc-text">resource</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#权限-1"><span class="toc-number">4.2.0.3.</span> <span class="toc-text">权限</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#持久化-1"><span class="toc-number">4.2.0.4.</span> <span class="toc-text">持久化</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#entity"><span class="toc-number">4.2.0.5.</span> <span class="toc-text">entity</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#instance"><span class="toc-number">4.2.0.6.</span> <span class="toc-text">instance</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#property"><span class="toc-number">4.2.0.7.</span> <span class="toc-text">property</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#发布"><span class="toc-number">5.</span> <span class="toc-text">发布</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#解压包"><span class="toc-number">5.1.</span> <span class="toc-text">解压包</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用"><span class="toc-number">6.</span> <span class="toc-text">使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#API"><span class="toc-number">6.1.</span> <span class="toc-text">API</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Get-Views"><span class="toc-number">6.1.0.1.</span> <span class="toc-text">Get Views</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Get-View"><span class="toc-number">6.1.0.2.</span> <span class="toc-text">Get View</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Get-Versions"><span class="toc-number">6.1.0.3.</span> <span class="toc-text">Get Versions</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Get-Version"><span class="toc-number">6.1.0.4.</span> <span class="toc-text">Get Version</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Get-Instances"><span class="toc-number">6.1.0.5.</span> <span class="toc-text">Get Instances</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#获取实例"><span class="toc-number">6.1.0.6.</span> <span class="toc-text">获取实例</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#创建实例"><span class="toc-number">6.1.0.7.</span> <span class="toc-text">创建实例</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#更新实例"><span class="toc-number">6.1.0.8.</span> <span class="toc-text">更新实例</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#删除实例"><span class="toc-number">6.1.0.9.</span> <span class="toc-text">删除实例</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Resources-1"><span class="toc-number">6.1.0.10.</span> <span class="toc-text">Resources</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Managed-Resources-1"><span class="toc-number">6.1.0.11.</span> <span class="toc-text">Managed Resources</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#设置view权限"><span class="toc-number">6.1.0.12.</span> <span class="toc-text">设置view权限</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#查询view权限"><span class="toc-number">6.1.0.13.</span> <span class="toc-text">查询view权限</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#View-UI"><span class="toc-number">6.2.</span> <span class="toc-text">View UI</span></a></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/2015a/" title="2015a">2015a<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/django/" title="django">django<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Flume/" title="Flume">Flume<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

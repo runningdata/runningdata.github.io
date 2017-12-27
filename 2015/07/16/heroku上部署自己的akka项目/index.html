@@ -1,0 +1,636 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>heroku上部署自己的akka项目 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="heroku这个东西貌似是可以在云端发布scala项目的，我是在akka-in-action这本书遇到。既然玩儿了，就顺便记录一下。
+1. 注册到heroku.com使用邮箱注册一个免费用户【注意：163邮箱被屏蔽了，我用的阿里的】
+2. 安装工具在本地Ubuntu上安装heroku toolbelt, 可参考https://toolbelt.heroku.com/debian
+
+wget -O-">
+<meta property="og:type" content="article">
+<meta property="og:title" content="heroku上部署自己的akka项目">
+<meta property="og:url" content="http://willcup.com/2015/07/16/heroku上部署自己的akka项目/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="heroku这个东西貌似是可以在云端发布scala项目的，我是在akka-in-action这本书遇到。既然玩儿了，就顺便记录一下。
+1. 注册到heroku.com使用邮箱注册一个免费用户【注意：163邮箱被屏蔽了，我用的阿里的】
+2. 安装工具在本地Ubuntu上安装heroku toolbelt, 可参考https://toolbelt.heroku.com/debian
+
+wget -O-">
+<meta property="og:updated_time" content="2016-10-28T02:54:06.781Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="heroku上部署自己的akka项目">
+<meta name="twitter:description" content="heroku这个东西貌似是可以在云端发布scala项目的，我是在akka-in-action这本书遇到。既然玩儿了，就顺便记录一下。
+1. 注册到heroku.com使用邮箱注册一个免费用户【注意：163邮箱被屏蔽了，我用的阿里的】
+2. 安装工具在本地Ubuntu上安装heroku toolbelt, 可参考https://toolbelt.heroku.com/debian
+
+wget -O-">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/node_modules">测试</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/07/16/heroku上部署自己的akka项目/" title="heroku上部署自己的akka项目" itemprop="url">heroku上部署自己的akka项目</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2015-07-15T18:29:27.000Z" itemprop="datePublished"> 发表于 2015-07-16</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-注册"><span class="toc-text">1. 注册</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-安装工具"><span class="toc-text">2. 安装工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-本地登录heroku："><span class="toc-text">3. 本地登录heroku：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-在heroku上建立一个app"><span class="toc-text">4. 在heroku上建立一个app</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-修改参数"><span class="toc-text">5. 修改参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-本地项目运行测试"><span class="toc-text">6. 本地项目运行测试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-本地启动并测试"><span class="toc-text">7. 本地启动并测试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-部署到heroku"><span class="toc-text">8. 部署到heroku</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-测试"><span class="toc-text">9. 测试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Plus-二次提交测试"><span class="toc-text">Plus : 二次提交测试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PlusPlus-项目关闭"><span class="toc-text">PlusPlus: 项目关闭</span></a></li></ol>
+		
+		</div>
+		
+		<p>heroku这个东西貌似是可以在云端发布scala项目的，我是在akka-in-action这本书遇到。既然玩儿了，就顺便记录一下。</p>
+<h2 id="1-注册"><a href="#1-注册" class="headerlink" title="1. 注册"></a>1. 注册</h2><p>到heroku.com使用邮箱注册一个免费用户【注意：163邮箱被屏蔽了，我用的阿里的】</p>
+<h2 id="2-安装工具"><a href="#2-安装工具" class="headerlink" title="2. 安装工具"></a>2. 安装工具</h2><p>在本地Ubuntu上安装heroku toolbelt, 可参考<a href="https://toolbelt.heroku.com/debian" target="_blank" rel="external">https://toolbelt.heroku.com/debian</a></p>
+<blockquote>
+<p>wget -O- <a href="https://toolbelt.heroku.com/install-ubuntu.sh" target="_blank" rel="external">https://toolbelt.heroku.com/install-ubuntu.sh</a> | sh</p>
+</blockquote>
+<h2 id="3-本地登录heroku："><a href="#3-本地登录heroku：" class="headerlink" title="3. 本地登录heroku："></a>3. 本地登录heroku：</h2><blockquote>
+<p>heroku login</p>
+</blockquote>
+<h2 id="4-在heroku上建立一个app"><a href="#4-在heroku上建立一个app" class="headerlink" title="4. 在heroku上建立一个app"></a>4. 在heroku上建立一个app</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">root@ubuntu:~/gitLearning/akka-in-action/chapter2# heroku create</div><div class="line">Creating floating-woodland-3032... done, stack is cedar-14</div><div class="line">https://floating-woodland-3032.herokuapp.com/ | https://git.heroku.com/floating-woodland-3032.git</div><div class="line">Git remote heroku added</div></pre></td></tr></table></figure>
+<p>上面执行的heroku create命令会同时在本地git配置里以heroku为名添加一个git remote。</p>
+<h2 id="5-修改参数"><a href="#5-修改参数" class="headerlink" title="5. 修改参数"></a>5. 修改参数</h2><p>我们需要修改几个参数，这样heroku才知道怎样构建我们的项目。</p>
+<ul>
+<li>project/build.properties 【经验证，这个可以不用改】<blockquote>
+<p>sbt.version=0.12.2</p>
+</blockquote>
+</li>
+<li>project/plugins.sbt【经验证，这个可以不用改】<blockquote>
+<p>resolvers += Classpaths.typesafeResolver<br>addSbtPlugin(“com.eed3si9n” % “sbt-assembly” % “0.8.7”)<br>addSbtPlugin(<br>“com.typesafe.startscript” % “xsbt-start-script-plugin” % “0.5.3”<br>)</p>
+</blockquote>
+</li>
+</ul>
+<p>以上包含了我们目前使用的所有的Plugin【貌似上面提到两个文件只是为了说明我们需要这几个依赖，但是并不严格需要弄成上面的那种】。startscript是为我们在Heroku上运行项目创建一个启动脚本用的。我们还需要项目根目录下的<strong>Procfile</strong>文件，这个文件会告诉Heroku我们的app应该运行在一个Web Dyno上。<br>可以看一下这个文件里的内容：</p>
+<blockquote>
+<p>web: target/start com.goticks.Main<br>这是指定了Heroku应该在启动脚本上添加的主类参数。</p>
+</blockquote>
+<h2 id="6-本地项目运行测试"><a href="#6-本地项目运行测试" class="headerlink" title="6. 本地项目运行测试"></a>6. 本地项目运行测试</h2><blockquote>
+<p>sbt clean compile stage</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">root@ubuntu:~/gitLearning/akka-in-action/chapter2# sbt clean compile stage</div><div class="line">[info] Loading project definition from /root/gitLearning/akka-in-action/chapter2/project</div><div class="line">[info] Set current project to goticks (in build file:/root/gitLearning/akka-in-action/chapter2/)</div><div class="line">[success] Total time: 1 s, completed Jul 15, 2015 1:15:05 AM</div><div class="line">[info] Updating &#123;file:/root/gitLearning/akka-in-action/chapter2/&#125;chapter2...</div><div class="line">[info] Resolving jline#jline;2.12 ...</div><div class="line">[info] Done updating.</div><div class="line">[warn] Scala version was updated by one of library dependencies:</div><div class="line">[warn] 	* org.scala-lang:scala-library:(2.11.2, 2.11.1, 2.11.0) -&gt; 2.11.5</div><div class="line">[warn] To force scalaVersion, add the following:</div><div class="line">[warn] 	ivyScala := ivyScala.value map &#123; _.copy(overrideScalaVersion = true) &#125;</div><div class="line">[warn] Run &apos;evicted&apos; to see detailed eviction warnings</div><div class="line">[info] Compiling 4 Scala sources to /root/gitLearning/akka-in-action/chapter2/target/scala-2.11/classes...</div><div class="line">[warn] there was one feature warning; re-run with -feature for details</div><div class="line">[warn] one warning found</div><div class="line">[success] Total time: 41 s, completed Jul 15, 2015 1:15:47 AM</div><div class="line">[info] Wrote start script for mainClass := Some(com.goticks.Main) to /root/gitLearning/akka-in-action/chapter2/target/start</div><div class="line">[success] Total time: 1 s, completed Jul 15, 2015 1:15:47 AM</div></pre></td></tr></table></figure>
+<p>这个命令是后面再heroku上会运行的，它会编译项目并创建target/start启动脚本。然后可以使用heroku的命令本地运行Procfile文件：</p>
+<h2 id="7-本地启动并测试"><a href="#7-本地启动并测试" class="headerlink" title="7. 本地启动并测试"></a>7. 本地启动并测试</h2><p>使用heroku的工具foreman启动一下项目</p>
+<blockquote>
+<p>foreman start</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">root@ubuntu:~/gitLearning/akka-in-action/chapter2# foreman start</div><div class="line">01:20:02 web.1  | started with pid 7030</div><div class="line">01:20:10 web.1  | REST interface bound to /0:0:0:0:0:0:0:0:5000</div><div class="line">01:20:10 web.1  | [INFO] [07/15/2015 01:20:10.437] [goticks-akka.actor.default-dispatcher-3] [akka://goticks/user/IO-HTTP/listener-0] Bound to /0.0.0.0:5000</div></pre></td></tr></table></figure>
+<p>到另一个session里测试：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">root@ubuntu:~# http GET localhost:5000/events</div><div class="line">HTTP/1.1 200 OK</div><div class="line">Content-Length: 2</div><div class="line">Content-Type: application/json; charset=UTF-8</div><div class="line">Date: Wed, 15 Jul 2015 08:20:20 GMT</div><div class="line">Server: GoTicks.com REST API</div><div class="line"></div><div class="line">[]</div></pre></td></tr></table></figure></p>
+<h2 id="8-部署到heroku"><a href="#8-部署到heroku" class="headerlink" title="8. 部署到heroku"></a>8. 部署到heroku</h2><blockquote>
+<p>git push keroku master</p>
+</blockquote>
+<p>在提交了所有的本地变化后将本地项目push到git仓库的master分支，heroku会hook到这个git进程的执行，并且认出这是一个scala app。它会在云端下载所有依赖，编译代码，之后启动这个app。输出如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">root@ubuntu:~/gitLearning/akka-in-action/chapter2# git push keroku master</div><div class="line">fatal: &apos;keroku&apos; does not appear to be a git repository</div><div class="line">fatal: Could not read from remote repository.</div><div class="line"></div><div class="line">Please make sure you have the correct access rights</div><div class="line">and the repository exists.</div><div class="line">root@ubuntu:~/gitLearning/akka-in-action/chapter2# git remote</div><div class="line">heroku</div><div class="line">origin</div></pre></td></tr></table></figure></p>
+<p>…..报错了。查看remote，发现已经有了heroku这个remote了。参考<a href="https://devcenter.heroku.com/articles/git，执行下列命令：" target="_blank" rel="external">https://devcenter.heroku.com/articles/git，执行下列命令：</a><br>使用 git remote -v, 查看当前项目下的remote url，确定我们的项目名称<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">root@ubuntu:~/gitLearning/akka-in-action/chapter2# git remote -v</div><div class="line">heroku	https://git.heroku.com/floating-woodland-3032.git (fetch)</div><div class="line">heroku	https://git.heroku.com/floating-woodland-3032.git (push)</div><div class="line">origin	https://github.com/RayRoestenburg/akka-in-action.git (fetch)</div><div class="line">origin	https://github.com/RayRoestenburg/akka-in-action.git (push)</div></pre></td></tr></table></figure></p>
+<blockquote>
+<p>heroku git:remote -a floating-woodland-3032</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">root@ubuntu:~/gitLearning/akka-in-action/chapter2# heroku git:remote -a floating-woodland-3032</div><div class="line">Installing plugin heroku-git... done</div><div class="line">set git remote heroku to https://git.heroku.com/floating-woodland-3032.git</div></pre></td></tr></table></figure>
+<p>添加remote参考自: <a href="https://devcenter.heroku.com/articles/git【经后面证实，如果不**重命名**，可以不管这个，因为git" target="_blank" rel="external">https://devcenter.heroku.com/articles/git【经后面证实，如果不**重命名**，可以不管这个，因为git</a> remote -v 里已经有了。重命名使用-r other_remote_name】<br>然后再次执行push: git push heroku master<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line">Counting objects: 1776, done.</div><div class="line">Delta compression using up to 2 threads.</div><div class="line">Compressing objects: 100% (791/791), done.</div><div class="line">Writing objects: 100% (1776/1776), 298.54 KiB | 0 bytes/s, done.</div><div class="line">Total 1776 (delta 564), reused 1768 (delta 561)</div><div class="line">remote: Compressing source files... done.</div><div class="line">remote: Building source:</div><div class="line">remote: </div><div class="line">remote: -----&gt; Play! app detected</div><div class="line">remote: -----&gt; Installing OpenJDK 1.6... done</div><div class="line">remote: -----&gt; WARNING: Play! version not specified in dependencies.yml. Default version: 1.3.1 being used....</div><div class="line">remote: -----&gt; Installing Play! 1.3.1.....</div><div class="line">remote: -----&gt; done</div><div class="line">remote: -----&gt; Building Play! application...</div><div class="line">remote:        ~        _            _ </div><div class="line">remote:        ~  _ __ | | __ _ _  _| |</div><div class="line">remote:        ~ | &apos;_ \| |/ _&apos; | || |_|</div><div class="line">remote:        ~ |  __/|_|\____|\__ (_)</div><div class="line">remote:        ~ |_|            |__/   </div><div class="line">remote:        ~</div><div class="line">remote:        ~ play! 1.3.1, https://www.playframework.com</div><div class="line">remote:        ~</div><div class="line">remote:        1.3.1</div><div class="line">remote:        Building Play! application at directory ./</div><div class="line">remote:        Resolving dependencies: .play/play dependencies ./ --forProd --forceCopy --silent -Duser.home=/tmp/build_4bb492e51a64b714c9d6757c67b0ccf2 2&gt;&amp;1</div><div class="line">remote:        ~ !! /tmp/build_4bb492e51a64b714c9d6757c67b0ccf2/conf/dependencies.yml does not exist</div><div class="line">remote:  !     Failed to build Play! application</div><div class="line">remote:  !     Cleared Play! framework from cache</div><div class="line">remote: </div><div class="line">remote:  !     Push rejected, failed to compile Play! app</div><div class="line">remote: </div><div class="line">remote: Verifying deploy....</div><div class="line">remote: </div><div class="line">remote: !	Push rejected to floating-woodland-3032.</div><div class="line">remote: </div><div class="line">To https://git.heroku.com/floating-woodland-3032.git</div><div class="line"> ! [remote rejected] master -&gt; master (pre-receive hook declined)</div><div class="line">error: failed to push some refs to &apos;https://git.heroku.com/floating-woodland-3032.git&apos;</div></pre></td></tr></table></figure></p>
+<p>主要在于这个远程的hook拒绝了我的提交。我擦，简直不能忍！！！Google~~~因为没有成功build play，原因是没有找到play的依赖配置文件。<br>看了几个解说的，貌似是因为<strong>当前目录是一个git repository的子目录</strong>。</p>
+<ul>
+<li><p>下载安装一个git插件</p>
+<ul>
+<li>git clone <a href="https://github.com/apenwarr/git-subtree.git" target="_blank" rel="external">https://github.com/apenwarr/git-subtree.git</a></li>
+<li>切换到最近的分支，执行 sh install.sh</li>
+</ul>
+</li>
+<li><p>到git repository目录，也就是本地的git主目录下，我的机器上就是~/gitLearning/akka-in-action，执行：</p>
+<blockquote>
+<p>git subtree push –prefix “chapter2” heroku master</p>
+</blockquote>
+</li>
+</ul>
+<p>这个prefix是我们要push的项目相对git repository的路径。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div></pre></td><td class="code"><pre><div class="line">git push using:  heroku master</div><div class="line">Counting objects: 201, done.</div><div class="line">Delta compression using up to 2 threads.</div><div class="line">Compressing objects: 100% (119/119), done.</div><div class="line">Writing objects: 100% (201/201), 22.30 KiB | 0 bytes/s, done.</div><div class="line">Total 201 (delta 54), reused 155 (delta 38)</div><div class="line">remote: Compressing source files... done.</div><div class="line">remote: Building source:</div><div class="line">remote: </div><div class="line">remote: -----&gt; Scala app detected</div><div class="line">remote: -----&gt; Installing OpenJDK 1.8... done</div><div class="line">remote: -----&gt; Running: sbt compile stage</div><div class="line">remote:        Downloading sbt launcher for 0.13.8:</div><div class="line">remote:          From  http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.13.8/sbt-launch.jar</div><div class="line">remote:            To  /tmp/scala_buildpack_build_dir/.sbt_home/launchers/0.13.8/sbt-launch.jar</div><div class="line">remote:        Getting org.scala-sbt sbt 0.13.8 ...</div><div class="line">remote:        downloading https://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt/0.13.8/jars/sbt.jar ...</div><div class="line">remote:        	[SUCCESSFUL ] org.scala-sbt#sbt;0.13.8!sbt.jar (321ms)</div><div class="line">remote:        downloading https://repo1.maven.org/maven2/org/scala-lang/scala-library/2.10.4/scala-library-2.10.4.jar ...</div><div class="line">remote:        	[SUCCESSFUL ] org.scala-lang#scala-library;2.10.4!scala-library.jar (2957ms)</div><div class="line">remote:        downloading https://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/main/0.13.8/jars/main.jar ...</div><div class="line">.......</div><div class="line">......</div><div class="line">remote:        	[SUCCESSFUL ] org.scala-lang#jline;2.10.4!jline.jar (73ms)</div><div class="line">remote:        downloading https://repo1.maven.org/maven2/org/fusesource/jansi/jansi/1.4/jansi-1.4.jar ...</div><div class="line">remote:        	[SUCCESSFUL ] org.fusesource.jansi#jansi;1.4!jansi.jar (49ms)</div><div class="line">remote:        :: retrieving :: org.scala-sbt#boot-scala</div><div class="line">remote:        	confs: [default]</div><div class="line">remote:        	5 artifacts copied, 0 already retrieved (24459kB/42ms)</div><div class="line">remote:        [info] Loading global plugins from /tmp/scala_buildpack_build_dir/.sbt_home/plugins</div><div class="line">remote:        [info] Updating &#123;file:/tmp/scala_buildpack_build_dir/.sbt_home/plugins/&#125;global-plugins...</div><div class="line">remote:        [info] Resolving org.scala-lang#scala-library;2.10.4 ...</div><div class="line">.......</div><div class="line">.......</div><div class="line">remote:        [info] Resolving org.fusesource.jansi#jansi;1.4 ...</div><div class="line">remote:        [info] Done updating.</div><div class="line">remote:        [info] Compiling 1 Scala source to /tmp/scala_buildpack_build_dir/.sbt_home/plugins/target/scala-2.10/sbt-0.13/classes...</div><div class="line">remote:        [error] [/tmp/scala_buildpack_build_dir/project/plugins.sbt]:3: &apos;;&apos; expected but &apos;#&apos; found.</div><div class="line">remote:        [error] [/tmp/scala_buildpack_build_dir/project/plugins.sbt]:11: &apos;;&apos; expected but &apos;#&apos; found.</div><div class="line">remote:        Project loading failed: (r)etry, (q)uit, (l)ast, or (i)gnore? </div><div class="line">remote:  !     ERROR: Failed to run sbt!</div><div class="line">remote:        We&apos;re sorry this build is failing! If you can&apos;t find the issue in application</div><div class="line">remote:        code, please submit a ticket so we can help: https://help.heroku.com</div><div class="line">remote:        You can also try reverting to the previous version of the buildpack by running:</div><div class="line">remote:        $ heroku buildpacks:set https://github.com/heroku/heroku-buildpack-scala#previous-version</div><div class="line">remote:        </div><div class="line">remote:        Thanks,</div><div class="line">remote:        Heroku</div><div class="line">remote: </div><div class="line">remote: </div><div class="line">remote:  !     Push rejected, failed to compile Scala app</div><div class="line">remote: </div><div class="line">remote: Verifying deploy....</div><div class="line">remote: </div><div class="line">remote: !	Push rejected to floating-woodland-3032.</div><div class="line">remote: </div><div class="line">To https://git.heroku.com/floating-woodland-3032.git</div><div class="line"> ! [remote rejected] 9bfe06799b9975c15c426ab17618967b7b8e65b0 -&gt; master (pre-receive hook declined)</div><div class="line">error: failed to push some refs to &apos;https://git.heroku.com/floating-woodland-3032.git&apos;</div></pre></td></tr></table></figure></p>
+<p>可以看到已经成功进行项目的build了，但还是报错了。。。。从输出来看原因是project/plugins.sbt里的#应该被替换成;，好吧，我是sbt新手。。。修改后重新push<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div></pre></td><td class="code"><pre><div class="line">root@ubuntu:~/gitLearning/akka-in-action# git subtree push --prefix &quot;chapter2&quot; heroku master</div><div class="line">git push using:  heroku master</div><div class="line">Counting objects: 205, done.</div><div class="line">Delta compression using up to 2 threads.</div><div class="line">Compressing objects: 100% (123/123), done.</div><div class="line">Writing objects: 100% (205/205), 22.61 KiB | 0 bytes/s, done.</div><div class="line">Total 205 (delta 56), reused 155 (delta 38)</div><div class="line">remote: Compressing source files... done.</div><div class="line">remote: Building source:</div><div class="line">remote: </div><div class="line">remote: -----&gt; Scala app detected</div><div class="line">remote: -----&gt; Installing OpenJDK 1.8... done</div><div class="line">remote: -----&gt; Running: sbt compile stage</div><div class="line">remote:        Downloading sbt launcher for 0.13.8:</div><div class="line">remote:          From  http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.13.8/sbt-launch.jar</div><div class="line">remote:            To  /tmp/scala_buildpack_build_dir/.sbt_home/launchers/0.13.8/sbt-launch.jar</div><div class="line">remote:        Getting org.scala-sbt sbt 0.13.8 ...</div><div class="line">remote:        downloading https://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt/0.13.8/jars/sbt.jar ...</div><div class="line">.....</div><div class="line">.....</div><div class="line">remote:        [info] downloading https://repo1.maven.org/maven2/org/scala-lang/modules/scala-parser-combinators_2.11/1.0.2/scala-parser-combinators_2.11-1.0.2.jar ...</div><div class="line">remote:        [info] 	[SUCCESSFUL ] org.scala-lang.modules#scala-parser-combinators_2.11;1.0.2!scala-parser-combinators_2.11.jar(bundle) (185ms)</div><div class="line">remote:        [info] downloading https://repo1.maven.org/maven2/jline/jline/2.12/jline-2.12.jar ...</div><div class="line">remote:        [info] 	[SUCCESSFUL ] jline#jline;2.12!jline.jar (99ms)</div><div class="line">remote:        [info] Done updating.</div><div class="line">remote:        [warn] Scala version was updated by one of library dependencies:</div><div class="line">remote:        [warn] 	* org.scala-lang:scala-library:(2.11.2, 2.11.1, 2.11.0) -&gt; 2.11.5</div><div class="line">remote:        [warn] To force scalaVersion, add the following:</div><div class="line">remote:        [warn] 	ivyScala := ivyScala.value map &#123; _.copy(overrideScalaVersion = true) &#125;</div><div class="line">remote:        [warn] Run &apos;evicted&apos; to see detailed eviction warnings</div><div class="line">remote:        [info] Compiling 4 Scala sources to /tmp/scala_buildpack_build_dir/target/scala-2.11/classes...</div><div class="line">remote:        [info] &apos;compiler-interface&apos; not yet compiled for Scala 2.11.2. Compiling...</div><div class="line">remote:        [info]   Compilation completed in 33.95 s</div><div class="line">remote:        [warn] there was one feature warning; re-run with -feature for details</div><div class="line">remote:        [warn] one warning found</div><div class="line">remote:        [success] Total time: 87 s, completed Jul 15, 2015 10:04:22 AM</div><div class="line">remote:        [info] Wrote start script for mainClass := Some(com.goticks.Main) to /tmp/scala_buildpack_build_dir/target/start</div><div class="line">remote:        [success] Total time: 1 s, completed Jul 15, 2015 10:04:22 AM</div><div class="line">remote: -----&gt; Discovering process types</div><div class="line">remote:        Procfile declares types -&gt; web</div><div class="line">remote: </div><div class="line">remote: -----&gt; Compressing... done, 165.8MB</div><div class="line">remote: -----&gt; Launching... done, v5</div><div class="line">remote:        https://floating-woodland-3032.herokuapp.com/ deployed to Heroku</div><div class="line">remote: </div><div class="line">remote: Verifying deploy.... done.</div><div class="line">To https://git.heroku.com/floating-woodland-3032.git</div><div class="line"> * [new branch]      75151c92e9b25df8462fc0422b0345cf280f01ce -&gt; master</div></pre></td></tr></table></figure></p>
+<p>嘻嘻~~ 大功告成！！！现在我们的项目已经发布到<a href="https://floating-woodland-3032.herokuapp.com。" target="_blank" rel="external">https://floating-woodland-3032.herokuapp.com。</a></p>
+<h2 id="9-测试"><a href="#9-测试" class="headerlink" title="9. 测试"></a>9. 测试</h2><p>我们可以使用httpie或者浏览器来测试一下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">root@ubuntu:~# http PUT https://floating-woodland-3032.herokuapp.com/events event=RHCP nrOfTickets:=10</div><div class="line">HTTP/1.1 200 OK</div><div class="line">Connection: keep-alive</div><div class="line">Content-Length: 2</div><div class="line">Content-Type: text/plain; charset=UTF-8</div><div class="line">Date: Wed, 15 Jul 2015 10:09:06 GMT</div><div class="line">Server: GoTicks.com REST API</div><div class="line">Via: 1.1 vegur</div><div class="line"></div><div class="line">OK</div><div class="line"></div><div class="line">root@ubuntu:~# http GET https://floating-woodland-3032.herokuapp.com/events event=RHCP nrOfTickets:=10</div><div class="line">HTTP/1.1 200 OK</div><div class="line">Connection: keep-alive</div><div class="line">Content-Length: 44</div><div class="line">Content-Type: application/json; charset=UTF-8</div><div class="line">Date: Wed, 15 Jul 2015 10:09:21 GMT</div><div class="line">Server: GoTicks.com REST API</div><div class="line">Via: 1.1 vegur</div><div class="line"></div><div class="line">[</div><div class="line">    &#123;</div><div class="line">        &quot;event&quot;: &quot;RHCP&quot;, </div><div class="line">        &quot;nrOfTickets&quot;: 10</div><div class="line">    &#125;</div><div class="line">]</div></pre></td></tr></table></figure></p>
+<h2 id="Plus-二次提交测试"><a href="#Plus-二次提交测试" class="headerlink" title="Plus : 二次提交测试"></a>Plus : 二次提交测试</h2><p>因为还不是很熟悉heroku，自己很纳闷，如果我们远程的APP在运行状态，能否直接提交新的commit，它会自己重启吗？<br>稍微修改一下项目后，重新push上去报错<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">root@ubuntu:~/gitLearning/akka-in-action# git subtree push --prefix &quot;chapter2&quot; heroku master</div><div class="line">git push using:  heroku master</div><div class="line">To https://git.heroku.com/floating-woodland-3032.git</div><div class="line"> ! [rejected]        855562ff41e936b6769cdf808d0f798f1dbf371b -&gt; master (non-fast-forward)</div><div class="line">error: failed to push some refs to &apos;https://git.heroku.com/floating-woodland-3032.git&apos;</div><div class="line">hint: Updates were rejected because a pushed branch tip is behind its remote</div><div class="line">hint: counterpart. Check out this branch and integrate the remote changes</div><div class="line">hint: (e.g. &apos;git pull ...&apos;) before pushing again.</div><div class="line">hint: See the &apos;Note about fast-forwards&apos; in &apos;git push --help&apos; for details.</div></pre></td></tr></table></figure></p>
+<p>原来是因为我刚才修改之前reset了一次，造成了commit滞后。那就先pull下来，解决冲突之后，commit再push。结果还是报同样的错误。。。。无奈，git reflog后再reset到线上的commit，重新修改后commit + push。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">root@ubuntu:~/gitLearning/akka-in-action# git subtree push --prefix &quot;chapter2&quot; heroku master</div><div class="line">git push using:  heroku master</div><div class="line">Everything up-to-date</div></pre></td></tr></table></figure></p>
+<p>heroku这个东西是完全免费的吗？怎样关闭这个东西？它引起了我的好奇心~~~简单看了一下help，有点儿类似docker的感觉。</p>
+<h2 id="PlusPlus-项目关闭"><a href="#PlusPlus-项目关闭" class="headerlink" title="PlusPlus: 项目关闭"></a>PlusPlus: 项目关闭</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">root@ubuntu:~/gitLearning/akka-in-action# heroku ps:stop web.1</div><div class="line">Stopping web.1 dyno... done</div><div class="line">root@ubuntu:~/gitLearning/akka-in-action# heroku ps</div><div class="line">=== web (Free): `target/start com.goticks.Main`</div><div class="line">web.1: idle 2015/07/15 03:46:31 (~ 8s ago)</div></pre></td></tr></table></figure>
+<p>关闭了自己又起来了<del>~</del>靠~！！！！<br>退出登录，同样失败。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">root@ubuntu:~/gitLearning/akka-in-action# heroku auth:logout</div><div class="line">Local credentials cleared.</div></pre></td></tr></table></figure></p>
+<p>解决方案：<br>把web节点扩展到0个。。。。。竟然是这种方式，我真是醉了。。。这时再次访问就是503了。heroku ps没有任何进程。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">root@ubuntu:~/gitLearning/akka-in-action# heroku ps:scale web=0</div><div class="line">Scaling dynos... done, now running web at 0:Free.</div></pre></td></tr></table></figure></p>
+<hr>
+<p>对于git子目录提交的解决，参考自：</p>
+<ul>
+<li><a href="https://gitlab.com/gitlab-com/support-forum/issues/40" target="_blank" rel="external">https://gitlab.com/gitlab-com/support-forum/issues/40</a></li>
+<li><a href="http://stackoverflow.com/questions/14286266/deploy-play-app-on-heroku-from-a-subdirectory-of-git-repo" target="_blank" rel="external">http://stackoverflow.com/questions/14286266/deploy-play-app-on-heroku-from-a-subdirectory-of-git-repo</a></li>
+<li><a href="http://stackoverflow.com/questions/17148784/play-1-2-5-application-deployment-on-heroku-oops-conf-routes-or-conf-applicati" target="_blank" rel="external">http://stackoverflow.com/questions/17148784/play-1-2-5-application-deployment-on-heroku-oops-conf-routes-or-conf-applicati</a></li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/akka/">akka</a><a href="/tags/heroku/">heroku</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2015/07/16/heroku上部署自己的akka项目/" data-title="heroku上部署自己的akka项目 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/07/16/akka-读书笔记（1）/" title="akka in action 读书笔记（1）">
+  <strong>上一篇：</strong><br/>
+  <span>
+  akka in action 读书笔记（1）</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/07/12/flume-源码阅读笔记（5）/"  title="flume 源码阅读笔记（5）">
+ <strong>下一篇：</strong><br/> 
+ <span>flume 源码阅读笔记（5）
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2015/07/16/heroku上部署自己的akka项目/" data-title="heroku上部署自己的akka项目" data-url="http://willcup.com/2015/07/16/heroku上部署自己的akka项目/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-注册"><span class="toc-number">1.</span> <span class="toc-text">1. 注册</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-安装工具"><span class="toc-number">2.</span> <span class="toc-text">2. 安装工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-本地登录heroku："><span class="toc-number">3.</span> <span class="toc-text">3. 本地登录heroku：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-在heroku上建立一个app"><span class="toc-number">4.</span> <span class="toc-text">4. 在heroku上建立一个app</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-修改参数"><span class="toc-number">5.</span> <span class="toc-text">5. 修改参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-本地项目运行测试"><span class="toc-number">6.</span> <span class="toc-text">6. 本地项目运行测试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-本地启动并测试"><span class="toc-number">7.</span> <span class="toc-text">7. 本地启动并测试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-部署到heroku"><span class="toc-number">8.</span> <span class="toc-text">8. 部署到heroku</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-测试"><span class="toc-number">9.</span> <span class="toc-text">9. 测试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Plus-二次提交测试"><span class="toc-number">10.</span> <span class="toc-text">Plus : 二次提交测试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PlusPlus-项目关闭"><span class="toc-number">11.</span> <span class="toc-text">PlusPlus: 项目关闭</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/2015a/" title="2015a">2015a<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/django/" title="django">django<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Flume/" title="Flume">Flume<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

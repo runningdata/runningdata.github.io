@@ -1,0 +1,612 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>一步步搞定ETL依赖调度平台（二）-zakaban整合实施 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="再列以下前面提到的步骤：
+
+通过azkaban api创建一个project: etl_20160615;
+调用java程序根据tbl_blood和etl内容生成azkaban的项目文件20160615.zip;
+通过azkaban api上传此文件到etl_20160615的project上
+通过azkaban api遍历etl_20160615项目下的所有flow，进行调度。
+
+其实（一）里面">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一步步搞定ETL依赖调度平台（二）-zakaban整合实施">
+<meta property="og:url" content="http://willcup.com/2016/06/16/一步步搞定ETL依赖调度平台（二）-与azkaban整合/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="再列以下前面提到的步骤：
+
+通过azkaban api创建一个project: etl_20160615;
+调用java程序根据tbl_blood和etl内容生成azkaban的项目文件20160615.zip;
+通过azkaban api上传此文件到etl_20160615的project上
+通过azkaban api遍历etl_20160615项目下的所有flow，进行调度。
+
+其实（一）里面">
+<meta property="og:updated_time" content="2016-10-28T02:54:06.785Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="一步步搞定ETL依赖调度平台（二）-zakaban整合实施">
+<meta name="twitter:description" content="再列以下前面提到的步骤：
+
+通过azkaban api创建一个project: etl_20160615;
+调用java程序根据tbl_blood和etl内容生成azkaban的项目文件20160615.zip;
+通过azkaban api上传此文件到etl_20160615的project上
+通过azkaban api遍历etl_20160615项目下的所有flow，进行调度。
+
+其实（一）里面">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/node_modules">测试</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/06/16/一步步搞定ETL依赖调度平台（二）-与azkaban整合/" title="一步步搞定ETL依赖调度平台（二）-zakaban整合实施" itemprop="url">一步步搞定ETL依赖调度平台（二）-zakaban整合实施</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-06-16T03:22:25.000Z" itemprop="datePublished"> 发表于 2016-06-16</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-方案与问题"><span class="toc-text">1. 方案与问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-实施"><span class="toc-text">2. 实施</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-获取session-id"><span class="toc-text">2.1 获取session-id</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-创建project"><span class="toc-text">2.2  创建project</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-上传zip文件"><span class="toc-text">2.3 上传zip文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-执行flow"><span class="toc-text">2.4 执行flow</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-shell全文"><span class="toc-text">3.shell全文</span></a></li></ol>
+		
+		</div>
+		
+		<p>再列以下前面提到的步骤：</p>
+<ol>
+<li>通过azkaban api创建一个project: etl_20160615;</li>
+<li>调用java程序根据tbl_blood和etl内容生成azkaban的项目文件20160615.zip;</li>
+<li>通过azkaban api上传此文件到etl_20160615的project上</li>
+<li>通过azkaban api遍历etl_20160615项目下的所有flow，进行调度。</li>
+</ol>
+<p>其实（一）里面是第二步的实现。今儿调研了以下azkaban的ajax api，并没有想象中的那么简单，所以就再单独说一下怎样完成其他步骤——重要的难点在于<strong>session-id的获取</strong>。</p>
+<h3 id="1-方案与问题"><a href="#1-方案与问题" class="headerlink" title="1. 方案与问题"></a>1. 方案与问题</h3><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>问题</th>
+<th>解决方案</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>使用azkaban api</td>
+<td>需要session-id进行server端验证</td>
+<td>1. 使用phantomjs等模拟实现浏览器，从cookie中获取session-id——费事<br>2. 想办法使一个session-id永不过期(这个实施起来最简单，但是稳定程度有待测试)<br>3.azkaban web server启动了rest.li里的userManagerResource，login是返回session-id的，但是需要研习以下rest.li<br>找了半天，解决了:  curl -k -X POST –data “username=azkaban&amp;password=azkaban&amp;action=login” <a href="http://10.1.5.66:8001" target="_blank" rel="external">http://10.1.5.66:8001</a></td>
+</tr>
+<tr>
+<td>直接操作数据</td>
+<td>需要对上传zip文件后生成的mysql表足够了解，包括存储的每个字段的内容与规范</td>
+<td>将现有的项目中的内容弄出来验证规范后，开始实施</td>
+</tr>
+<tr>
+<td>抽取操作中用到的azkaban的主要类</td>
+<td>准备实例化这些类的成员变量</td>
+<td>这些成员变量或许比直接插入mysql内容差不多难搞</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="2-实施"><a href="#2-实施" class="headerlink" title="2. 实施"></a>2. 实施</h3><h4 id="2-1-获取session-id"><a href="#2-1-获取session-id" class="headerlink" title="2.1 获取session-id"></a>2.1 获取session-id</h4><p>鉴于时间因素，获取session-id的方案：</p>
+<blockquote>
+<p>curl -k -X POST –data “username=azkaban&amp;password=azkaban&amp;action=login” <a href="http://10.1.5.66:8001" target="_blank" rel="external">http://10.1.5.66:8001</a><br>返回值：<br><figure class="highlight json"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  <span class="attr">"status"</span> : <span class="string">"success"</span>,</div><div class="line">  <span class="attr">"session.id"</span> : <span class="string">"4e3da52b-fa1f-478d-836c-42122ced2341"</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+</blockquote>
+<p>解析session-id的脚本<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">curl -k -X POST --data <span class="string">"username=azkaban&amp;password=azkaban&amp;action=login"</span> http://10.1.5.66:8001 &gt; etl_tmp</div><div class="line">session_id=`cat etl_tmp | grep session | awk -F\<span class="string">" '!/[&#123;&#125;]/&#123;print <span class="variable">$(NF-1)</span>&#125;'`</span></div><div class="line">echo "we got session id : <span class="variable">$session_id</span><span class="string">"</span></div></pre></td></tr></table></figure></p>
+<h4 id="2-2-创建project"><a href="#2-2-创建project" class="headerlink" title="2.2  创建project"></a>2.2  创建project</h4><p>这里其实先安装了一个shell的json解析工具JSON.sh：<a href="https://github.com/dominictarr/JSON.sh" target="_blank" rel="external">https://github.com/dominictarr/JSON.sh</a><br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">curl -k -X POST --data <span class="string">"session.id=<span class="variable">$&#123;session_id&#125;</span>&amp;name=<span class="variable">$&#123;project_name&#125;</span>&amp;description=<span class="variable">$&#123;project_desc&#125;</span>"</span> http://<span class="variable">$&#123;host&#125;</span>/manager?action=create &gt; <span class="variable">$&#123;etl_tmp&#125;</span></div><div class="line">status=`cat <span class="variable">$&#123;etl_tmp&#125;</span> | JSON.sh -b| grep status | awk <span class="string">'&#123;print($2)&#125;'</span>`</div><div class="line"><span class="keyword">if</span> [ <span class="variable">$status</span> != <span class="string">'"success"'</span> ]; <span class="keyword">then</span></div><div class="line">        <span class="built_in">echo</span> <span class="string">"error happends when creting project <span class="variable">$&#123;project_name&#125;</span>. status is <span class="variable">$&#123;status&#125;</span>"</span></div><div class="line"><span class="keyword">fi</span></div><div class="line"></div><div class="line"><span class="built_in">echo</span> <span class="string">"project <span class="variable">$&#123;project_name&#125;</span> has been created successfully."</span></div></pre></td></tr></table></figure></p>
+<h4 id="2-3-上传zip文件"><a href="#2-3-上传zip文件" class="headerlink" title="2.3 上传zip文件"></a>2.3 上传zip文件</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">curl -k -i -H <span class="string">"Content-Type: multipart/mixed"</span> -X POST --form <span class="string">"session.id=<span class="variable">$&#123;session_id&#125;</span>"</span> --form <span class="string">'ajax=upload'</span> --form <span class="string">"file=@<span class="variable">$&#123;project_zip_file&#125;</span>"</span> --form <span class="string">"project=<span class="variable">$&#123;project_name&#125;</span>"</span> http://<span class="variable">$&#123;host&#125;</span>/manager?ajax=upload &gt; <span class="variable">$&#123;etl_tmp&#125;</span></div><div class="line">status=`cat <span class="variable">$&#123;etl_tmp&#125;</span> | awk <span class="string">'&#123;if(index($0,"error") &gt; 0) print("error")&#125;'</span>`</div><div class="line"><span class="keyword">if</span> [ <span class="variable">$status</span> == <span class="string">"error"</span> ]; <span class="keyword">then</span></div><div class="line">        <span class="built_in">echo</span> <span class="string">"error happends when uploading project <span class="variable">$&#123;project_name&#125;</span>. status is <span class="variable">$&#123;status&#125;</span>"</span></div><div class="line">        <span class="built_in">exit</span> 1</div><div class="line"><span class="keyword">fi</span></div><div class="line"><span class="built_in">echo</span> <span class="string">"uploading project <span class="variable">$&#123;project_name&#125;</span> successfully"</span></div></pre></td></tr></table></figure>
+<p>ps: 没有继续使用JSON.sh的原因是解析报错…看来还是不健全</p>
+<h4 id="2-4-执行flow"><a href="#2-4-执行flow" class="headerlink" title="2.4 执行flow"></a>2.4 执行flow</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">curl -k --get --data <span class="string">"session.id=<span class="variable">$&#123;session_id&#125;</span>&amp;ajax=fetchprojectflows&amp;project=<span class="variable">$&#123;project_name&#125;</span>"</span> http://<span class="variable">$&#123;host&#125;</span>/manager &gt; <span class="variable">$&#123;etl_tmp&#125;</span></div><div class="line"><span class="keyword">for</span> flow <span class="keyword">in</span> `cat <span class="variable">$&#123;etl_tmp&#125;</span> |  JSON.sh -b | grep flowId |  awk <span class="string">'&#123;gsub("\"","",$2);print($2)&#125;'</span>`</div><div class="line"><span class="keyword">do</span></div><div class="line">        <span class="built_in">echo</span> <span class="string">"flow is <span class="variable">$flow</span>, ready to execute"</span></div><div class="line">        curl -k --get --data <span class="string">"session.id=<span class="variable">$&#123;session_id&#125;</span>"</span> --data <span class="string">'ajax=executeFlow'</span> --data <span class="string">"project=<span class="variable">$&#123;project_name&#125;</span>"</span> --data <span class="string">"flow=<span class="variable">$&#123;flow&#125;</span>"</span> http://<span class="variable">$&#123;host&#125;</span>/executor &gt;<span class="variable">$&#123;etl_tmp&#125;</span><span class="variable">$&#123;flow&#125;</span></div><div class="line">        <span class="built_in">echo</span> <span class="string">"<span class="variable">$flow</span> execution done"</span></div><div class="line"><span class="keyword">done</span></div><div class="line"><span class="built_in">echo</span> <span class="string">"all flows for project <span class="variable">$&#123;project_name&#125;</span> has been executed"</span></div></pre></td></tr></table></figure>
+<h3 id="3-shell全文"><a href="#3-shell全文" class="headerlink" title="3.shell全文"></a>3.shell全文</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#!/bin/bash</span></div><div class="line"></div><div class="line">etl_tmp=/tmp/etl_tmp_log</div><div class="line">host=10.0.1.62:8081</div><div class="line">metamap_host=10.0.1.62:8088</div><div class="line">project_desc=daily_schedule</div><div class="line"></div><div class="line"><span class="comment"># 调用生成job的任务，返回任务名称或者失败信息</span></div><div class="line">curl -X GET http://<span class="variable">$&#123;metamap_host&#125;</span>/metamap/etls/generate_job_dag/ &gt; <span class="variable">$&#123;etl_tmp&#125;</span></div><div class="line">filename=`cat <span class="variable">$&#123;etl_tmp&#125;</span>`</div><div class="line"><span class="keyword">if</span> [ <span class="variable">$filename</span> == <span class="string">"error"</span> -o <span class="variable">$&#123;#filename&#125;</span> <span class="_">-ne</span> 14 ]; <span class="keyword">then</span></div><div class="line">        <span class="built_in">echo</span> <span class="string">"error happends when generate Job Scripts. ori_filename is <span class="variable">$&#123;filename&#125;</span>"</span></div><div class="line">	<span class="built_in">echo</span> <span class="string">"length is <span class="variable">$&#123;#filename&#125;</span>"</span></div><div class="line">        <span class="built_in">exit</span> 1</div><div class="line"><span class="keyword">fi</span></div><div class="line"></div><div class="line">project_name=etl_<span class="variable">$&#123;filename&#125;</span></div><div class="line">project_zip_file=/tmp/<span class="variable">$&#123;filename&#125;</span>.zip</div><div class="line"></div><div class="line"><span class="built_in">echo</span> <span class="string">"project_name is <span class="variable">$&#123;project_name&#125;</span>"</span></div><div class="line"><span class="built_in">echo</span> <span class="string">"project_zip_file is <span class="variable">$&#123;project_zip_file&#125;</span>"</span></div><div class="line"><span class="built_in">echo</span> <span class="string">"azkaban host is <span class="variable">$&#123;host&#125;</span>"</span></div><div class="line"></div><div class="line"><span class="comment"># 获取session id</span></div><div class="line">curl -k -X POST --data <span class="string">"username=azkaban&amp;password=azkaban&amp;action=login"</span> http://<span class="variable">$&#123;host&#125;</span> &gt; <span class="variable">$&#123;etl_tmp&#125;</span></div><div class="line"><span class="built_in">echo</span> result is `cat <span class="variable">$&#123;etl_tmp&#125;</span>`</div><div class="line">session_id=`cat <span class="variable">$&#123;etl_tmp&#125;</span> | grep session | awk -F\<span class="string">" '!/[&#123;&#125;]/&#123;print <span class="variable">$(NF-1)</span>&#125;'`</span></div><div class="line">echo "we got session id : <span class="variable">$session_id</span><span class="string">"</span></div><div class="line"></div><div class="line">### 创建project</div><div class="line">echo "project name is <span class="variable">$&#123;project_name&#125;</span><span class="string">"</span></div><div class="line">curl -k -X POST --data "session.id=<span class="variable">$&#123;session_id&#125;</span>&amp;name=<span class="variable">$&#123;project_name&#125;</span>&amp;description=<span class="variable">$&#123;project_desc&#125;</span><span class="string">" http://<span class="variable">$&#123;host&#125;</span>/manager?action=create &gt; <span class="variable">$&#123;etl_tmp&#125;</span></span></div><div class="line">status=`cat <span class="variable">$&#123;etl_tmp&#125;</span> | JSON.sh -b| grep status | awk '&#123;print(<span class="variable">$2</span>)&#125;'` </div><div class="line">if [ <span class="variable">$status</span> != '"success<span class="string">"' ]; then</span></div><div class="line">        echo "error happends when creting project <span class="variable">$&#123;project_name&#125;</span>. status is <span class="variable">$&#123;status&#125;</span><span class="string">"</span></div><div class="line">	exit 1</div><div class="line">fi</div><div class="line">echo "project <span class="variable">$&#123;project_name&#125;</span> has been created successfully.<span class="string">"</span></div><div class="line"></div><div class="line"># 上传zip文件到指定project</div><div class="line">curl -k -i -H "Content-Type: multipart/mixed<span class="string">" -X POST --form "</span>session.id=<span class="variable">$&#123;session_id&#125;</span><span class="string">" --form 'ajax=upload' --form "</span>file=@<span class="variable">$&#123;project_zip_file&#125;</span><span class="string">" --form "</span>project=<span class="variable">$&#123;project_name&#125;</span><span class="string">" http://<span class="variable">$&#123;host&#125;</span>/manager?ajax=upload &gt; <span class="variable">$&#123;etl_tmp&#125;</span></span></div><div class="line">status=`cat <span class="variable">$&#123;etl_tmp&#125;</span> | awk '&#123;if(index(<span class="variable">$0</span>,"error<span class="string">") &gt; 0) print("</span>error<span class="string">")&#125;'`</span></div><div class="line">if [[ <span class="variable">$status</span> = "error<span class="string">" ]]; then</span></div><div class="line">        echo "error happends when uploading project <span class="variable">$&#123;project_name&#125;</span>. status is <span class="variable">$&#123;status&#125;</span><span class="string">"</span></div><div class="line">        exit 1</div><div class="line">fi</div><div class="line">echo "uploading project <span class="variable">$&#123;project_name&#125;</span> successfully<span class="string">"</span></div><div class="line"></div><div class="line"># </div><div class="line"># 阻塞检察某个execution的进度</div><div class="line">#</div><div class="line">function check_exec_status()&#123;</div><div class="line">	execid=<span class="variable">$1</span></div><div class="line">	sleep 1h</div><div class="line">	#查看前execution的执行状态，完成后退出</div><div class="line">	status=RUNNING</div><div class="line">	until [ <span class="variable">$status</span> == '"SUCCEEDED<span class="string">"' ]</span></div><div class="line">	do</div><div class="line">    		curl -k --get --data "session.id=<span class="variable">$&#123;session_id&#125;</span>&amp;ajax=fetchexecflowupdate&amp;execid=<span class="variable">$&#123;execid&#125;</span>&amp;lastUpdateTime=-1<span class="string">" http://<span class="variable">$&#123;host&#125;</span>/executor &gt; <span class="variable">$&#123;etl_tmp&#125;</span></span></div><div class="line">    		status=`cat <span class="variable">$&#123;etl_tmp&#125;</span> | JSON.sh -b| grep status | grep -v node | awk '&#123;print(<span class="variable">$2</span>)&#125;'`</div><div class="line">		if [ <span class="variable">$status</span> == '"KILLED<span class="string">"' ]; then</span></div><div class="line">			echo "<span class="variable">$&#123;execid&#125;</span> has been killed.<span class="string">"</span></div><div class="line">			break</div><div class="line">		elif [ <span class="variable">$status</span> == '"FAILED<span class="string">"' ]; then</span></div><div class="line">                        echo "<span class="variable">$&#123;execid&#125;</span> has been failed.<span class="string">"</span></div><div class="line">                        break</div><div class="line">		fi</div><div class="line">    		echo "<span class="variable">$&#123;execid&#125;</span> not yet...<span class="string">" `cat <span class="variable">$&#123;etl_tmp&#125;</span>`</span></div><div class="line">		sleep 10m	</div><div class="line">	done</div><div class="line">&#125;</div><div class="line"></div><div class="line"># 遍历执行project下的flow</div><div class="line">curl -k --get --data "session.id=<span class="variable">$&#123;session_id&#125;</span>&amp;ajax=fetchprojectflows&amp;project=<span class="variable">$&#123;project_name&#125;</span><span class="string">" http://<span class="variable">$&#123;host&#125;</span>/manager &gt; <span class="variable">$&#123;etl_tmp&#125;</span></span></div><div class="line">for flow in `cat <span class="variable">$&#123;etl_tmp&#125;</span> |  JSON.sh -b | grep flowId |  awk '&#123;gsub("\<span class="string">""</span>,<span class="string">""</span>,<span class="variable">$2</span>);<span class="built_in">print</span>(<span class="variable">$2</span>)&#125;<span class="string">'`</span></div><div class="line">do</div><div class="line">        echo "flow is $flow, ready to execute"</div><div class="line">        curl -k --get --data "session.id=$&#123;session_id&#125;" --data 'ajax=executeFlow<span class="string">' --data "project=$&#123;project_name&#125;" --data "flow=$&#123;flow&#125;" --data "failureAction=finishPossible" http://$&#123;host&#125;/executor &gt;$&#123;etl_tmp&#125;$&#123;flow&#125;</span></div><div class="line">        execid=`cat $&#123;etl_tmp&#125;$&#123;flow&#125; | JSON.sh -b| grep execid | awk '&#123;<span class="built_in">print</span>(<span class="variable">$2</span>)&#125;<span class="string">'`</span></div><div class="line">	echo "got execid : $&#123;execid&#125;"</div><div class="line">	check_exec_status $&#123;execid&#125;</div><div class="line">echo "$flow execution done"</div><div class="line">done</div><div class="line">echo "all flows for project $&#123;project_name&#125; has been executed"</div></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/ETL/">ETL</a><a href="/tags/调度平台/">调度平台</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/06/16/一步步搞定ETL依赖调度平台（二）-与azkaban整合/" data-title="一步步搞定ETL依赖调度平台（二）-zakaban整合实施 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/06/16/azkaban源码追踪（三）-上传zip的坑/" title="azkaban源码追踪（三）-上传zip的坑">
+  <strong>上一篇：</strong><br/>
+  <span>
+  azkaban源码追踪（三）-上传zip的坑</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/06/15/一步步搞定ETL依赖调度平台（一）/"  title="一步步搞定ETL依赖调度平台（一）">
+ <strong>下一篇：</strong><br/> 
+ <span>一步步搞定ETL依赖调度平台（一）
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/06/16/一步步搞定ETL依赖调度平台（二）-与azkaban整合/" data-title="一步步搞定ETL依赖调度平台（二）-zakaban整合实施" data-url="http://willcup.com/2016/06/16/一步步搞定ETL依赖调度平台（二）-与azkaban整合/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-方案与问题"><span class="toc-number">1.</span> <span class="toc-text">1. 方案与问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-实施"><span class="toc-number">2.</span> <span class="toc-text">2. 实施</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-获取session-id"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 获取session-id</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-创建project"><span class="toc-number">2.2.</span> <span class="toc-text">2.2  创建project</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-上传zip文件"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 上传zip文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-执行flow"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 执行flow</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-shell全文"><span class="toc-number">3.</span> <span class="toc-text">3.shell全文</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/2015a/" title="2015a">2015a<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/django/" title="django">django<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Flume/" title="Flume">Flume<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

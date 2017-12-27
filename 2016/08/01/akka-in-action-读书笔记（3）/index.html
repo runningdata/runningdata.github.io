@@ -1,0 +1,638 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>akka in action 读书笔记（3） | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="这一篇我们一起看一下:使用akka测试驱动开发。
+当TDD刚出现的时候，大家都感觉它浪费很长时间。尤其感觉让测试一些组件的协作更花费时间。Actor提供了一个又去的解决方案：
+
+actor可以更直接的测试，因为他们本身就代表具体行为。【几乎所有的TDD都有至少一个BDD（Behavior-Driven-Development）】
+普通的单元测试只能测试接口，而且只能分别测试
+Actor是基于消息的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="akka in action 读书笔记（3）">
+<meta property="og:url" content="http://willcup.com/2016/08/01/akka-in-action-读书笔记（3）/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="这一篇我们一起看一下:使用akka测试驱动开发。
+当TDD刚出现的时候，大家都感觉它浪费很长时间。尤其感觉让测试一些组件的协作更花费时间。Actor提供了一个又去的解决方案：
+
+actor可以更直接的测试，因为他们本身就代表具体行为。【几乎所有的TDD都有至少一个BDD（Behavior-Driven-Development）】
+普通的单元测试只能测试接口，而且只能分别测试
+Actor是基于消息的">
+<meta property="og:updated_time" content="2016-10-28T02:54:06.773Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="akka in action 读书笔记（3）">
+<meta name="twitter:description" content="这一篇我们一起看一下:使用akka测试驱动开发。
+当TDD刚出现的时候，大家都感觉它浪费很长时间。尤其感觉让测试一些组件的协作更花费时间。Actor提供了一个又去的解决方案：
+
+actor可以更直接的测试，因为他们本身就代表具体行为。【几乎所有的TDD都有至少一个BDD（Behavior-Driven-Development）】
+普通的单元测试只能测试接口，而且只能分别测试
+Actor是基于消息的">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/node_modules">测试</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/08/01/akka-in-action-读书笔记（3）/" title="akka in action 读书笔记（3）" itemprop="url">akka in action 读书笔记（3）</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-08-01T08:55:55.000Z" itemprop="datePublished"> 发表于 2016-08-01</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-测试Actor"><span class="toc-text">3.1 测试Actor</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#3-1-1-准备测试"><span class="toc-text">3.1.1 准备测试</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-单向消息"><span class="toc-text">3.2 单向消息</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#3-2-1-SilentActor例子"><span class="toc-text">3.2.1 SilentActor例子</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-2-SendingActor例子"><span class="toc-text">3.2 SendingActor例子</span></a></li></ol></li></ol>
+		
+		</div>
+		
+		<p>这一篇我们一起看一下:使用akka测试驱动开发。</p>
+<p>当TDD刚出现的时候，大家都感觉它浪费很长时间。尤其感觉让测试一些组件的协作更花费时间。Actor提供了一个又去的解决方案：</p>
+<ul>
+<li>actor可以更直接的测试，因为他们本身就代表具体行为。【几乎所有的TDD都有至少一个BDD（Behavior-Driven-Development）】</li>
+<li>普通的单元测试只能测试接口，而且只能分别测试</li>
+<li><p>Actor是基于消息的。也就是只要发送message就可以很轻松的模拟各种行为了。</p>
+<h4 id="3-1-测试Actor"><a href="#3-1-测试Actor" class="headerlink" title="3.1 测试Actor"></a>3.1 测试Actor</h4><p>  我们使用ScalaTest单元测试框架来测试发送与接收message。<br>  看代码以前，我们要了解，测试Actor相比测试不同的对象还是要稍微复杂一点儿的，原因如下：</p>
+<ul>
+<li>时间。 发送message是一步的，所以不知道多长时间才能去assert返回值</li>
+<li>异步。 Actor是在多个线程中并行运行的。多线程测试相比单线程测试要复杂以下，需要处理一些并发原是变量来同步多个actor的结果，比如lock、latch、barrier等。这些正是我们要远离的。仅仅是一个barrier的错用都会导致一个单元测试block住，从而影响整个test suite。</li>
+<li>无状态。actor的内部状态是隐藏的，只能通过ActorRef来访问。单元测试的时候要注意这点。</li>
+<li>协作/整合。如果要测试几个actor之间的整合，必须在这些actor之间窃听它们之间传递的message是不是期望值。</li>
+</ul>
+<hr>
+<p>  虽然有以上困难，好在Akka也提供了<code>akka-testkit</code> module。这个module包含了几个可以很方便的进行actor测试的工具。这个module覆盖了下面几种不同的测试类型：</p>
+<ul>
+<li>单线程测试。 一个actor实例通常并不能直接使用。testkit提供了TestActorRef，它允许访问指定的actor实例。这样就能直接调用actor的方法，来测试我们定义的actor，向测试普通对象一样了。</li>
+<li>多线程单元测试。<code>TestKit</code>和<code>TestProbe</code>两个类，让我们方便的接收回复，检查message，为特定message设置到达时限。TestKit有专门的方法来assert期望值。Actor在多线程环境中使用一个普通的dispatcher来运行。</li>
+<li><p>多jvm测试。测试远程actor system的时候会用到。</p>
+<p>TestActorRef继承了LocalActorRef，设置dispatcher为CallingThreadDispatcher, CallingThreadDispatcher只用来测试。（它直接使用调用者的线程，而不是另起一个线程）。</p>
+<p>明眼人看的出来，多线程环境基本贴近于生产环境，所以我们接触最多。<br>关于<a href="http://www.scalatest.org/" target="_blank" rel="external">ScalaTest</a></p>
+</li>
+</ul>
+</li>
+</ul>
+<h5 id="3-1-1-准备测试"><a href="#3-1-1-准备测试" class="headerlink" title="3.1.1 准备测试"></a>3.1.1 准备测试</h5><p>因为有一些通用的逻辑，我们先定义一个Trait，使测试能够在单元测试结束后自动停止测试系统。<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> aia.testdriven</div><div class="line"><span class="comment">//&lt;start id="ch02-stopsystem"/&gt;</span></div><div class="line"><span class="keyword">import</span> org.scalatest.&#123; <span class="type">Suite</span>, <span class="type">BeforeAndAfterAll</span> &#125;</div><div class="line"><span class="keyword">import</span> akka.testkit.<span class="type">TestKit</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">trait</span> <span class="title">StopSystemAfterAll</span> <span class="keyword">extends</span> <span class="title">BeforeAndAfterAll</span> </span>&#123; </div><div class="line">		<span class="comment">//继承ScalaTest的基础trait</span></div><div class="line">  <span class="keyword">this</span>: <span class="type">TestKit</span> <span class="keyword">with</span> <span class="type">Suite</span> =&gt; <span class="comment">//这个trait只能与使用TestKit的测试使用</span></div><div class="line">  <span class="keyword">override</span> <span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">afterAll</span></span>() &#123;</div><div class="line">    <span class="keyword">super</span>.afterAll()</div><div class="line">    system.terminate() <span class="comment">//测试完成后关闭测试系统</span></div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>我们写测试的时候就可以mixin这个trait了。TestKit暴露了一个system变量，可以用来访问测试中创建的actor以及其他信息。</p>
+<h4 id="3-2-单向消息"><a href="#3-2-单向消息" class="headerlink" title="3.2 单向消息"></a>3.2 单向消息</h4><p>记住，我们已经不再使用那种触发某个动作，等待response的方式了，所以我们的例子都是使用<code>tell</code>来发送单向消息也就顺理成章了。拜这种fire and forget方式所赐，我们不知道message什么时候到达actor，或者即便到了，我们怎么样进行测试呢？我们期望是发送一个message给一个actor，然后这个actor能够正确的处理这条message。如果actor的处理动作对于外界完全不可见，我们只能保证它处理之后没有出现任何错误，我们应该使用TestActorRef来访问actor的状态，确保它完好。下面是我们需要注意的三种actor：</p>
+<ul>
+<li>SilentActor。这种actor的行为对于外界不可见，但是中间它会创建一些内部状态。只要处理中没有出现任何错误或异常我们就认为测试通过。检测处理中内部状态的变化就可以了。</li>
+<li>SendingActor。这种actor处理完收到的message之后会发送message到其他actor。我们把这种actor当做一个黑盒，查看输入与输出的message就行了。</li>
+<li><p>SideEffiectingActor。这种actor接收message，与一个普通对象进行一些交互。发送message给这种actor之后，需要确认以下普通对象是否被按照预期修改了。</p>
+<p> 下面我们为以上列举的每种actor都写个test。</p>
+</li>
+</ul>
+<h5 id="3-2-1-SilentActor例子"><a href="#3-2-1-SilentActor例子" class="headerlink" title="3.2.1 SilentActor例子"></a>3.2.1 SilentActor例子</h5><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> aia.testdriven</div><div class="line"></div><div class="line"><span class="keyword">import</span> org.scalatest.&#123;<span class="type">WordSpecLike</span>, <span class="type">MustMatchers</span>&#125;</div><div class="line"><span class="keyword">import</span> akka.testkit.<span class="type">TestKit</span></div><div class="line"><span class="keyword">import</span> akka.actor._</div><div class="line"></div><div class="line"><span class="comment">//This test is ignored in the BookBuild, it's added to the defaultExcludedNames</span></div><div class="line"><span class="comment">//&lt;start id="ch02-silentactor-test01"/&gt;</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">SilentActor01Test</span> <span class="keyword">extends</span> <span class="title">TestKit</span>(<span class="params"><span class="type">ActorSystem</span>("testsystem"</span>)) </span></div><div class="line">  <span class="keyword">with</span> <span class="type">WordSpecLike</span> <span class="comment">//WordSpecLike提供了一种易读的DSL来测试BDD形式的测试</span></div><div class="line">  <span class="keyword">with</span> <span class="type">MustMatchers</span> <span class="comment">//MustMatchers提供了易读的assertion</span></div><div class="line">  <span class="keyword">with</span> <span class="type">StopSystemAfterAll</span> &#123; <span class="comment">//我们刚刚定义的，完成测试后关闭system</span></div><div class="line"></div><div class="line">  <span class="string">"A Silent Actor"</span> must &#123; <span class="comment">// 写上文本描述</span></div><div class="line">    <span class="string">"change state when it receives a message, single threaded"</span> in &#123; <span class="comment">// 每个in都描述一个指定的测试</span></div><div class="line">      <span class="comment">//Write the test, first fail</span></div><div class="line">      fail(<span class="string">"not implemented yet"</span>)</div><div class="line">    &#125;</div><div class="line">    <span class="string">"change state when it receives a message, multi-threaded"</span> in &#123;</div><div class="line">      <span class="comment">//Write the test, first fail</span></div><div class="line">      fail(<span class="string">"not implemented yet"</span>)</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">&#125;</div><div class="line"><span class="comment">//&lt;end id="ch02-silentactor-test01"/&gt;</span></div><div class="line"></div><div class="line"><span class="comment">//定义一个Actor</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">SilentActor</span> <span class="keyword">extends</span> <span class="title">Actor</span> </span>&#123;</div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">receive</span> </span>= &#123;</div><div class="line">    <span class="keyword">case</span> msg =&gt;  <span class="comment">// 所有接收到的message都被吞如黑洞</span></div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"><span class="comment">//&lt;end id="ch02-silentactor-test01-imp"/&gt;</span></div></pre></td></tr></table></figure>
+<p>以上是一个WordSpec形式的测试，可以写多个文本描述。下面我们定义来一个Actor。</p>
+<p>我们首先写测试发送message给这个actor，然后观察它内部状态的变化。</p>
+<p>SilentActor和SilentActorProtocol都是为了辅助测试的，后者包含了所有前者支持的message类型，可以方便地对message进行分组管理。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> silentactor02 &#123;</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">SilentActorTest</span> <span class="keyword">extends</span> <span class="title">TestKit</span>(<span class="params"><span class="type">ActorSystem</span>("testsystem"</span>))</span></div><div class="line">    <span class="keyword">with</span> <span class="type">WordSpecLike</span></div><div class="line">    <span class="keyword">with</span> <span class="type">MustMatchers</span></div><div class="line">    <span class="keyword">with</span> <span class="type">StopSystemAfterAll</span> &#123;</div><div class="line"></div><div class="line">    <span class="string">"A Silent Actor"</span> must &#123;</div><div class="line">      <span class="comment">//&lt;start id="ch02-silentactor-test02"/&gt;</span></div><div class="line">      <span class="string">"change internal state when it receives a message, single"</span> in &#123;</div><div class="line">        <span class="keyword">import</span> <span class="type">SilentActor</span>._ <span class="comment">//引入Protocol定义的message类型</span></div><div class="line"></div><div class="line">        <span class="keyword">val</span> silentActor = <span class="type">TestActorRef</span>[<span class="type">SilentActor</span>] <span class="comment">//为单线程测试创建TestActorRef</span></div><div class="line">        silentActor ! <span class="type">SilentMessage</span>(<span class="string">"whisper"</span>)</div><div class="line">        silentActor.underlyingActor.state must (contain(<span class="string">"whisper"</span>)) <span class="comment">//测试刚刚放进的message在目标actor中</span></div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">// 对应提到的Protocol</span></div><div class="line">  <span class="class"><span class="keyword">object</span> <span class="title">SilentActor</span> </span>&#123; </div><div class="line">    <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">SilentMessage</span>(<span class="params">data: <span class="type">String</span></span>) <span class="title">//SilentActor可以处理的一种message类型</span></span></div><div class="line">    <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">GetState</span>(<span class="params">receiver: <span class="type">ActorRef</span></span>)</span></div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="class"><span class="keyword">class</span> <span class="title">SilentActor</span> <span class="keyword">extends</span> <span class="title">Actor</span> </span>&#123;</div><div class="line">    <span class="keyword">import</span> <span class="type">SilentActor</span>._</div><div class="line">    <span class="keyword">var</span> internalState = <span class="type">Vector</span>[<span class="type">String</span>]()</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">receive</span> </span>= &#123;</div><div class="line">      <span class="keyword">case</span> <span class="type">SilentMessage</span>(data) =&gt;</div><div class="line">        internalState = internalState :+ data <span class="comment">//state这里是被存储在一个vector中，每个message都会被加入这个vector</span></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">state</span> </span>= internalState <span class="comment">//放回当前的所有内部状态</span></div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>由于返回的状态列表是不可变的，测试并不会影响我们验证期望数据。</p>
+<p>下面我们看一下多线程版本的。<br><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">SilentActorTest</span> <span class="keyword">extends</span> <span class="title">TestKit</span>(<span class="params"><span class="type">ActorSystem</span>("testsystem"</span>))</span></div><div class="line">    <span class="keyword">with</span> <span class="type">WordSpecLike</span></div><div class="line">    <span class="keyword">with</span> <span class="type">MustMatchers</span></div><div class="line">    <span class="keyword">with</span> <span class="type">StopSystemAfterAll</span> &#123;</div><div class="line"></div><div class="line">    <span class="string">"A Silent Actor"</span> must &#123;</div><div class="line">     </div><div class="line">      <span class="string">"change internal state when it receives a message, multi"</span> in &#123;</div><div class="line">        <span class="keyword">import</span> <span class="type">SilentActor</span>._ </div><div class="line"></div><div class="line">        <span class="keyword">val</span> silentActor = system.actorOf(<span class="type">Props</span>[<span class="type">SilentActor</span>], <span class="string">"s3"</span>) <span class="comment">//创建actor的方式不同</span></div><div class="line">        silentActor ! <span class="type">SilentMessage</span>(<span class="string">"whisper1"</span>)</div><div class="line">        silentActor ! <span class="type">SilentMessage</span>(<span class="string">"whisper2"</span>)</div><div class="line">        silentActor ! <span class="type">GetState</span>(testActor) <span class="comment">// 添加了一种消息类型，来返回当前的状态</span></div><div class="line">        expectMsg(<span class="type">Vector</span>(<span class="string">"whisper1"</span>, <span class="string">"whisper2"</span>)) <span class="comment">//测试断言</span></div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="class"><span class="keyword">object</span> <span class="title">SilentActor</span> </span>&#123;</div><div class="line">    <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">SilentMessage</span>(<span class="params">data: <span class="type">String</span></span>)</span></div><div class="line">    <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">GetState</span>(<span class="params">receiver: <span class="type">ActorRef</span></span>) <span class="title">//添加的消息类型</span></span></div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="class"><span class="keyword">class</span> <span class="title">SilentActor</span> <span class="keyword">extends</span> <span class="title">Actor</span> </span>&#123;</div><div class="line">    <span class="keyword">import</span> <span class="type">SilentActor</span>._</div><div class="line">    <span class="keyword">var</span> internalState = <span class="type">Vector</span>[<span class="type">String</span>]()</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">receive</span> </span>= &#123;</div><div class="line">      <span class="keyword">case</span> <span class="type">SilentMessage</span>(data) =&gt;</div><div class="line">        internalState = internalState :+ data</div><div class="line">      <span class="keyword">case</span> <span class="type">GetState</span>(receiver) =&gt; receiver ! internalState <span class="comment">//返回参数中内部状态给receiver，也就是GetState参数的ActorRef</span></div><div class="line">    &#125;</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
+<p>多线程使用TestKit内置的<code>testsystem</code>这个ActorSystem来创建SilentActor。这样我们就不能使用多线程的actor去直接访问actor实例了。这里使用GetState消息封装了一个ActorRef作为参数。TestKit有一个testActor让你用来接收你期望的message。我们在receive里添加的GetState的方法返回了指定actorRef的内部状态。expectMsg方法是期望每个发送到testActor的message都被assert。</p>
+<p>这里的internalState依然是不可变的，所以仍然是完全安全的。</p>
+<h5 id="3-2-SendingActor例子"><a href="#3-2-SendingActor例子" class="headerlink" title="3.2 SendingActor例子"></a>3.2 SendingActor例子</h5><p>回想以下第一章中的买票的例子，我们需要测试的是党我们买了一个Ticket，那么可以卖的Ticket总数就要减少一个。既然TicketingAgent负责减票并将event继续传递给下一个TicketingAgent，我们只需要创建一个SendingActor，把它作为下一个接收者放到chain里去，然后观察票数变化情况就行了。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> aia.testdriven</div><div class="line"></div><div class="line"><span class="keyword">import</span> akka.testkit.<span class="type">TestKit</span></div><div class="line"><span class="keyword">import</span> akka.actor.&#123; <span class="type">Props</span>, <span class="type">ActorRef</span>, <span class="type">Actor</span>, <span class="type">ActorSystem</span> &#125;</div><div class="line"><span class="keyword">import</span> org.scalatest.&#123;<span class="type">WordSpecLike</span>, <span class="type">MustMatchers</span>&#125;</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">SendingActor01Test</span> <span class="keyword">extends</span> <span class="title">TestKit</span>(<span class="params"><span class="type">ActorSystem</span>("testsystem"</span>))</span></div><div class="line">  <span class="keyword">with</span> <span class="type">WordSpecLike</span></div><div class="line">  <span class="keyword">with</span> <span class="type">MustMatchers</span></div><div class="line">  <span class="keyword">with</span> <span class="type">StopSystemAfterAll</span> &#123;</div><div class="line"></div><div class="line">  <span class="string">"A Sending Actor"</span> must &#123;</div><div class="line">    <span class="string">"send a message to an actor when it has finished"</span> in &#123;</div><div class="line">      <span class="keyword">import</span> <span class="type">Kiosk01Protocol</span>._</div><div class="line">      <span class="keyword">val</span> props = <span class="type">Props</span>(<span class="keyword">new</span> <span class="type">Kiosk01</span>(testActor)) <span class="comment">// 下一个TicketingAgent通过构造函数传递，这里我们传的是testActor</span></div><div class="line">      <span class="keyword">val</span> sendingActor = system.actorOf(props, <span class="string">"kiosk1"</span>)</div><div class="line">      <span class="keyword">val</span> tickets = <span class="type">Vector</span>(<span class="type">Ticket</span>(<span class="number">1</span>), <span class="type">Ticket</span>(<span class="number">2</span>), <span class="type">Ticket</span>(<span class="number">3</span>))</div><div class="line">      <span class="keyword">val</span> game = <span class="type">Game</span>(<span class="string">"Lakers vs Bulls"</span>, tickets) <span class="comment">// 湖人对公牛的门票库</span></div><div class="line">      sendingActor ! game</div><div class="line"></div><div class="line">      expectMsgPF() &#123;</div><div class="line">        <span class="keyword">case</span> <span class="type">Game</span>(_, tickets) =&gt; <span class="comment">//testAcotr应该接收到了一个event</span></div><div class="line">          tickets.size must be(game.tickets.size - <span class="number">1</span>) <span class="comment">// testActor应该接收到了一个ticket被减少了</span></div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"><span class="class"><span class="keyword">object</span> <span class="title">Kiosk01Protocol</span> </span>&#123;</div><div class="line">  <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Ticket</span>(<span class="params">seat: <span class="type">Int</span></span>) </span></div><div class="line">  <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Game</span>(<span class="params">name: <span class="type">String</span>, tickets: <span class="type">Seq</span>[<span class="type">Ticket</span>]</span>) <span class="title">//包含message的event</span></span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Kiosk01</span>(<span class="params">nextKiosk: <span class="type">ActorRef</span></span>) <span class="keyword">extends</span> <span class="title">Actor</span> </span>&#123;</div><div class="line">  <span class="keyword">import</span> <span class="type">Kiosk01Protocol</span>._</div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">receive</span> </span>= &#123;</div><div class="line">    <span class="keyword">case</span> game @ <span class="type">Game</span>(_, tickets) =&gt;</div><div class="line">      nextKiosk ! game.copy(tickets = tickets.tail) <span class="comment">//一个不可变的去掉第一个ticket的副本被发往下一个TicketingAgent</span></div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>下面是一些SendingActor的变种：</p>
+<table>
+<thead>
+<tr>
+<th>Actor</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MutatingCopyActor</td>
+<td>这种actor创建一个变种的copy，然后发送副本到下一个actor，上面用到的就属于这种</td>
+</tr>
+<tr>
+<td>ForwardingActor</td>
+<td>这种actor不修改收到的message，只是转发出去</td>
+</tr>
+<tr>
+<td>TransformingActor</td>
+<td>这种actor会根据收到的message创建一个不同类型的message</td>
+</tr>
+<tr>
+<td>SequencingActor</td>
+<td>这种actor基于收到的message创建很多的message，然后按序发送出去</td>
+</tr>
+</tbody>
+</table>
+<p>前三种使用相同的方式进行测试。</p>
+<p>FilteringActor不同于其他的是它会定位我们传递的message是为什么没有通过测试？SequencingActor跟它类似。那么我们怎样确认我们收到了正确数量的message呢？先给FilteringActor写个测试吧。我们要弄一个可以自动过滤重复message的FilteringActor。它有一个已经收到的所有的message的list，每次来新的message的时候都检查是不是已经有了相同的message。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> aia.testdriven</div><div class="line"></div><div class="line"><span class="keyword">import</span> akka.testkit.<span class="type">TestKit</span></div><div class="line"><span class="keyword">import</span> akka.actor.&#123; <span class="type">Actor</span>, <span class="type">Props</span>, <span class="type">ActorRef</span>, <span class="type">ActorSystem</span> &#125;</div><div class="line"><span class="keyword">import</span> org.scalatest.&#123;<span class="type">MustMatchers</span>, <span class="type">WordSpecLike</span> &#125;</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">FilteringActorTest</span> <span class="keyword">extends</span> <span class="title">TestKit</span>(<span class="params"><span class="type">ActorSystem</span>("testsystem"</span>))</span></div><div class="line">  <span class="keyword">with</span> <span class="type">WordSpecLike</span></div><div class="line">  <span class="keyword">with</span> <span class="type">MustMatchers</span></div><div class="line">  <span class="keyword">with</span> <span class="type">StopSystemAfterAll</span> &#123;</div><div class="line">  <span class="string">"A Filtering Actor"</span> must &#123;</div><div class="line">    <span class="string">"filter out particular messages"</span> in &#123;</div><div class="line">      <span class="keyword">import</span> <span class="type">FilteringActor</span>._</div><div class="line">      <span class="keyword">val</span> props = <span class="type">FilteringActor</span>.props(testActor, <span class="number">5</span>)</div><div class="line">      <span class="keyword">val</span> filter = system.actorOf(props, <span class="string">"filter-1"</span>)</div><div class="line">      filter ! <span class="type">Event</span>(<span class="number">1</span>) <span class="comment">// 发送一串message</span></div><div class="line">      filter ! <span class="type">Event</span>(<span class="number">2</span>)</div><div class="line">      filter ! <span class="type">Event</span>(<span class="number">1</span>)</div><div class="line">      filter ! <span class="type">Event</span>(<span class="number">3</span>)</div><div class="line">      filter ! <span class="type">Event</span>(<span class="number">1</span>)</div><div class="line">      filter ! <span class="type">Event</span>(<span class="number">4</span>)</div><div class="line">      filter ! <span class="type">Event</span>(<span class="number">5</span>)</div><div class="line">      filter ! <span class="type">Event</span>(<span class="number">5</span>)</div><div class="line">      filter ! <span class="type">Event</span>(<span class="number">6</span>)</div><div class="line">      <span class="keyword">val</span> eventIds = receiveWhile() &#123; <span class="comment">//收集testActor收到的所有满足case语句的message</span></div><div class="line">        <span class="keyword">case</span> <span class="type">Event</span>(id) <span class="keyword">if</span> id &lt;= <span class="number">5</span> =&gt; id</div><div class="line">      &#125;</div><div class="line">      eventIds must be(<span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>)) <span class="comment">//测试没有收入重复的message</span></div><div class="line">      expectMsg(<span class="type">Event</span>(<span class="number">6</span>))</div><div class="line">    &#125;</div><div class="line">    <span class="string">"filter out particular messages using expectNoMsg"</span> in &#123;</div><div class="line">      <span class="keyword">import</span> <span class="type">FilteringActor</span>._</div><div class="line">      <span class="keyword">val</span> props = <span class="type">FilteringActor</span>.props(testActor, <span class="number">5</span>)</div><div class="line">      <span class="keyword">val</span> filter = system.actorOf(props, <span class="string">"filter-2"</span>)</div><div class="line">      filter ! <span class="type">Event</span>(<span class="number">1</span>)</div><div class="line">      filter ! <span class="type">Event</span>(<span class="number">2</span>)</div><div class="line">      expectMsg(<span class="type">Event</span>(<span class="number">1</span>))</div><div class="line">      expectMsg(<span class="type">Event</span>(<span class="number">2</span>))</div><div class="line">      filter ! <span class="type">Event</span>(<span class="number">1</span>)</div><div class="line">      expectNoMsg</div><div class="line">      filter ! <span class="type">Event</span>(<span class="number">3</span>)</div><div class="line">      expectMsg(<span class="type">Event</span>(<span class="number">3</span>))</div><div class="line">      filter ! <span class="type">Event</span>(<span class="number">1</span>)</div><div class="line">      expectNoMsg</div><div class="line">      filter ! <span class="type">Event</span>(<span class="number">4</span>)</div><div class="line">      filter ! <span class="type">Event</span>(<span class="number">5</span>)</div><div class="line">      filter ! <span class="type">Event</span>(<span class="number">5</span>)</div><div class="line">      expectMsg(<span class="type">Event</span>(<span class="number">4</span>))</div><div class="line">      expectMsg(<span class="type">Event</span>(<span class="number">5</span>))</div><div class="line">      expectNoMsg()</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"><span class="class"><span class="keyword">object</span> <span class="title">FilteringActor</span> </span>&#123;</div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">props</span></span>(nextActor: <span class="type">ActorRef</span>, bufferSize: <span class="type">Int</span>) =</div><div class="line">    <span class="type">Props</span>(<span class="keyword">new</span> <span class="type">FilteringActor</span>(nextActor, bufferSize))</div><div class="line">  <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Event</span>(<span class="params">id: <span class="type">Long</span></span>)</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">FilteringActor</span>(<span class="params">nextActor: <span class="type">ActorRef</span>,</span></span></div><div class="line">                     bufferSize: <span class="type">Int</span>) <span class="keyword">extends</span> <span class="title">Actor</span> &#123;<span class="comment">// 定义buffer大小 </span></div><div class="line">  <span class="keyword">import</span> <span class="type">FilteringActor</span>._</div><div class="line">  <span class="keyword">var</span> lastMessages = <span class="type">Vector</span>[<span class="type">Event</span>]() <span class="comment">//上一批message的vector</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">receive</span> </span>= &#123;</div><div class="line">    <span class="keyword">case</span> msg: <span class="type">Event</span> =&gt;</div><div class="line">      <span class="keyword">if</span> (!lastMessages.contains(msg)) &#123;</div><div class="line">        lastMessages = lastMessages :+ msg</div><div class="line">        nextActor ! msg <span class="comment">// 如果buffer中没有event就发送给下个actor</span></div><div class="line">        <span class="keyword">if</span> (lastMessages.size &gt; bufferSize) &#123;</div><div class="line">          <span class="comment">// 当到了最大buffer，最老的message就被忽略了</span></div><div class="line">          lastMessages = lastMessages.tail <span class="comment">//&lt;co id="ch02-filteringactor-discard"/&gt;</span></div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>receiveWhile方法同样也可以用来测试</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/akka/">akka</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/08/01/akka-in-action-读书笔记（3）/" data-title="akka in action 读书笔记（3） | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/08/09/akka-in-action-读书笔记（4）/" title="akka in action 读书笔记（4）">
+  <strong>上一篇：</strong><br/>
+  <span>
+  akka in action 读书笔记（4）</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/07/21/django的POST或者GET参数映射到对象/"  title="django的POST或者GET参数映射到对象">
+ <strong>下一篇：</strong><br/> 
+ <span>django的POST或者GET参数映射到对象
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/08/01/akka-in-action-读书笔记（3）/" data-title="akka in action 读书笔记（3）" data-url="http://willcup.com/2016/08/01/akka-in-action-读书笔记（3）/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-测试Actor"><span class="toc-number">1.</span> <span class="toc-text">3.1 测试Actor</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#3-1-1-准备测试"><span class="toc-number">1.1.</span> <span class="toc-text">3.1.1 准备测试</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-单向消息"><span class="toc-number">2.</span> <span class="toc-text">3.2 单向消息</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#3-2-1-SilentActor例子"><span class="toc-number">2.1.</span> <span class="toc-text">3.2.1 SilentActor例子</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-2-SendingActor例子"><span class="toc-number">2.2.</span> <span class="toc-text">3.2 SendingActor例子</span></a></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/2015a/" title="2015a">2015a<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/django/" title="django">django<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Flume/" title="Flume">Flume<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

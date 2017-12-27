@@ -1,0 +1,566 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>spring + quartz集群环境搭建遇到的问题 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="问题1总是数据库连接失败解决：dataSource的checkoutTimeout由120修改为12000
+问题2 No row exists in table QRTZ_LOCKS for lock named:  TRIGGER_ACCESS 临时解决方案： 12345INSERT INTO QRTZ_LOCKS values(&apos;my sched_name&apos;, &apos;TRIGGER_ACCESS&apos;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spring + quartz集群环境搭建遇到的问题">
+<meta property="og:url" content="http://willcup.com/2015/12/09/spring-quartz集群环境搭建遇到的问题/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="问题1总是数据库连接失败解决：dataSource的checkoutTimeout由120修改为12000
+问题2 No row exists in table QRTZ_LOCKS for lock named:  TRIGGER_ACCESS 临时解决方案： 12345INSERT INTO QRTZ_LOCKS values(&apos;my sched_name&apos;, &apos;TRIGGER_ACCESS&apos;">
+<meta property="og:updated_time" content="2016-10-28T02:54:06.785Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="spring + quartz集群环境搭建遇到的问题">
+<meta name="twitter:description" content="问题1总是数据库连接失败解决：dataSource的checkoutTimeout由120修改为12000
+问题2 No row exists in table QRTZ_LOCKS for lock named:  TRIGGER_ACCESS 临时解决方案： 12345INSERT INTO QRTZ_LOCKS values(&apos;my sched_name&apos;, &apos;TRIGGER_ACCESS&apos;">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/node_modules">测试</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/12/09/spring-quartz集群环境搭建遇到的问题/" title="spring + quartz集群环境搭建遇到的问题" itemprop="url">spring + quartz集群环境搭建遇到的问题</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2015-12-09T10:32:52.000Z" itemprop="datePublished"> 发表于 2015-12-09</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#问题1"><span class="toc-text">问题1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题2"><span class="toc-text">问题2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题3"><span class="toc-text">问题3</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题4"><span class="toc-text">问题4</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#建表语句"><span class="toc-text">建表语句</span></a></li></ol>
+		
+		</div>
+		
+		<h2 id="问题1"><a href="#问题1" class="headerlink" title="问题1"></a>问题1</h2><p>总是数据库连接失败<br>解决：dataSource的checkoutTimeout由120修改为12000</p>
+<h2 id="问题2"><a href="#问题2" class="headerlink" title="问题2"></a>问题2</h2><p> No row exists in table QRTZ_LOCKS for lock named:  TRIGGER_ACCESS<br> 临时解决方案：<br> <figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> QRTZ_LOCKS <span class="keyword">values</span>(<span class="string">'my sched_name'</span>, <span class="string">'TRIGGER_ACCESS'</span>); </div><div class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> QRTZ_LOCKS <span class="keyword">values</span>(<span class="string">'my sched_name'</span>,<span class="string">'JOB_ACCESS'</span>); </div><div class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> QRTZ_LOCKS <span class="keyword">values</span>(<span class="string">'my sched_name'</span>,<span class="string">'CALENDAR_ACCESS'</span>); </div><div class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> QRTZ_LOCKS <span class="keyword">values</span>(<span class="string">'my sched_name'</span>,<span class="string">'STATE_ACCESS'</span>); </div><div class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> QRTZ_LOCKS <span class="keyword">values</span>(<span class="string">'my sched_name'</span>,<span class="string">'MISFIRE_ACCESS'</span>);</div></pre></td></tr></table></figure></p>
+<p>实际的表结构是<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="string">`QRTZ_LOCKS`</span> (</div><div class="line">  <span class="string">`SCHED_NAME`</span> <span class="built_in">varchar</span>(<span class="number">120</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span>,</div><div class="line">    <span class="string">`LOCK_NAME`</span> <span class="built_in">varchar</span>(<span class="number">40</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span>,</div><div class="line">      PRIMARY <span class="keyword">KEY</span> (<span class="string">`SCHED_NAME`</span>,<span class="string">`LOCK_NAME`</span>)</div><div class="line"></div><div class="line">) <span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span> <span class="keyword">DEFAULT</span> <span class="keyword">CHARSET</span>=utf8</div></pre></td></tr></table></figure></p>
+<p><em>后面我们其实会发现，这个表是因为我copy的2.x版本的sql，所以导致表不兼容,也就是版本对应的话其实不会有这个问题的</em></p>
+<p>因为SCHED_NAME其实我们目前并不知道，但是追到代码里有查询这个锁的代码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">StdRowLockSemaphore.executeSQL的注释：Execute the SQL select for update that will lock the proper database row.</div></pre></td></tr></table></figure></p>
+<h2 id="问题3"><a href="#问题3" class="headerlink" title="问题3"></a>问题3</h2><blockquote>
+<p>Uable to serialize JobDataMap for insertion into database because the value of property ‘methodInvoker’ is not serializable: org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean</p>
+</blockquote>
+<p>原因就是是用的org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean的个别属性不能序列化，所以不能把Job写到mysql的表里去。那就换个方式<br>改用org.springframework.scheduling.quartz.JobDetailBean<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WillSpringJob</span> <span class="keyword">extends</span> <span class="title">QuartzJobBean</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> Scheduler scheduler;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">executeInternal</span><span class="params">(JobExecutionContext context)</span> <span class="keyword">throws</span> JobExecutionException </span>&#123;</div><div class="line">                System.out.println(<span class="string">"sssssssssssssssss"</span>);</div><div class="line">                    </div><div class="line">        &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>相关任务修改<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"abnormalDitail"</span> <span class="attr">class</span>=<span class="string">"org.springframework.scheduling.quartz.JobDetailBean"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"jobClass"</span> <span class="attr">value</span>=<span class="string">"com.task.WillSpringJob"</span> /&gt;</span></div><div class="line">     <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"jobDataAsMap"</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">map</span>&gt;</span></div><div class="line">       <span class="tag">&lt;<span class="name">entry</span> <span class="attr">key</span>=<span class="string">"timeout"</span> <span class="attr">value</span>=<span class="string">"5"</span> /&gt;</span></div><div class="line">      <span class="tag">&lt;/<span class="name">map</span>&gt;</span></div><div class="line">      <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<h2 id="问题4"><a href="#问题4" class="headerlink" title="问题4"></a>问题4</h2><blockquote>
+<p>Error creating bean with name ‘quartzScheduler’ defined in file [/Users/will/work/dolphin/target/classes/task/TestTask.xml]: Invocation of init method failed; nested exception is org.quartz.JobPersistenceException: Couldn’t store job: Unknown column ‘IS_VOLATILE’ in ‘field list’ [See nested exception: com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: Unknown column ‘IS_VOLATILE’ in ‘field list’]:<br>com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: Unknown column ‘IS_VOLATILE’ in ‘field list’</p>
+</blockquote>
+<p>稍微想一下，验证过没有锁之后，启动spring之后，应该是读取job配置文件，然后就将这些job插入到mysql的表QRTZ_JOB_DETAILS中去，以便于集群共同承担任务调度。所以这个不在field list里的字段就是QRTZ_JOB_DETAILS表里的。看来我找的sql版本与目前用到的quartz版本不一致。。。</p>
+<p>为了让自己当前稍微爽一下，先在mysql里直接修改表，添加这个字段。后续又出现了IS_STATEFUL。<br>然后又报错：Field ‘SCHED_NAME’ doesn’t have a default value。<br>fun，找版本，不玩儿了。最终定的版本是1.8.6。</p>
+<h2 id="建表语句"><a href="#建表语句" class="headerlink" title="建表语句"></a>建表语句</h2><p>用quartz管理任务计划很方便，但是当使用数据库作为存储介质的时候，必须要先创建表，不然就会报错。1.x和2.x的建表语句不同，以下是两个版本使用MySQL时的建表语句。<br>1.x建表语句为：<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div></pre></td><td class="code"><pre><div class="line">#</div><div class="line"># In your Quartz properties file, you'll need to set </div><div class="line"># org.quartz.jobStore.driverDelegateClass = org.quartz.impl.jdbcjobstore.StdJDBCDelegate</div><div class="line">#</div><div class="line">#</div><div class="line"># By: Ron Cordell - roncordell</div><div class="line">#  I didn't see this anywhere, so I thought I'd post it here. This is the script from Quartz to create the tables in a MySQL database, modified to use INNODB instead of MYISAM.</div><div class="line"></div><div class="line">DROP TABLE IF EXISTS QRTZ_JOB_LISTENERS;</div><div class="line">DROP TABLE IF EXISTS QRTZ_TRIGGER_LISTENERS;</div><div class="line">DROP TABLE IF EXISTS QRTZ_FIRED_TRIGGERS;</div><div class="line">DROP TABLE IF EXISTS QRTZ_PAUSED_TRIGGER_GRPS;</div><div class="line">DROP TABLE IF EXISTS QRTZ_SCHEDULER_STATE;</div><div class="line">DROP TABLE IF EXISTS QRTZ_LOCKS;</div><div class="line">DROP TABLE IF EXISTS QRTZ_SIMPLE_TRIGGERS;</div><div class="line">DROP TABLE IF EXISTS QRTZ_CRON_TRIGGERS;</div><div class="line">DROP TABLE IF EXISTS QRTZ_BLOB_TRIGGERS;</div><div class="line">DROP TABLE IF EXISTS QRTZ_TRIGGERS;</div><div class="line">DROP TABLE IF EXISTS QRTZ_JOB_DETAILS;</div><div class="line">DROP TABLE IF EXISTS QRTZ_CALENDARS;</div><div class="line">CREATE TABLE QRTZ_JOB_DETAILS(</div><div class="line">JOB_NAME VARCHAR(200) NOT NULL,</div><div class="line">JOB_GROUP VARCHAR(200) NOT NULL,</div><div class="line">DESCRIPTION VARCHAR(250) NULL,</div><div class="line">JOB_CLASS_NAME VARCHAR(250) NOT NULL,</div><div class="line">IS_DURABLE VARCHAR(1) NOT NULL,</div><div class="line">IS_VOLATILE VARCHAR(1) NOT NULL,</div><div class="line">IS_STATEFUL VARCHAR(1) NOT NULL,</div><div class="line">REQUESTS_RECOVERY VARCHAR(1) NOT NULL,</div><div class="line">JOB_DATA BLOB NULL,</div><div class="line">PRIMARY KEY (JOB_NAME,JOB_GROUP)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_JOB_LISTENERS (</div><div class="line">JOB_NAME VARCHAR(200) NOT NULL,</div><div class="line">JOB_GROUP VARCHAR(200) NOT NULL,</div><div class="line">JOB_LISTENER VARCHAR(200) NOT NULL,</div><div class="line">PRIMARY KEY (JOB_NAME,JOB_GROUP,JOB_LISTENER),</div><div class="line">INDEX (JOB_NAME, JOB_GROUP),</div><div class="line">FOREIGN KEY (JOB_NAME,JOB_GROUP)</div><div class="line">REFERENCES QRTZ_JOB_DETAILS(JOB_NAME,JOB_GROUP)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_TRIGGERS (</div><div class="line">TRIGGER_NAME VARCHAR(200) NOT NULL,</div><div class="line">TRIGGER_GROUP VARCHAR(200) NOT NULL,</div><div class="line">JOB_NAME VARCHAR(200) NOT NULL,</div><div class="line">JOB_GROUP VARCHAR(200) NOT NULL,</div><div class="line">IS_VOLATILE VARCHAR(1) NOT NULL,</div><div class="line">DESCRIPTION VARCHAR(250) NULL,</div><div class="line">NEXT_FIRE_TIME BIGINT(13) NULL,</div><div class="line">PREV_FIRE_TIME BIGINT(13) NULL,</div><div class="line">PRIORITY INTEGER NULL,</div><div class="line">TRIGGER_STATE VARCHAR(16) NOT NULL,</div><div class="line">TRIGGER_TYPE VARCHAR(8) NOT NULL,</div><div class="line">START_TIME BIGINT(13) NOT NULL,</div><div class="line">END_TIME BIGINT(13) NULL,</div><div class="line">CALENDAR_NAME VARCHAR(200) NULL,</div><div class="line">MISFIRE_INSTR SMALLINT(2) NULL,</div><div class="line">JOB_DATA BLOB NULL,</div><div class="line">PRIMARY KEY (TRIGGER_NAME,TRIGGER_GROUP),</div><div class="line">INDEX (JOB_NAME, JOB_GROUP),</div><div class="line">FOREIGN KEY (JOB_NAME,JOB_GROUP)</div><div class="line">REFERENCES QRTZ_JOB_DETAILS(JOB_NAME,JOB_GROUP)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_SIMPLE_TRIGGERS (</div><div class="line">TRIGGER_NAME VARCHAR(200) NOT NULL,</div><div class="line">TRIGGER_GROUP VARCHAR(200) NOT NULL,</div><div class="line">REPEAT_COUNT BIGINT(7) NOT NULL,</div><div class="line">REPEAT_INTERVAL BIGINT(12) NOT NULL,</div><div class="line">TIMES_TRIGGERED BIGINT(10) NOT NULL,</div><div class="line">PRIMARY KEY (TRIGGER_NAME,TRIGGER_GROUP),</div><div class="line">INDEX (TRIGGER_NAME, TRIGGER_GROUP),</div><div class="line">FOREIGN KEY (TRIGGER_NAME,TRIGGER_GROUP)</div><div class="line">REFERENCES QRTZ_TRIGGERS(TRIGGER_NAME,TRIGGER_GROUP)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_CRON_TRIGGERS (</div><div class="line">TRIGGER_NAME VARCHAR(200) NOT NULL,</div><div class="line">TRIGGER_GROUP VARCHAR(200) NOT NULL,</div><div class="line">CRON_EXPRESSION VARCHAR(120) NOT NULL,</div><div class="line">TIME_ZONE_ID VARCHAR(80),</div><div class="line">PRIMARY KEY (TRIGGER_NAME,TRIGGER_GROUP),</div><div class="line">INDEX (TRIGGER_NAME, TRIGGER_GROUP),</div><div class="line">FOREIGN KEY (TRIGGER_NAME,TRIGGER_GROUP)</div><div class="line">REFERENCES QRTZ_TRIGGERS(TRIGGER_NAME,TRIGGER_GROUP)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_BLOB_TRIGGERS (</div><div class="line">TRIGGER_NAME VARCHAR(200) NOT NULL,</div><div class="line">TRIGGER_GROUP VARCHAR(200) NOT NULL,</div><div class="line">BLOB_DATA BLOB NULL,</div><div class="line">PRIMARY KEY (TRIGGER_NAME,TRIGGER_GROUP),</div><div class="line">INDEX (TRIGGER_NAME, TRIGGER_GROUP),</div><div class="line">FOREIGN KEY (TRIGGER_NAME,TRIGGER_GROUP)</div><div class="line">REFERENCES QRTZ_TRIGGERS(TRIGGER_NAME,TRIGGER_GROUP)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_TRIGGER_LISTENERS (</div><div class="line">TRIGGER_NAME VARCHAR(200) NOT NULL,</div><div class="line">TRIGGER_GROUP VARCHAR(200) NOT NULL,</div><div class="line">TRIGGER_LISTENER VARCHAR(200) NOT NULL,</div><div class="line">PRIMARY KEY (TRIGGER_NAME,TRIGGER_GROUP,TRIGGER_LISTENER),</div><div class="line">INDEX (TRIGGER_NAME, TRIGGER_GROUP),</div><div class="line">FOREIGN KEY (TRIGGER_NAME,TRIGGER_GROUP)</div><div class="line">REFERENCES QRTZ_TRIGGERS(TRIGGER_NAME,TRIGGER_GROUP)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_CALENDARS (</div><div class="line">CALENDAR_NAME VARCHAR(200) NOT NULL,</div><div class="line">CALENDAR BLOB NOT NULL,</div><div class="line">PRIMARY KEY (CALENDAR_NAME)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_PAUSED_TRIGGER_GRPS (</div><div class="line">TRIGGER_GROUP VARCHAR(200) NOT NULL,</div><div class="line">PRIMARY KEY (TRIGGER_GROUP)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_FIRED_TRIGGERS (</div><div class="line">ENTRY_ID VARCHAR(95) NOT NULL,</div><div class="line">TRIGGER_NAME VARCHAR(200) NOT NULL,</div><div class="line">TRIGGER_GROUP VARCHAR(200) NOT NULL,</div><div class="line">IS_VOLATILE VARCHAR(1) NOT NULL,</div><div class="line">INSTANCE_NAME VARCHAR(200) NOT NULL,</div><div class="line">FIRED_TIME BIGINT(13) NOT NULL,</div><div class="line">PRIORITY INTEGER NOT NULL,</div><div class="line">STATE VARCHAR(16) NOT NULL,</div><div class="line">JOB_NAME VARCHAR(200) NULL,</div><div class="line">JOB_GROUP VARCHAR(200) NULL,</div><div class="line">IS_STATEFUL VARCHAR(1) NULL,</div><div class="line">REQUESTS_RECOVERY VARCHAR(1) NULL,</div><div class="line">PRIMARY KEY (ENTRY_ID)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_SCHEDULER_STATE (</div><div class="line">INSTANCE_NAME VARCHAR(200) NOT NULL,</div><div class="line">LAST_CHECKIN_TIME BIGINT(13) NOT NULL,</div><div class="line">CHECKIN_INTERVAL BIGINT(13) NOT NULL,</div><div class="line">PRIMARY KEY (INSTANCE_NAME)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_LOCKS (</div><div class="line">LOCK_NAME VARCHAR(40) NOT NULL,</div><div class="line">PRIMARY KEY (LOCK_NAME)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">INSERT INTO QRTZ_LOCKS values('TRIGGER_ACCESS');</div><div class="line">INSERT INTO QRTZ_LOCKS values('JOB_ACCESS');</div><div class="line">INSERT INTO QRTZ_LOCKS values('CALENDAR_ACCESS');</div><div class="line">INSERT INTO QRTZ_LOCKS values('STATE_ACCESS');</div><div class="line">INSERT INTO QRTZ_LOCKS values('MISFIRE_ACCESS');</div><div class="line">commit;</div></pre></td></tr></table></figure></p>
+<p>2.x版本的建表语句为：<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div></pre></td><td class="code"><pre><div class="line">#</div><div class="line"># In your Quartz properties file, you'll need to set </div><div class="line"># org.quartz.jobStore.driverDelegateClass = org.quartz.impl.jdbcjobstore.StdJDBCDelegate</div><div class="line">#</div><div class="line">#</div><div class="line"># By: Ron Cordell - roncordell</div><div class="line">#  I didn't see this anywhere, so I thought I'd post it here. This is the script from Quartz to create the tables in a MySQL database, modified to use INNODB instead of MYISAM.</div><div class="line"></div><div class="line">DROP TABLE IF EXISTS QRTZ_FIRED_TRIGGERS;</div><div class="line">DROP TABLE IF EXISTS QRTZ_PAUSED_TRIGGER_GRPS;</div><div class="line">DROP TABLE IF EXISTS QRTZ_SCHEDULER_STATE;</div><div class="line">DROP TABLE IF EXISTS QRTZ_LOCKS;</div><div class="line">DROP TABLE IF EXISTS QRTZ_SIMPLE_TRIGGERS;</div><div class="line">DROP TABLE IF EXISTS QRTZ_SIMPROP_TRIGGERS;</div><div class="line">DROP TABLE IF EXISTS QRTZ_CRON_TRIGGERS;</div><div class="line">DROP TABLE IF EXISTS QRTZ_BLOB_TRIGGERS;</div><div class="line">DROP TABLE IF EXISTS QRTZ_TRIGGERS;</div><div class="line">DROP TABLE IF EXISTS QRTZ_JOB_DETAILS;</div><div class="line">DROP TABLE IF EXISTS QRTZ_CALENDARS;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_JOB_DETAILS(</div><div class="line">SCHED_NAME VARCHAR(120) NOT NULL,</div><div class="line">JOB_NAME VARCHAR(200) NOT NULL,</div><div class="line">JOB_GROUP VARCHAR(200) NOT NULL,</div><div class="line">DESCRIPTION VARCHAR(250) NULL,</div><div class="line">JOB_CLASS_NAME VARCHAR(250) NOT NULL,</div><div class="line">IS_DURABLE VARCHAR(1) NOT NULL,</div><div class="line">IS_NONCONCURRENT VARCHAR(1) NOT NULL,</div><div class="line">IS_UPDATE_DATA VARCHAR(1) NOT NULL,</div><div class="line">REQUESTS_RECOVERY VARCHAR(1) NOT NULL,</div><div class="line">JOB_DATA BLOB NULL,</div><div class="line">PRIMARY KEY (SCHED_NAME,JOB_NAME,JOB_GROUP)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_TRIGGERS (</div><div class="line">SCHED_NAME VARCHAR(120) NOT NULL,</div><div class="line">TRIGGER_NAME VARCHAR(200) NOT NULL,</div><div class="line">TRIGGER_GROUP VARCHAR(200) NOT NULL,</div><div class="line">JOB_NAME VARCHAR(200) NOT NULL,</div><div class="line">JOB_GROUP VARCHAR(200) NOT NULL,</div><div class="line">DESCRIPTION VARCHAR(250) NULL,</div><div class="line">NEXT_FIRE_TIME BIGINT(13) NULL,</div><div class="line">PREV_FIRE_TIME BIGINT(13) NULL,</div><div class="line">PRIORITY INTEGER NULL,</div><div class="line">TRIGGER_STATE VARCHAR(16) NOT NULL,</div><div class="line">TRIGGER_TYPE VARCHAR(8) NOT NULL,</div><div class="line">START_TIME BIGINT(13) NOT NULL,</div><div class="line">END_TIME BIGINT(13) NULL,</div><div class="line">CALENDAR_NAME VARCHAR(200) NULL,</div><div class="line">MISFIRE_INSTR SMALLINT(2) NULL,</div><div class="line">JOB_DATA BLOB NULL,</div><div class="line">PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),</div><div class="line">FOREIGN KEY (SCHED_NAME,JOB_NAME,JOB_GROUP)</div><div class="line">REFERENCES QRTZ_JOB_DETAILS(SCHED_NAME,JOB_NAME,JOB_GROUP)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_SIMPLE_TRIGGERS (</div><div class="line">SCHED_NAME VARCHAR(120) NOT NULL,</div><div class="line">TRIGGER_NAME VARCHAR(200) NOT NULL,</div><div class="line">TRIGGER_GROUP VARCHAR(200) NOT NULL,</div><div class="line">REPEAT_COUNT BIGINT(7) NOT NULL,</div><div class="line">REPEAT_INTERVAL BIGINT(12) NOT NULL,</div><div class="line">TIMES_TRIGGERED BIGINT(10) NOT NULL,</div><div class="line">PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),</div><div class="line">FOREIGN KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)</div><div class="line">REFERENCES QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_CRON_TRIGGERS (</div><div class="line">SCHED_NAME VARCHAR(120) NOT NULL,</div><div class="line">TRIGGER_NAME VARCHAR(200) NOT NULL,</div><div class="line">TRIGGER_GROUP VARCHAR(200) NOT NULL,</div><div class="line">CRON_EXPRESSION VARCHAR(120) NOT NULL,</div><div class="line">TIME_ZONE_ID VARCHAR(80),</div><div class="line">PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),</div><div class="line">FOREIGN KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)</div><div class="line">REFERENCES QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_SIMPROP_TRIGGERS</div><div class="line"> (          </div><div class="line">SCHED_NAME VARCHAR(120) NOT NULL,</div><div class="line">TRIGGER_NAME VARCHAR(200) NOT NULL,</div><div class="line">TRIGGER_GROUP VARCHAR(200) NOT NULL,</div><div class="line">STR_PROP_1 VARCHAR(512) NULL,</div><div class="line">STR_PROP_2 VARCHAR(512) NULL,</div><div class="line">STR_PROP_3 VARCHAR(512) NULL,</div><div class="line">INT_PROP_1 INT NULL,</div><div class="line">INT_PROP_2 INT NULL,</div><div class="line">LONG_PROP_1 BIGINT NULL,</div><div class="line">LONG_PROP_2 BIGINT NULL,</div><div class="line">DEC_PROP_1 NUMERIC(13,4) NULL,</div><div class="line">EC_PROP_2 NUMERIC(13,4) NULL,</div><div class="line">BOOL_PROP_1 VARCHAR(1) NULL,</div><div class="line">OOL_PROP_2 VARCHAR(1) NULL,</div><div class="line">RIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),</div><div class="line">OREIGN KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP) </div><div class="line">REFERENCES QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP))</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_BLOB_TRIGGERS (</div><div class="line">SCHED_NAME VARCHAR(120) NOT NULL,</div><div class="line">TRIGGER_NAME VARCHAR(200) NOT NULL,</div><div class="line">TRIGGER_GROUP VARCHAR(200) NOT NULL,</div><div class="line">BLOB_DATA BLOB NULL,</div><div class="line">PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),</div><div class="line">INDEX (SCHED_NAME,TRIGGER_NAME, TRIGGER_GROUP),</div><div class="line">FOREIGN KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)</div><div class="line">REFERENCES QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_CALENDARS (</div><div class="line">SCHED_NAME VARCHAR(120) NOT NULL,</div><div class="line">CALENDAR_NAME VARCHAR(200) NOT NULL,</div><div class="line">CALENDAR BLOB NOT NULL,</div><div class="line">PRIMARY KEY (SCHED_NAME,CALENDAR_NAME)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_PAUSED_TRIGGER_GRPS (</div><div class="line">SCHED_NAME VARCHAR(120) NOT NULL,</div><div class="line">TRIGGER_GROUP VARCHAR(200) NOT NULL,</div><div class="line">PRIMARY KEY (SCHED_NAME,TRIGGER_GROUP)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_FIRED_TRIGGERS (</div><div class="line">SCHED_NAME VARCHAR(120) NOT NULL,</div><div class="line">ENTRY_ID VARCHAR(95) NOT NULL,</div><div class="line">TRIGGER_NAME VARCHAR(200) NOT NULL,</div><div class="line">TRIGGER_GROUP VARCHAR(200) NOT NULL,</div><div class="line">INSTANCE_NAME VARCHAR(200) NOT NULL,</div><div class="line">FIRED_TIME BIGINT(13) NOT NULL,</div><div class="line">SCHED_TIME BIGINT(13) NOT NULL,</div><div class="line">PRIORITY INTEGER NOT NULL,</div><div class="line">STATE VARCHAR(16) NOT NULL,</div><div class="line">JOB_NAME VARCHAR(200) NULL,</div><div class="line">JOB_GROUP VARCHAR(200) NULL,</div><div class="line">IS_NONCONCURRENT VARCHAR(1) NULL,</div><div class="line">REQUESTS_RECOVERY VARCHAR(1) NULL,</div><div class="line">PRIMARY KEY (SCHED_NAME,ENTRY_ID)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_SCHEDULER_STATE (</div><div class="line">SCHED_NAME VARCHAR(120) NOT NULL,</div><div class="line">INSTANCE_NAME VARCHAR(200) NOT NULL,</div><div class="line">LAST_CHECKIN_TIME BIGINT(13) NOT NULL,</div><div class="line">CHECKIN_INTERVAL BIGINT(13) NOT NULL,</div><div class="line">PRIMARY KEY (SCHED_NAME,INSTANCE_NAME)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line"></div><div class="line">CREATE TABLE QRTZ_LOCKS (</div><div class="line">SCHED_NAME VARCHAR(120) NOT NULL,</div><div class="line">LOCK_NAME VARCHAR(40) NOT NULL,</div><div class="line">PRIMARY KEY (SCHED_NAME,LOCK_NAME)</div><div class="line">)</div><div class="line">ENGINE=InnoDB;</div><div class="line">CREATE INDEX IDX_QRTZ_J_REQ_RECOVERY ON QRTZ_JOB_DETAILS(SCHED_NAME,REQUESTS_RECOVERY);</div><div class="line">CREATE INDEX IDX_QRTZ_J_GRP ON QRTZ_JOB_DETAILS(SCHED_NAME,JOB_GROUP);</div><div class="line"></div><div class="line">CREATE INDEX IDX_QRTZ_T_J ON QRTZ_TRIGGERS(SCHED_NAME,JOB_NAME,JOB_GROUP);</div><div class="line">CREATE INDEX IDX_QRTZ_T_JG ON QRTZ_TRIGGERS(SCHED_NAME,JOB_GROUP);</div><div class="line">CREATE INDEX IDX_QRTZ_T_C ON QRTZ_TRIGGERS(SCHED_NAME,CALENDAR_NAME);</div><div class="line">CREATE INDEX IDX_QRTZ_T_G ON QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);</div><div class="line">CREATE INDEX IDX_QRTZ_T_STATE ON QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_STATE);</div><div class="line">CREATE INDEX IDX_QRTZ_T_N_STATE ON QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP,TRIGGER_STATE);</div><div class="line">CREATE INDEX IDX_QRTZ_T_N_G_STATE ON QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_GROUP,TRIGGER_STATE);</div><div class="line">CREATE INDEX IDX_QRTZ_T_NEXT_FIRE_TIME ON QRTZ_TRIGGERS(SCHED_NAME,NEXT_FIRE_TIME);</div><div class="line">CREATE INDEX IDX_QRTZ_T_NFT_ST ON QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_STATE,NEXT_FIRE_TIME);</div><div class="line">CREATE INDEX IDX_QRTZ_T_NFT_MISFIRE ON QRTZ_TRIGGERS(SCHED_NAME,MISFIRE_INSTR,NEXT_FIRE_TIME);</div><div class="line">CREATE INDEX IDX_QRTZ_T_NFT_ST_MISFIRE ON QRTZ_TRIGGERS(SCHED_NAME,MISFIRE_INSTR,NEXT_FIRE_TIME,TRIGGER_STATE);</div><div class="line">CREATE INDEX IDX_QRTZ_T_NFT_ST_MISFIRE_GRP ON QRTZ_TRIGGERS(SCHED_NAME,MISFIRE_INSTR,NEXT_FIRE_TIME,TRIGGER_GROUP,TRIGGER_STATE);</div><div class="line"></div><div class="line">CREATE INDEX IDX_QRTZ_FT_TRIG_INST_NAME ON QRTZ_FIRED_TRIGGERS(SCHED_NAME,INSTANCE_NAME);</div><div class="line">CREATE INDEX IDX_QRTZ_FT_INST_JOB_REQ_RCVRY ON QRTZ_FIRED_TRIGGERS(SCHED_NAME,INSTANCE_NAME,REQUESTS_RECOVERY);</div><div class="line">CREATE INDEX IDX_QRTZ_FT_J_G ON QRTZ_FIRED_TRIGGERS(SCHED_NAME,JOB_NAME,JOB_GROUP);</div><div class="line">CREATE INDEX IDX_QRTZ_FT_JG ON QRTZ_FIRED_TRIGGERS(SCHED_NAME,JOB_GROUP);</div><div class="line">CREATE INDEX IDX_QRTZ_FT_T_G ON QRTZ_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP);</div><div class="line">CREATE INDEX IDX_QRTZ_FT_TG ON QRTZ_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);</div><div class="line"></div><div class="line">commit;</div></pre></td></tr></table></figure></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/spring/">spring</a><a href="/tags/quartz/">quartz</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2015/12/09/spring-quartz集群环境搭建遇到的问题/" data-title="spring + quartz集群环境搭建遇到的问题 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/12/10/spring-quartz集群配置全部资料/" title="spring + quartz集群配置全部资料">
+  <strong>上一篇：</strong><br/>
+  <span>
+  spring + quartz集群配置全部资料</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/12/09/springboot坑记1/"  title="springboot坑记1">
+ <strong>下一篇：</strong><br/> 
+ <span>springboot坑记1
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2015/12/09/spring-quartz集群环境搭建遇到的问题/" data-title="spring + quartz集群环境搭建遇到的问题" data-url="http://willcup.com/2015/12/09/spring-quartz集群环境搭建遇到的问题/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#问题1"><span class="toc-number">1.</span> <span class="toc-text">问题1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题2"><span class="toc-number">2.</span> <span class="toc-text">问题2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题3"><span class="toc-number">3.</span> <span class="toc-text">问题3</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题4"><span class="toc-number">4.</span> <span class="toc-text">问题4</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#建表语句"><span class="toc-number">5.</span> <span class="toc-text">建表语句</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/2015a/" title="2015a">2015a<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/django/" title="django">django<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Flume/" title="Flume">Flume<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

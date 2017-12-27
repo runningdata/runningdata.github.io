@@ -1,0 +1,602 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>flume源码阅读笔记 （3） | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="前面介绍了几个关键组件以及相互的关系，这次我们来看看flume里对于事务的封装与处理。
+TransactionBasicTransactionSemantics
+state : State //NEW, OPEN, COMPLETED, CLOSED
+initialThreadId : long //记录创建它的ThreadId
+begin()
+commit()
+rollback()
+close(">
+<meta property="og:type" content="article">
+<meta property="og:title" content="flume源码阅读笔记 （3）">
+<meta property="og:url" content="http://willcup.com/2015/07/10/flume-源码阅读笔记（3）/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="前面介绍了几个关键组件以及相互的关系，这次我们来看看flume里对于事务的封装与处理。
+TransactionBasicTransactionSemantics
+state : State //NEW, OPEN, COMPLETED, CLOSED
+initialThreadId : long //记录创建它的ThreadId
+begin()
+commit()
+rollback()
+close(">
+<meta property="og:updated_time" content="2016-10-28T02:54:06.781Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="flume源码阅读笔记 （3）">
+<meta name="twitter:description" content="前面介绍了几个关键组件以及相互的关系，这次我们来看看flume里对于事务的封装与处理。
+TransactionBasicTransactionSemantics
+state : State //NEW, OPEN, COMPLETED, CLOSED
+initialThreadId : long //记录创建它的ThreadId
+begin()
+commit()
+rollback()
+close(">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/node_modules">测试</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/07/10/flume-源码阅读笔记（3）/" title="flume源码阅读笔记 （3）" itemprop="url">flume源码阅读笔记 （3）</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2015-07-09T16:13:12.000Z" itemprop="datePublished"> 发表于 2015-07-10</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Transaction"><span class="toc-text">Transaction</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#BasicTransactionSemantics"><span class="toc-text">BasicTransactionSemantics</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Channel"><span class="toc-text">Channel</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#BasicChannelSemantics"><span class="toc-text">BasicChannelSemantics</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#实现类MemoryTransaction在MemoryChannel里的使用"><span class="toc-text">实现类MemoryTransaction在MemoryChannel里的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#MemoryTransaction"><span class="toc-text">MemoryTransaction</span></a></li></ol></li></ol>
+		
+		</div>
+		
+		<p>前面介绍了几个关键组件以及相互的关系，这次我们来看看flume里对于事务的封装与处理。</p>
+<h2 id="Transaction"><a href="#Transaction" class="headerlink" title="Transaction"></a>Transaction</h2><h3 id="BasicTransactionSemantics"><a href="#BasicTransactionSemantics" class="headerlink" title="BasicTransactionSemantics"></a>BasicTransactionSemantics</h3><ul>
+<li>state : State //NEW, OPEN, COMPLETED, CLOSED</li>
+<li>initialThreadId : long //记录创建它的ThreadId</li>
+<li>begin()</li>
+<li>commit()</li>
+<li>rollback()</li>
+<li>close()</li>
+<li>put(Event)</li>
+<li>take()<br>An implementation of basic Transaction semantics designed to work in concert with <strong>BasicChannelSemantics</strong> to simplify creation of robust Channel implementations. This class ensures that each transaction implementation method is called <strong>only while the transaction is in the correct state for that method, and only by the thread that created the transaction</strong>. Nested calls to begin() and close() are supported as long as they are balanced. </li>
+</ul>
+<p>是基本Transaction的实现，与<strong>BasicChannelSemantics</strong>配合。这个类保证transaction实现方法<strong>只在当前transaction适当的状态下触发，而且只能被创建当前transaction的线程触发</strong>。</p>
+<p>Subclasses need only implement <strong>doPut, doTake, doCommit</strong>, and <strong>doRollback</strong>, and the developer can rest assured that those methods are called only after transaction state preconditions have been properly met. <strong>doBegin</strong> and <strong>doClose</strong> may also be implemented if there is work to be done at those points. </p>
+<p>子类只需要实现<strong>doPut, doTake, doCommit</strong>以及<strong>doRollback</strong>方法，同时开发人员还需要保证只有在transaction的state被正确的修改后，才能触发这些方法。如果有必要的话，也可以实现<strong>doBegin</strong>和<strong>doClose</strong>方法。</p>
+<p>All InterruptedException exceptions thrown from the implementations of the doXXX methods are automatically wrapped to become ChannelExceptions, but only after restoring the interrupted status of the thread so that any subsequent blocking method calls will themselves throw InterruptedException rather than blocking. The exception to this rule is doTake, which simply returns null instead of wrapping and propagating the InterruptedException, though it still first restores the interrupted status of the thread.<br>当doXXX方法发生异常的时候，首先把当前线程的状态修改为interrupted，然后把所有的InterruptedException转化为ChannelException抛出，这样后面的方法就不会阻塞住。doTake就遵循这样的规则，首先把线程状态改为interrupted，然后不包装以及传递InterruptedException，而是返回null。</p>
+<hr>
+<h2 id="Channel"><a href="#Channel" class="headerlink" title="Channel"></a>Channel</h2><h3 id="BasicChannelSemantics"><a href="#BasicChannelSemantics" class="headerlink" title="BasicChannelSemantics"></a>BasicChannelSemantics</h3><ul>
+<li>currentTransaction : <strong>ThreadLocal</strong>&lt;BasicTransactionSemantics&gt;</li>
+<li>put(Event)</li>
+<li>take()</li>
+<li>getTransaction()</li>
+</ul>
+<hr>
+<h2 id="实现类MemoryTransaction在MemoryChannel里的使用"><a href="#实现类MemoryTransaction在MemoryChannel里的使用" class="headerlink" title="实现类MemoryTransaction在MemoryChannel里的使用"></a>实现类MemoryTransaction在MemoryChannel里的使用</h2><h3 id="MemoryTransaction"><a href="#MemoryTransaction" class="headerlink" title="MemoryTransaction"></a>MemoryTransaction</h3><ul>
+<li>takeList : LinkedBlockingDeque<event> // 消费者的队列</event></li>
+<li>putList : LinkedBlockingDeque<event>  // 生产者的队列</event></li>
+<li>putByteCounter : int</li>
+<li>takeByteCounter : int</li>
+<li>channelCounter : ChannelCounter</li>
+</ul>
+<p>event放入channel<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doPut</span><span class="params">(Event event)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">      channelCounter.incrementEventPutAttemptCount();</div><div class="line">      <span class="keyword">int</span> eventByteSize = (<span class="keyword">int</span>)Math.ceil(estimateEventSize(event)/byteCapacitySlotSize);</div><div class="line">      <span class="keyword">if</span> (!putList.offer(event)) &#123;    <span class="comment">// 放入生产者队列</span></div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> ChannelException(</div><div class="line">          <span class="string">"Put queue for MemoryTransaction of capacity "</span> +</div><div class="line">            putList.size() + <span class="string">" full, consider committing more frequently, "</span> +</div><div class="line">            <span class="string">"increasing capacity or increasing thread count"</span>);</div><div class="line">      &#125;</div><div class="line">      putByteCounter += eventByteSize;</div><div class="line">    &#125;</div></pre></td></tr></table></figure></p>
+<p>消费channel里的event<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">protected</span> Event <span class="title">doTake</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">      channelCounter.incrementEventTakeAttemptCount();</div><div class="line">      <span class="keyword">if</span>(takeList.remainingCapacity() == <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> ChannelException(<span class="string">"Take list for MemoryTransaction, capacity "</span> +</div><div class="line">            takeList.size() + <span class="string">" full, consider committing more frequently, "</span> +</div><div class="line">            <span class="string">"increasing capacity, or increasing thread count"</span>);</div><div class="line">      &#125;</div><div class="line">      <span class="keyword">if</span>(!queueStored.tryAcquire(keepAlive, TimeUnit.SECONDS)) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">      &#125;</div><div class="line">      Event event;</div><div class="line">      <span class="keyword">synchronized</span>(queueLock) &#123;</div><div class="line">        event = queue.poll(); <span class="comment">// 从channel中消费一条数据</span></div><div class="line">      &#125;</div><div class="line">      Preconditions.checkNotNull(event, <span class="string">"Queue.poll returned NULL despite semaphore "</span> +</div><div class="line">          <span class="string">"signalling existence of entry"</span>);</div><div class="line">      takeList.put(event);    <span class="comment">// 放入Transaction的消费者队列</span></div><div class="line"></div><div class="line">      <span class="keyword">int</span> eventByteSize = (<span class="keyword">int</span>)Math.ceil(estimateEventSize(event)/byteCapacitySlotSize);</div><div class="line">      takeByteCounter += eventByteSize;</div><div class="line"></div><div class="line">      <span class="keyword">return</span> event;</div><div class="line">    &#125;</div></pre></td></tr></table></figure></p>
+<p>提交事务：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doCommit</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">      ...</div><div class="line">        <span class="keyword">if</span>(!queueRemaining.tryAcquire(-remainingChange, keepAlive, TimeUnit.SECONDS)) &#123;</div><div class="line">          bytesRemaining.release(putByteCounter);</div><div class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> ChannelFullException(<span class="string">"Space for commit to queue couldn't be acquired."</span> +</div><div class="line">              <span class="string">" Sinks are likely not keeping up with sources, or the buffer size is too tight"</span>);</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">      <span class="keyword">int</span> puts = putList.size();</div><div class="line">      <span class="keyword">int</span> takes = takeList.size();</div><div class="line">      <span class="keyword">synchronized</span>(queueLock) &#123;</div><div class="line">        <span class="keyword">if</span>(puts &gt; <span class="number">0</span> ) &#123;</div><div class="line">          <span class="keyword">while</span>(!putList.isEmpty()) &#123;</div><div class="line">           <span class="comment">//这里的queue是MemoryChannel的Event队列，也就是将这段时间put的event放进channel的意思了</span></div><div class="line">            <span class="keyword">if</span>(!queue.offer(putList.removeFirst())) &#123;</div><div class="line">              <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"Queue add failed, this shouldn't be able to happen"</span>);</div><div class="line">            &#125;</div><div class="line">          &#125;</div><div class="line">        &#125;</div><div class="line">        putList.clear();</div><div class="line">        takeList.clear();</div><div class="line">      &#125;</div><div class="line">      bytesRemaining.release(takeByteCounter);</div><div class="line">      takeByteCounter = <span class="number">0</span>;</div><div class="line">      putByteCounter = <span class="number">0</span>;</div><div class="line"></div><div class="line">      queueStored.release(puts);</div><div class="line">      <span class="keyword">if</span>(remainingChange &gt; <span class="number">0</span>) &#123;</div><div class="line">        queueRemaining.release(remainingChange);</div><div class="line">      &#125;</div><div class="line">      <span class="keyword">if</span> (puts &gt; <span class="number">0</span>) &#123;</div><div class="line">        channelCounter.addToEventPutSuccessCount(puts);</div><div class="line">      &#125;</div><div class="line">      <span class="keyword">if</span> (takes &gt; <span class="number">0</span>) &#123;</div><div class="line">        channelCounter.addToEventTakeSuccessCount(takes);</div><div class="line">      &#125;</div><div class="line"></div><div class="line">      channelCounter.setChannelSize(queue.size());</div><div class="line">    &#125;</div></pre></td></tr></table></figure></p>
+<p>回滚代码, 可想而知，肯定是回复channel之前的状态，将刚刚消费出来的东西塞回去，塞进去的东西拿出来：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doRollback</span><span class="params">()</span> </span>&#123;</div><div class="line">      <span class="keyword">int</span> takes = takeList.size();</div><div class="line">      <span class="keyword">synchronized</span>(queueLock) &#123;</div><div class="line">        <span class="comment">// 检查还能不能塞回去了</span></div><div class="line">        Preconditions.checkState(queue.remainingCapacity() &gt;= takeList.size(), <span class="string">"Not enough space in memory channel "</span> +</div><div class="line">            <span class="string">"queue to rollback takes. This should never happen, please report"</span>);</div><div class="line">        <span class="keyword">while</span>(!takeList.isEmpty()) &#123;</div><div class="line">          queue.addFirst(takeList.removeLast()); <span class="comment">//消费的event塞回去</span></div><div class="line">        &#125;</div><div class="line">        putList.clear();<span class="comment">//这是要塞进去的event清空</span></div><div class="line">      &#125;</div><div class="line">      bytesRemaining.release(putByteCounter);</div><div class="line">      putByteCounter = <span class="number">0</span>;</div><div class="line">      takeByteCounter = <span class="number">0</span>;</div><div class="line"></div><div class="line">      queueStored.release(takes);</div><div class="line">      channelCounter.setChannelSize(queue.size());</div><div class="line">    &#125;</div></pre></td></tr></table></figure></p>
+<p>这里比较容易看到的是，<strong>如果塞了一半报错，会出现一些rollback差错</strong>，因为已经放进去的，并没有拿出来。如果需要实现的话，其实应该在放的时候起一个<strong>计数器</strong>，然后rollback的时候按照数量先往外拿，然后再把前面拿出来的放回去~~~~嘿嘿,是不是可以提交到社区 ^ _ ^</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/源码/">源码</a><a href="/tags/flume/">flume</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2015/07/10/flume-源码阅读笔记（3）/" data-title="flume源码阅读笔记 （3） | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/07/10/flume-源码阅读笔记（4）/" title="flume-源码阅读笔记（4）">
+  <strong>上一篇：</strong><br/>
+  <span>
+  flume-源码阅读笔记（4）</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/07/09/搭建Kafka源码调试环境/"  title="搭建Kafka源码调试环境">
+ <strong>下一篇：</strong><br/> 
+ <span>搭建Kafka源码调试环境
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2015/07/10/flume-源码阅读笔记（3）/" data-title="flume源码阅读笔记 （3）" data-url="http://willcup.com/2015/07/10/flume-源码阅读笔记（3）/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Transaction"><span class="toc-number">1.</span> <span class="toc-text">Transaction</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#BasicTransactionSemantics"><span class="toc-number">1.1.</span> <span class="toc-text">BasicTransactionSemantics</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Channel"><span class="toc-number">2.</span> <span class="toc-text">Channel</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#BasicChannelSemantics"><span class="toc-number">2.1.</span> <span class="toc-text">BasicChannelSemantics</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#实现类MemoryTransaction在MemoryChannel里的使用"><span class="toc-number">3.</span> <span class="toc-text">实现类MemoryTransaction在MemoryChannel里的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#MemoryTransaction"><span class="toc-number">3.1.</span> <span class="toc-text">MemoryTransaction</span></a></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/2015a/" title="2015a">2015a<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/django/" title="django">django<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Flume/" title="Flume">Flume<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

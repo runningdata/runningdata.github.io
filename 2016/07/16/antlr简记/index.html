@@ -1,0 +1,615 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>antlr简记 | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="要素
+source code：面向编程人员的语言代码；
+Lexical Analyser ：词汇解析。将source code解析成为某个语言能理解的有意义的形式；
+Syntax Analyser: 语法解析，检查语言的正确性。
+Semantic Analyser: 语义解析；
+Generate/Improve Code: 生成机器能够读懂的执行代码。
+
+
+参考：https://www.youtu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="antlr简记">
+<meta property="og:url" content="http://willcup.com/2016/07/16/antlr简记/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="要素
+source code：面向编程人员的语言代码；
+Lexical Analyser ：词汇解析。将source code解析成为某个语言能理解的有意义的形式；
+Syntax Analyser: 语法解析，检查语言的正确性。
+Semantic Analyser: 语义解析；
+Generate/Improve Code: 生成机器能够读懂的执行代码。
+
+
+参考：https://www.youtu">
+<meta property="og:image" content="http://willcup.com/imgs/antlr/general_phrases_of_compiler.png">
+<meta property="og:image" content="http://willcup.com/imgs/antlr/antlr-install-package-eclipse.png">
+<meta property="og:image" content="http://willcup.com/imgs/antlr/antlr-code-generator-eclipse.png">
+<meta property="og:image" content="http://willcup.com/imgs/antlr/antlr-editor-eclipse.png">
+<meta property="og:image" content="http://willcup.com/imgs/antlr/antlr-intercepter-eclipse.png">
+<meta property="og:image" content="http://willcup.com/imgs/antlr/antlr-process-concepts.png">
+<meta property="og:image" content="http://willcup.com/imgs/antlr/antlr-process-code.png">
+<meta property="og:image" content="http://willcup.com/imgs/antlr/antlr-exec-level.png">
+<meta property="og:updated_time" content="2016-10-28T02:54:06.777Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="antlr简记">
+<meta name="twitter:description" content="要素
+source code：面向编程人员的语言代码；
+Lexical Analyser ：词汇解析。将source code解析成为某个语言能理解的有意义的形式；
+Syntax Analyser: 语法解析，检查语言的正确性。
+Semantic Analyser: 语义解析；
+Generate/Improve Code: 生成机器能够读懂的执行代码。
+
+
+参考：https://www.youtu">
+<meta name="twitter:image" content="http://willcup.com/imgs/antlr/general_phrases_of_compiler.png">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/node_modules">测试</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:willcup.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/07/16/antlr简记/" title="antlr简记" itemprop="url">antlr简记</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-07-16T14:49:04.000Z" itemprop="datePublished"> 发表于 2016-07-16</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#要素"><span class="toc-text">要素</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#环境准备"><span class="toc-text">环境准备</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#环境准备-1"><span class="toc-text">环境准备</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#插件设置"><span class="toc-text">插件设置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#IDE简介"><span class="toc-text">IDE简介</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#grammer编辑界面"><span class="toc-text">grammer编辑界面</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#测试执行界面"><span class="toc-text">测试执行界面</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#概念"><span class="toc-text">概念</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#创建antlr文件"><span class="toc-text">创建antlr文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#小结"><span class="toc-text">小结</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#表达式"><span class="toc-text">表达式</span></a></li></ol></li></ol></li></ol></li></ol>
+		
+		</div>
+		
+		<h2 id="要素"><a href="#要素" class="headerlink" title="要素"></a>要素</h2><ul>
+<li>source code：面向编程人员的语言代码；</li>
+<li>Lexical Analyser ：词汇解析。将source code解析成为某个语言能理解的有意义的形式；</li>
+<li>Syntax Analyser: 语法解析，检查语言的正确性。</li>
+<li>Semantic Analyser: 语义解析；</li>
+<li>Generate/Improve Code: 生成机器能够读懂的执行代码。</li>
+</ul>
+<p><img src="/imgs/antlr/general_phrases_of_compiler.png" alt=""></p>
+<p>参考：<a href="https://www.youtube.com/watch?v=PooQrbFrd_U" target="_blank" rel="external">https://www.youtube.com/watch?v=PooQrbFrd_U</a></p>
+<h2 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h2><h4 id="环境准备-1"><a href="#环境准备-1" class="headerlink" title="环境准备"></a>环境准备</h4><p>使用eclipse进行开发。</p>
+<ul>
+<li>IDE环境准备：eclipse classic 3.5.0</li>
+<li>eclipse 插件<ul>
+<li>GEF-ALL-3.8.2</li>
+<li>dltk-core-S-3.0.1-201108261011</li>
+<li>antlr3. <a href="http://antlrv3ide.sourceforge.net/updates" target="_blank" rel="external">http://antlrv3ide.sourceforge.net/updates</a></li>
+</ul>
+</li>
+</ul>
+<h4 id="插件设置"><a href="#插件设置" class="headerlink" title="插件设置"></a>插件设置</h4><p>主要就是preferences里的antlr-&gt;builder里添加一个installed package，只需要一个jar包即可，但是规范是把这个jar包放到某个文件夹里。</p>
+<p>我的地址是：E:\tools\antlr3.2。里面放置了antlr-3.2.jar文件。<br><img src="/imgs/antlr/antlr-install-package-eclipse.png" alt="添加antlr的jar包给插件调用"><br>还可以在code generator配置一下代码产生的位置。<br><img src="/imgs/antlr/antlr-code-generator-eclipse.png" alt="代码产生位置"></p>
+<h4 id="IDE简介"><a href="#IDE简介" class="headerlink" title="IDE简介"></a>IDE简介</h4><h5 id="grammer编辑界面"><a href="#grammer编辑界面" class="headerlink" title="grammer编辑界面"></a>grammer编辑界面</h5><p>有些自动提示啥的，保存后会自动编译，并在前面指定位置生成lexer和parser代码。<br><img src="/imgs/antlr/antlr-editor-eclipse.png" alt="antlr编辑器"></p>
+<h5 id="测试执行界面"><a href="#测试执行界面" class="headerlink" title="测试执行界面"></a>测试执行界面</h5><p>完成gramemr的编辑之后，可以编辑一些测试脚本，验证grammer的正确性。跟测试连接的真紧密啊，貌似antlr想不测试驱动开发都难，哈哈~<br><img src="/imgs/antlr/antlr-intercepter-eclipse.png" alt="antlr Intercepter"><br><strong>注意</strong> : 有的时候直接点击右上角的执行按钮，并不能成功解析。可以再试一下执行的下来按钮里的Run(java)的方式，它等同于执行以下代码：<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line">```</div><div class="line"></div><div class="line">##### RailRoad 视图</div><div class="line">展示每个rule的路线图。点击左边的rule，右边就自动呈现出来了。可以形象化的展示我们定义的每个rule。</div><div class="line">![antlr RailRoad界面](/imgs/antlr/antlr-railroad-eclipse.png)</div><div class="line">  </div><div class="line">  </div><div class="line">  </div><div class="line">  </div><div class="line">#### 创建项目</div><div class="line">创建普通java项目，之后转为antlr项目，.project：</div><div class="line">```xml</div><div class="line">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</div><div class="line">&lt;projectDescription&gt;</div><div class="line">	&lt;name&gt;anltr-learning&lt;/name&gt;</div><div class="line">	&lt;comment&gt;&lt;/comment&gt;</div><div class="line">	&lt;projects&gt;</div><div class="line">	&lt;/projects&gt;</div><div class="line">	&lt;buildSpec&gt;</div><div class="line">		&lt;buildCommand&gt;</div><div class="line">			&lt;name&gt;org.eclipse.dltk.core.scriptbuilder&lt;/name&gt;</div><div class="line">			&lt;arguments&gt;</div><div class="line">			&lt;/arguments&gt;</div><div class="line">		&lt;/buildCommand&gt;</div><div class="line">		&lt;buildCommand&gt;</div><div class="line">			&lt;name&gt;org.eclipse.jdt.core.javabuilder&lt;/name&gt;</div><div class="line">			&lt;arguments&gt;</div><div class="line">			&lt;/arguments&gt;</div><div class="line">		&lt;/buildCommand&gt;</div><div class="line">	&lt;/buildSpec&gt;</div><div class="line">	&lt;natures&gt;</div><div class="line">		&lt;nature&gt;org.eclipse.jdt.core.javanature&lt;/nature&gt;</div><div class="line">		&lt;nature&gt;org.deved.antlride.core.nature&lt;/nature&gt;</div><div class="line">	&lt;/natures&gt;</div><div class="line">&lt;/projectDescription&gt;</div></pre></td></tr></table></figure></p>
+<p>在根目录创建一个lib文件夹，然后把刚才那个install package里的jar包copy到lib里来，加入当前project的build path。</p>
+<h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><p>逻辑流程图<br><img src="/imgs/antlr/antlr-process-concepts.png" alt="逻辑流程"><br>物理流程图<br><img src="/imgs/antlr/antlr-process-code.png" alt="物理流程"></p>
+<ul>
+<li>Lexer解析出重要的Token发送给Parser</li>
+<li>Parser生成AST Tree，</li>
+<li>TreeParser负责结合AST Tree里的context生成代码</li>
+</ul>
+<h4 id="创建antlr文件"><a href="#创建antlr文件" class="headerlink" title="创建antlr文件"></a>创建antlr文件</h4><p>创建Sample.g文件，开始真正编辑antlr文件。经测试，.g文件并不支持中文注释，会报某种NullPointer的错误。下面的注释只为解释，如果copy的话，自行注意去除。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div></pre></td><td class="code"><pre><div class="line">grammar Sample;// 类似类名似的，必须跟文件同名</div><div class="line"></div><div class="line">options &#123;</div><div class="line">  language = Java;</div><div class="line">&#125;</div><div class="line"></div><div class="line">@header &#123;</div><div class="line">    package com.will;</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line">@lexer::header &#123;</div><div class="line">    package com.will;</div><div class="line">&#125;</div><div class="line"></div><div class="line">// 以下这些在antlr里都是rule了。就是定义一些语法规则。</div><div class="line">// IDENT其实也可以看成rule，只是只包含常量的rule而已。</div><div class="line">// 这个program是最外层的rule了，其实也可以叫pppp，随便。</div><div class="line">program</div><div class="line">    : &apos;program&apos; IDENT &apos;=&apos;</div><div class="line">        (constrant | variable)*</div><div class="line">        &apos;begin&apos;</div><div class="line">        statement*</div><div class="line">        &apos;end&apos; IDENT &apos;.&apos;</div><div class="line">    ;</div><div class="line"></div><div class="line">constrant</div><div class="line">    : &apos;constrant&apos; IDENT &apos;:&apos; type &apos;:=&apos; Integer &apos;;&apos;</div><div class="line">    ;</div><div class="line">    </div><div class="line">type</div><div class="line">    : &apos;Integer&apos;</div><div class="line">    ;</div><div class="line">    </div><div class="line">variable</div><div class="line">    : &apos;var&apos; IDENT (&apos;,&apos; IDENT)* &apos;:&apos; type &apos;;&apos;</div><div class="line">    ;</div><div class="line">    </div><div class="line">    </div><div class="line">// fun time</div><div class="line">// 运算符优先级设计实现，低优先级expression调用高优先级的expression</div><div class="line">term</div><div class="line">    : Integer</div><div class="line">    | &apos;(&apos; expression &apos;)&apos;</div><div class="line">    | IDENT</div><div class="line">    ;</div><div class="line"></div><div class="line">negation</div><div class="line">    : &apos;not&apos;* term</div><div class="line">    ;</div><div class="line">    </div><div class="line">unary</div><div class="line">    : (&apos;+&apos; |&apos;-&apos;)* negation</div><div class="line">    ;</div><div class="line"></div><div class="line">mult</div><div class="line">    : unary ((&apos;*&apos; | &apos;/&apos; | &apos;mode&apos;) unary)*</div><div class="line">    ;</div><div class="line">    </div><div class="line">add</div><div class="line">    : mult ((&apos;+&apos; | &apos;-&apos;) mult)*</div><div class="line">    ;</div><div class="line">    </div><div class="line">relation</div><div class="line">    : add ((&apos;=&apos; | &apos;/=&apos; | &apos;&lt;&apos; | &apos;&lt;=&apos; | &apos;&gt;&apos; | &apos;&gt;=&apos;) add)*</div><div class="line">    ;</div><div class="line"></div><div class="line">expression</div><div class="line">    : relation ((&apos;and&apos; | &apos;or&apos;) relation)*</div><div class="line">    ;</div><div class="line"></div><div class="line">statement</div><div class="line">    : assignmentStatement</div><div class="line">    | ifStatement</div><div class="line">    | loopStatement</div><div class="line">    ;</div><div class="line">exitStatement</div><div class="line">    : &apos;exit&apos; &apos;when&apos; expression</div><div class="line">    ;</div><div class="line"></div><div class="line">assignmentStatement</div><div class="line">    : IDENT &apos;:=&apos; expression &apos;;&apos;</div><div class="line">    ;</div><div class="line">    </div><div class="line">ifStatement</div><div class="line">    : &apos;if&apos; expression &apos;then&apos; statement+</div><div class="line">    (&apos;elif&apos; expression &apos;then&apos; statement+)*</div><div class="line">    (&apos;else&apos; statement+)?</div><div class="line">    &apos;end&apos; &apos;if&apos; &apos;;&apos;</div><div class="line">    ;</div><div class="line">    </div><div class="line">loopStatement</div><div class="line">    : &apos;loop&apos; statement* </div><div class="line">    exitStatement</div><div class="line">    &apos;end&apos; &apos;loop&apos; &apos;;&apos;</div><div class="line">    ;</div><div class="line"> </div><div class="line"></div><div class="line">// 静态常量rule</div><div class="line">Integer: &apos;0&apos;..&apos;9&apos;+;</div><div class="line"></div><div class="line">IDENT  : (&apos;a&apos;..&apos;z&apos; | &apos;A&apos;..&apos;Z&apos; | &apos;0&apos;..&apos;9&apos;)+;</div><div class="line">WS:(&apos; &apos; | &apos;\t&apos; |&apos;\n&apos;|&apos;\r&apos;|&apos;\f&apos;)+ &#123;$channel = HIDDEN;&#125;;</div><div class="line"></div><div class="line">// comment</div><div class="line">COMMENT: &apos;//&apos; .* (&apos;\n&apos; | &apos;\r&apos;) &#123;$channel = HIDDEN;&#125;;</div><div class="line">MUTICOMMENT: &apos;/*&apos; .* &apos;*/&apos; &#123;$channel = HIDDEN;&#125;;</div></pre></td></tr></table></figure></p>
+<p>上面的文件中有个要提示的地方，就是优先级设置：<br><img src="/imgs/antlr/antlr-exec-level.png" alt="优先级定义"><br>直接copy的人家的图，大概就是从上到下优先级递减。在grammer中的实现就是低优先级的expression调用高优先级的expression，这样在调用某个expression的时候，就先执行位于叶子节点的最高优先级的expression了。</p>
+<p>对应的测试代码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line">program XLSample1 = </div><div class="line">constrant one:Integer :=1;</div><div class="line">constrant two:Integer :=2;</div><div class="line">var x, y, z:Integer;</div><div class="line">begin</div><div class="line">x := 30 + 2 * 9 -10;</div><div class="line">y := 10;</div><div class="line">	if x=2 then</div><div class="line">		y:= 9 * 7 -1;</div><div class="line">		if 9 &gt; d then</div><div class="line">			x:= 90;</div><div class="line">		else</div><div class="line">			x:=0;</div><div class="line">		end if;</div><div class="line">	elif x&gt;9 and 8 &lt; 2 then</div><div class="line">//		x:=90;</div><div class="line">		y:=100;</div><div class="line">	else</div><div class="line">		x:= 99;</div><div class="line">		z:=100;</div><div class="line">		y:=100;</div><div class="line">	end if;</div><div class="line"></div><div class="line">loop</div><div class="line">	x:=0;</div><div class="line">	y:=99;</div><div class="line">	exit when x =0</div><div class="line">end loop;</div><div class="line">end XLSample1.</div></pre></td></tr></table></figure></p>
+<p>虽然就这么几个简单的句子，但是跑出来的AST简直是太大了，就不截图了，感兴趣自己运行了看吧。</p>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p>动态的rule使用小写，静态常量rule就只用大写字母。</p>
+<h5 id="表达式"><a href="#表达式" class="headerlink" title="表达式"></a>表达式</h5><p>基本跟正则差不太多。<br>表达式 | 解释<br>—|—<br>(a | b)| 就是a和b可以以任意次序出现，不严格限定a先于b,或者b先于a。<br>(a | b)<em> | 两者都可以有0或多个<br>(a | b)+ | 两者至少有一个，多个的话，次序可乱<br>| | 或者<br>‘0’..’9’ | 从’0’至’9’，字母也一样，生成的java代码都是直接使用&gt;  &lt;啥的限定范围的<br>‘not’? term | ‘not’可有可无，但是有的话只能有一个，多个就+或者</em><br>{$channel = HIDDEN;} | 设置当前元素在AST中不可见。应该有待挖掘，可能更多个性化的东西，都可以在这里处理</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/antlr/">antlr</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://willcup.com/2016/07/16/antlr简记/" data-title="antlr简记 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/07/16/express杂记/" title="express杂记">
+  <strong>上一篇：</strong><br/>
+  <span>
+  express杂记</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/06/26/ember散记/"  title="ember散记">
+ <strong>下一篇：</strong><br/> 
+ <span>ember散记
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2016/07/16/antlr简记/" data-title="antlr简记" data-url="http://willcup.com/2016/07/16/antlr简记/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#要素"><span class="toc-number">1.</span> <span class="toc-text">要素</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#环境准备"><span class="toc-number">2.</span> <span class="toc-text">环境准备</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#环境准备-1"><span class="toc-number">2.0.1.</span> <span class="toc-text">环境准备</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#插件设置"><span class="toc-number">2.0.2.</span> <span class="toc-text">插件设置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#IDE简介"><span class="toc-number">2.0.3.</span> <span class="toc-text">IDE简介</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#grammer编辑界面"><span class="toc-number">2.0.3.1.</span> <span class="toc-text">grammer编辑界面</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#测试执行界面"><span class="toc-number">2.0.3.2.</span> <span class="toc-text">测试执行界面</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#概念"><span class="toc-number">2.0.4.</span> <span class="toc-text">概念</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#创建antlr文件"><span class="toc-number">2.0.5.</span> <span class="toc-text">创建antlr文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#小结"><span class="toc-number">2.0.6.</span> <span class="toc-text">小结</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#表达式"><span class="toc-number">2.0.6.1.</span> <span class="toc-text">表达式</span></a></li></ol></li></ol></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/2015a/" title="2015a">2015a<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/django/" title="django">django<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Flume/" title="Flume">Flume<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
