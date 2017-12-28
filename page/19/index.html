@@ -81,7 +81,7 @@
  					
                                                 <form class="search" action="/search/index.html" method="get" accept-charset="utf-8" target="_blank">
                                                         <label>搜索</label>
-                                                <input name="s" type="hidden" value= null ><input type="text" name="q" size="30" placeholder="搜索"><br>
+                                                <input name="s" type="hidden" value= null ><input type="text" class="st-default-search-input" name="q" size="30" placeholder="搜索"><br>
                                                 </form>
 					
 					</li>
@@ -422,6 +422,65 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2016/12/05/django使用记录/" title="django使用记录" itemprop="url">django使用记录</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:05:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h4 id="Ubuntu安装失败"><a href="#Ubuntu安装失败" class="headerlink" title="Ubuntu安装失败"></a>Ubuntu安装失败</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# pip install Django</div><div class="line">Downloading/unpacking Django</div><div class="line">  Downloading Django-1.9.7-py2.py3-none-any.whl (6.6MB): 6.6MB downloaded</div><div class="line">Cleaning up...</div><div class="line">Exception:</div><div class="line">Traceback (most recent call last):</div><div class="line">  File &quot;/usr/lib/python2.7/dist-packages/pip/basecommand.py&quot;, line 122, in main</div><div class="line">    status = self.run(options, args)</div><div class="line">  File &quot;/usr/lib/python2.7/dist-packages/pip/commands/install.py&quot;, line 278, in run</div><div class="line">    requirement_set.prepare_files(finder, force_root_egg_info=self.bundle, bundle=self.bundle)</div><div class="line">  File &quot;/usr/lib/python2.7/dist-packages/pip/req.py&quot;, line 1259, in prepare_files</div><div class="line">    )[0]</div><div class="line">IndexError: list index out of range</div><div class="line"></div><div class="line">Storing debug log for failure in /root/.pip/pip.log</div></pre></td></tr></table></figure>
+<p>查了一下，貌似只有Ubuntu有这个问题，需要先安装distribute<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pip install --no-use-wheel --upgrade distribute</div></pre></td></tr></table></figure></p>
+<p>之后再安装django就解决了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# python -c &quot;import django; print(django.get_version())&quot;</div><div class="line">1.9.7</div></pre></td></tr></table></figure></p>
+<p>参考：<br><a href="https://www.zhihu.com/question/38484255" target="_blank" rel="external">https://www.zhihu.com/question/38484255</a></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2016/12/05/hive杂记/" title="hive杂记" itemprop="url">hive杂记</a>
   </h1>
   <p class="article-author">By
@@ -472,65 +531,6 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">select</div><div class="line">xx.loan_day, </div><div class="line">xx.is_new, </div><div class="line">sum(xx.loan_apply_amoun) loan_apply_amoun_all,	</div><div class="line">xx.dt</div><div class="line">from </div><div class="line">(</div><div class="line">select </div><div class="line">nvl(a.loan_day,&apos;-&apos;) loan_day, </div><div class="line">nvl(b.is_newuser, &apos;-&apos;) is_new, </div><div class="line">case when to_date(a.create_time) &lt;=a.dt then a.apply_amount else 0 end loan_apply_amoun,	</div><div class="line">a.dt statistics_date,	</div><div class="line">&apos;weibo&apos; channel ,</div><div class="line">a.dt dt</div><div class="line">from fact_level.fact_loan_info a </div><div class="line">left join ( </div><div class="line">select id,case when to_date(new_user_date)=dt then &apos;newuser&apos; else &apos;olduser&apos; end is_newuser </div><div class="line">from fact_level.fact_user_info </div><div class="line">where dt between &apos;2017-02-13&apos; and &apos;2017-03-27&apos; and is_new=1 </div><div class="line">)b </div><div class="line">on a.user_id=b.id </div><div class="line">where a.dt between &apos;2017-02-13&apos; and &apos;2017-03-27&apos; and a.loan_unit = &apos;002007001&apos; and to_date(a.create_time)&lt;=a.dt and to_date(a.create_time)&gt;=&apos;2017-02-13&apos; </div><div class="line">)xx</div><div class="line">group by xx.dt,xx.loan_day,xx.is_new </div><div class="line">grouping sets (xx.dt,(xx.dt,xx.loan_day,xx.is_new),(xx.dt,xx.loan_day),(xx.dt,xx.is_new))</div></pre></td></tr></table></figure>
 <p>PS: 并不明白为什么参数不能过多，理论上是可以支持的。有兴趣的同学可以参考一下hive 源码咯。</p>
 <p>我写个邮件问问hive用户组的人。</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2016/12/05/django使用记录/" title="django使用记录" itemprop="url">django使用记录</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2016-12-05T09:05:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h4 id="Ubuntu安装失败"><a href="#Ubuntu安装失败" class="headerlink" title="Ubuntu安装失败"></a>Ubuntu安装失败</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# pip install Django</div><div class="line">Downloading/unpacking Django</div><div class="line">  Downloading Django-1.9.7-py2.py3-none-any.whl (6.6MB): 6.6MB downloaded</div><div class="line">Cleaning up...</div><div class="line">Exception:</div><div class="line">Traceback (most recent call last):</div><div class="line">  File &quot;/usr/lib/python2.7/dist-packages/pip/basecommand.py&quot;, line 122, in main</div><div class="line">    status = self.run(options, args)</div><div class="line">  File &quot;/usr/lib/python2.7/dist-packages/pip/commands/install.py&quot;, line 278, in run</div><div class="line">    requirement_set.prepare_files(finder, force_root_egg_info=self.bundle, bundle=self.bundle)</div><div class="line">  File &quot;/usr/lib/python2.7/dist-packages/pip/req.py&quot;, line 1259, in prepare_files</div><div class="line">    )[0]</div><div class="line">IndexError: list index out of range</div><div class="line"></div><div class="line">Storing debug log for failure in /root/.pip/pip.log</div></pre></td></tr></table></figure>
-<p>查了一下，貌似只有Ubuntu有这个问题，需要先安装distribute<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pip install --no-use-wheel --upgrade distribute</div></pre></td></tr></table></figure></p>
-<p>之后再安装django就解决了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# python -c &quot;import django; print(django.get_version())&quot;</div><div class="line">1.9.7</div></pre></td></tr></table></figure></p>
-<p>参考：<br><a href="https://www.zhihu.com/question/38484255" target="_blank" rel="external">https://www.zhihu.com/question/38484255</a></p>
 
         
         

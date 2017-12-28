@@ -81,7 +81,7 @@
  					
                                                 <form class="search" action="/search/index.html" method="get" accept-charset="utf-8" target="_blank">
                                                         <label>搜索</label>
-                                                <input name="s" type="hidden" value= null ><input type="text" name="q" size="30" placeholder="搜索"><br>
+                                                <input name="s" type="hidden" value= null ><input type="text" class="st-default-search-input" name="q" size="30" placeholder="搜索"><br>
                                                 </form>
 					
 					</li>
@@ -92,6 +92,78 @@
     </header>
     <div id="container">
       <div id="main">
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/ember异常记录/" title="ember异常记录" itemprop="url">ember异常记录</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:09:02.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h4 id="ember-mermaid"><a href="#ember-mermaid" class="headerlink" title="ember-mermaid"></a>ember-mermaid</h4><p>要画流程图，对比了一下，决定使用ember-mermaid，但是github里说的安装方式运行的话，会报错：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/<span class="built_in">local</span>/metamap/metamap_js<span class="comment"># ember install ember-mermaid</span></div><div class="line">DEPRECATION: Overriding init without calling this._super is deprecated. Please call this._super(), addon: `ember-mermaid`</div><div class="line">    at Function.Addon.lookup (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:896:27)</div><div class="line">The addon `ember-cli-htmlbars` requires an Ember CLI version of 0.1.2 or above, but you are running null.</div><div class="line">Error: The addon `ember-cli-htmlbars` requires an Ember CLI version of 0.1.2 or above, but you are running null.</div><div class="line">    at Function.deprecatedAssertAbove [as assertAbove] (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli-htmlbars/node_modules/ember-cli-version-checker/index.js:143:18)</div><div class="line">    at CoreObject.module.exports.init (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli-htmlbars/ember-addon-main.js:13:13)</div><div class="line">    at CoreObject.superWrapper [as init] (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/node_modules/core-object/lib/assign-properties.js:32:18)</div><div class="line">    at CoreObject.Class (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/node_modules/core-object/core-object.js:33:38)</div><div class="line">    at /usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/models/addons-factory.js:48:21</div><div class="line">    at visit (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/utilities/DAG.js:23:3)</div><div class="line">    at DAG.topsort (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/utilities/DAG.js:82:7)</div><div class="line">    at CoreObject.extend.initializeAddons (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/models/addons-factory.js:44:11)</div><div class="line">    at CoreObject.extend.initializeAddons (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:226:38)</div><div class="line">    at setupRegistryForEachAddon (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/node_modules/ember-cli-preprocess-registry/preprocessors.js:18:10)</div></pre></td></tr></table></figure></p>
+<p>搜了一下没找到相关资料，索性直接暴力解决,修改报错文件里检查版本的部分/usr/local/metamap/metamap_js/node_modules/ember-cli-htmlbars/node_modules/ember-cli-version-checker/index.js:143:18。看到上面是验证版本的地方出了问题<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> (!dependencyChecker.satisfies(comparison)) &#123;</div><div class="line">  <span class="keyword">var</span> error  = <span class="keyword">new</span> <span class="built_in">Error</span>(message);</div><div class="line"></div><div class="line">  error.suppressStacktrace = <span class="literal">true</span>;</div><div class="line">  <span class="keyword">throw</span> error;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>注释掉上面这些代码后成功安装。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# ember install ember-mermaid</div><div class="line">DEPRECATION: Overriding init without calling this._super is deprecated. Please call this._super(), addon: `ember-mermaid`</div><div class="line">    at Function.Addon.lookup (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:896:27)</div><div class="line">DEPRECATION: Node v0.10.45 is no longer supported by Ember CLI. Please update to a more recent version of Node</div><div class="line">Could not start watchman; falling back to NodeWatcher for file system events.</div><div class="line">Visit http://ember-cli.com/user-guide/#watchman for more info.</div><div class="line">Installed packages for tooling via npm.</div><div class="line">DEPRECATION: Overriding init without calling this._super is deprecated. Please call this._super(), addon: `ember-mermaid`</div><div class="line">    at Function.Addon.lookup (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:896:27)</div><div class="line">installing ember-mermaid</div><div class="line">  install bower package mermaid</div><div class="line">  not-cached https://github.com/knsv/mermaid.git#^0.5.8</div><div class="line">  progress 接收对象中:  26% (58/222)</div><div class="line">  progress 接收对象中:  67% (149/222), 1.98 MiB | 166.00 KiB/s</div><div class="line">  progress 接收对象中:  68% (151/222), 1.98 MiB | 166.00 KiB/s</div><div class="line">  resolved https://github.com/knsv/mermaid.git#0.5.8</div><div class="line">  conflict Unable to find suitable version for mermaid</div><div class="line">    1) mermaid ^0.5.8</div><div class="line">    2) mermaid ^6.0.0</div><div class="line">? Answer 2</div><div class="line">Installed browser packages via Bower.</div><div class="line">Installed addon package.</div></pre></td></tr></table></figure></p>
+<p>既然成功安装了，为防有其他差错，就把这个检查版本的文件恢复回去了。<br>然后启动ember server又出现了这个问题<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# ember serve</div><div class="line">DEPRECATION: Overriding init without calling this._super is deprecated. Please call this._super(), addon: `ember-mermaid`</div><div class="line">    at Function.Addon.lookup (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:896:27)</div><div class="line">The addon `ember-cli-htmlbars` requires an Ember CLI version of 0.1.2 or above, but you are running null.</div><div class="line">Error: The addon `ember-cli-htmlbars` requires an Ember CLI version of 0.1.2 or above, but you are running null.</div><div class="line">    at Function.deprecatedAssertAbove [as assertAbove] (/usr/local/metamap/metamap_js/node_modules/ember-cli-htmlbars/node_modules/ember-cli-version-checker/index.js:143:18)</div><div class="line">    at CoreObject.module.exports.init (/usr/local/metamap/metamap_js/node_modules/ember-cli-htmlbars/ember-addon-main.js:13:13)</div><div class="line">    at CoreObject.superWrapper [as init] (/usr/local/metamap/metamap_js/node_modules/ember-cli/node_modules/core-object/lib/assign-properties.js:32:18)</div><div class="line">    at CoreObject.Class (/usr/local/metamap/metamap_js/node_modules/ember-cli/node_modules/core-object/core-object.js:33:38)</div><div class="line">    at /usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addons-factory.js:48:21</div><div class="line">    at visit (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/utilities/DAG.js:23:3)</div><div class="line">    at DAG.topsort (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/utilities/DAG.js:82:7)</div><div class="line">    at CoreObject.extend.initializeAddons (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addons-factory.js:44:11)</div><div class="line">    at CoreObject.extend.initializeAddons (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:226:38)</div><div class="line">    at setupRegistryForEachAddon (/usr/local/metamap/metamap_js/node_modules/ember-cli/node_modules/ember-cli-preprocess-registry/preprocessors.js:18:10)</div></pre></td></tr></table></figure></p>
+<p>仔细看了一下官方github上给出的解释，说是要把ember-font-awesome升级到2.1.1就可以了。查了一下，压根就没有安装这个东西<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# find . -name &apos;ember-font-awesome&apos;</div><div class="line">root@will-vm:/usr/local/metamap/metamap_js#</div></pre></td></tr></table></figure></p>
+<p>看一下ember-mermaid的官网吧，到ember addon仓库搜索了一把<a href="https://emberobserver.com/addons/ember-mermaid，发现人家的ember-cli的版本是2.4.1，最近支持的是2.5.0.群里很多人都说2.6不稳定，所以一直没有升级。。" target="_blank" rel="external">https://emberobserver.com/addons/ember-mermaid，发现人家的ember-cli的版本是2.4.1，最近支持的是2.5.0.群里很多人都说2.6不稳定，所以一直没有升级。。</a><br>索性我就降级吧。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">npm rm -g ember-cli</div><div class="line">npm install -g ember-cli@2.5</div><div class="line">ember -v</div><div class="line">ember new testPro</div></pre></td></tr></table></figure></p>
+<p>上面使用ember 2.5版本生成了一个临时项目，为了把依赖的版本copy到现有的2.6的项目里去，覆盖掉2.6的那些版本依赖。主要针对bower.json和package.json两个文件里与ember-xxx相关的版本配置。</p>
+<p>之后就成功启动了，也能够使用mermaid了，再删掉临时项目就可以了。</p>
+<p><code>参考</code> ：</p>
+<ul>
+<li><a href="https://github.com/crodriguez1a/ember-mermaid" target="_blank" rel="external">https://github.com/crodriguez1a/ember-mermaid</a></li>
+<li><a href="https://knsv.github.io/mermaid/#usage" target="_blank" rel="external">https://knsv.github.io/mermaid/#usage</a></li>
+<li><a href="http://www.jqueryscript.net/chart-graph/Simple-SVG-Flow-Chart-Plugin-with-jQuery-flowSVG.html" target="_blank" rel="external">http://www.jqueryscript.net/chart-graph/Simple-SVG-Flow-Chart-Plugin-with-jQuery-flowSVG.html</a></li>
+<li><a href="https://jsplumbtoolkit.com/community/demo/flowchart/index.html" target="_blank" rel="external">https://jsplumbtoolkit.com/community/demo/flowchart/index.html</a></li>
+<li><a href="https://www.erp5.com/javascript-10.Flow.Chart" target="_blank" rel="external">https://www.erp5.com/javascript-10.Flow.Chart</a></li>
+<li><a href="https://github.com/ember-cli/ember-cli/issues/5973" target="_blank" rel="external">https://github.com/ember-cli/ember-cli/issues/5973</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
 
    
     
@@ -157,78 +229,6 @@
 <p>下面的查询会查出California的前10名品牌，我们可以修改Count参数为前5名，或者修改Region参数为西雅图：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">SELECT &#123;[Measures].[Unit Sales]&#125; on columns,</div><div class="line">   TopCount([Product].[Brand].members,</div><div class="line">     Parameter(&quot;Count&quot;, NUMERIC, 10, &quot;Number of products to show&quot;),</div><div class="line">     (Parameter(&quot;Region&quot;, [Store], [Store].[USA].[CA]),</div><div class="line">     [Measures].[Unit Sales])) on rows</div><div class="line">FROM Sales</div></pre></td></tr></table></figure></p>
 <p>可以调用Query.getParameters()来获取某个查询的所有参数，然后调用Query.setParameter(String name, String value)修改参数值。</p>
 <h4 id="4-2-内置函数"><a href="#4-2-内置函数" class="headerlink" title="4.2 内置函数"></a>4.2 内置函数</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">StrToSet(&lt;String Expression&gt;[, &lt;Hierarchy&gt;])</div><div class="line">StrToTuple(&lt;String Expression&gt;[, &lt;Hierarchy&gt;])</div></pre></td></tr></table></figure>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2016/12/05/ember异常记录/" title="ember异常记录" itemprop="url">ember异常记录</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2016-12-05T09:09:02.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h4 id="ember-mermaid"><a href="#ember-mermaid" class="headerlink" title="ember-mermaid"></a>ember-mermaid</h4><p>要画流程图，对比了一下，决定使用ember-mermaid，但是github里说的安装方式运行的话，会报错：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/<span class="built_in">local</span>/metamap/metamap_js<span class="comment"># ember install ember-mermaid</span></div><div class="line">DEPRECATION: Overriding init without calling this._super is deprecated. Please call this._super(), addon: `ember-mermaid`</div><div class="line">    at Function.Addon.lookup (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:896:27)</div><div class="line">The addon `ember-cli-htmlbars` requires an Ember CLI version of 0.1.2 or above, but you are running null.</div><div class="line">Error: The addon `ember-cli-htmlbars` requires an Ember CLI version of 0.1.2 or above, but you are running null.</div><div class="line">    at Function.deprecatedAssertAbove [as assertAbove] (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli-htmlbars/node_modules/ember-cli-version-checker/index.js:143:18)</div><div class="line">    at CoreObject.module.exports.init (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli-htmlbars/ember-addon-main.js:13:13)</div><div class="line">    at CoreObject.superWrapper [as init] (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/node_modules/core-object/lib/assign-properties.js:32:18)</div><div class="line">    at CoreObject.Class (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/node_modules/core-object/core-object.js:33:38)</div><div class="line">    at /usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/models/addons-factory.js:48:21</div><div class="line">    at visit (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/utilities/DAG.js:23:3)</div><div class="line">    at DAG.topsort (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/utilities/DAG.js:82:7)</div><div class="line">    at CoreObject.extend.initializeAddons (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/models/addons-factory.js:44:11)</div><div class="line">    at CoreObject.extend.initializeAddons (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:226:38)</div><div class="line">    at setupRegistryForEachAddon (/usr/<span class="built_in">local</span>/metamap/metamap_js/node_modules/ember-cli/node_modules/ember-cli-preprocess-registry/preprocessors.js:18:10)</div></pre></td></tr></table></figure></p>
-<p>搜了一下没找到相关资料，索性直接暴力解决,修改报错文件里检查版本的部分/usr/local/metamap/metamap_js/node_modules/ember-cli-htmlbars/node_modules/ember-cli-version-checker/index.js:143:18。看到上面是验证版本的地方出了问题<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> (!dependencyChecker.satisfies(comparison)) &#123;</div><div class="line">  <span class="keyword">var</span> error  = <span class="keyword">new</span> <span class="built_in">Error</span>(message);</div><div class="line"></div><div class="line">  error.suppressStacktrace = <span class="literal">true</span>;</div><div class="line">  <span class="keyword">throw</span> error;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>注释掉上面这些代码后成功安装。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# ember install ember-mermaid</div><div class="line">DEPRECATION: Overriding init without calling this._super is deprecated. Please call this._super(), addon: `ember-mermaid`</div><div class="line">    at Function.Addon.lookup (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:896:27)</div><div class="line">DEPRECATION: Node v0.10.45 is no longer supported by Ember CLI. Please update to a more recent version of Node</div><div class="line">Could not start watchman; falling back to NodeWatcher for file system events.</div><div class="line">Visit http://ember-cli.com/user-guide/#watchman for more info.</div><div class="line">Installed packages for tooling via npm.</div><div class="line">DEPRECATION: Overriding init without calling this._super is deprecated. Please call this._super(), addon: `ember-mermaid`</div><div class="line">    at Function.Addon.lookup (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:896:27)</div><div class="line">installing ember-mermaid</div><div class="line">  install bower package mermaid</div><div class="line">  not-cached https://github.com/knsv/mermaid.git#^0.5.8</div><div class="line">  progress 接收对象中:  26% (58/222)</div><div class="line">  progress 接收对象中:  67% (149/222), 1.98 MiB | 166.00 KiB/s</div><div class="line">  progress 接收对象中:  68% (151/222), 1.98 MiB | 166.00 KiB/s</div><div class="line">  resolved https://github.com/knsv/mermaid.git#0.5.8</div><div class="line">  conflict Unable to find suitable version for mermaid</div><div class="line">    1) mermaid ^0.5.8</div><div class="line">    2) mermaid ^6.0.0</div><div class="line">? Answer 2</div><div class="line">Installed browser packages via Bower.</div><div class="line">Installed addon package.</div></pre></td></tr></table></figure></p>
-<p>既然成功安装了，为防有其他差错，就把这个检查版本的文件恢复回去了。<br>然后启动ember server又出现了这个问题<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# ember serve</div><div class="line">DEPRECATION: Overriding init without calling this._super is deprecated. Please call this._super(), addon: `ember-mermaid`</div><div class="line">    at Function.Addon.lookup (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:896:27)</div><div class="line">The addon `ember-cli-htmlbars` requires an Ember CLI version of 0.1.2 or above, but you are running null.</div><div class="line">Error: The addon `ember-cli-htmlbars` requires an Ember CLI version of 0.1.2 or above, but you are running null.</div><div class="line">    at Function.deprecatedAssertAbove [as assertAbove] (/usr/local/metamap/metamap_js/node_modules/ember-cli-htmlbars/node_modules/ember-cli-version-checker/index.js:143:18)</div><div class="line">    at CoreObject.module.exports.init (/usr/local/metamap/metamap_js/node_modules/ember-cli-htmlbars/ember-addon-main.js:13:13)</div><div class="line">    at CoreObject.superWrapper [as init] (/usr/local/metamap/metamap_js/node_modules/ember-cli/node_modules/core-object/lib/assign-properties.js:32:18)</div><div class="line">    at CoreObject.Class (/usr/local/metamap/metamap_js/node_modules/ember-cli/node_modules/core-object/core-object.js:33:38)</div><div class="line">    at /usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addons-factory.js:48:21</div><div class="line">    at visit (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/utilities/DAG.js:23:3)</div><div class="line">    at DAG.topsort (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/utilities/DAG.js:82:7)</div><div class="line">    at CoreObject.extend.initializeAddons (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addons-factory.js:44:11)</div><div class="line">    at CoreObject.extend.initializeAddons (/usr/local/metamap/metamap_js/node_modules/ember-cli/lib/models/addon.js:226:38)</div><div class="line">    at setupRegistryForEachAddon (/usr/local/metamap/metamap_js/node_modules/ember-cli/node_modules/ember-cli-preprocess-registry/preprocessors.js:18:10)</div></pre></td></tr></table></figure></p>
-<p>仔细看了一下官方github上给出的解释，说是要把ember-font-awesome升级到2.1.1就可以了。查了一下，压根就没有安装这个东西<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# find . -name &apos;ember-font-awesome&apos;</div><div class="line">root@will-vm:/usr/local/metamap/metamap_js#</div></pre></td></tr></table></figure></p>
-<p>看一下ember-mermaid的官网吧，到ember addon仓库搜索了一把<a href="https://emberobserver.com/addons/ember-mermaid，发现人家的ember-cli的版本是2.4.1，最近支持的是2.5.0.群里很多人都说2.6不稳定，所以一直没有升级。。" target="_blank" rel="external">https://emberobserver.com/addons/ember-mermaid，发现人家的ember-cli的版本是2.4.1，最近支持的是2.5.0.群里很多人都说2.6不稳定，所以一直没有升级。。</a><br>索性我就降级吧。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">npm rm -g ember-cli</div><div class="line">npm install -g ember-cli@2.5</div><div class="line">ember -v</div><div class="line">ember new testPro</div></pre></td></tr></table></figure></p>
-<p>上面使用ember 2.5版本生成了一个临时项目，为了把依赖的版本copy到现有的2.6的项目里去，覆盖掉2.6的那些版本依赖。主要针对bower.json和package.json两个文件里与ember-xxx相关的版本配置。</p>
-<p>之后就成功启动了，也能够使用mermaid了，再删掉临时项目就可以了。</p>
-<p><code>参考</code> ：</p>
-<ul>
-<li><a href="https://github.com/crodriguez1a/ember-mermaid" target="_blank" rel="external">https://github.com/crodriguez1a/ember-mermaid</a></li>
-<li><a href="https://knsv.github.io/mermaid/#usage" target="_blank" rel="external">https://knsv.github.io/mermaid/#usage</a></li>
-<li><a href="http://www.jqueryscript.net/chart-graph/Simple-SVG-Flow-Chart-Plugin-with-jQuery-flowSVG.html" target="_blank" rel="external">http://www.jqueryscript.net/chart-graph/Simple-SVG-Flow-Chart-Plugin-with-jQuery-flowSVG.html</a></li>
-<li><a href="https://jsplumbtoolkit.com/community/demo/flowchart/index.html" target="_blank" rel="external">https://jsplumbtoolkit.com/community/demo/flowchart/index.html</a></li>
-<li><a href="https://www.erp5.com/javascript-10.Flow.Chart" target="_blank" rel="external">https://www.erp5.com/javascript-10.Flow.Chart</a></li>
-<li><a href="https://github.com/ember-cli/ember-cli/issues/5973" target="_blank" rel="external">https://github.com/ember-cli/ember-cli/issues/5973</a></li>
-</ul>
 
         
         

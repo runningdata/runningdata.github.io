@@ -81,7 +81,7 @@
  					
                                                 <form class="search" action="/search/index.html" method="get" accept-charset="utf-8" target="_blank">
                                                         <label>搜索</label>
-                                                <input name="s" type="hidden" value= null ><input type="text" name="q" size="30" placeholder="搜索"><br>
+                                                <input name="s" type="hidden" value= null ><input type="text" class="st-default-search-input" name="q" size="30" placeholder="搜索"><br>
                                                 </form>
 					
 					</li>
@@ -290,89 +290,6 @@
   <div class="article-tags">
   
   <span></span> <a href="/tags/python/">python</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2016/06/20/ambari-web解读（一）-请求流程/" title="ambari-web解读（一）-请求流程" itemprop="url">ambari-web解读（一）-请求流程</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2016-06-20T07:26:42.000Z" itemprop="datePublished"> 发表于 2016-06-20</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>最近为公司选型了大数据维护工具ambari，官网:ambari.apache.org。主要是为了运维方便一些。<br>另外对于数据分析人员开放了一个hive view页面，提供提数支持。但是对于原始的hive view，我们有些不满意的地方：</p>
-<ol>
-<li>table的comment没有展示完全</li>
-<li>后台一直在每15秒钟请求一次后台hiveserver。虽然这并不会对和iveserver造成很大压力，但是感觉不友好，产生很多垃圾log。</li>
-</ol>
-<p>经过差不多一周左右断断续续地探查与学习，基本弄清楚了ambari-web的请求处理脉路。可能对nodejs大神来说这不算啥，但是个人感觉稍微有点儿吃力。学习了一下nodejs的新的工具ember.js。</p>
-<h3 id="1"><a href="#1" class="headerlink" title="1."></a>1.</h3><h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><table>
-<thead>
-<tr>
-<th>链接</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="https://github.com/emberjs/starter-kit/" target="_blank" rel="external">https://github.com/emberjs/starter-kit/</a></td>
-<td>学习ember.js的基础项目</td>
-</tr>
-<tr>
-<td><a href="http://www.html-js.com/article/1685" target="_blank" rel="external">http://www.html-js.com/article/1685</a></td>
-<td>Ember.js Application Development How-to的中文翻译</td>
-</tr>
-<tr>
-<td><a href="http://www.ruanyifeng.com/blog/2011/08/a_detailed_explanation_of_jquery_deferred_object.html" target="_blank" rel="external">http://www.ruanyifeng.com/blog/2011/08/a_detailed_explanation_of_jquery_deferred_object.html</a></td>
-<td>对于jquery回调工具deferred的解释</td>
-</tr>
-</tbody>
-</table>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/ambari/">ambari</a><a href="/tags/源码/">源码</a>
   </div>
 
 </div>
@@ -968,6 +885,89 @@
 <p>So, to access the UI of the above Files view the user would browse to …</p>
 <pre><code>http://&lt;server&gt;:8080/views/FILES/0.1.0/FILES_1/  
 </code></pre><p><img src="ui.png" alt="image"></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/ambari/">ambari</a><a href="/tags/源码/">源码</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/06/20/ambari-web解读（一）-请求流程/" title="ambari-web解读（一）-请求流程" itemprop="url">ambari-web解读（一）-请求流程</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-06-20T07:26:42.000Z" itemprop="datePublished"> 发表于 2016-06-20</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>最近为公司选型了大数据维护工具ambari，官网:ambari.apache.org。主要是为了运维方便一些。<br>另外对于数据分析人员开放了一个hive view页面，提供提数支持。但是对于原始的hive view，我们有些不满意的地方：</p>
+<ol>
+<li>table的comment没有展示完全</li>
+<li>后台一直在每15秒钟请求一次后台hiveserver。虽然这并不会对和iveserver造成很大压力，但是感觉不友好，产生很多垃圾log。</li>
+</ol>
+<p>经过差不多一周左右断断续续地探查与学习，基本弄清楚了ambari-web的请求处理脉路。可能对nodejs大神来说这不算啥，但是个人感觉稍微有点儿吃力。学习了一下nodejs的新的工具ember.js。</p>
+<h3 id="1"><a href="#1" class="headerlink" title="1."></a>1.</h3><h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><table>
+<thead>
+<tr>
+<th>链接</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/emberjs/starter-kit/" target="_blank" rel="external">https://github.com/emberjs/starter-kit/</a></td>
+<td>学习ember.js的基础项目</td>
+</tr>
+<tr>
+<td><a href="http://www.html-js.com/article/1685" target="_blank" rel="external">http://www.html-js.com/article/1685</a></td>
+<td>Ember.js Application Development How-to的中文翻译</td>
+</tr>
+<tr>
+<td><a href="http://www.ruanyifeng.com/blog/2011/08/a_detailed_explanation_of_jquery_deferred_object.html" target="_blank" rel="external">http://www.ruanyifeng.com/blog/2011/08/a_detailed_explanation_of_jquery_deferred_object.html</a></td>
+<td>对于jquery回调工具deferred的解释</td>
+</tr>
+</tbody>
+</table>
 
         
         
