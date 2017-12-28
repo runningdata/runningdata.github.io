@@ -3,6 +3,14 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
+  <script type="text/javascript">
+    (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+    })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+    
+    _st('install','yNiKTKaAnwd1uuxVMfiE','2.0.0');
+  </script>
   <script>
     var _hmt = _hmt || [];
     (function() {
@@ -24,7 +32,7 @@
     <meta name="description" content="简介向量化查询引擎可以在执行scan, filter, aggregate, join等操作的时候很大程度上降低CPU损耗。标准sql执行系统每次只处理一行数据，内部执行的时候会包括很长的代码路径和重要的metadata解析。向量化查询引擎简化了这个过程，一次读取1024行数据，在这个数据块中，每个字段都被存储成向量化的结构(一个原是数据类型的数组)。对于一些简单的算法可以通过快速迭代这个vect">
 <meta property="og:type" content="article">
 <meta property="og:title" content="hive中使用向量化查询引擎Vectorized-Query-Execution">
-<meta property="og:url" content="http://willcup.com/2017/04/25/hive中使用向量化查询引擎Vectorized-Query-Execution/index.html">
+<meta property="og:url" content="https://runningdata.github.io/2017/04/25/hive中使用向量化查询引擎Vectorized-Query-Execution/index.html">
 <meta property="og:site_name" content="Will's Blog">
 <meta property="og:description" content="简介向量化查询引擎可以在执行scan, filter, aggregate, join等操作的时候很大程度上降低CPU损耗。标准sql执行系统每次只处理一行数据，内部执行的时候会包括很长的代码路径和重要的metadata解析。向量化查询引擎简化了这个过程，一次读取1024行数据，在这个数据块中，每个字段都被存储成向量化的结构(一个原是数据类型的数组)。对于一些简单的算法可以通过快速迭代这个vect">
 <meta property="og:updated_time" content="2017-12-27T13:41:24.785Z">
@@ -75,7 +83,7 @@
 					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
 						<label>Search</label>
 						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
-						<input type="hidden" name="q" value="site:willcup.com">
+						<input type="hidden" name="q" value="site:runningdata.github.io">
 					</form>
 					
 					</li>
@@ -160,7 +168,7 @@
 
 	<div class="article-share" id="share">
 	
-	  <div data-url="http://willcup.com/2017/04/25/hive中使用向量化查询引擎Vectorized-Query-Execution/" data-title="hive中使用向量化查询引擎Vectorized-Query-Execution | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  <div data-url="https://runningdata.github.io/2017/04/25/hive中使用向量化查询引擎Vectorized-Query-Execution/" data-title="hive中使用向量化查询引擎Vectorized-Query-Execution | Will&#39;s Blog" data-tsina="null" class="share clearfix">
 	  </div>
 	
 	</div>
@@ -194,7 +202,7 @@
 
 	
 <!-- 多说评论框 start -->
-  <div class="ds-thread" data-thread-key="2017/04/25/hive中使用向量化查询引擎Vectorized-Query-Execution/" data-title="hive中使用向量化查询引擎Vectorized-Query-Execution" data-url="http://willcup.com/2017/04/25/hive中使用向量化查询引擎Vectorized-Query-Execution/"></div>
+  <div class="ds-thread" data-thread-key="2017/04/25/hive中使用向量化查询引擎Vectorized-Query-Execution/" data-title="hive中使用向量化查询引擎Vectorized-Query-Execution" data-url="https://runningdata.github.io/2017/04/25/hive中使用向量化查询引擎Vectorized-Query-Execution/"></div>
 <!-- 多说评论框 end -->
 <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
 <script type="text/javascript">
@@ -235,7 +243,7 @@ var duoshuoQuery = {short_name:"ruoyuchen"};
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>187</sup></a></li>
 			
 		
 			
@@ -287,19 +295,11 @@ var duoshuoQuery = {short_name:"ruoyuchen"};
 			
 		
 			
-				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+				<li><a href="/tags/Solr/" title="Solr">Solr<sup>1</sup></a></li>
 			
 		
 			
@@ -312,6 +312,14 @@ var duoshuoQuery = {short_name:"ruoyuchen"};
 		
 			
 				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hue/" title="hue">hue<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
 			
 		
 		</ul>

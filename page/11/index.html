@@ -3,6 +3,14 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
+  <script type="text/javascript">
+    (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+    })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+    
+    _st('install','yNiKTKaAnwd1uuxVMfiE','2.0.0');
+  </script>
   <script>
     var _hmt = _hmt || [];
     (function() {
@@ -24,7 +32,7 @@
     <meta name="description" content="左右水色 右手天光">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Will's Blog">
-<meta property="og:url" content="http://willcup.com/page/11/index.html">
+<meta property="og:url" content="https://runningdata.github.io/page/11/index.html">
 <meta property="og:site_name" content="Will's Blog">
 <meta property="og:description" content="左右水色 右手天光">
 <meta name="twitter:card" content="summary">
@@ -74,7 +82,7 @@
 					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
 						<label>Search</label>
 						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
-						<input type="hidden" name="q" value="site:willcup.com">
+						<input type="hidden" name="q" value="site:runningdata.github.io">
 					</form>
 					
 					</li>
@@ -91,411 +99,743 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/07/14/使用portainer监控docker容器/" title="使用portainer监控docker容器" itemprop="url">使用portainer监控docker容器</a>
+      <a href="/2017/05/10/django用户组的思考/" title="django用户组的思考" itemprop="url">django用户组的思考</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
 		
   <p class="article-time">
-    <time datetime="2017-07-14T06:57:22.000Z" itemprop="datePublished"> 发表于 2017-07-14</time>
+    <time datetime="2017-05-10T09:24:10.000Z" itemprop="datePublished"> 发表于 2017-05-10</time>
     
   </p>
 </header>
     <div class="article-content">
         
-        <p>我们先监控一个远程的docker daemon，那么这个docker daemon先要允许远程访问才行。</p>
-<p>修改113的配置文件/etc/docker/daemon.json<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;registry-mirrors&quot;: [&quot;https://docker.mirrors.ustc.edu.cn&quot;,&quot;http://3a35aff6.m.daocloud.io&quot;,&quot;http://ethanzhu.m.tenxcloud.net&quot;],</div><div class="line">  &quot;hosts&quot;: [&quot;tcp://0.0.0.0:2375&quot;]</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>注意，启用hosts，也就是远程接口之后，本地的命令行就不能用了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">[root@etl03 ~]# docker images</div><div class="line">Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?</div><div class="line">[root@etl03 ~]# docker -H 0.0.0.0:2375 images</div><div class="line">REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE</div><div class="line">sso                 latest              f8fdedf3edca        13 hours ago        246MB</div><div class="line">centos              7.3.1611            67591570dd29        7 months ago        192MB</div></pre></td></tr></table></figure></p>
-<p>在112上启动portainer<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker run -d -p 9000:9000 --rm -v /var/run/docker.sock:/var/run/docker.sock portainer/portainer</div></pre></td></tr></table></figure></p>
-<p>如果要持久化一些配置文件的话，可以参考以下命令：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker run -d -p 9000:9000 -v /path/on/host/data:/data portainer/portainer</div></pre></td></tr></table></figure></p>
-<p>配置初始密码，然后</p>
-<p>参考：</p>
+        <p>我们有两个不同的事业部A, B， 目前是用django的group来做的。。。都在我的平台上编辑自己的内容OBJ，我给OBJ指定了唯一一个group_id外键来保证AB事业部内容的隔离。。。。现在遇到问题，因为要控制一些权限，当加group的时候…..自己就懵逼了</p>
+<p>不该这样处理AB，对吧。。。应该额外建立一个oaganization来作为AB隔离的。django的group用来做操作权限控制更好，而不是对象隔离。</p>
+<p>所以现在的代码结构是：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">OrgGroup</span><span class="params">(models.Model)</span>:</span></div><div class="line">    name = models.CharField(max_length=<span class="number">200</span>, verbose_name=<span class="string">u"组织名称"</span>)</div><div class="line">    owners = models.CharField(max_length=<span class="number">100</span>, verbose_name=<span class="string">u"负责人"</span>, blank=<span class="keyword">True</span>, default=<span class="string">''</span>)</div><div class="line">    hdfs_path = models.CharField(max_length=<span class="number">100</span>, verbose_name=<span class="string">u"HDFS临时路径"</span>, blank=<span class="keyword">True</span>, default=<span class="string">''</span>)</div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> self.name</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">UserProfile</span><span class="params">(models.Model)</span>:</span></div><div class="line">    user = models.OneToOneField(User)</div><div class="line">    phone = models.BigIntegerField(default=<span class="number">110</span>)</div><div class="line">    org_group = models.ForeignKey(OrgGroup, on_delete=models.DO_NOTHING, related_name=<span class="string">'user_cgroup'</span>, null=<span class="keyword">True</span>)</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> self.user.username</div></pre></td></tr></table></figure></p>
+<p>重新定义了一个组织的model，然后每个人都有属于某个特定的组织。</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">JarApp</span><span class="params">(models.Model)</span>:</span></div><div class="line">    .....</div><div class="line">    cgroup = models.ForeignKey(OrgGroup, on_delete=models.DO_NOTHING, </div><div class="line">    .....</div></pre></td></tr></table></figure>
+<p>上面的cgroup原来是<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">cgroup = models.ForeignKey(auth.Group, on_delete=models.DO_NOTHING, related_name=&apos;jar_cgroup&apos;, null=True)</div></pre></td></tr></table></figure></p>
+<p>然后还要重构JarApp的新建与查询的一些代码。</p>
+<p>这样，使用自定义的组织来划分人员与面向的内容。使用django的group来控制是否组织内特定人员组具有的权限【ETL开发人员、与报表开发人员】。</p>
+<p>自定义的组织用来限定报表和ETL所属的组织。而django的auth.group可以管理一组权限【对ETL、报表的访问权限、操作权限等】。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/05/09/ambari个别component扩张/" title="ambari个别component扩张" itemprop="url">ambari个别component扩张</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-05-09T03:08:30.000Z" itemprop="datePublished"> 发表于 2017-05-09</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>需要扩展20个NodeManager，ambari只能手动到每个datanode界面上去安装NodeManager，并启动。啰嗦，麻烦。</p>
+<p>看了一下ajax请求，整理了一个脚本。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">#!/bin/bash</div><div class="line"></div><div class="line">for i in `seq 26 33`;</div><div class="line">do</div><div class="line"></div><div class="line">echo handing $i</div><div class="line"></div><div class="line"># 安装service</div><div class="line">curl -u admin:will@bj15. -H &quot;X-Requested-By: ambari&quot; -X POST -d &apos;</div><div class="line">&#123;&quot;RequestInfo&quot;:&#123;&quot;context&quot;:&quot;Install NodeManager&quot;&#125;,&quot;Body&quot;:&#123;&quot;host_components&quot;:[&#123;&quot;HostRoles&quot;:&#123;&quot;component_name&quot;:&quot;NODEMANAGER&quot;&#125;&#125;]&#125;&#125;&apos; http://namenode01.will.com:8080/api/v1/clusters/datacenter/hosts?Hosts/host_name=datanode$&#123;i&#125;.will.com</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"># 安装component</div><div class="line">curl -u admin:will@bj15. -H &quot;X-Requested-By: ambari&quot; -X PUT -d &apos;</div><div class="line">&#123;&quot;RequestInfo&quot;:&#123;&quot;context&quot;:&quot;Install NodeManager&quot;,&quot;operation_level&quot;:&#123;&quot;level&quot;:&quot;HOST_COMPONENT&quot;,&quot;cluster_name&quot;:&quot;datacenter&quot;,&quot;host_name&quot;:&quot;datanode$&#123;i&#125;.will.com&quot;,&quot;service_name&quot;:&quot;YARN&quot;&#125;&#125;,&quot;Body&quot;:&#123;&quot;HostRoles&quot;:&#123;&quot;state&quot;:&quot;INSTALLED&quot;&#125;&#125;&#125;&apos; http://namenode01.will.com:8080/api/v1/clusters/datacenter/hosts/datanode$&#123;i&#125;.will.com/host_components/NODEMANAGER?HostRoles/state=INIT</div><div class="line"></div><div class="line"></div><div class="line"># 启动</div><div class="line">curl -u admin:will@bj15. -H &quot;X-Requested-By: ambari&quot; -X PUT -d &apos;&#123;&quot;RequestInfo&quot;:&#123;&quot;context&quot;:&quot;Start NodeManager&quot;,&quot;operation_level&quot;:&#123;&quot;level&quot;:&quot;HOST_COMPONENT&quot;,&quot;cluster_name&quot;:&quot;datacenter&quot;,&quot;host_name&quot;:&quot;datanode$&#123;i&#125;.will.com&quot;,&quot;service_name&quot;:&quot;YARN&quot;&#125;&#125;,&quot;Body&quot;:&#123;&quot;HostRoles&quot;:&#123;&quot;state&quot;:&quot;STARTED&quot;&#125;&#125;&#125;&apos; http://namenode01.will.com:8080/api/v1/clusters/datacenter/hosts/datanode$&#123;i&#125;.will.com/host_components/NODEMANAGER</div><div class="line">done</div></pre></td></tr></table></figure></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/自制RPM包并发布到自己的yum源/" title="自制RPM包并发布到自己的yum源" itemprop="url">自制RPM包并发布到自己的yum源</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T03:29:46.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>使用一个普通用户执行，以免对系统造成重伤。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">yum install -y rpmdevtools rpm-build</div></pre></td></tr></table></figure>
+<h2 id="自定义工作空间"><a href="#自定义工作空间" class="headerlink" title="自定义工作空间"></a>自定义工作空间</h2><p>方案1：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rpmdev-setuptree</div></pre></td></tr></table></figure>
+<p>方案2</p>
+<p>创建文件~/.rpmmacros<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">%_topdir        /home/will/rpmbuild</div></pre></td></tr></table></figure></p>
+<p>配置了空间之后，还得手动创建一下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mkdir /home/will/rpmbuild</div></pre></td></tr></table></figure></p>
+<p>创建需要的目录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">cd ~/rpmbuild  </div><div class="line">mkdir -pv &#123;BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS&#125;</div></pre></td></tr></table></figure></p>
 <ul>
-<li><a href="https://docs.docker.com/engine/reference/commandline/dockerd/#extended-description" target="_blank" rel="external">https://docs.docker.com/engine/reference/commandline/dockerd/#extended-description</a></li>
+<li>BUILD #编译之前，如解压包后存放的路径</li>
+<li>BUILDROOT #编译后存放的路径</li>
+<li>RPMS #打包完成后rpm包存放的路径</li>
+<li>SOURCES #源包所放置的路径</li>
+<li>SPECS #spec文档放置的路径</li>
+<li>SPRMS #源码rpm包放置的路径</li>
 </ul>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/07/14/docker问题整理/" title="docker问题整理" itemprop="url">docker问题整理</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-07-14T06:15:37.000Z" itemprop="datePublished"> 发表于 2017-07-14</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h2 id="容器内ping不同外部宿主机"><a href="#容器内ping不同外部宿主机" class="headerlink" title="容器内ping不同外部宿主机"></a>容器内ping不同外部宿主机</h2><p>默认使用bridge网络，应该是通畅的。通常就是简单的防火墙导致，需要注意的是：<strong>调整防火墙之后，需要重启docker engine才能生效</strong>，仅仅重启docker容器是不会起作用的。。。。</p>
-<h2 id="loopback-devices的告警"><a href="#loopback-devices的告警" class="headerlink" title="loopback devices的告警"></a>loopback devices的告警</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">WARNING: devicemapper: usage of loopback devices is strongly discouraged for production use.</div><div class="line">         Use `--storage-opt dm.thinpooldev` to specify a custom block storage device.</div><div class="line">WARNING: IPv4 forwarding is disabled</div><div class="line">WARNING: bridge-nf-call-iptables is disabled</div><div class="line">WARNING: bridge-nf-call-ip6tables is disabled</div></pre></td></tr></table></figure>
-<p>参考</p>
+<p>注：一般我们都把源码打包成tar.gz格式然后存放于SOURCES路径下，而在SPECS路径下编写spec文档，通过命令打包后，默认会把打包后的rpm包放在RPMS下，而源码包会被放置在SRPMS下</p>
+<h2 id="源码放到SOURCES目录"><a href="#源码放到SOURCES目录" class="headerlink" title="源码放到SOURCES目录"></a>源码放到SOURCES目录</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">cp /tmp/redis-3.2.8.tar.gz SOURCES</div></pre></td></tr></table></figure>
+<h2 id="SPECS下创建配置"><a href="#SPECS下创建配置" class="headerlink" title="SPECS下创建配置"></a>SPECS下创建配置</h2><p>到SPECS下创建指定配置，编辑的时候会自动生成模板。编辑<code>SPECS/redis.spec</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div></pre></td><td class="code"><pre><div class="line">Name:		redis</div><div class="line">Version:	3.2.8	</div><div class="line">Release:	3%&#123;dist&#125;</div><div class="line">Summary:	redis from will	</div><div class="line"></div><div class="line">Group:		System Environment/Daemons</div><div class="line">License:	GPLv2</div><div class="line">URL:		https://github.com/willcup</div><div class="line">Source0:	redis-3.2.8.tar.gz</div><div class="line"></div><div class="line">Packager:       WillCup &lt;willcup@163.com&gt; </div><div class="line">BuildRequires:	gcc,make</div><div class="line">Requires:	openssl,chkconfig</div><div class="line">BuildRoot:      %_topdir/BUILDROOT</div><div class="line"></div><div class="line"></div><div class="line">%define PortFindDir /usr/local/will_redis</div><div class="line"></div><div class="line">%description</div><div class="line">this is build from will, just for ambari service.</div><div class="line"></div><div class="line">%prep</div><div class="line">%setup -q</div><div class="line"></div><div class="line">%build</div><div class="line">make %&#123;?_smp_mflags&#125;</div><div class="line"></div><div class="line"></div><div class="line">%install</div><div class="line">[ ! -e $RPM_BUILD_ROOT%&#123;PortFindDir&#125; ] &amp;&amp; mkdir -p $RPM_BUILD_ROOT%&#123;PortFindDir&#125;</div><div class="line">cp -rfv * $RPM_BUILD_ROOT%&#123;PortFindDir&#125;</div><div class="line">[ ! -e $RPM_BUILD_ROOT/etc/init.d ] &amp;&amp; mkdir -p $RPM_BUILD_ROOT/etc/init.d</div><div class="line">[ ! -e $RPM_BUILD_ROOT/usr/local/bin ] &amp;&amp; mkdir -p $RPM_BUILD_ROOT/usr/local/bin</div><div class="line">cp -vf $RPM_BUILD_ROOT%&#123;PortFindDir&#125;/utils/redis_init_script $RPM_BUILD_ROOT/etc/init.d/redis</div><div class="line">cp -vf $RPM_BUILD_ROOT%&#123;PortFindDir&#125;/src/redis-server $RPM_BUILD_ROOT/usr/local/bin</div><div class="line">cp -vf $RPM_BUILD_ROOT%&#123;PortFindDir&#125;/src/redis-cli $RPM_BUILD_ROOT/usr/local/bin</div><div class="line">#mkdir -p &quot;$RPM_BUILD_ROOT&quot;</div><div class="line">#cp -rvf * &quot;$RPM_BUILD_ROOT&quot;</div><div class="line">#ls -l &quot;$RPM_BUILD_ROOT&quot;</div><div class="line">echo &quot;no reason to install redis, just move it&quot;</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">%files</div><div class="line">%defattr (-,root,root,0755)</div><div class="line">%dir %&#123;PortFindDir&#125;</div><div class="line">%attr(0755, root, root) %&#123;PortFindDir&#125;/*</div><div class="line">%attr(0755, root, root)	/etc/init.d/redis</div><div class="line">%attr(0755, root, root) /usr/local/bin</div><div class="line">%doc</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">%postun	</div><div class="line">rm -fr %(PortFindDir&#125;</div><div class="line">rm -vf /usr/local/bin/redis-*</div><div class="line">rm -vf /etc/init.d/redis</div><div class="line"></div><div class="line">%changelog</div><div class="line">* Fri Dec 29 2016 willcup &lt;willcup@163.com&gt; - 3.2.8-1 </div><div class="line">- Initial version just changelog</div></pre></td></tr></table></figure></p>
+<p>其实上面的buildroot就相当于是后面rpm安装时候的系统根目录。所以一般都需要指定一个子目录。不然是行不通的，会发现弄完以后RPM包里没有任何文件。</p>
+<h2 id="开始构建"><a href="#开始构建" class="headerlink" title="开始构建"></a>开始构建</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rpmbuild -ba redis.spec</div></pre></td></tr></table></figure>
+<p>可以看到已经有了结果</p>
+<p>这个是构建过程中的源码目录：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">[will@datanode08 rpmbuild]$ ll BUILD/redis-3.2.8/</div><div class="line">total 204</div><div class="line">-rw-r--r--.  1 will will 85775 Feb 12 23:14 00-RELEASENOTES</div><div class="line">-rw-r--r--.  1 will will    53 Feb 12 23:14 BUGS</div><div class="line">-rw-r--r--.  1 will will  1805 Feb 12 23:14 CONTRIBUTING</div><div class="line">-rw-r--r--.  1 will will  1487 Feb 12 23:14 COPYING</div><div class="line">-rw-r--r--.  1 will will     0 Apr 27 12:25 debugfiles.list</div><div class="line">-rw-r--r--.  1 will will     0 Apr 27 12:25 debuglinks.list</div><div class="line">-rw-r--r--.  1 will will     0 Apr 27 12:25 debugsources.list</div><div class="line">drwxr-xr-x.  7 will will  4096 Apr 27 12:25 deps</div><div class="line">-rw-r--r--.  1 will will    11 Feb 12 23:14 INSTALL</div><div class="line">-rw-r--r--.  1 will will   151 Feb 12 23:14 Makefile</div><div class="line">-rw-r--r--.  1 will will  4223 Feb 12 23:14 MANIFESTO</div><div class="line">-rw-r--r--.  1 will will  6834 Feb 12 23:14 README.md</div><div class="line">-rw-r--r--.  1 will will 46695 Feb 12 23:14 redis.conf</div><div class="line">-rwxr-xr-x.  1 will will   271 Feb 12 23:14 runtest</div><div class="line">-rwxr-xr-x.  1 will will   280 Feb 12 23:14 runtest-cluster</div><div class="line">-rwxr-xr-x.  1 will will   281 Feb 12 23:14 runtest-sentinel</div><div class="line">-rw-r--r--.  1 will will  7606 Feb 12 23:14 sentinel.conf</div><div class="line">drwxr-xr-x.  2 will will  4096 Apr 27 12:25 src</div><div class="line">drwxr-xr-x. 10 will will  4096 Feb 12 23:14 tests</div><div class="line">drwxr-xr-x.  7 will will  4096 Feb 12 23:14 utils</div></pre></td></tr></table></figure></p>
+<p>打包完成后rpm包存放的路径：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">[will@datanode08 rpmbuild]$ ll RPMS/x86_64/</div><div class="line">total 8</div><div class="line">-rw-rw-r--. 1 will will 1752 Apr 27 12:25 redis-3.2.8-1.el6.x86_64.rpm</div><div class="line">-rw-rw-r--. 1 will will 1880 Apr 27 12:25 redis-debuginfo-3.2.8-1.el6.x86_64.rpm</div></pre></td></tr></table></figure></p>
+<p>源码rpm包放置的路径<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[will@datanode08 rpmbuild]$ ll SRPMS/</div><div class="line">total 1516</div><div class="line">-rw-rw-r--. 1 will will 1549338 Apr 27 12:25 redis-3.2.8-1.el6.src.rpm</div></pre></td></tr></table></figure></p>
+<p>然而查看rpm包的文件，竟然什么都没有。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">[will@datanode08 rpmbuild]$ rpm -qlp RPMS/x86_64/redis-3.2.8-1.el6.x86_64.rpm </div><div class="line">(contains no files)</div></pre></td></tr></table></figure></p>
+<p>修改之后，能够正常安装与使用了。</p>
+<p>使用 rpm -ivh xx.rpm成功测试。</p>
+<p>下一步，将RPM发布至我们自有的yum源上。</p>
+<p>按照其他的类似hadoop之类，创建一个redis目录，然后把我们的rpm包放上去</p>
+<p>目录样子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">[root@datanode21 2.4.2.0]# ll</div><div class="line">total 2146284</div><div class="line">.....</div><div class="line">drwxr-xr-x  2 ambari-qa users       4096 Apr 25  2016 hadoop</div><div class="line">drwxr-xr-x  2 ambari-qa users       4096 Apr 25  2016 hadooplzo</div><div class="line">drwxr-xr-x  2 ambari-qa users       4096 Apr 25  2016 hbase</div><div class="line">.......</div><div class="line">drwxr-xr-x  2 ambari-qa users       4096 Apr 25  2016 oozie</div><div class="line">drwxr-xr-x  2 ambari-qa users       4096 Apr 25  2016 phoenix</div><div class="line">drwxr-xr-x  2 ambari-qa users       4096 Apr 25  2016 pig</div><div class="line">drwxr-xr-x  2 ambari-qa users       4096 Apr 25  2016 ranger</div><div class="line">drwxr-xr-x  2 root      root        4096 Apr 27 16:45 redis</div><div class="line">You have new mail in /var/spool/mail/root</div><div class="line">[root@datanode21 2.4.2.0]# pwd</div><div class="line">/server/www/html/hdp/HDP/centos6/2.x/updates/2.4.2.0</div></pre></td></tr></table></figure></p>
+<p>先看下我们的HDP.repo<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">[HDP-2.4]</div><div class="line">name=HDP-2.4</div><div class="line">baseurl=http://10.2.19.110/hdp/HDP/centos6/2.x/updates/2.4.2.0</div><div class="line"></div><div class="line">path=/</div><div class="line">enabled=1</div><div class="line">gpgcheck=0</div></pre></td></tr></table></figure></p>
+<p>可以看到是同一个目录，我们需要在这个目录下重新执行<code>createrepo</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">[root@datanode21 2.4.2.0]# createrepo .</div><div class="line">Spawning worker 0 with 182 pkgs</div><div class="line">Workers Finished</div><div class="line">Gathering worker results</div><div class="line"></div><div class="line">Saving Primary metadata</div><div class="line">Saving file lists metadata</div><div class="line">Saving other metadata</div><div class="line">Generating sqlite DBs</div><div class="line">Sqlite DBs complete</div><div class="line">[root@datanode21 2.4.2.0]# ll repodata</div><div class="line">total 856</div><div class="line">-rw-r--r-- 1 root root 373992 Apr 27 17:59 458b198ae4b61c02b0f7bb03ae9421365dcb2076ffb6087e6808e7915ec31778-filelists.sqlite.bz2</div><div class="line">-rw-r--r-- 1 root root   9092 Apr 27 17:59 9a59871d45121b0be43f188ae7ffe788e2eceb07d03648717323dedd26faf567-other.xml.gz</div><div class="line">-rw-r--r-- 1 root root  12162 Apr 27 17:59 bb3c2dc4c1f7ae17b172f104e3df5171d0d09db797a5f5a9227ab4ae424a45b7-other.sqlite.bz2</div><div class="line">-rw-r--r-- 1 root root  37245 Apr 27 17:59 c23cec21ae4b3e9b89a029b593362ca1e2483316e1d07843a9035ad8e3c93053-primary.xml.gz</div><div class="line">-rw-r--r-- 1 root root 363468 Apr 27 17:59 c521ec682137ff19e61f7ec91e86c725d6d6fa7553be01c783a67ffb68b30afe-filelists.xml.gz</div><div class="line">-rw-r--r-- 1 root root  65483 Apr 27 17:59 eb98320b3ad040203135b91f26caee107900f2e9bdc86a4be6c5218fcc505036-primary.sqlite.bz2</div><div class="line">-rw-r--r-- 1 root root   2996 Apr 27 17:59 repomd.xml</div></pre></td></tr></table></figure></p>
+<p>然后更新客户机上，也就是要安装redis 的机器上的repo信息。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">yum clean all</div><div class="line">yum update</div><div class="line">yum search redis</div></pre></td></tr></table></figure></p>
+<p>能够搜到，至此结束。</p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>我们要构建redis，主要是为了适应既有ambari的redis service，它执行安装的命令是<code>yum install redis.3.2.8</code>。当然我们是可以修改一下他的install代码的，但是考虑到以后其他组件很有可能还是通过yum安装，那还是现在就把自己动手构建yum的rpm包这个问题解决了吧，以绝后患。</p>
+<p>问题来了，上面我们搜到的只是<code>redis.x86_64</code>,实际安装的时候请求的是3.2.8，需要版本号加进去才行。看到spec里有version关键字。。。折腾了好半天，都不是，构建出来search的时候都还是只有redis。</p>
+<p>后来参考既有的hadoop、flume等yum源，成功搞定。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">flume_2_4_2_0_258-1.5.2.2.4.2.0-258.el6.noarch.rpm	25-Apr-2016 19:54	40M	 </div><div class="line">	</div><div class="line">flume_2_4_2_0_258-agent-1.5.2.2.4.2.0-258.el6.noarch.rpm	25-Apr-2016 19:54	6.4K</div></pre></td></tr></table></figure></p>
+<p>发现这个版本号貌似是跟着文件夹的。</p>
+<p>所以，修改如下:</p>
 <ul>
-<li><a href="http://www.dockerinfo.net/2182.html" target="_blank" rel="external">http://www.dockerinfo.net/2182.html</a></li>
-</ul>
-<h2 id="容器名称变化"><a href="#容器名称变化" class="headerlink" title="容器名称变化"></a>容器名称变化</h2><p>主要是对于代理层，比如有三个backend服务节点，只要一重启，这三个容器的host和ip有可能都会变。</p>
-<p>方案：</p>
-<ul>
-<li>代理 + 动态服务发现。nginx/haproxy + consul/etcd</li>
-<li>traefix，专为此种场景提供了定制接口配置。</li>
-</ul>
-<p>参考： </p>
-<ul>
-<li><a href="http://blog.hypriot.com/post/microservices-bliss-with-docker-and-traefik/" target="_blank" rel="external">http://blog.hypriot.com/post/microservices-bliss-with-docker-and-traefik/</a></li>
-<li><a href="https://www.consul.io/intro/getting-started/install.html" target="_blank" rel="external">https://www.consul.io/intro/getting-started/install.html</a></li>
-</ul>
-<h2 id="devicemapper-Can’t-set-cookie-dm-task-set-cookie-failed"><a href="#devicemapper-Can’t-set-cookie-dm-task-set-cookie-failed" class="headerlink" title="devicemapper: Can’t set cookie dm_task_set_cookie failed"></a>devicemapper: Can’t set cookie dm_task_set_cookie failed</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker: failed to register layer: devmapper: Error activating devmapper device for &apos;24ea1e709520627a2862d2b9130b6aff77dde03fef39cc0169568cde5883b013&apos;: devicemapper: Can&apos;t set cookie dm_task_set_cookie failed.</div></pre></td></tr></table></figure>
-<p>问题貌似是在我重新启动</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Error response from daemon: driver &quot;devicemapper&quot; failed to remove root filesystem for 1d7c4b287c27ef61fd0d9ac37c401c5da213b81b31dcc42448b1864b6b838f14: failed to remove device f45fd625ac4cdaccddfdd0ea02ac97f9e529a13594a4cfc92a883b8674d2658a: devicemapper: Can not set cookie: dm_task_set_cookie failed</div></pre></td></tr></table></figure>
-<p>临时方案：echo ‘y’ | sudo dmsetup udevcomplete_all<br><a href="https://github.com/kubevirt/kubevirt/issues/321" target="_blank" rel="external">https://github.com/kubevirt/kubevirt/issues/321</a></p>
-<h2 id="动态配置"><a href="#动态配置" class="headerlink" title="动态配置"></a>动态配置</h2><p>一共有三个方案可以支持</p>
-<h4 id="使用自定义的DNS服务器"><a href="#使用自定义的DNS服务器" class="headerlink" title="使用自定义的DNS服务器"></a>使用自定义的DNS服务器</h4><p>这个方案仅仅是应对容器内需要访问容器外的其他机器的host时起作用，如果还需要变化其他配置，那么可以忽略掉</p>
-<h4 id="使用env或者env文件"><a href="#使用env或者env文件" class="headerlink" title="使用env或者env文件"></a>使用env或者env文件</h4><ol>
-<li>首先要把应用依赖的外部配置从代码里面抽出来，做成配置文件</li>
-<li>容器启动的时候，执行一个自定义脚本，脚本内容就是从容器系统环境变量里面读取环境变量，然后用sed替换配置文件里面的配置</li>
-<li>那么在docker run启动容器的阶段，通过-e选项传递你的配置值到容器的环境变量，就能修改容器内应用的配置</li>
-<li>迁移到其他环境，修改docker run -e的环境变量配置就OK</li>
-</ol>
-<h4 id="直接使用-v挂载不同环境的配置文件"><a href="#直接使用-v挂载不同环境的配置文件" class="headerlink" title="直接使用-v挂载不同环境的配置文件"></a>直接使用-v挂载不同环境的配置文件</h4><p>这种与第二种本质上没有太大区别。但是关键在于env或者env文件是在client端的，而-v挂载目录是需要在server端的。也就是是说每个server都需要有那个目录或者文件才行，而env方式的话，就只需要client端有就可以了。</p>
-<p>鉴于server端一般是多于client端的，所以选用env的会相对多一些。</p>
-<h2 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h2><p>docker attach容器后，退出的时候ctrl + q</p>
-<h4 id="docker默认的docker0"><a href="#docker默认的docker0" class="headerlink" title="docker默认的docker0"></a>docker默认的docker0</h4><p>bridge是不支持服务发现的，也就在这个网络里的docker容器相互之间并不能通过名称通信。<br>要支持服务发现的话，需要自定义一个bridge网络。</p>
-<p>只有swarm service可以连到overylay网络，独立的容器是连不上的。</p>
-<p>docker是会动态修改宿主机的iptables规则的。</p>
-<p>参考： <a href="https://docs.docker.com/engine/userguide/networking/" target="_blank" rel="external">https://docs.docker.com/engine/userguide/networking/</a></p>
-<h2 id="关闭防火墙引起的问题"><a href="#关闭防火墙引起的问题" class="headerlink" title="关闭防火墙引起的问题"></a>关闭防火墙引起的问题</h2><p>在dockerd运行的时候，关闭防火墙的话，会清空iptables里的docker相关规则，导致docker容器启动失败。</p>
-<p>centos7, docker ce17</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">iptables: No chain/target/match by that name</div></pre></td></tr></table></figure>
-<p>解决办法，在关闭防火墙之后再启动dockerd，或者重启dockerd，它会自己根据现有docker网络和容器重建iptables相关规则。</p>
-<h2 id="devicemapper-Can-not-set-cookie-dm-task-set-cookie-failed"><a href="#devicemapper-Can-not-set-cookie-dm-task-set-cookie-failed" class="headerlink" title="devicemapper: Can not set cookie: dm_task_set_cookie failed"></a>devicemapper: Can not set cookie: dm_task_set_cookie failed</h2><p>重命名container名称导致。</p>
-<p>解决：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">echo &apos;y&apos; | sudo dmsetup udevcomplete_all</div></pre></td></tr></table></figure></p>
-<p>最好能执行<code>docker rm $(docker ps -a -q)</code>把现有container都移除。</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/07/12/centos7-搭建DNS服务器/" title="centos7-搭建DNS服务器" itemprop="url">centos7-搭建DNS服务器</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-07-12T03:29:47.000Z" itemprop="datePublished"> 发表于 2017-07-12</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h2 id="主服务器"><a href="#主服务器" class="headerlink" title="主服务器"></a>主服务器</h2><h4 id="安装bind9"><a href="#安装bind9" class="headerlink" title="安装bind9"></a>安装bind9</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">yum install bind bind-utils -y</div></pre></td></tr></table></figure>
-<h4 id="编辑-etc-named-conf"><a href="#编辑-etc-named-conf" class="headerlink" title="编辑/etc/named.conf"></a>编辑/etc/named.conf</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">options &#123;</div><div class="line">    listen-on port 53 &#123; any; &#125;;</div><div class="line">	listen-on-v6 port 53 &#123; ::1; &#125;;</div><div class="line">	directory 	&quot;/var/named&quot;;</div><div class="line">	dump-file 	&quot;/var/named/data/cache_dump.db&quot;;</div><div class="line">	statistics-file &quot;/var/named/data/named_stats.txt&quot;;</div><div class="line">	memstatistics-file &quot;/var/named/data/named_mem_stats.txt&quot;;</div><div class="line">	allow-query     &#123; any; &#125;;</div><div class="line">	allow-transfer&#123; localhost; 10.2.19.113; &#125;;</div><div class="line"></div><div class="line">......</div><div class="line">...</div><div class="line"></div><div class="line">zone &quot;will.com&quot; IN &#123;</div><div class="line">type master;</div><div class="line">file &quot;forward.unixmen&quot;;</div><div class="line">allow-update &#123; none; &#125;;</div><div class="line">&#125;;</div><div class="line"></div><div class="line">zone &quot;19.2.10.in-addr.arpa&quot; IN &#123;</div><div class="line">type master;</div><div class="line">file &quot;reverse.unixmen&quot;;</div><div class="line">allow-update &#123; none; &#125;;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
-<h4 id="创建上面我们配置的zone文件"><a href="#创建上面我们配置的zone文件" class="headerlink" title="创建上面我们配置的zone文件"></a>创建上面我们配置的zone文件</h4><p>vi /var/named/forward.unixmen<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">$TTL 86400</div><div class="line">@   IN  SOA     etl02.will.com. root.will.com. (</div><div class="line">        2017071001  ;Serial</div><div class="line">        3600        ;Refresh</div><div class="line">        1800        ;Retry</div><div class="line">        604800      ;Expire</div><div class="line">        86400       ;Minimum TTL</div><div class="line">)</div><div class="line">@       IN  NS          etl02.will.com.</div><div class="line">@       IN  NS          etl03.will.com.</div><div class="line">@       IN  NS          schedule.will.com.</div><div class="line">@       IN  A           10.2.19.112</div><div class="line">@       IN  A           10.2.19.113</div><div class="line">@       IN  A           10.2.19.62</div><div class="line">etl02       IN  A   10.2.19.112</div><div class="line">etl03    IN  A   10.2.19.113</div><div class="line">schedule    IN  A   10.2.19.62</div></pre></td></tr></table></figure></p>
-<p>检查配置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[root@etl02 ~]# named-checkzone will.com /var/named/forward.unixmen</div><div class="line">zone will.com/IN: loaded serial 2017071001</div><div class="line">OK</div></pre></td></tr></table></figure></p>
-<p>vi /var/named/reverse.unixmen<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">$TTL 86400</div><div class="line">@   IN  SOA     etl02.will.com. root.will.com. (</div><div class="line">        2017071001  ;Serial</div><div class="line">        3600        ;Refresh</div><div class="line">        1800        ;Retry</div><div class="line">        604800      ;Expire</div><div class="line">        86400       ;Minimum TTL</div><div class="line">)</div><div class="line">@       IN  NS          etl02.will.com.</div><div class="line">@       IN  NS          etl03.will.com.</div><div class="line">@       IN  NS          schedule.will.com.</div><div class="line">@       IN  PTR         will.com.</div><div class="line">etl02       IN  A   10.2.19.112</div><div class="line">etl03    IN  A   10.2.19.113</div><div class="line">schedule    IN  A   10.2.19.62</div><div class="line">62     IN  PTR         schedule.will.com.</div><div class="line">112     IN  PTR         etl02.will.com.</div><div class="line">113     IN  PTR         etl03.will.com.</div></pre></td></tr></table></figure></p>
-<p>同样检查一下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[root@etl02 ~]# named-checkzone will.com /var/named/reverse.unixmen </div><div class="line">zone will.com/IN: loaded serial 2017071001</div><div class="line">OK</div></pre></td></tr></table></figure></p>
-<h2 id="启动DNS服务"><a href="#启动DNS服务" class="headerlink" title="启动DNS服务"></a>启动DNS服务</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">systemctl enable named</div><div class="line">systemctl start named</div></pre></td></tr></table></figure>
-<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><ol>
-<li>编辑/etc/resolv.conf文件, 修改nameserver为etl02.will.com</li>
-<li>编辑网卡配置文件/etc/sysconfig/network-scripts/ifcfg-eth0, 修改DNS为我们的DNS服务器地址10.2.19.112</li>
-<li>重启网络服务：systemctl restart network</li>
-</ol>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line">[root@etl02 ~]# dig etl02.will.com</div><div class="line"></div><div class="line">; &lt;&lt;&gt;&gt; DiG 9.9.4-RedHat-9.9.4-50.el7_3.1 &lt;&lt;&gt;&gt; etl02.will.com</div><div class="line">;; global options: +cmd</div><div class="line">;; Got answer:</div><div class="line">;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, status: NOERROR, id: 48492</div><div class="line">;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 3, ADDITIONAL: 3</div><div class="line"></div><div class="line">;; OPT PSEUDOSECTION:</div><div class="line">; EDNS: version: 0, flags:; udp: 4096</div><div class="line">;; QUESTION SECTION:</div><div class="line">;etl02.will.com.		IN	A</div><div class="line"></div><div class="line">;; ANSWER SECTION:</div><div class="line">etl02.will.com.	86400	IN	A	10.2.19.112</div><div class="line"></div><div class="line">;; AUTHORITY SECTION:</div><div class="line">will.com.		86400	IN	NS	etl02.will.com.</div><div class="line">will.com.		86400	IN	NS	schedule.will.com.</div><div class="line">will.com.		86400	IN	NS	etl03.will.com.</div><div class="line"></div><div class="line">;; ADDITIONAL SECTION:</div><div class="line">etl03.will.com.	86400	IN	A	10.2.19.113</div><div class="line">schedule.will.com.	86400	IN	A	10.2.19.62</div><div class="line"></div><div class="line">;; Query time: 0 msec</div><div class="line">;; SERVER: 127.0.0.1#53(127.0.0.1)</div><div class="line">;; WHEN: Fri Jul 14 11:52:31 EDT 2017</div><div class="line">;; MSG SIZE  rcvd: 150</div></pre></td></tr></table></figure>
-<p>参考：<a href="https://www.unixmen.com/setting-dns-server-centos-7/" target="_blank" rel="external">https://www.unixmen.com/setting-dns-server-centos-7/</a></p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/07/04/自如爬虫/" title="自如爬虫" itemprop="url">自如爬虫</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-07-04T08:08:37.000Z" itemprop="datePublished"> 发表于 2017-07-04</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>筛选房源的URL</p>
-<p>筛选的是北土城的房子：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">https://phoenix.ziroom.com/v7/room/list.json?uid=0&amp;os=android%3A4.2.2&amp;suggestion_type=3&amp;model=HTC+One+X+-+4.2.2+-+API+17+-+720x1280&amp;sort=2&amp;suggestion_value=%E5%8C%97%E5%9C%9F%E5%9F%8E&amp;imei=000000000000000&amp;app_version=5.2.7&amp;network=WIFI&amp;ip=10.0.3.15&amp;size=10&amp;sign=fed60ace709254dbe7ca5b471ea8bb62&amp;timestamp=1499155383&amp;price=%2C&amp;page=1&amp;sign_open=1&amp;city_code=110000</div><div class="line"></div><div class="line">-- 下拉一页面</div><div class="line">https://phoenix.ziroom.com/v7/room/list.json?uid=0&amp;os=android%3A4.2.2&amp;suggestion_type=3&amp;model=HTC+One+X+-+4.2.2+-+API+17+-+720x1280&amp;sort=2&amp;suggestion_value=%E5%8C%97%E5%9C%9F%E5%9F%8E&amp;imei=000000000000000&amp;app_version=5.2.7&amp;network=WIFI&amp;ip=10.0.3.15&amp;size=10&amp;sign=924565090bc8a24dfd8f9dd07e04f4af&amp;timestamp=1499155456&amp;price=%2C&amp;page=2&amp;sign_open=1&amp;city_code=110000</div><div class="line"></div><div class="line">-- 下拉一页面</div><div class="line">https://phoenix.ziroom.com/v7/room/list.json?uid=0&amp;os=android%3A4.2.2&amp;suggestion_type=3&amp;model=HTC+One+X+-+4.2.2+-+API+17+-+720x1280&amp;sort=2&amp;suggestion_value=%E5%8C%97%E5%9C%9F%E5%9F%8E&amp;imei=000000000000000&amp;app_version=5.2.7&amp;network=WIFI&amp;ip=10.0.3.15&amp;size=10&amp;sign=2d87dcd80f06daf1b967b9b445fb302e&amp;timestamp=1499155491&amp;price=%2C&amp;page=3&amp;sign_open=1&amp;city_code=110000</div></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">uid	0</div><div class="line">os	android:4.2.2</div><div class="line">suggestion_type	3</div><div class="line">model	HTC One X - 4.2.2 - API 17 - 720x1280</div><div class="line">sort	2</div><div class="line">suggestion_value	北土城</div><div class="line">imei	000000000000000</div><div class="line">app_version	5.2.7</div><div class="line">network	WIFI</div><div class="line">ip	10.0.3.15</div><div class="line">size	10</div><div class="line">sign	fed60ace709254dbe7ca5b471ea8bb62</div><div class="line">timestamp	1499155383</div><div class="line">price	,</div><div class="line">page	1</div><div class="line">sign_open	1</div><div class="line">city_code	110000</div></pre></td></tr></table></figure>
-<p>房子详情页<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">https://phoenix.ziroom.com/v7/room/detail.json?sign=a97bdae17004d4c9bc535068316b2185&amp;uid=0&amp;timestamp=1499155557&amp;id=146610&amp;os=android%3A4.2.2&amp;model=HTC+One+X+-+4.2.2+-+API+17+-+720x1280&amp;imei=000000000000000&amp;app_version=5.2.7&amp;sign_open=1&amp;city_code=110000&amp;house_id=20624&amp;network=WIFI&amp;ip=10.0.3.15</div></pre></td></tr></table></figure></p>
-<p>可视化一下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">sign	a97bdae17004d4c9bc535068316b2185</div><div class="line">uid	0</div><div class="line">timestamp	1499155557</div><div class="line">id	146610</div><div class="line">os	android:4.2.2</div><div class="line">model	HTC One X - 4.2.2 - API 17 - 720x1280</div><div class="line">imei	000000000000000</div><div class="line">app_version	5.2.7</div><div class="line">sign_open	1</div><div class="line">city_code	110000</div><div class="line">house_id	20624</div><div class="line">network	WIFI</div><div class="line">ip	10.0.3.15</div></pre></td></tr></table></figure></p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/07/04/pyenv多版本安装/" title="pyenv多版本安装" itemprop="url">pyenv多版本安装</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-07-04T03:18:32.000Z" itemprop="datePublished"> 发表于 2017-07-04</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">yum install -y git python-pip</div><div class="line">git clone https://github.com/pyenv/pyenv.git ~/.pyenv</div><div class="line">echo &apos;export PYENV_ROOT=&quot;$HOME/.pyenv&quot;&apos; &gt;&gt; ~/.bash_profile</div><div class="line">echo &apos;export PATH=&quot;$PYENV_ROOT/bin:$PATH&quot;&apos; &gt;&gt; ~/.bash_profile</div><div class="line">echo &apos;eval &quot;$(pyenv init -)&quot;&apos; &gt;&gt; ~/.bash_profile</div><div class="line"> yum install readline readline-devel readline-static openssl openssl-devel openssl-static sqlite-devel bzip2-devel bzip2-libs -y</div><div class="line"> pyenv install 3.6.1</div><div class="line"> git clone https://github.com/pyenv/pyenv-virtualenv.git $(pyenv root)/plugins/pyenv-virtualenv</div><div class="line"> pyenv shell 3.6.1</div><div class="line"> echo &apos;eval &quot;$(pyenv virtualenv-init -)&quot;&apos; &gt;&gt; ~/.bash_profile</div><div class="line"> pyenv virtualenv 3.6.1 will_3.6.1</div></pre></td></tr></table></figure>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">pyenv versions</div><div class="line"></div><div class="line">pyenv activate  will_3.6.1</div></pre></td></tr></table></figure>
-<p> 安装加速: 提前下载好对应python版本的tar.zx包，放到~/.pyenv/cache/下，然后再运行 pyenv install 3.6.1</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/07/03/RunningData执行用户迁移计划/" title="RunningData执行用户迁移计划" itemprop="url">RunningData执行用户迁移计划</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-07-03T06:41:20.000Z" itemprop="datePublished"> 发表于 2017-07-03</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h2 id="超级用户准备"><a href="#超级用户准备" class="headerlink" title="超级用户准备"></a>超级用户准备</h2><ul>
-<li>jlc</li>
-<li>wplan</li>
-<li>xiaov</li>
-</ul>
-<h2 id="文件权限"><a href="#文件权限" class="headerlink" title="文件权限"></a>文件权限</h2><h4 id="HDFS"><a href="#HDFS" class="headerlink" title="HDFS"></a>HDFS</h4><ul>
-<li>所有数仓调整owner为所在事业部的超级用户<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">hdfs dfs -chown jlc:jlc -R /log/statistics</div><div class="line"></div><div class="line"></div><div class="line">hdfs dfs -ls /apps/hive/warehouse/ | awk &apos;&#123;print(&quot;hdfs dfs -chown -R &quot;, $4, &quot;:&quot;,$4, $8)&#125;&apos;</div></pre></td></tr></table></figure>
+<li>修改redis.spec为redis-3.2.8.spec</li>
+<li>编辑spec文件<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Name:           redis-3.2.8</div><div class="line">Version:        1_0_0</div><div class="line"></div><div class="line">URL:            https://github.com/willcup</div><div class="line">Source0:        redis-3.2.8.tar.gz</div></pre></td></tr></table></figure>
 </li>
 </ul>
-<h4 id="本地"><a href="#本地" class="headerlink" title="本地"></a>本地</h4><table>
+<p>关键在于Name，后面都是喽啰</p>
+<ul>
+<li>这样解压后会去redis-3.2.8-1_0_0，也就是根据name和version生成的规则，所以可能要调整一下tar.gz里的文件夹名称</li>
+<li>重新构建预发布，即可<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">redis-3.2.8-1_0_0-4.el6.x86_64.rpm</div><div class="line"></div><div class="line">yum search redis</div><div class="line">redis.x86_64 : redis from will</div><div class="line">redis-3.2.8.x86_64 : redis 3 2 8 from will</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>参考：</p>
+<ul>
+<li><a href="https://docs.fedoraproject.org/en-US/Fedora_Draft_Documentation/0.1/html/Packagers_Guide/chap-Packagers_Guide-Spec_File_Reference-Preamble.html" target="_blank" rel="external">https://docs.fedoraproject.org/en-US/Fedora_Draft_Documentation/0.1/html/Packagers_Guide/chap-Packagers_Guide-Spec_File_Reference-Preamble.html</a></li>
+<li><a href="https://fedoraproject.org/wiki/How_to_create_an_RPM_package/zh-cn#.E5.AE.9E.E4.BE.8B" target="_blank" rel="external">https://fedoraproject.org/wiki/How_to_create_an_RPM_package/zh-cn#.E5.AE.9E.E4.BE.8B</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/26/TEZ-hadoop上数据处理的新篇章/" title="TEZ-hadoop上数据处理的新篇章" itemprop="url">TEZ-hadoop上数据处理的新篇章</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-26T12:15:47.000Z" itemprop="datePublished"> 发表于 2017-04-26</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="TEZ"><a href="#TEZ" class="headerlink" title="TEZ"></a>TEZ</h2><p>生成一个复杂的DAG task图</p>
+<p>目前基本所有的hadoop任务都是MapReduce程序，面向批数据的特性使得它并不能够满足一些特定查询。TEZ是传统MR程序的另一个选择，可以更快地返回结果，而且减少过程中的吞吐。</p>
+<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h2><p>分布式处理是hadoop的核心。存储与分析各种不同的大量的数据使得hadoop之上产生了很多工具。随着hadoop进入yarn时代，它把MR解耦了出来，这样可以使用其他的数据处理方式来迎接新的不同的挑战。</p>
+<h2 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h2><p>hive,pig这些高层次的数据处理工具需要一个引擎来解析他们的语句，然后执行。TEZ就是这样一个引擎。</p>
+<h4 id="解析，建模，执行"><a href="#解析，建模，执行" class="headerlink" title="解析，建模，执行"></a>解析，建模，执行</h4><p>TEZ把数据处理看作一个数据流图，节点代表数据处理逻辑，边代表着数据的流向。TEZ有一个很好的数据流相关API,能够让用户清晰表达出自己的复杂查询逻辑，也能够支持hive、pig等高级应用生成的查询计划。</p>
+<p>如下图，使用range partitioning进行分布式sort的模型。Preprocessor stage中发送samples给Sampler，计算每个数据分区的range，以保证平均分配。然后这些range再被发送给Partition stage。然后partition stage和aggregate stage就读取分配的stage，执行数据的扫描与后续聚合工作。</p>
+<p><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2013/09/tez1-450x257.png" alt=""></p>
+<h4 id="灵活的input-processor-output任务模型"><a href="#灵活的input-processor-output任务模型" class="headerlink" title="灵活的input-processor-output任务模型"></a>灵活的input-processor-output任务模型</h4><p>TEZ中对于数据流中每个处理逻辑都是由三部分组成：input, processor, output。input和output决定数据接口。processor则是数据处理逻辑。TEZ只要求在同一个vertex task中这三部分之间是相互兼容的即可。</p>
+<p><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2013/09/tez2-450x154.png" alt=""></p>
+<h4 id="动态图配置的性能"><a href="#动态图配置的性能" class="headerlink" title="动态图配置的性能"></a>动态图配置的性能</h4><p>分布式数据处理天生就是动态的，所以很难提前知道最优并发和数据走向。更多的信息只能在运行时才获知，比如数据的内容和大小，这其实是可以帮助我们优化执行计划的。我们还注意到TEZ自身并不能总是自己执行这些动态优化。</p>
+<p><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2013/09/tez3-450x208.png" alt=""></p>
+<ul>
+<li><a href="https://hortonworks.com/blog/apache-tez-a-new-chapter-in-hadoop-data-processing/" target="_blank" rel="external">https://hortonworks.com/blog/apache-tez-a-new-chapter-in-hadoop-data-processing/</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/26/hiveserver2负载均衡/" title="hiveserver2负载均衡" itemprop="url">hiveserver2负载均衡</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-26T08:47:44.000Z" itemprop="datePublished"> 发表于 2017-04-26</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>hiveserver2是通过在zookeeper注册一个namespace，然后管理所有的hiveserver实例，实现动态服务发现的。</p>
+<p>znode样式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">/&lt;hiveserver2_namespace&gt;/serverUri=&lt;host:port&gt;;version=&lt;versionInfo&gt;; sequence=&lt;sequence_number&gt;,</div></pre></td></tr></table></figure></p>
+<p>hiveserver实例会在znode上设置一个watch。当znode被修改的时候，watch会发送给hiveserver相关信息。这个通知能够让所有的hiveserver实例知道它是不是对于client端可用。</p>
+<p>当有hiveserver实例退出时，会从zk的对应node里移除，但是只对新的客户端连接生效。(已经连接的session不能生效了)。只有已经连接到这个hiveserver的最后一个client的session结束后，才会自动把这个hiveserver完全关闭，下面这个命令就是做这个工作的。</p>
+<p>使用下面命令移除一个hiveserver<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">hive --service hiveserver2 --deregister &lt;package ID&gt;</div></pre></td></tr></table></figure></p>
+<h4 id="没有zk时的查询"><a href="#没有zk时的查询" class="headerlink" title="没有zk时的查询"></a>没有zk时的查询</h4><p>下面是一个传统的查询流程：</p>
+<ul>
+<li>通过JDBC/ODBC driver连接到HS2实例，建立一个session</li>
+<li>然后每次查询的时候client都发送语句给HS2，转化成Hadoop上的执行任务</li>
+<li>每个查询的结果都写道一个临时文件中</li>
+<li>客户端driver从HS2抽取临时文件中的数据记录</li>
+</ul>
+<p><img src="https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_hadoop-ha/content/figures/2/figures/Query_Ex_Path_No_ZK.png" alt="典型查询流程"></p>
+<h4 id="带有zk的查询"><a href="#带有zk的查询" class="headerlink" title="带有zk的查询"></a>带有zk的查询</h4><p>因为可以使用动态服务发现，所以客户端driver必须知道怎样使用这个特性。对于HDP2.2或者JDBC driver2.0.0版本之后才能支持。</p>
+<p>动态服务发现实现如下：</p>
+<ul>
+<li>多个HS2实例使用zk注册自己</li>
+<li>客户端driver连接zk<blockquote>
+<p> jdbc:hive2://<zookeeper_ensemble>;serviceDiscoveryMode=zooKeeper; zooKeeperNamespace=&lt;hiveserver2_namespace</zookeeper_ensemble></p>
+</blockquote>
+</li>
+<li>zk随机返回一个host:port给客户端</li>
+<li>客户端执行单个服务传统查询过程</li>
+</ul>
+<p><img src="https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_hadoop-ha/content/figures/2/figures/Query_Ex_Path_With_ZK.png" alt="带有zk的查询过程"></p>
+<h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><p>hive.zookeeper.quorum zk列表<br>hive.zookeeper.session.timeout 超时就关闭session<br>hive.server2.support.dynamic.service.discovery  设置为true<br>hive.server2.zookeeper.namespace    指定一个就行了，默认是hiveserver2</p>
+<ul>
+<li><a href="https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_hadoop-ha/content/ha-hs2-requests.html" target="_blank" rel="external">https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_hadoop-ha/content/ha-hs2-requests.html</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/26/hue对于多个hiveserver2的支持/" title="hue对于多个hiveserver2的支持" itemprop="url">hue对于多个hiveserver2的支持</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-26T08:26:28.000Z" itemprop="datePublished"> 发表于 2017-04-26</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>相关连接代码：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">hiveserver2_jdbc_url</span><span class="params">()</span>:</span></div><div class="line">  urlbase = <span class="string">'jdbc:hive2://%s:%s/default'</span> % (beeswax.conf.HIVE_SERVER_HOST.get(),</div><div class="line">                                            beeswax.conf.HIVE_SERVER_PORT.get())</div><div class="line">  <span class="keyword">if</span> get_conf().get(_CNF_HIVESERVER2_USE_SSL, <span class="string">'FALSE'</span>).upper() == <span class="string">'TRUE'</span>:</div><div class="line">    <span class="keyword">return</span> <span class="string">'%s;ssl=true;sslTrustStore=%s;trustStorePassword=%s'</span> % (urlbase,</div><div class="line">            get_conf().get(_CNF_HIVESERVER2_TRUSTSTORE_PATH),</div><div class="line">            get_conf().get(_CNF_HIVESERVER2_TRUSTSTORE_PASSWORD))</div><div class="line">  <span class="keyword">else</span>:</div><div class="line">     <span class="keyword">return</span> urlbase</div></pre></td></tr></table></figure></p>
+<p>可以看到，除非启用SSL，否则咋样都拼不进去下面这种串：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">jdbc:hive2://zkNode1:<span class="number">2181</span>,zkNode2:<span class="number">2181</span>,zkNode3:<span class="number">2181</span>/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2_zk</div></pre></td></tr></table></figure></p>
+<p>Tip:</p>
+<p>可以先用tengine配置TCP代理，然后在这里实现负载均衡，hue端只需要配置代理的地址就可以了。 —— 希望hive的driver可以支持，有待测试。</p>
+<p>参考：</p>
+<ul>
+<li><a href="http://lxw1234.com/archives/2016/05/675.htm" target="_blank" rel="external">http://lxw1234.com/archives/2016/05/675.htm</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/25/hive中使用向量化查询引擎Vectorized-Query-Execution/" title="hive中使用向量化查询引擎Vectorized-Query-Execution" itemprop="url">hive中使用向量化查询引擎Vectorized-Query-Execution</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-25T11:59:52.000Z" itemprop="datePublished"> 发表于 2017-04-25</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>向量化查询引擎可以在执行scan, filter, aggregate, join等操作的时候很大程度上降低CPU损耗。标准sql执行系统每次只处理一行数据，内部执行的时候会包括很长的代码路径和重要的metadata解析。向量化查询引擎简化了这个过程，一次读取1024行数据，在这个数据块中，每个字段都被存储成向量化的结构(一个原是数据类型的数组)。对于一些简单的算法可以通过快速迭代这个vector完成，只需要在循环过程中调用甚至不用调用几个函数。这些loop以一种流式方式编译，在固定时间内结束，为了提高效率，会使用processor pipline和内存缓存。<a href="https://issues.apache.org/jira/browse/HIVE-4160" target="_blank" rel="external">详细设计</a></p>
+<p>个人理解：就是每行都执行很小的计算，但是要处理N多次。改成一次处理多行，同时针对多行做计算处理，节省CPU时间。</p>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><h4 id="启用"><a href="#启用" class="headerlink" title="启用"></a>启用</h4><p>要使用向量化查询引擎，必须先把hive表存储成ORC格式的。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">set hive.vectorized.execution.enabled = true;</div></pre></td></tr></table></figure></p>
+<p>默认是没有开启向量化查询引擎的，需要手动开启。</p>
+<h4 id="支持的数据类型与操作"><a href="#支持的数据类型与操作" class="headerlink" title="支持的数据类型与操作"></a>支持的数据类型与操作</h4><ul>
+<li>tinyint</li>
+<li>smallint</li>
+<li>int</li>
+<li>bigint</li>
+<li>boolean</li>
+<li>float</li>
+<li>double</li>
+<li>decimal</li>
+<li>date</li>
+<li>timestamp (see Limitations below)</li>
+<li>string<br>其他的数据类型还是会按照传统方式一行行处理。</li>
+</ul>
+<p>支持的表达式：</p>
+<ul>
+<li>简单算法: +, -, *, /, %</li>
+<li>AND, OR, NOT</li>
+<li>比较 &lt;, &gt;, &lt;=, &gt;=, =, !=, BETWEEN, IN ( list-of-constants ) as filters</li>
+<li>布尔表达式 (non-filters) using AND, OR, NOT, &lt;, &gt;, &lt;=, &gt;=, =, !=</li>
+<li>IS [NOT] NULL</li>
+<li>所有的匹配函数 (SIN, LOG, etc.)</li>
+<li>string相关函数 SUBSTR, CONCAT, TRIM, LTRIM, RTRIM, LOWER, UPPER, LENGTH</li>
+<li>类型转换</li>
+<li>UDF</li>
+<li>日期函数 (YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, UNIX_TIMESTAMP)</li>
+<li>IF 条件表达式</li>
+</ul>
+<p>UDF通过向后兼容的方式支持，不过执行的时候就是执行向量化查询引擎，但是没有内置的快。向量化的filter操作是从左到右执行，所以最好把UDF放在带有and的where语句的最后：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">where column1 = 10 and myUDF(column2) = "x"</div></pre></td></tr></table></figure></p>
+<h2 id="限制"><a href="#限制" class="headerlink" title="限制"></a>限制</h2><p>Timestamps 只能是 1677-09-20 到2262-04-11. </p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/21/集群service配置相关/" title="集群service配置相关" itemprop="url">集群service配置相关</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-21T08:41:02.000Z" itemprop="datePublished"> 发表于 2017-04-21</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="YARN"><a href="#YARN" class="headerlink" title="YARN"></a>YARN</h2><table>
 <thead>
 <tr>
-<th>名称</th>
-<th>位置</th>
-<th>操作q</th>
+<th>服务名称</th>
+<th>现有配置</th>
+<th>TO </th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>sqoop目录权限</td>
-<td>/server/app/sqoop</td>
-<td>rm -vfr /server/app/sqoop/vo</td>
+<td>resourcemanager</td>
+<td>1G</td>
+<td>4G</td>
 </tr>
 <tr>
-<td></td>
-<td></td>
-<td>/server/metamap/metamap_django</td>
-<td>/server/metamap/metamap_django/*.java</td>
+<td>nodemanager</td>
+<td>1G</td>
+<td>2G</td>
+</tr>
+<tr>
+<td>timeline server</td>
+<td>1G</td>
+<td>4G</td>
 </tr>
 </tbody>
 </table>
-<h2 id="azkaban执行用户"><a href="#azkaban执行用户" class="headerlink" title="azkaban执行用户"></a>azkaban执行用户</h2><ul>
-<li>sqoop</li>
-<li>hive</li>
+<p>resource + timline server = 2G</p>
+<h2 id="HDFS"><a href="#HDFS" class="headerlink" title="HDFS "></a>HDFS </h2><table>
+<thead>
+<tr>
+<th>服务名称</th>
+<th>现有配置</th>
+<th>TO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>datanode</td>
+<td>1G</td>
+<td>2G</td>
+</tr>
+<tr>
+<td>namenode</td>
+<td>3G </td>
+</tr>
+</tbody>
+</table>
+<p>namenode * 2 =  6G</p>
+<h2 id="MAPRED"><a href="#MAPRED" class="headerlink" title="MAPRED"></a>MAPRED</h2><table>
+<thead>
+<tr>
+<th>服务名称</th>
+<th>现有配置</th>
+<th>TO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>history server</td>
+<td>1G</td>
+<td>2G</td>
+</tr>
+</tbody>
+</table>
+<h2 id="HIVE"><a href="#HIVE" class="headerlink" title="HIVE"></a>HIVE</h2><table>
+<thead>
+<tr>
+<th>服务名称</th>
+<th>配置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hiveserver2</td>
+<td>769M</td>
+</tr>
+<tr>
+<td>metastore</td>
+<td>1G</td>
+</tr>
+<tr>
+<td>hcatserver</td>
+<td>1G</td>
+</tr>
+</tbody>
+</table>
+<p>3G</p>
+<h2 id="HBASE"><a href="#HBASE" class="headerlink" title="HBASE"></a>HBASE</h2><table>
+<thead>
+<tr>
+<th>服务名称</th>
+<th>配置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>regionserver</td>
+<td>2G</td>
+</tr>
+<tr>
+<td>master</td>
+<td>1G</td>
+</tr>
+</tbody>
+</table>
+<p>regionserver <em> 8 + master </em> 2 = 18G</p>
+<h2 id="ZK"><a href="#ZK" class="headerlink" title="ZK"></a>ZK</h2><table>
+<thead>
+<tr>
+<th>服务名称</th>
+<th>配置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>zk server</td>
+<td>1G</td>
+</tr>
+</tbody>
+</table>
+<p>zk * 3 = 3G</p>
+<h2 id="KAFKA"><a href="#KAFKA" class="headerlink" title="KAFKA"></a>KAFKA</h2><table>
+<thead>
+<tr>
+<th>服务名称</th>
+<th>配置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>broker</td>
+<td>1G</td>
+</tr>
+</tbody>
+</table>
+<p>broker * 3 =3G</p>
+<h2 id="SPAKR"><a href="#SPAKR" class="headerlink" title="SPAKR"></a>SPAKR</h2><table>
+<thead>
+<tr>
+<th>服务名称</th>
+<th>配置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>spark history server</td>
+<td>1G</td>
+</tr>
+</tbody>
+</table>
+<h2 id="需要copy的机器"><a href="#需要copy的机器" class="headerlink" title="需要copy的机器"></a>需要copy的机器</h2><p>以下机器copy完成后，全部将内存提升至32G、CPU提升到8核</p>
+<h5 id="迁出机器"><a href="#迁出机器" class="headerlink" title="迁出机器"></a>迁出机器</h5><ul>
+<li>datanode15.will.com     -&gt; NM，DN</li>
+<li>1.103-prd-datanode14.will.com   -&gt;kafka, DN,NM</li>
+<li>1.108-prd-datanode19.will.com -&gt; regionserver, DN,NM</li>
+<li>1.110-prd-datanode21.will.com -&gt; NM, DN</li>
+<li>1.99-prd-datanode10.will.com -&gt; kafka, DB, NM</li>
+<li>1.113-fengkong.data.com 风控 -&gt; NONE</li>
+<li>1.87-prd-datanode05.data.com -&gt; DN, NM, regionserver</li>
+<li>1.97-prd-datanode08.data.com -&gt; DN, NM, regionserver</li>
+<li>1.95-prd-datanode06.data.com -&gt; kafka, DN, NM, SB HbaseMaster</li>
+<li>1.96-prd-datanode07.data.com -&gt; DN, NM, regionserver</li>
 </ul>
-<p>需要修改M2H，H2H，H2M以及新版本的generate_job_file里的执行用户，包含两个地方</p>
+<p>原有机器迁出会占新资源的内存32G <em> 10 + CPU</em>80</p>
+<h5 id="原有机器资源升级"><a href="#原有机器资源升级" class="headerlink" title="原有机器资源升级"></a>原有机器资源升级</h5><p>在原有资源基础上，添加16G内存，CPU核数翻倍【把迁移出去的机器空闲出来的资源充分利用】：</p>
 <ul>
-<li>生成执行脚本</li>
-<li>生成命令【测试执行】</li>
+<li>1.107-prd-datanode18.will.com</li>
+<li>1.109-prd-datanode20.will.com</li>
+<li>1.102-prd-datanode13.will.com</li>
+<li>1.106-prd-datanode17.will.com</li>
+<li>1.100-prd-datanode11.will.com</li>
+<li>1.98-prd-datanode09.will.com</li>
+<li>1.110-prd-datanode21.will.com</li>
+<li>1.86-prd-datanode04.data.com</li>
+<li>1.82-prd-datanode01.data.com</li>
+<li>1.83-prd-datanode02.data.com</li>
+<li>1.84-prd-datanode03.data.com</li>
+<li>1.105-prd-datanode16.will.com</li>
+<li>1.101-prd-datanode12.will.com</li>
 </ul>
-<p>在settings文件中添加参数USE_ROOT</p>
-<h2 id="jenkins调度"><a href="#jenkins调度" class="headerlink" title="jenkins调度"></a>jenkins调度</h2><p>资产匹配问题: 62远程调用106上的脚步任务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">Message from syslogd@datanode17 at Jul  3 15:50:52 ...</div><div class="line"> kernel:BUG: soft lockup - CPU#7 stuck for 67s! [python:2708]</div></pre></td></tr></table></figure></p>
+<p>理论上，对原有机器不会有额外资源要求，对新机器资源也不会有影响。</p>
+<h2 id="需要新建的机器"><a href="#需要新建的机器" class="headerlink" title="需要新建的机器"></a>需要新建的机器</h2><h4 id="新服务节点"><a href="#新服务节点" class="headerlink" title="新服务节点"></a>新服务节点</h4><p>可按照service01.will.com开始弄主机名。</p>
+<p>单机配置： 32G内存 + 8核 + 50G硬【整机空间即可】 + CentOS release 6.8 (Final)</p>
+<p>机器数量： 8台<br>共占：内存32G <em> 8 + CPU8 </em> 8 = 内存256G + CPU 64</p>
+<h4 id="新数据节点"><a href="#新数据节点" class="headerlink" title="新数据节点"></a>新数据节点</h4><p>目前最新数据节点的主机名编号到了21，新机器可以datanode22.will.com开始。</p>
+<p>单机配置：32G内存 + 8核CPU + 640G硬盘【/server/目录挂载空间】 + CentOS release 6.8 (Final)</p>
+<p>机器数量： 12【如果物理机资源不够，可以暂时弄10台，以后酌情扩容】</p>
+<p>共占：内存32G <em> 12 + CPU8 </em> 12 = 内存384G + CPU 96</p>
 
         
         
@@ -538,157 +878,79 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/06/26/关于kylin分时段merge之后体积变小/" title="关于kylin分时段merge之后体积变小" itemprop="url">关于kylin分时段merge之后体积变小</a>
+      <a href="/2017/04/20/ambari中启用hive-ACID事务/" title="ambari中启用hive-ACID事务" itemprop="url">ambari中启用hive-ACID事务</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
 		
   <p class="article-time">
-    <time datetime="2017-06-26T11:01:24.000Z" itemprop="datePublished"> 发表于 2017-06-26</time>
+    <time datetime="2017-04-20T12:21:45.000Z" itemprop="datePublished"> 发表于 2017-04-20</time>
     
   </p>
 </header>
     <div class="article-content">
         
-        <p>我们设置了一个cube，指定的mandatory dimension为create_year，问了一下，说是因为有按照年去查询指标的需求。</p>
-<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>mandatory dimension: create_year</p>
-<p>自动merge : 7天、28天</p>
-<h2 id="现象"><a href="#现象" class="headerlink" title="现象"></a>现象</h2><p>merge之前单天的数据大小平均为3G，而单周的数据大小平均为11G。</p>
-<p>就是说： <strong>merge完之后数据变小了</strong>！</p>
-<p>那么为什么呢？</p>
-<p>几个人想了好半天，终于有个同事想到了….就是因为对于不包含merge时间【一般是天】的所有其他维度的组合，都减少了6倍的大小。</p>
-<p>那么，由此延伸，我们是可以将create_day设置为mandatory dimension的，这样每天的cube就会减少很多大小，merge以后也不会有对应的压缩。这样对于单天记录的体积会有很大压缩提升。。。</p>
-<p>那么对于年指标的查询应该怎样处理呢？由于这种比较少，建议可以前端解决。</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/06/25/hbase频繁挂掉/" title="hbase频繁挂掉" itemprop="url">hbase频繁挂掉</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-06-25T01:57:58.000Z" itemprop="datePublished"> 发表于 2017-06-25</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">2017-06-25 09:42:34,262 ERROR [RS_OPEN_REGION-datanode20:16020-0] coprocessor.CoprocessorHost: The coprocessor org.apache.kylin.stora</div><div class="line">ge.hbase.cube.v2.coprocessor.endpoint.CubeVisitService threw org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.ipc.StandbyExcep</div><div class="line">tion): Operation category READ is not supported in state standby</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div></pre></td><td class="code"><pre><div class="line">2017-06-25 09:42:34,336 FATAL [RS_OPEN_REGION-datanode20:16020-2] regionserver.HRegionServer: ABORTING region server datanode20.yinke</div><div class="line">r.com,16020,1498354685968: The coprocessor org.apache.kylin.storage.hbase.cube.v1.coprocessor.observer.AggregateRegionObserver threw </div><div class="line">org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.ipc.StandbyException): Operation category READ is not supported in state stan</div><div class="line">dby</div><div class="line"></div><div class="line"></div><div class="line">2017-06-25 09:42:34,336 FATAL [RS_OPEN_REGION-datanode20:16020-2] regionserver.HRegionServer: RegionServer abort: loaded coprocessors are: [org.apache.hadoop.hbase.security.access.SecureBulkLoadEndpoint]</div><div class="line"></div><div class="line"></div><div class="line">2017-06-25 09:42:34,338 FATAL [RS_OPEN_REGION-datanode20:16020-0] regionserver.HRegionServer: ABORTING region server datanode20.will.com,16020,1498354685968: The coprocessor org.apache.kylin.storage.hbase.cube.v1.coprocessor.observer.AggregateRegionObserver threw org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.ipc.StandbyException): Operation category READ is not supported in state standby</div><div class="line"></div><div class="line"></div><div class="line">2017-06-25 09:42:34,370 INFO  [RS_OPEN_REGION-datanode20:16020-1] regionserver.RegionCoprocessorHost: Loaded coprocessor org.apache.k</div><div class="line">ylin.storage.hbase.cube.v2.coprocessor.endpoint.CubeVisitService from HTD of KYLIN_4L40B34P11 successfully.</div><div class="line">2017-06-25 09:42:34,379 ERROR [RS_OPEN_REGION-datanode20:16020-2] handler.OpenRegionHandler: Failed open of region=KYLIN_HBWCQ5ZQR1,\</div><div class="line">x001,1494915979852.71f4a908f1e460ac95dfadcf5ab8ecfd., starting to roll back the global memstore size.</div><div class="line">2017-06-25 09:42:34,381 INFO  [RS_OPEN_REGION-datanode20:16020-2] coordination.ZkOpenRegionCoordination: Opening of region &#123;ENCODED =</div><div class="line">&gt; 71f4a908f1e460ac95dfadcf5ab8ecfd, NAME =&gt; &apos;KYLIN_HBWCQ5ZQR1,\x001,1494915979852.71f4a908f1e460ac95dfadcf5ab8ecfd.&apos;, STARTKEY =&gt; &apos;\x</div><div class="line">001&apos;, ENDKEY =&gt; &apos;\x002&apos;&#125; failed, transitioning from OPENING to FAILED_OPEN in ZK, expecting version 3</div><div class="line">2017-06-25 09:42:34,382 ERROR [RS_OPEN_REGION-datanode20:16020-0] handler.OpenRegionHandler: Failed open of region=KYLIN_HBWCQ5ZQR1,\</div><div class="line">x00\x15,1494915979852.c4940efcc8efa3f3a9b7c2a546a1d1f5., starting to roll back the global memstore size.</div><div class="line">org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.ipc.StandbyException): Operation category READ is not supported in state stan</div><div class="line">dby</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">java.io.IOException: Cannot append; log is closed</div><div class="line">        at org.apache.hadoop.hbase.regionserver.wal.FSHLog.append(FSHLog.java:1223)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.wal.WALUtil.writeRegionEventMarker(WALUtil.java:95)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.HRegion.writeRegionOpenMarker(HRegion.java:978)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.HRegion.openHRegion(HRegion.java:6335)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.HRegion.openHRegion(HRegion.java:6289)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.HRegion.openHRegion(HRegion.java:6260)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.HRegion.openHRegion(HRegion.java:6216)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.HRegion.openHRegion(HRegion.java:6167)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.handler.OpenRegionHandler.openRegion(OpenRegionHandler.java:362)</div><div class="line">        ...............</div><div class="line">2017-06-25 09:42:44,168 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020.logRoller] regionserver.LogRoller: LogRoller exit</div><div class="line">ing.</div><div class="line">2017-06-25 09:42:44,168 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020] regionserver.CompactSplitThread: Waiting for Spl</div><div class="line">it Thread to finish...</div><div class="line">2017-06-25 09:42:44,168 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020] regionserver.CompactSplitThread: Waiting for Mer</div><div class="line">ge Thread to finish...</div><div class="line">2017-06-25 09:42:44,168 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020] regionserver.CompactSplitThread: Waiting for Lar</div><div class="line">ge Compaction Thread to finish...</div><div class="line">2017-06-25 09:42:44,168 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020] regionserver.CompactSplitThread: Waiting for Sma</div><div class="line">ll Compaction Thread to finish...</div><div class="line">2017-06-25 09:42:44,170 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020.leaseChecker] regionserver.Leases: regionserver/d</div><div class="line">atanode20.will.com/10.2.19.109:16020.leaseChecker closing leases</div><div class="line">2017-06-25 09:42:44,171 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020.leaseChecker] regionserver.Leases: regionserver/d</div><div class="line">atanode20.will.com/10.2.19.109:16020.leaseChecker closed leases</div><div class="line">2017-06-25 09:42:44,183 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020] ipc.RpcServer: Stopping server on 16020</div></pre></td></tr></table></figure>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/06/22/NN-HA后引发的问题/" title="NN-HA后引发的问题" itemprop="url">NN-HA后引发的问题</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-06-22T03:19:07.000Z" itemprop="datePublished"> 发表于 2017-06-22</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h6 id="最表面问题"><a href="#最表面问题" class="headerlink" title="最表面问题:"></a>最表面问题:</h6><p>几乎所有用户执行权限都出现问题。</p>
-<h6 id="问题原因："><a href="#问题原因：" class="headerlink" title="问题原因："></a>问题原因：</h6><ul>
-<li>所有HDFS之上的应用都是使用linux的posix文件权限控制</li>
-<li>当Active NN是DN17的时候，DN17本机并没有这些用户的相关权限信息。<h6 id="解决方法："><a href="#解决方法：" class="headerlink" title="解决方法："></a>解决方法：</h6></li>
-<li>尝试copyNN01的用户以及组信息到DN17<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">/etc/passwd</div><div class="line">/etc/shadow</div><div class="line"></div><div class="line"></div><div class="line">/etc/group</div><div class="line">/etc/gshadow</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">[root@namenode01 hdfs]# cat /etc/group | grep xiaov</div><div class="line">xiaov:x:1015:zhoujian,wangchenqi,zhangyuntao,wangxu,wanghao_fengkong,linzhixin,yangqiankun,tianye,zhaoyanchao,tinyv,wangyin,lihaoyue,zhuxiuwei,yangluan,qizhenpeng,zhanglining,xiaovtest,yanghuanyuzi,zhanghaigang,shichengjie,luanzhiwei,wangyasen,kangyimin,luiyahui,liuyahui,liulinyuan,caoyunqing,tianyang,chengyao,gezhao,hehaojun,hujunjie,liuwei,xiongpeng</div><div class="line">xiaovtest:x:1040:</div><div class="line">metastoremanager:x:1041:xiaovtest,wangchenqi</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>将上面所有的用户保存到另一台的xiaov文件中，然后执行下面的逻辑：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">for name in `cat xiaov | awk &apos;&#123;split($0, atr,&quot;,&quot;);   </div><div class="line"> </div><div class="line"> for (i=0;i&lt;length(atr);i++) &#123;</div><div class="line"> print(atr[i])</div><div class="line"> &#125;</div><div class="line"> &#125;&apos;`;</div><div class="line">do</div><div class="line">useradd $name -G xiaov</div><div class="line">done</div></pre></td></tr></table></figure></p>
+        <p>场景</p>
 <ul>
-<li>使用fabric维护用户权限相关信息，每次都同时操作两台NN。</li>
+<li>数据重新执行</li>
+<li>数据流重新执行</li>
+<li>逐渐改变的维度</li>
+<li>维度历史变更</li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line">-- fabric.py</div><div class="line"></div><div class="line">nns=(&apos;namenode01.will.com&apos;, &apos;datanode17.will.com&apos;)</div><div class="line"></div><div class="line">env.roledefs = &#123;</div><div class="line">    &apos;services&apos;: services,</div><div class="line">    &apos;datanodes&apos;: datanodes,</div><div class="line">    &apos;tmp&apos;: tmpnodes,</div><div class="line">    &apos;nns&apos;: nns</div><div class="line">&#125;</div><div class="line"></div><div class="line">------------------</div><div class="line"></div><div class="line">[root@datanode21 ~]# fab cmd:roles=nns,cmd=&quot;echo hello from `hostname`&quot;</div><div class="line">This text is green!</div><div class="line">This sentence is red, except for these words, which are green.</div><div class="line">[namenode01.will.com] Executing task &apos;cmd&apos;</div><div class="line">[namenode01.will.com] run: echo hello from datanode21.will.com</div><div class="line">[namenode01.will.com] out: hello from datanode21.will.com</div><div class="line">[namenode01.will.com] out: </div><div class="line"></div><div class="line">[datanode17.will.com] Executing task &apos;cmd&apos;</div><div class="line">[datanode17.will.com] run: echo hello from datanode21.will.com</div><div class="line">[datanode17.will.com] out: hello from datanode21.will.com</div><div class="line">[datanode17.will.com] out: </div><div class="line"></div><div class="line"></div><div class="line">Done.</div><div class="line">Disconnecting from datanode17.will.com... done.</div><div class="line">Disconnecting from namenode01.will.com... done</div></pre></td></tr></table></figure>
-<h4 id="NN切换的相关日志"><a href="#NN切换的相关日志" class="headerlink" title="NN切换的相关日志"></a>NN切换的相关日志</h4><p>NN01的log。</p>
-<p>出现这个错误后，NN自己直接shutdown<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line">2017-06-15 22:35:35,329 WARN  client.QuorumJournalManager (QuorumCall.java:waitFor(134)) - Waited 18014 ms (timeout=20000 ms) for a r</div><div class="line">esponse for sendEdits. Succeeded so far: [10.2.19.121:8485]</div><div class="line">2017-06-15 22:35:36,331 WARN  client.QuorumJournalManager (QuorumCall.java:waitFor(134)) - Waited 19015 ms (timeout=20000 ms) for a r</div><div class="line">esponse for sendEdits. Succeeded so far: [10.2.19.121:8485]</div><div class="line">2017-06-15 22:35:37,317 FATAL namenode.FSEditLog (JournalSet.java:mapJournalsAndReportErrors(398)) - Error: flush failed for required</div><div class="line"> journal (JournalAndStream(mgr=QJM to [10.2.19.123:8485, 10.2.19.127:8485, 10.2.19.121:8485], stream=QuorumOutputStream starting at t</div><div class="line">xid 118442295))</div><div class="line">java.io.IOException: Timed out waiting 20000ms for a quorum of nodes to respond.</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.client.AsyncLoggerSet.waitForWriteQuorum(AsyncLoggerSet.java:137)</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.client.QuorumOutputStream.flushAndSync(QuorumOutputStream.java:107)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream.flush(EditLogOutputStream.java:113)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream.flush(EditLogOutputStream.java:107)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.JournalSet$JournalSetOutputStream$8.apply(JournalSet.java:533)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.JournalSet.mapJournalsAndReportErrors(JournalSet.java:393)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.JournalSet.access$100(JournalSet.java:57)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.JournalSet$JournalSetOutputStream.flush(JournalSet.java:529)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.FSEditLog.logSync(FSEditLog.java:647)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.FSNamesystem.startFileInt(FSNamesystem.java:2512)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.FSNamesystem.startFile(FSNamesystem.java:2377)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.create(NameNodeRpcServer.java:708)</div><div class="line">        at org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolServerSideTranslatorPB.create(ClientNamenodeProtocolServerSideTran</div><div class="line">slatorPB.java:405)</div><div class="line">        at org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$ClientNamenodeProtocol$2.callBlockingMethod(ClientNamen</div><div class="line">odeProtocolProtos.java)</div><div class="line">        at org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:616)</div><div class="line">        at org.apache.hadoop.ipc.RPC$Server.call(RPC.java:969)</div><div class="line">        at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2206)</div><div class="line">        at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2202)</div><div class="line">        at java.security.AccessController.doPrivileged(Native Method)</div><div class="line">        at javax.security.auth.Subject.doAs(Subject.java:422)</div><div class="line">        at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1709)</div><div class="line">        at org.apache.hadoop.ipc.Server$Handler.run(Server.java:2200)</div><div class="line">2017-06-15 22:35:37,318 WARN  client.QuorumJournalManager (QuorumOutputStream.java:abort(72)) - Aborting QuorumOutputStream starting </div><div class="line">at txid 118442295</div><div class="line">2017-06-15 22:35:37,337 INFO  BlockStateChange (BlockManager.java:computeReplicationWorkForBlocks(1531)) - BLOCK* neededReplications </div><div class="line">= 0, pendingReplications = 0.</div><div class="line">2017-06-15 22:35:37,342 INFO  util.ExitUtil (ExitUtil.java:terminate(124)) - Exiting with status 1</div><div class="line">2017-06-15 22:35:37,396 INFO  namenode.NameNode (LogAdapter.java:info(47)) - SHUTDOWN_MSG: </div><div class="line">/************************************************************</div><div class="line">SHUTDOWN_MSG: Shutting down NameNode at namenode01.will.com/10.2.19.72</div></pre></td></tr></table></figure></p>
-<p>DN17的log<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">2017-06-19 16:34:39,682 WARN  client.QuorumJournalManager (QuorumCall.java:waitFor(134)) - Waited 27324 ms (timeout=20000 ms) for a r</div><div class="line">esponse for selectInputStreams. No responses yet.</div><div class="line"></div><div class="line">.........</div><div class="line">2017-06-19 16:34:46,859 INFO  util.JvmPauseMonitor (JvmPauseMonitor.java:run(196)) - Detected pause in JVM or host machine (eg GC): p</div><div class="line">ause of approximately 6029ms</div><div class="line">No GCs detected</div><div class="line">2017-06-19 16:34:49,739 INFO  util.JvmPauseMonitor (JvmPauseMonitor.java:run(196)) - Detected pause in JVM or host machine (eg GC): p</div><div class="line">ause of approximately 2380ms</div><div class="line">No GCs detected</div></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">2017-06-26 13:39:04,029 INFO  ipc.Server (Server.java:doRead(891)) - Socket Reader #1 for port 8020: readAndProcess from client 10.2.</div><div class="line">19.83 threw exception [java.io.IOException: Connection reset by peer]</div><div class="line">java.io.IOException: Connection reset by peer</div><div class="line">        at sun.nio.ch.FileDispatcherImpl.read0(Native Method)</div><div class="line">        at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:39)</div><div class="line">        at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:223)</div><div class="line">        at sun.nio.ch.IOUtil.read(IOUtil.java:197)</div><div class="line">        at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:380)</div><div class="line">        at org.apache.hadoop.ipc.Server.channelRead(Server.java:2773)</div><div class="line">        at org.apache.hadoop.ipc.Server.access$2800(Server.java:136)</div><div class="line">        at org.apache.hadoop.ipc.Server$Connection.readAndProcess(Server.java:1606)</div><div class="line">        at org.apache.hadoop.ipc.Server$Listener.doRead(Server.java:880)</div><div class="line">        at org.apache.hadoop.ipc.Server$Listener$Reader.doRunLoop(Server.java:746)</div><div class="line">        at org.apache.hadoop.ipc.Server$Listener$Reader.run(Server.java:717)</div><div class="line">2017-06-26 13:39:04,066 INFO  ipc.Server (Server.java:doRead(891)) - Socket Reader #1 for port 8020: readAndProcess from client 10.2.</div><div class="line">19.110 threw exception [java.io.IOException: Connection reset by peer]</div><div class="line">java.io.IOException: Connection reset by peer</div><div class="line">        at sun.nio.ch.FileDispatcherImpl.read0(Native Method)</div><div class="line">        at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:39)</div><div class="line">        at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:223)</div><div class="line">        at sun.nio.ch.IOUtil.read(IOUtil.java:197)</div><div class="line"></div><div class="line">.......</div><div class="line"></div><div class="line"></div><div class="line">2017-06-26 13:39:08,310 WARN  client.QuorumJournalManager (IPCLoggerChannel.java:call(406)) - Took 4136ms to send a batch of 3 edits (262 bytes) to remote journal 10.2.19.121:8485</div><div class="line">2017-06-26 13:39:08,310 WARN  client.QuorumJournalManager (IPCLoggerChannel.java:call(406)) - Took 4130ms to send a batch of 3 edits (262 bytes) to remote journal 10.2.19.123:8485</div><div class="line">2017-06-26 13:39:08,310 WARN  client.QuorumJournalManager (IPCLoggerChannel.java:call(388)) - Remote journal 10.2.19.127:8485 failed to write txns 134233020-134233022. Will try to write to this JN again after the next log roll.</div><div class="line">org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC&apos;s epoch 15 is less than the last promised epoch 16</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:418)</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.server.Journal.checkWriteRequest(Journal.java:446)</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.server.Journal.journal(Journal.java:341)</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.journal(JournalNodeRpcServer.java:148)</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.protocolPB.QJournalProtocolServerSideTranslatorPB.journal(QJournalProtocolServerSideTranslatorPB.java:158)</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.protocol.QJournalProtocolProtos$QJournalProtocolService$2.callBlockingMethod(QJournalProto</div><div class="line">colProtos.java:25421)</div><div class="line">        at org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:616)</div><div class="line">        at org.apache.hadoop.ipc.RPC$Server.call(RPC.java:969)</div><div class="line">        at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2206)</div><div class="line">        at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2202)</div><div class="line">        at java.security.AccessController.doPrivileged(Native Method)</div><div class="line">        at javax.security.auth.Subject.doAs(Subject.java:422)</div><div class="line">        at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1709)</div><div class="line">        at org.apache.hadoop.ipc.Server$Handler.run(Server.java:2200)</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">..........</div><div class="line"></div><div class="line">org.apache.hadoop.hdfs.qjournal.client.QuorumException: Got too many exceptions to achieve quorum size 2/3. 3 exceptions thrown:</div><div class="line">10.2.19.127:8485: IPC&apos;s epoch 15 is less than the last promised epoch 16</div></pre></td></tr></table></figure>
-<p>又一次<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">2017-06-28 10:05:21,397 INFO  namenode.FSNamesystem (FSNamesystem.java:stopStandbyServices(1297)) - Stopping services started for standby state</div><div class="line">2017-06-28 10:05:21,398 WARN  ha.EditLogTailer (EditLogTailer.java:doWork(349)) - Edit log tailer interrupted</div><div class="line">java.lang.InterruptedException: sleep interrupted</div><div class="line">        at java.lang.Thread.sleep(Native Method)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.ha.EditLogTailer$EditLogTailerThread.doWork(EditLogTailer.java:347)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.ha.EditLogTailer$EditLogTailerThread.access$200(EditLogTailer.java:284)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.ha.EditLogTailer$EditLogTailerThread$1.run(EditLogTailer.java:301)</div><div class="line">        at org.apache.hadoop.security.SecurityUtil.doAsLoginUserOrFatal(SecurityUtil.java:449)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.ha.EditLogTailer$EditLogTailerThread.run(EditLogTailer.java:297)</div><div class="line">2017-06-28 10:05:21,403 INFO  namenode.FSNamesystem (FSNamesystem.java:startActiveServices(1098)) - Starting services required for active state</div></pre></td></tr></table></figure></p>
+<p>标准sql通过insert、update、delete、事务还有最近出现的merge方式来提供acid操作。这些已经被证明足够使用的了。</p>
+<h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><ul>
+<li>事务表。hive支持单表事务，但是目标表必须需要声明是支持事务的。</li>
+<li>分区表。hive支持表分区，把数据分开以提供快速查询。分区与ACID是相互独立的概念。通常大表都是有分区的。</li>
+<li>ACID操作（insert/update/delete）。</li>
+<li>主键</li>
+<li>流式数据。数据可以通过storm、flume等流式进入hive的事务表中</li>
+<li>优化并发。</li>
+<li>压缩。数据必须时段性的被压缩一下，节省空间，优化数据访问。最好让系统自动处理这件事情。，不过也可以设置外部的调度器。</li>
+</ul>
+<h4 id="启用ACID事务"><a href="#启用ACID事务" class="headerlink" title="启用ACID事务"></a>启用ACID事务</h4><h4 id="hello"><a href="#hello" class="headerlink" title="hello"></a>hello</h4><p>创建一个事务表，并插入一些数据<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">drop</span> <span class="keyword">table</span> <span class="keyword">if</span> <span class="keyword">exists</span> hello_acid;</div><div class="line"><span class="keyword">create</span> <span class="keyword">table</span> hello_acid (<span class="keyword">key</span> <span class="built_in">int</span>, <span class="keyword">value</span> <span class="built_in">int</span>)</div><div class="line">partitioned <span class="keyword">by</span> (load_date <span class="built_in">date</span>)</div><div class="line">clustered <span class="keyword">by</span>(<span class="keyword">key</span>) <span class="keyword">into</span> <span class="number">3</span> buckets</div><div class="line"><span class="keyword">stored</span> <span class="keyword">as</span> orc tblproperties (<span class="string">'transactional'</span>=<span class="string">'true'</span>);</div></pre></td></tr></table></figure></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> hello_acid <span class="keyword">partition</span> (load_date=<span class="string">'2016-03-01'</span>) <span class="keyword">values</span> (<span class="number">1</span>, <span class="number">1</span>);</div><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> hello_acid <span class="keyword">partition</span> (load_date=<span class="string">'2016-03-02'</span>) <span class="keyword">values</span> (<span class="number">2</span>, <span class="number">2</span>);</div><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> hello_acid <span class="keyword">partition</span> (load_date=<span class="string">'2016-03-03'</span>) <span class="keyword">values</span> (<span class="number">3</span>, <span class="number">3</span>);</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> hello_acid;</div></pre></td></tr></table></figure>
+<p>删除数据：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">delete</span> <span class="keyword">from</span> hello_acid <span class="keyword">where</span> <span class="keyword">key</span> = <span class="number">2</span>;</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> hello_acid;</div></pre></td></tr></table></figure></p>
+<p>更新数据：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">update</span> hello_acid <span class="keyword">set</span> <span class="keyword">value</span> = <span class="number">10</span> <span class="keyword">where</span> <span class="keyword">key</span> = <span class="number">3</span>;</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> hello_acid;</div></pre></td></tr></table></figure></p>
+<p>这些DML语句意在在大数据中执行少量修改，应该是记录级别的数据管理。如果你有小的多个批量修改，应该使用streaming data ingestion。</p>
+<h4 id="Streaming-Data-Ingestion"><a href="#Streaming-Data-Ingestion" class="headerlink" title="Streaming Data Ingestion"></a>Streaming Data Ingestion</h4><p>许多时候我们需要处理连续的实时数据流，想要更方便的操作这些数据。hive可以自动把流式数据加入hive表中，也支持实时的数据抽取与查询。</p>
+<p>现在hive提供两种：</p>
+<ul>
+<li>已经存在是<a href="https://github.com/apache/storm/tree/master/external/storm-hive" target="_blank" rel="external">storm hive bolt</a>方案，<a href="https://flume.apache.org/FlumeUserGuide.html#hive-sink" target="_blank" rel="external">flume hive sink</a>方案。这些工具对数据有较少的操作，重在转移数据</li>
+<li>直接使用低级的<a href="https://cwiki.apache.org/confluence/display/Hive/Streaming+Data+Ingest" target="_blank" rel="external">Streaming Ingest API</a>.</li>
+</ul>
+<p>在使用streaming api之前，需要先创建好分区事务表。从查询角度来看，一切应该都是确定好的。</p>
+<h4 id="4-实践"><a href="#4-实践" class="headerlink" title="4. 实践"></a>4. 实践</h4><p>插入几条数据对我们测试起来很简单，但是实际环境中，我们需要一次性处理几千或者几百万的数据。下面我们通过几个通用场景讨论一下怎样处理数据批次。</p>
+<p>这些模型需要你建立一个主键。hive并不强制主键唯一，所以你必须在你app中控制一下。虽然hive2.1介绍了non-validating 外键，但是这东西目前还并没有被完整全面的验证过。</p>
+<h5 id="4-1-searched-updates"><a href="#4-1-searched-updates" class="headerlink" title="4.1 searched updates"></a>4.1 searched updates</h5><p>hive  ACID支持searched updates，这是一种常见的更新方式。注意，基于hive ACID的架构，更新必须通过批处理的方式执行。一次更新一行这种事情在实际使用中是行不通的。如果想通过某种方式一次性更新大量数据，那么searched updates就可以帮你了。</p>
+<p>假设有一个维度表，包含的一个flag，指示当前记录是不是最新的值。这样我们就可以沿时间追踪维度变更情况。当维度表发生更新的时候，我们就把已经存在记录的设置成old。<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">drop</span> <span class="keyword">table</span> <span class="keyword">if</span> <span class="keyword">exists</span> mydim;</div><div class="line"><span class="keyword">create</span> <span class="keyword">table</span> mydim (<span class="keyword">key</span> <span class="built_in">int</span>, <span class="keyword">name</span> <span class="keyword">string</span>, zip <span class="keyword">string</span>, is_current <span class="built_in">boolean</span>)</div><div class="line">clustered <span class="keyword">by</span>(<span class="keyword">key</span>) <span class="keyword">into</span> <span class="number">3</span> buckets</div><div class="line"><span class="keyword">stored</span> <span class="keyword">as</span> orc tblproperties (<span class="string">'transactional'</span>=<span class="string">'true'</span>);</div></pre></td></tr></table></figure></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> mydim <span class="keyword">values</span></div><div class="line">  (<span class="number">1</span>, <span class="string">'bob'</span>,   <span class="string">'95136'</span>, <span class="literal">true</span>),</div><div class="line">  (<span class="number">2</span>, <span class="string">'joe'</span>,   <span class="string">'70068'</span>, <span class="literal">true</span>),</div><div class="line">  (<span class="number">3</span>, <span class="string">'steve'</span>, <span class="string">'22150'</span>, <span class="literal">true</span>);</div></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">drop</span> <span class="keyword">table</span> <span class="keyword">if</span> <span class="keyword">exists</span> updates_staging_table;</div><div class="line"><span class="keyword">create</span> <span class="keyword">table</span> updates_staging_table (<span class="keyword">key</span> <span class="built_in">int</span>, newzip <span class="keyword">string</span>);</div><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> updates_staging_table <span class="keyword">values</span> (<span class="number">1</span>, <span class="number">87102</span>), (<span class="number">3</span>, <span class="number">45220</span>);</div></pre></td></tr></table></figure>
+<p>执行更新,执行前后可以看一下维度表的数据变化，其实就是更新了flag而已。<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">update</span> mydim <span class="keyword">set</span> is_current=<span class="literal">false</span></div><div class="line">  <span class="keyword">where</span> mydim.key <span class="keyword">in</span> (<span class="keyword">select</span> <span class="keyword">key</span> <span class="keyword">from</span> updates_staging_table);</div></pre></td></tr></table></figure></p>
+<h5 id="4-2-searched-deletes"><a href="#4-2-searched-deletes" class="headerlink" title="4.2 searched deletes"></a>4.2 searched deletes</h5><p>批量删除也可以使用staging table轻松搞定。但是需要你在表之间放置一个公共key，有些类似RDBMS中的主键。<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">delete</span> <span class="keyword">from</span> mydim</div><div class="line"><span class="keyword">where</span> mydim.key <span class="keyword">in</span> (<span class="keyword">select</span> <span class="keyword">key</span> <span class="keyword">from</span> updates_staging_table);</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> mydim;</div></pre></td></tr></table></figure></p>
+<h4 id="5-批量覆盖更新"><a href="#5-批量覆盖更新" class="headerlink" title="5. 批量覆盖更新"></a>5. 批量覆盖更新</h4><p>有的时候我们需要批量更新一些数据。例如第一种SCD更新或者数据重导。hive目前还不支持merge操作，在支持之前，我们只能考虑使用先删除后插入的方式，但这样可能会造成查询客户端脏读。或者也可以在重新清洗的时候临时停掉查询。</p>
+<h4 id="6-ACID工具"><a href="#6-ACID工具" class="headerlink" title="6. ACID工具"></a>6. ACID工具</h4><p>ACID事务执行过程中会创建一系列的锁。事务和他们的事务锁可以通过hive的一些工具来查看。</p>
+<h5 id="6-1-查看事务"><a href="#6-1-查看事务" class="headerlink" title="6.1 查看事务"></a>6.1 查看事务</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">show transactions</div></pre></td></tr></table></figure>
+<h5 id="6-1-查看锁"><a href="#6-1-查看锁" class="headerlink" title="6.1 查看锁"></a>6.1 查看锁</h5><p>有read, update，X lock。update锁与update操作互斥，但是与read兼容。X锁，与所有锁都互斥，属于独占。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">show locks</div></pre></td></tr></table></figure></p>
+<h5 id="6-1-终止事务"><a href="#6-1-终止事务" class="headerlink" title="6.1 终止事务"></a>6.1 终止事务</h5><p>注意这并不会马上kill掉所有相关查询。ACID查询是周期性执行的，默认是2.5分钟，如果他们检测到自己的事务被kill，就会执行自动退出。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">abort transactions T1 T2 T3</div></pre></td></tr></table></figure></p>
+<h4 id="7-性能考虑"><a href="#7-性能考虑" class="headerlink" title="7. 性能考虑"></a>7. 性能考虑</h4><ul>
+<li>创建分区</li>
+<li>insert快，update和delete都会比较慢一些，因为要扫描整个分区。</li>
+<li>如果你们的工作里需要大量更新数据，那么请周期行执行compaction操作。不然数据大小会越来越大，查询也会越来越慢。</li>
+</ul>
+<h4 id="8-深入探究"><a href="#8-深入探究" class="headerlink" title="8. 深入探究"></a>8. 深入探究</h4><p>在使用之前一定要深入了解这套系统的工作原理，并且在你的可以容忍丢失的数据上执行测试。过程中也注意备份数据。</p>
+<p>ACID表有一个隐藏字段<code>row__id</code>。这个系统内置的字段名称有可能会变。你应该构建一个基于这个字段的长远的方案。</p>
+<p>这个字段记录的内容有：</p>
+<ul>
+<li>数据被insert或者update的active的事务id</li>
+<li>数据所在bucket的bucketid</li>
+<li>此次事务或者bucket中的rowid</li>
+</ul>
+<p>看一下<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">hive&gt; select row__id from hello_acid;</div><div class="line">OK</div><div class="line">&#123;"transactionid":12,"bucketid":0,"rowid":0&#125;</div><div class="line">&#123;"transactionid":10,"bucketid":1,"rowid":0&#125;</div></pre></td></tr></table></figure></p>
+<p>常用场景就是确认所有的数据都load进来了。假设上游数据provider认为hive里的持久化数据丢失了，那么你的provider(storm Bolt比如)就会告诉你插入这些数据的事务ID。然后我们可以使用这个事务id计算一下实际的记录数。查询的时候使用X替换掉你的事务ID<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">set</span> hive.optimize.ppd=<span class="literal">false</span>;</div><div class="line"><span class="keyword">select</span> <span class="keyword">count</span>(*) <span class="keyword">from</span> hello_acid <span class="keyword">where</span> row__id.transactionid = X;</div></pre></td></tr></table></figure></p>
+<p>记牢，事务中插入的数据有可能会被后续的update或者delete语句影响到，所以如果count数并不符合，那就可能是这些因素造成的。</p>
+<p>参考：</p>
+<p><a href="https://hortonworks.com/hadoop-tutorial/using-hive-acid-transactions-insert-update-delete-data/" target="_blank" rel="external">https://hortonworks.com/hadoop-tutorial/using-hive-acid-transactions-insert-update-delete-data/</a></p>
 
         
         
@@ -731,113 +993,35 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/06/13/RunningDataV2版本迁移计划/" title="runningdatav2版本迁移计划" itemprop="url">runningdatav2版本迁移计划</a>
+      <a href="/2017/04/20/HIVE创建bucketed表/" title="HIVE创建bucketed表" itemprop="url">HIVE创建bucketed表</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
 		
   <p class="article-time">
-    <time datetime="2017-06-13T08:45:17.000Z" itemprop="datePublished"> 发表于 2017-06-13</time>
+    <time datetime="2017-04-20T10:54:03.000Z" itemprop="datePublished"> 发表于 2017-04-20</time>
     
   </p>
 </header>
     <div class="article-content">
         
-        <h4 id="注意点"><a href="#注意点" class="headerlink" title="注意点"></a>注意点</h4><ul>
-<li>编辑、更新<ul>
-<li>各类ETL自动创建与之对应的ExecObj对象【重载save方法实现】</li>
-<li>个别自动分析依赖的ETL同时新建或更新相关ExecBlood【H2H, H2M】</li>
-<li>个别需要输入产出的ETL类型需要添加outputs字段，并在save的时候自创创建对应的NullETL对象【JAR】</li>
-<li>根据自身特性创建自身的rel_name 【save的时候分析并添加上】</li>
-</ul>
-</li>
-<li>调度相关<ul>
-<li>(日月周)日常调度【完成依赖解析与任务文件生成，测试通过】</li>
-<li>定时调度【执行部分使用既有方案】</li>
-<li>临时调度【使用既有方案】</li>
-<li>新建调度时，针对的对象应该是修改为ExecObj</li>
-</ul>
-</li>
-</ul>
-<h4 id="影响范围"><a href="#影响范围" class="headerlink" title="影响范围"></a>影响范围</h4><ul>
-<li>整体过程中xstorm新建、编辑不可用</li>
-<li>任务调度中间可能出现失败</li>
-</ul>
-<h4 id="实施步骤"><a href="#实施步骤" class="headerlink" title="实施步骤"></a>实施步骤</h4><ol>
-<li>向各事业部发送不可用通知</li>
-<li>数据库备份</li>
-<li>确保新的save方法都已经注释掉,否则会影响清洗过程。</li>
-<li>将数据库对应model字段全部添加上<blockquote>
-<p>./manage.py migrate metamap 0052 –settings=metamap.config</p>
-</blockquote>
-</li>
-</ol>
-<p>可能需要手动添加exec_obj_id字段…【历史原因】<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line"><span class="comment">--</span></div><div class="line"><span class="comment">-- Add field exec_obj to anaetl</span></div><div class="line"><span class="comment">--</span></div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_anaetl`</span> <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="built_in">integer</span> <span class="literal">NULL</span>;</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_anaetl`</span> <span class="keyword">ALTER</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="keyword">DROP</span> <span class="keyword">DEFAULT</span>;</div><div class="line"><span class="comment">--</span></div><div class="line"><span class="comment">-- Add field exec_obj to etl</span></div><div class="line"><span class="comment">--</span></div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_etl`</span> <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="built_in">integer</span> <span class="literal">NULL</span>;</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_etl`</span> <span class="keyword">ALTER</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="keyword">DROP</span> <span class="keyword">DEFAULT</span>;</div><div class="line"><span class="comment">--</span></div><div class="line"><span class="comment">-- Add field exec_obj to jarapp</span></div><div class="line"><span class="comment">--</span></div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_jarapp`</span> <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="built_in">integer</span> <span class="literal">NULL</span>;</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_jarapp`</span> <span class="keyword">ALTER</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="keyword">DROP</span> <span class="keyword">DEFAULT</span>;</div><div class="line"><span class="comment">--</span></div><div class="line"><span class="comment">-- Add field exec_obj to sqoophive2mysql</span></div><div class="line"><span class="comment">--</span></div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_sqoophive2mysql`</span> <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="built_in">integer</span> <span class="literal">NULL</span>;</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_sqoophive2mysql`</span> <span class="keyword">ALTER</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="keyword">DROP</span> <span class="keyword">DEFAULT</span>;</div><div class="line"><span class="comment">--</span></div><div class="line"><span class="comment">-- Add field exec_obj to sqoopmysql2hive</span></div><div class="line"><span class="comment">--</span></div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_sqoopmysql2hive`</span> <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="built_in">integer</span> <span class="literal">NULL</span>;</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_sqoopmysql2hive`</span> <span class="keyword">ALTER</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="keyword">DROP</span> <span class="keyword">DEFAULT</span>;</div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> <span class="string">`metamap_anaetl_30a76f4d`</span> <span class="keyword">ON</span> <span class="string">`metamap_anaetl`</span> (<span class="string">`exec_obj_id`</span>);</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_anaetl`</span> <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> <span class="string">`metamap_anaetl_exec_obj_id_1bac03db_fk_metamap_execobj_id`</span> FOREIGN <span class="keyword">KEY</span> (<span class="string">`exec_obj_id`</span>) <span class="keyword">REFERENCES</span> <span class="string">`metamap_execobj`</span> (<span class="string">`id`</span>);</div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> <span class="string">`metamap_etl_30a76f4d`</span> <span class="keyword">ON</span> <span class="string">`metamap_etl`</span> (<span class="string">`exec_obj_id`</span>);</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_etl`</span> <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> <span class="string">`metamap_etl_exec_obj_id_8c6a086a_fk_metamap_execobj_id`</span> FOREIGN <span class="keyword">KEY</span> (<span class="string">`exec_obj_id`</span>) <span class="keyword">REFERENCES</span> <span class="string">`metamap_execobj`</span> (<span class="string">`id`</span>);</div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> <span class="string">`metamap_jarapp_30a76f4d`</span> <span class="keyword">ON</span> <span class="string">`metamap_jarapp`</span> (<span class="string">`exec_obj_id`</span>);</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_jarapp`</span> <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> <span class="string">`metamap_jarapp_exec_obj_id_6340f92e_fk_metamap_execobj_id`</span> FOREIGN <span class="keyword">KEY</span> (<span class="string">`exec_obj_id`</span>) <span class="keyword">REFERENCES</span> <span class="string">`metamap_execobj`</span> (<span class="string">`id`</span>);</div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> <span class="string">`metamap_sqoophive2mysql_30a76f4d`</span> <span class="keyword">ON</span> <span class="string">`metamap_sqoophive2mysql`</span> (<span class="string">`exec_obj_id`</span>);</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_sqoophive2mysql`</span> <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> <span class="string">`metamap_sqoophive2mys_exec_obj_id_ee2cb5c2_fk_metamap_execobj_id`</span> FOREIGN <span class="keyword">KEY</span> (<span class="string">`exec_obj_id`</span>) <span class="keyword">REFERENCES</span> <span class="string">`metamap_execobj`</span> (<span class="string">`id`</span>);</div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> <span class="string">`metamap_sqoopmysql2hive_30a76f4d`</span> <span class="keyword">ON</span> <span class="string">`metamap_sqoopmysql2hive`</span> (<span class="string">`exec_obj_id`</span>);</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_sqoopmysql2hive`</span> <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> <span class="string">`metamap_sqoopmysql2hi_exec_obj_id_9d61c4ff_fk_metamap_execobj_id`</span> FOREIGN <span class="keyword">KEY</span> (<span class="string">`exec_obj_id`</span>) <span class="keyword">REFERENCES</span> <span class="string">`metamap_execobj`</span> (<span class="string">`id`</span>);</div></pre></td></tr></table></figure></p>
-<ol>
-<li>按照以下顺序开始清洗</li>
-</ol>
+        <p>建表语句<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">CREATE TABLE user_info_bucketed(user_id BIGINT, firstname STRING, lastname STRING)</div><div class="line">COMMENT &apos;A bucketed copy of user_info&apos;</div><div class="line">PARTITIONED BY(ds STRING)</div><div class="line">CLUSTERED BY(user_id) INTO 256 BUCKETS;</div></pre></td></tr></table></figure></p>
+<p>基于字段user_id分桶的。</p>
+<p>使用<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">set</span> hive.enforce.bucketing = <span class="literal">true</span>;  <span class="comment">-- (<span class="doctag">Note:</span> Not needed in Hive 2.x onward)</span></div><div class="line">FROM user_id</div><div class="line"><span class="keyword">INSERT</span> OVERWRITE <span class="keyword">TABLE</span> user_info_bucketed</div><div class="line"><span class="keyword">PARTITION</span> (ds=<span class="string">'2009-02-25'</span>)</div><div class="line"><span class="keyword">SELECT</span> userid, firstname, lastname <span class="keyword">WHERE</span> ds=<span class="string">'2009-02-25'</span>;</div></pre></td></tr></table></figure></p>
+<p>hive怎样把row打散到不同的bucket中去的呢？一般是决定于hash函数，使用什么hash函数又取决于分桶字段的类型。比如整型字段就使用hash_int函数。</p>
+<p>注意，如果分桶字段类型不同于insert进来的数据类型会出错的，或者手动使用不同类型的数据执行分桶操作也会出错。只要设置了<code>set hive.enforce.bucketing=true</code>，就能够正确的把数据发布到对应的地方。</p>
+<p>再来一个例子<br>Bucketed Sorted Table<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> page_view(viewTime <span class="built_in">INT</span>, userid <span class="built_in">BIGINT</span>,</div><div class="line">     page_url <span class="keyword">STRING</span>, referrer_url <span class="keyword">STRING</span>,</div><div class="line">     ip <span class="keyword">STRING</span> <span class="keyword">COMMENT</span> <span class="string">'IP Address of the User'</span>)</div><div class="line"> <span class="keyword">COMMENT</span> <span class="string">'This is the page view table'</span></div><div class="line"> PARTITIONED <span class="keyword">BY</span>(dt <span class="keyword">STRING</span>, country <span class="keyword">STRING</span>)</div><div class="line"> CLUSTERED <span class="keyword">BY</span>(userid) SORTED <span class="keyword">BY</span>(viewTime) <span class="keyword">INTO</span> <span class="number">32</span> BUCKETS</div><div class="line"> <span class="keyword">ROW</span> <span class="keyword">FORMAT</span> <span class="keyword">DELIMITED</span></div><div class="line">   <span class="keyword">FIELDS</span> <span class="keyword">TERMINATED</span> <span class="keyword">BY</span> <span class="string">'\001'</span></div><div class="line">   COLLECTION ITEMS <span class="keyword">TERMINATED</span> <span class="keyword">BY</span> <span class="string">'\002'</span></div><div class="line">   <span class="keyword">MAP</span> <span class="keyword">KEYS</span> <span class="keyword">TERMINATED</span> <span class="keyword">BY</span> <span class="string">'\003'</span></div><div class="line"> <span class="keyword">STORED</span> <span class="keyword">AS</span> SEQUENCEFILE;</div></pre></td></tr></table></figure></p>
+<p>这个表根据userid分桶，每个bucket中按照viewTime升序排列。这种组织结果允许用户更高效的抽取clustered的字段，这里就是userid字段了。排序属性让内部操作能够快速处理估算查询的任务。MAP KEYS和COLLECTION ITEMS关键词可以用来处理字段是list或者map的情况。</p>
+<p>CLUSTERED BY 和 SORTED BY并不影响insert数据。用户需要注意reducer数必须要跟bucket的数量一致，在query语句中还要使用CLUSTER BY 和SORT BY语句。</p>
+<p>还有一种倾斜表。适用于某些表中确认包含倾斜数据的情况。通过指定倾斜key，hive会把他们打散到不同的文件中。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> list_bucket_single (<span class="keyword">key</span> <span class="keyword">STRING</span>, <span class="keyword">value</span> <span class="keyword">STRING</span>)</div><div class="line">  SKEWED <span class="keyword">BY</span> (<span class="keyword">key</span>) <span class="keyword">ON</span> (<span class="number">1</span>,<span class="number">5</span>,<span class="number">6</span>) [<span class="keyword">STORED</span> <span class="keyword">AS</span> DIRECTORIES];</div></pre></td></tr></table></figure>
+<p>下面这个是有两个倾斜key<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">CREATE TABLE list_bucket_multiple (col1 STRING, col2 int, col3 STRING)</div><div class="line">  SKEWED BY (col1, col2) ON ((&apos;s1&apos;,1), (&apos;s3&apos;,3), (&apos;s13&apos;,13), (&apos;s78&apos;,78)) [STORED AS DIRECTORIES];</div></pre></td></tr></table></figure></p>
+<p>参考：</p>
 <ul>
-<li><p>clean_etl </p>
-<p>  生成对应ETL的ExecObj</p>
-</li>
-<li><p>clean_rel </p>
-<p>  清洗H2M,M2H中不规范的name，规范化hive表名到rel_name字段中</p>
-</li>
-<li><p>clean_m2h </p>
-<p>  清洗M2H任务，生成对应的ExecObj。另外找到所有TBLBlood中父表是此表rel_name的记录，新建与之对应的ExecBlood记录</p>
-</li>
-<li><p>before_clean_blood</p>
-<p>  过滤一下TblBlood中的parent，对于不存在于H2H和M2好的父表，临时创建为之创建NULLETL，并创建对应ExecObj，然后再创建ExecBlood。 </p>
-<p>  <strong>==注意==</strong>：由于NULLETL的特殊性，需要在此创建ExecObj的deptask的日月周调度【在save方法中已实现】</p>
-</li>
-<li><p>clean_blood</p>
-<p>  清洗TblBlood到对应ExecBlood，因为前面已经处理了所有情况，不该出现任务child或者parent不存在的问题。</p>
-<p>  自检sql</p>
-  <figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">SELECT</span> <span class="keyword">name</span> <span class="keyword">from</span> metamap_execobj <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="keyword">name</span> <span class="keyword">HAVING</span> <span class="keyword">count</span>(<span class="number">1</span>) &gt; <span class="number">1</span>;</div><div class="line"></div><div class="line"><span class="keyword">SELECT</span> * <span class="keyword">from</span> metamap_execobj <span class="keyword">where</span> <span class="keyword">name</span> = <span class="string">'w_data_platform@drop_d_regula_stock'</span>;</div><div class="line"></div><div class="line"><span class="keyword">SELECT</span> * <span class="keyword">from</span> metamap_execobj <span class="keyword">where</span> <span class="keyword">name</span> = <span class="string">'app_jlc@jlc_life_accumulative'</span>;</div></pre></td></tr></table></figure>
-</li>
-<li><p>clean_h2m</p>
-<p>  清洗H2M到ExecObj对象，获取依赖ETL的H2H ExecObj对象，添加对应ExecBlood。<br>  如果是JAR产生的表，暂不支持，需要额外处理【JAR添加自身的output】。</p>
-<p>  <strong>==注意==</strong>：<br>  H2M中的个别现象，多个周期的数据存放在同一个表中：<br>  SELECT * from metamap_sqoophive2mysql where id in (71,72,73,74,75,76)<br>  需要额外手动维护execblood</p>
-</li>
-<li><p>clean_jar</p>
-<p>  清洗JAR到ExecObj对象</p>
-</li>
-<li><p>clean_email</p>
-<p>  清洗ANAETL到ExecObj对象</p>
-</li>
-<li><p>clean_task</p>
-<p>  分别执行clean， type=4, type=1等(1,2,3,4,6)</p>
-  <figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">--- 这些都是ana_etl本身的valid是0</span></div><div class="line"><span class="keyword">SELECT</span> * <span class="keyword">from</span> metamap_willdependencytask <span class="keyword">where</span> <span class="keyword">id</span> <span class="keyword">in</span> (<span class="number">864</span>, <span class="number">870</span>, <span class="number">759</span>, <span class="number">643</span>, <span class="number">164</span>, <span class="number">143</span>, <span class="number">85</span>)</div></pre></td></tr></table></figure>
-</li>
-<li><p>clean_ptask</p>
-<p>  更新定时任务的task参数，由原来的will_deptask的id，更新为type为100的最新清洗完的task id.</p>
-</li>
-<li><p>clean_null</p>
-<p>  为所有的NULLETL对象创建日月周的task调度</p>
-</li>
+<li><a href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL+BucketedTables" target="_blank" rel="external">https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL+BucketedTables</a></li>
+<li><a href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL#LanguageManualDDL-BucketedSortedTables" target="_blank" rel="external">https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL#LanguageManualDDL-BucketedSortedTables</a></li>
 </ul>
-<ol>
-<li>测试各种任务调度【日常调度、定时调度、即时调度】</li>
-<li><p>clean_exec_id</p>
-<p> 清洗原有的ETL对象的exec_obj_id字段</p>
-</li>
-<li><p>放开ETL对象的save方法注释</p>
-</li>
-<li>恢复线上使用，开启beta测试，随时解决未发现的新生bug</li>
-<li>修改日调度脚本中的url到新版本</li>
-<li>添加调度的页面覆盖回来[sche/edit_new.html， /views/sche_etl_v2.py]</li>
-</ol>
-<p>稳定运行一周，将dep task中旧的task全部删除</p>
-<p>TODO</p>
-<ol>
-<li>H2M的依赖手动添加以下。SELECT * from metamap_sqoophive2mysql where id in (71,72,73,74,75,76)</li>
-<li>测试各种ETL的save方法</li>
-</ol>
-<p>新增逻辑：</p>
-<ol>
-<li></li>
-</ol>
 
         
         
@@ -876,7 +1060,7 @@
 
 
   <nav id="page-nav" class="clearfix">
-    <a class="extend prev" rel="prev" href="/page/10/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="page-number" href="/page/10/">10</a><span class="page-number current">11</span><a class="page-number" href="/page/12/">12</a><a class="page-number" href="/page/13/">13</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/12/">Next<span></span></a>
+    <a class="extend prev" rel="prev" href="/page/10/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="page-number" href="/page/10/">10</a><span class="page-number current">11</span><a class="page-number" href="/page/12/">12</a><a class="page-number" href="/page/13/">13</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/12/">Next<span></span></a>
   </nav>
 
 </div>
@@ -897,7 +1081,7 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>187</sup></a></li>
 			
 		
 			
@@ -949,19 +1133,11 @@
 			
 		
 			
-				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+				<li><a href="/tags/Solr/" title="Solr">Solr<sup>1</sup></a></li>
 			
 		
 			
@@ -974,6 +1150,14 @@
 		
 			
 				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hue/" title="hue">hue<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
 			
 		
 		</ul>

@@ -3,6 +3,14 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
+  <script type="text/javascript">
+    (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+    })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+    
+    _st('install','yNiKTKaAnwd1uuxVMfiE','2.0.0');
+  </script>
   <script>
     var _hmt = _hmt || [];
     (function() {
@@ -24,7 +32,7 @@
     <meta name="description" content="左右水色 右手天光">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Will's Blog">
-<meta property="og:url" content="http://willcup.com/page/9/index.html">
+<meta property="og:url" content="https://runningdata.github.io/page/9/index.html">
 <meta property="og:site_name" content="Will's Blog">
 <meta property="og:description" content="左右水色 右手天光">
 <meta name="twitter:card" content="summary">
@@ -74,7 +82,7 @@
 					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
 						<label>Search</label>
 						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
-						<input type="hidden" name="q" value="site:willcup.com">
+						<input type="hidden" name="q" value="site:runningdata.github.io">
 					</form>
 					
 					</li>
@@ -91,671 +99,91 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/09/07/marathon---event-bus/" title="marathon---event-bus" itemprop="url">marathon---event-bus</a>
+      <a href="/2017/07/28/Quota/" title="Quota" itemprop="url">Quota</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
 		
   <p class="article-time">
-    <time datetime="2017-09-07T06:55:44.000Z" itemprop="datePublished"> 发表于 2017-09-07</time>
+    <time datetime="2017-07-28T06:06:28.000Z" itemprop="datePublished"> 发表于 2017-07-28</time>
     
   </p>
 </header>
     <div class="article-content">
         
-        <p>marathon有一个内部的event bus，处理所有的API请求和扩容event。通过订阅这个eventbus，我们可以实时了解发生的所有事件。event bus对于整合基于状态的实体很有用处，比如load balancer，或者compile statistics。</p>
-<p>Evet可通过插件化的subscriber进行订阅。</p>
-<p>event bus有两个API：</p>
+        <p>在mesos上运行多个framework的时候有个问题，就是如果当前没有其他framework接受剩余资源，默认的WDRF分配器可能会把剩余资源分配给已经满足公平共享的framework。并没有把剩余资源留下备用的机制。尽管dynamic reservations允许operator和framework可在指定的mesos agent上动态保留资源，但是并不能从根本上解决问题，因为每个agent都可能挂掉。</p>
+<p>Mesos 0.27提出了quota，用来保证一个role会获取指定大小的最小资源保留。当然，这个role也可以获得比这个quota配置的更多的资源。</p>
+<p>quota有些类似reserved resource，稍有不同。quota资源不能绑定到指定的agent上，就是说一个quota保证一个role会有指定大小的资源，但是可以是在集群的任意位置。然而 reservations是用来指定特定的资源给指定role的特定的agent使用。quota只能让operator通过HTTP终端进行配置，而dynamic reservations则可以通过framework的principal验证后进行控制。</p>
+<p>注意：reserved reservations是用来满足一个role的quota配置的。例如，如果一个role指定定了一个4CPU和一个agent上的2个CPU的reserved reservations。那么这个role有一个4CPU的最小保证，而不是6个。</p>
+<h2 id="Terminology【术语】"><a href="#Terminology【术语】" class="headerlink" title="Terminology【术语】"></a>Terminology【术语】</h2><p>operator是一个管理mesos集群的东西，可以是人，工具，或者脚本。</p>
+<p>在计算机领域，quota通常指下面的事情：</p>
 <ul>
-<li>event stream。详情见/v2/events/</li>
-<li>回调endpoint，以json的方式把event发送到一个或多个endpoint中。这个方式已经过期了。</li>
+<li>一个最小保证</li>
+<li>一个最大范围</li>
+<li>以上两者</li>
 </ul>
-<p>event stream相对好处</p>
+<p>在mesos中，quota是一个role即将游泳的资源的最小保证。</p>
+<h2 id="动力和限制"><a href="#动力和限制" class="headerlink" title="动力和限制"></a>动力和限制</h2><p>通过下面场景，进一步了解quota。</p>
+<h4 id="场景1：-贪婪framework"><a href="#场景1：-贪婪framework" class="headerlink" title="场景1： 贪婪framework"></a>场景1： 贪婪framework</h4><p>在一个集群中有两个framework，每个都订阅了自己特有的role，每个role都有相同的权重。frameworkA定于了role RA，frameworkB订阅了role RB。集群中只有一种单一资源：100CPU. fA只需要10个CPU，而FB需要全部的CPU。如果没有Quota的话，FA就会根据默认的公平调度，每个framework都50个CPU，那么就会有40个是浪费的。</p>
+<h4 id="场景2：-新framework的资源"><a href="#场景2：-新framework的资源" class="headerlink" title="场景2： 新framework的资源"></a>场景2： 新framework的资源</h4><p>贪婪framework FB订阅role RB，是当前集群唯一的framework，那么它就都占了100CPU.如果一个fa新加入进来，需要等待FB的任务完成后才能获取属于自己的50CPU资源。</p>
+<p>对于场景2来说，quota自己是不足以解决这个问题的，然而可以一直保持一个资源池作为保留或者或者进行资源抢占。</p>
+<h2 id="Operator-HTTP终端"><a href="#Operator-HTTP终端" class="headerlink" title="Operator HTTP终端"></a>Operator HTTP终端</h2><p>master的/quota HTTP终端使operator可以操控quota。目前是提供一种类REST接口，支持下面的操作：</p>
 <ul>
-<li>容易设置</li>
-<li>传递较快。没有req/resp的处理</li>
-<li>event是有序的</li>
+<li>POST设置一个新的quota</li>
+<li>DELETE 移除一个已经存在的quota</li>
+<li>GET 查询当前的quota</li>
 </ul>
-<h4 id="回调方式"><a href="#回调方式" class="headerlink" title="回调方式"></a>回调方式</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">./bin/start --master ... --event_subscriber http_callback --http_endpoints http://host1/foo,http://host2/bar</div></pre></td></tr></table></figure>
-<h4 id="event类型"><a href="#event类型" class="headerlink" title="event类型"></a>event类型</h4><h5 id="API请求"><a href="#API请求" class="headerlink" title="API请求"></a>API请求</h5><p>marathon接收到修改某个app的时候收到的API请求。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;eventType&quot;: &quot;api_post_event&quot;,</div><div class="line">  &quot;timestamp&quot;: &quot;2014-03-01T23:29:30.158Z&quot;,</div><div class="line">  &quot;clientIp&quot;: &quot;0:0:0:0:0:0:0:1&quot;,</div><div class="line">  &quot;uri&quot;: &quot;/v2/apps/my-app&quot;,</div><div class="line">  &quot;appDefinition&quot;: &#123;</div><div class="line">    &quot;args&quot;: [],</div><div class="line">    &quot;backoffFactor&quot;: 1.15,</div><div class="line">    &quot;backoffSeconds&quot;: 1,</div><div class="line">    &quot;cmd&quot;: &quot;sleep 30&quot;,</div><div class="line">    &quot;constraints&quot;: [],</div><div class="line">    &quot;container&quot;: null,</div><div class="line">    &quot;cpus&quot;: 0.2,</div><div class="line">    &quot;dependencies&quot;: [],</div><div class="line">    &quot;disk&quot;: 0.0,</div><div class="line">    &quot;env&quot;: &#123;&#125;,</div><div class="line">    &quot;executor&quot;: &quot;&quot;,</div><div class="line">    &quot;healthChecks&quot;: [],</div><div class="line">    &quot;id&quot;: &quot;/my-app&quot;,</div><div class="line">    &quot;instances&quot;: 2,</div><div class="line">    &quot;mem&quot;: 32.0,</div><div class="line">    &quot;ports&quot;: [10001],</div><div class="line">    &quot;requirePorts&quot;: false,</div><div class="line">    &quot;storeUrls&quot;: [],</div><div class="line">    &quot;upgradeStrategy&quot;: &#123;</div><div class="line">        &quot;minimumHealthCapacity&quot;: 1.0</div><div class="line">    &#125;,</div><div class="line">    &quot;uris&quot;: [],</div><div class="line">    &quot;user&quot;: null,</div><div class="line">    &quot;version&quot;: &quot;2014-09-09T05:57:50.866Z&quot;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<h5 id="状态更新"><a href="#状态更新" class="headerlink" title="状态更新"></a>状态更新</h5><p>task的状态变更时发送的event:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;eventType&quot;: &quot;status_update_event&quot;,</div><div class="line">  &quot;timestamp&quot;: &quot;2014-03-01T23:29:30.158Z&quot;,</div><div class="line">  &quot;slaveId&quot;: &quot;20140909-054127-177048842-5050-1494-0&quot;,</div><div class="line">  &quot;taskId&quot;: &quot;my-app_0-1396592784349&quot;,</div><div class="line">  &quot;taskStatus&quot;: &quot;TASK_RUNNING&quot;,</div><div class="line">  &quot;appId&quot;: &quot;/my-app&quot;,</div><div class="line">  &quot;host&quot;: &quot;slave-1234.acme.org&quot;,</div><div class="line">  &quot;ports&quot;: [31372],</div><div class="line">  &quot;version&quot;: &quot;2014-04-04T06:26:23.051Z&quot;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>所有的状态</p>
-<ul>
-<li>TASK_STAGING</li>
-<li>TASK_STARTING</li>
-<li>TASK_RUNNING</li>
-<li>TASK_FINISHED</li>
-<li>TASK_FAILED</li>
-<li>TASK_KILLING</li>
-<li>TASK_KILLED</li>
-<li>TASK_LOST<br>后面四种是终止状态。</li>
-</ul>
-<h5 id="framework-message"><a href="#framework-message" class="headerlink" title="framework message"></a>framework message</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;eventType&quot;: &quot;framework_message_event&quot;,</div><div class="line">  &quot;timestamp&quot;: &quot;2014-03-01T23:29:30.158Z&quot;,</div><div class="line">  &quot;slaveId&quot;: &quot;20140909-054127-177048842-5050-1494-0&quot;,</div><div class="line">  &quot;executorId&quot;: &quot;my-app.3f80d17a-37e6-11e4-b05e-56847afe9799&quot;,</div><div class="line">  &quot;message&quot;: &quot;aGVsbG8gd29ybGQh&quot;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h5 id="Event订阅"><a href="#Event订阅" class="headerlink" title="Event订阅"></a>Event订阅</h5><p>订阅者消息有变化时触发。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;eventType&quot;: &quot;subscribe_event&quot;,</div><div class="line">  &quot;timestamp&quot;: &quot;2014-03-01T23:29:30.158Z&quot;,</div><div class="line">  &quot;clientIp&quot;: &quot;1.2.3.4&quot;,</div><div class="line">  &quot;callbackUrl&quot;: &quot;http://subscriber.acme.org/callbacks&quot;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;eventType&quot;: &quot;unsubscribe_event&quot;,</div><div class="line">  &quot;timestamp&quot;: &quot;2014-03-01T23:29:30.158Z&quot;,</div><div class="line">  &quot;clientIp&quot;: &quot;1.2.3.4&quot;,</div><div class="line">  &quot;callbackUrl&quot;: &quot;http://subscriber.acme.org/callbacks&quot;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h5 id="Health-Check"><a href="#Health-Check" class="headerlink" title="Health Check"></a>Health Check</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;eventType&quot;: &quot;add_health_check_event&quot;,</div><div class="line">  &quot;timestamp&quot;: &quot;2014-03-01T23:29:30.158Z&quot;,</div><div class="line">  &quot;appId&quot;: &quot;/my-app&quot;,</div><div class="line">  &quot;healthCheck&quot;: &#123;</div><div class="line">    &quot;protocol&quot;: &quot;HTTP&quot;,</div><div class="line">    &quot;path&quot;: &quot;/health&quot;,</div><div class="line">    &quot;portIndex&quot;: 0,</div><div class="line">    &quot;gracePeriodSeconds&quot;: 5,</div><div class="line">    &quot;intervalSeconds&quot;: 10,</div><div class="line">    &quot;timeoutSeconds&quot;: 10,</div><div class="line">    &quot;maxConsecutiveFailures&quot;: 3</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;eventType&quot;: &quot;remove_health_check_event&quot;,</div><div class="line">  &quot;timestamp&quot;: &quot;2014-03-01T23:29:30.158Z&quot;,</div><div class="line">  &quot;appId&quot;: &quot;/my-app&quot;,</div><div class="line">  &quot;healthCheck&quot;: &#123;</div><div class="line">    &quot;protocol&quot;: &quot;HTTP&quot;,</div><div class="line">    &quot;path&quot;: &quot;/health&quot;,</div><div class="line">    &quot;portIndex&quot;: 0,</div><div class="line">    &quot;gracePeriodSeconds&quot;: 5,</div><div class="line">    &quot;intervalSeconds&quot;: 10,</div><div class="line">    &quot;timeoutSeconds&quot;: 10,</div><div class="line">    &quot;maxConsecutiveFailures&quot;: 3</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;eventType&quot;: &quot;failed_health_check_event&quot;,</div><div class="line">  &quot;timestamp&quot;: &quot;2014-03-01T23:29:30.158Z&quot;,</div><div class="line">  &quot;appId&quot;: &quot;/my-app&quot;,</div><div class="line">  &quot;taskId&quot;: &quot;my-app_0-1396592784349&quot;,</div><div class="line">  &quot;healthCheck&quot;: &#123;</div><div class="line">    &quot;protocol&quot;: &quot;HTTP&quot;,</div><div class="line">    &quot;path&quot;: &quot;/health&quot;,</div><div class="line">    &quot;portIndex&quot;: 0,</div><div class="line">    &quot;gracePeriodSeconds&quot;: 5,</div><div class="line">    &quot;intervalSeconds&quot;: 10,</div><div class="line">    &quot;timeoutSeconds&quot;: 10,</div><div class="line">    &quot;maxConsecutiveFailures&quot;: 3</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;eventType&quot;: &quot;health_status_changed_event&quot;,</div><div class="line">  &quot;timestamp&quot;: &quot;2014-03-01T23:29:30.158Z&quot;,</div><div class="line">  &quot;appId&quot;: &quot;/my-app&quot;,</div><div class="line">  &quot;instanceId&quot;: &quot;my-app.instance-c7c311a4-b669-11e6-a48f-0ea4f4b1778c&quot;,</div><div class="line">  &quot;version&quot;: &quot;2014-04-04T06:26:23.051Z&quot;,</div><div class="line">  &quot;alive&quot;: true</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;appId&quot;: &quot;/my-app&quot;,</div><div class="line">  &quot;taskId&quot;: &quot;my-app_0-1396592784349&quot;,</div><div class="line">  &quot;version&quot;: &quot;2016-03-16T13:05:00.590Z&quot;,</div><div class="line">  &quot;reason&quot;: &quot;500 Internal Server Error&quot;,</div><div class="line">  &quot;host&quot;: &quot;localhost&quot;,</div><div class="line">  &quot;slaveId&quot;: &quot;4fb620fa-ba8d-4eb0-8ae3-f2912aaf015c-S0&quot;,</div><div class="line">  &quot;eventType&quot;: &quot;unhealthy_task_kill_event&quot;,</div><div class="line">  &quot;timestamp&quot;: &quot;2016-03-21T09:15:10.764Z&quot;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h5 id="deployment"><a href="#deployment" class="headerlink" title="deployment"></a>deployment</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;eventType&quot;: &quot;group_change_success&quot;,</div><div class="line">  &quot;timestamp&quot;: &quot;2014-03-01T23:29:30.158Z&quot;,</div><div class="line">  &quot;groupId&quot;: &quot;/product-a/backend&quot;,</div><div class="line">  &quot;version&quot;: &quot;2014-04-04T06:26:23.051Z&quot;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;eventType&quot;: &quot;group_change_failed&quot;,</div><div class="line">  &quot;timestamp&quot;: &quot;2014-03-01T23:29:30.158Z&quot;,</div><div class="line">  &quot;groupId&quot;: &quot;/product-a/backend&quot;,</div><div class="line">  &quot;version&quot;: &quot;2014-04-04T06:26:23.051Z&quot;,</div><div class="line">  &quot;reason&quot;: &quot;&quot;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;eventType&quot;: &quot;deployment_success&quot;,</div><div class="line">  &quot;timestamp&quot;: &quot;2014-03-01T23:29:30.158Z&quot;,</div><div class="line">  &quot;id&quot;: &quot;867ed450-f6a8-4d33-9b0e-e11c5513990b&quot;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;eventType&quot;: &quot;deployment_failed&quot;,</div><div class="line">  &quot;timestamp&quot;: &quot;2014-03-01T23:29:30.158Z&quot;,</div><div class="line">  &quot;id&quot;: &quot;867ed450-f6a8-4d33-9b0e-e11c5513990b&quot;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;eventType&quot;: &quot;deployment_info&quot;,</div><div class="line">  &quot;timestamp&quot;: &quot;2014-03-01T23:29:30.158Z&quot;,</div><div class="line">  &quot;plan&quot;: &#123;</div><div class="line">    &quot;id&quot;: &quot;867ed450-f6a8-4d33-9b0e-e11c5513990b&quot;,</div><div class="line">    &quot;original&quot;: &#123;</div><div class="line">      &quot;apps&quot;: [],</div><div class="line">      &quot;dependencies&quot;: [],</div><div class="line">      &quot;groups&quot;: [],</div><div class="line">      &quot;id&quot;: &quot;/&quot;,</div><div class="line">      &quot;version&quot;: &quot;2014-09-09T06:30:49.667Z&quot;</div><div class="line">    &#125;,</div><div class="line">    &quot;target&quot;: &#123;</div><div class="line">      &quot;apps&quot;: [</div><div class="line">        &#123;</div><div class="line">          &quot;args&quot;: [],</div><div class="line">          &quot;backoffFactor&quot;: 1.15,</div><div class="line">          &quot;backoffSeconds&quot;: 1,</div><div class="line">          &quot;cmd&quot;: &quot;sleep 30&quot;,</div><div class="line">          &quot;constraints&quot;: [],</div><div class="line">          &quot;container&quot;: null,</div><div class="line">          &quot;cpus&quot;: 0.2,</div><div class="line">          &quot;dependencies&quot;: [],</div><div class="line">          &quot;disk&quot;: 0.0,</div><div class="line">          &quot;env&quot;: &#123;&#125;,</div><div class="line">          &quot;executor&quot;: &quot;&quot;,</div><div class="line">          &quot;healthChecks&quot;: [],</div><div class="line">          &quot;id&quot;: &quot;/my-app&quot;,</div><div class="line">          &quot;instances&quot;: 2,</div><div class="line">          &quot;mem&quot;: 32.0,</div><div class="line">          &quot;ports&quot;: [10001],</div><div class="line">          &quot;requirePorts&quot;: false,</div><div class="line">          &quot;storeUrls&quot;: [],</div><div class="line">          &quot;upgradeStrategy&quot;: &#123;</div><div class="line">              &quot;minimumHealthCapacity&quot;: 1.0</div><div class="line">          &#125;,</div><div class="line">          &quot;uris&quot;: [],</div><div class="line">          &quot;user&quot;: null,</div><div class="line">          &quot;version&quot;: &quot;2014-09-09T05:57:50.866Z&quot;</div><div class="line">        &#125;</div><div class="line">      ],</div><div class="line">      &quot;dependencies&quot;: [],</div><div class="line">      &quot;groups&quot;: [],</div><div class="line">      &quot;id&quot;: &quot;/&quot;,</div><div class="line">      &quot;version&quot;: &quot;2014-09-09T05:57:50.866Z&quot;</div><div class="line">    &#125;,</div><div class="line">    &quot;steps&quot;: [</div><div class="line">      &#123;</div><div class="line">        &quot;action&quot;: &quot;ScaleApplication&quot;,</div><div class="line">        &quot;app&quot;: &quot;/my-app&quot;</div><div class="line">      &#125;</div><div class="line">    ],</div><div class="line">    &quot;version&quot;: &quot;2014-03-01T23:24:14.846Z&quot;</div><div class="line">  &#125;,</div><div class="line">  &quot;currentStep&quot;: &#123;</div><div class="line">    &quot;actions&quot;: [</div><div class="line">      &#123;</div><div class="line">        &quot;type&quot;: &quot;ScaleApplication&quot;,</div><div class="line">        &quot;app&quot;: &quot;/my-app&quot;</div><div class="line">      &#125;</div><div class="line">    ]</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/09/07/marathon---constraints/" title="marathon---constraints" itemprop="url">marathon---constraints</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-09-07T06:17:50.000Z" itemprop="datePublished"> 发表于 2017-09-07</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>constraint控制app运行的位置，可以用来调优容错以及本地部署。constraint包含3个部分：fieldname， operator， 可选参数。field可以是agent node 的hostname或者agent node的其他属性。</p>
-<h2 id="Fields"><a href="#Fields" class="headerlink" title="Fields"></a>Fields</h2><h4 id="Hostname"><a href="#Hostname" class="headerlink" title="Hostname"></a>Hostname</h4><p>支持所有的marathon operator 。</p>
-<h4 id="Attribute"><a href="#Attribute" class="headerlink" title="Attribute"></a>Attribute</h4><p>如果filed name不是hostname，就会被看作一个mesos agent node 的attribute。一个mesos agent attribute可以用来给agent node打tag。可以看一下mesos-slave –help.</p>
-<p>如果制定的attribute还没有在agent node上定义，那么多数的operator都会拒绝在agent node上运行任务。目前是有UNLIKE operator会接受这个offer，其他的都会拒绝。</p>
-<p>attribute field支持marathon所有的operator。</p>
-<p>Marathon 支持text，scalar，range以及set类型的attribute的值。对于scalar、range、set类型的值，marathon会基于格式化的值执行一个字符串对比操作。对于range和set类型，格式分别是[begin-end,….]和{item,….}。例如: [100-200]和{a,b,c]</p>
-<p>LIKE和UNLIKE的operator支持正则表达式。</p>
-<h2 id="Operator"><a href="#Operator" class="headerlink" title="Operator"></a>Operator</h2><h4 id="UNIQUE-operator"><a href="#UNIQUE-operator" class="headerlink" title="UNIQUE operator"></a>UNIQUE operator</h4><p>UNIQUE是告诉marathon对于一个app的所有task保证attribute的唯一性。例如下面的contraint保证了每个host上只运行一个app任务。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">   &quot;id&quot;: &quot;sleep-unique&quot;,</div><div class="line">   &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">   &quot;instances&quot;: 3,</div><div class="line">   &quot;constraints&quot;: [[&quot;hostname&quot;, &quot;UNIQUE&quot;]]</div><div class="line"> &#125;&apos;</div></pre></td></tr></table></figure>
-<h4 id="CLUSTER-operator"><a href="#CLUSTER-operator" class="headerlink" title="CLUSTER operator"></a>CLUSTER operator</h4><p>CLUSTER可以让app 的task运行在共享指定attribute的agent node上。对于有硬件要求的任务比较适用，或者想要把任务集中运行在同一个机栈中。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">    &quot;id&quot;: &quot;sleep-cluster&quot;,</div><div class="line">    &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">    &quot;instances&quot;: 3,</div><div class="line">    &quot;constraints&quot;: [[&quot;rack_id&quot;, &quot;CLUSTER&quot;, &quot;rack-1&quot;]]</div><div class="line">  &#125;&apos;</div></pre></td></tr></table></figure></p>
-<p>也可以指定一个hostname，把app绑定在指定的一个机器上。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">    &quot;id&quot;: &quot;sleep-cluster&quot;,</div><div class="line">    &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">    &quot;instances&quot;: 3,</div><div class="line">    &quot;constraints&quot;: [[&quot;hostname&quot;, &quot;CLUSTER&quot;, &quot;a.specific.node.com&quot;]]</div><div class="line">  &#125;&apos;</div></pre></td></tr></table></figure></p>
-<h4 id="GROUP-BY-operator"><a href="#GROUP-BY-operator" class="headerlink" title="GROUP_BY operator"></a>GROUP_BY operator</h4><p>风来在不同的rack或者数据中心中均匀地分配任务，实现HA。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">    &quot;id&quot;: &quot;sleep-group-by&quot;,</div><div class="line">    &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">    &quot;instances&quot;: 3,</div><div class="line">    &quot;constraints&quot;: [[&quot;rack_id&quot;, &quot;GROUP_BY&quot;]]</div><div class="line">  &#125;&apos;</div></pre></td></tr></table></figure>
-<p>marathon会分析mesos进来的offer，获取不同的rack_id属性。如果任务没有覆盖到所有的值，那么在constraint中指定一个数。如果不指定，可能会出现任务只被部署到一个rack的情况。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">    &quot;id&quot;: &quot;sleep-group-by&quot;,</div><div class="line">    &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">    &quot;instances&quot;: 3,</div><div class="line">    &quot;constraints&quot;: [[&quot;rack_id&quot;, &quot;GROUP_BY&quot;, &quot;3&quot;]]</div><div class="line">  &#125;&apos;</div></pre></td></tr></table></figure></p>
-<h4 id="LIKE-operator"><a href="#LIKE-operator" class="headerlink" title="LIKE operator"></a>LIKE operator</h4><p>接收一个正则表达式作为参数，允许filed值满足这个正则的所有agent node运行当前任务。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">    &quot;id&quot;: &quot;sleep-group-by&quot;,</div><div class="line">    &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">    &quot;instances&quot;: 3,</div><div class="line">    &quot;constraints&quot;: [[&quot;rack_id&quot;, &quot;LIKE&quot;, &quot;rack-[1-3]&quot;]]</div><div class="line">  &#125;&apos;</div></pre></td></tr></table></figure></p>
-<p>注意，参数一定要有，不然会有警告。</p>
-<h4 id="UNLIKE-operator"><a href="#UNLIKE-operator" class="headerlink" title="UNLIKE operator"></a>UNLIKE operator</h4><p>和LIKE operator一样的道理。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">   &quot;id&quot;: &quot;sleep-group-by&quot;,</div><div class="line">   &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">   &quot;instances&quot;: 3,</div><div class="line">   &quot;constraints&quot;: [[&quot;rack_id&quot;, &quot;UNLIKE&quot;, &quot;rack-[7-9]&quot;]]</div><div class="line"> &#125;&apos;</div></pre></td></tr></table></figure>
-<h4 id="MAX-PER-operator"><a href="#MAX-PER-operator" class="headerlink" title="MAX_PER operator"></a>MAX_PER operator</h4><p>接受一个数字参数，制定每个group的最大大小。可以用来限制跨rack或者数据中心的任务数量。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">   &quot;id&quot;: &quot;sleep-group-by&quot;,</div><div class="line">   &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">   &quot;instances&quot;: 3,</div><div class="line">   &quot;constraints&quot;: [[&quot;rack_id&quot;, &quot;MAX_PER&quot;, &quot;2&quot;]]</div><div class="line"> &#125;&apos;</div></pre></td></tr></table></figure>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/09/05/compose版本/" title="compose版本" itemprop="url">compose版本</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-09-05T06:25:40.000Z" itemprop="datePublished"> 发表于 2017-09-05</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>compose文件是一个yaml文件，定义了docker app的service, network, volume等</p>
-<p>有三个版本</p>
-<ul>
-<li>version1， 在YAML文件中别指定version就是了。</li>
-<li>version2.x。在YAML里指定version: ‘2’,或者version: ‘2.1’</li>
-<li>version3.x。最新版本，也是最推荐使用的版本，可以兼容swarm模式。通过在YAML中指定version: ‘3’或者version: ‘3.1’声明。</li>
-</ul>
-<p>如果使用了多个compose文件模式，或者用了extending service，那么每个文件的version声明应该是一样的。</p>
-<h2 id="Version1"><a href="#Version1" class="headerlink" title="Version1"></a>Version1</h2><p>不额外指定version的compose文件被看作”version1”。所有的service都被定义在yaml文件的root上。</p>
-<p>version1是compose 1.6.x开始支持的，未来会被放弃。</p>
-<p>version1文件不能声明volume, network或者build arguments。</p>
-<p>compose不能使用网络：每个container都是连接在default bridge网络上的，相互之间用IP沟通。可以使用links来启用container之间的相互发现。</p>
-<p>例子：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">web:</div><div class="line">  build: .</div><div class="line">  ports:</div><div class="line">   - &quot;5000:5000&quot;</div><div class="line">  volumes:</div><div class="line">   - .:/code</div><div class="line">  links:</div><div class="line">   - redis</div><div class="line">redis:</div><div class="line">  image: redis</div></pre></td></tr></table></figure></p>
-<h2 id="version-2"><a href="#version-2" class="headerlink" title="version 2"></a>version 2</h2><p>compose文件中，必须在root指定相应version，而且所有的service都要定义在services下。</p>
-<p>version 2要求compose 1.6.0+， docker engine版本1.10。0+。</p>
-<p>可以通过volumes指定volume，也可以通过networks指定容器的网络。</p>
-<p>默认情况下，每个container都加入一个app级别的默认网络，而且可以通过自身的hostname被发现。也就是说links就没啥必要了，详情<a href="https://docs.docker.com/compose/compose-file/compose-file-v2/#networking/" target="_blank" rel="external">参考</a>。</p>
-<p>简单例子：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">version: &apos;2&apos;</div><div class="line">services:</div><div class="line">  web:</div><div class="line">    build: .</div><div class="line">    ports:</div><div class="line">     - &quot;5000:5000&quot;</div><div class="line">    volumes:</div><div class="line">     - .:/code</div><div class="line">  redis:</div><div class="line">    image: redis</div></pre></td></tr></table></figure></p>
-<p>稍微复杂点儿的例子, 定义了volumes和network<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">version: &apos;2&apos;</div><div class="line">services:</div><div class="line">  web:</div><div class="line">    build: .</div><div class="line">    ports:</div><div class="line">     - &quot;5000:5000&quot;</div><div class="line">    volumes:</div><div class="line">     - .:/code</div><div class="line">    networks:</div><div class="line">      - front-tier</div><div class="line">      - back-tier</div><div class="line">  redis:</div><div class="line">    image: redis</div><div class="line">    volumes:</div><div class="line">      - redis-data:/var/lib/redis</div><div class="line">    networks:</div><div class="line">      - back-tier</div><div class="line">volumes:</div><div class="line">  redis-data:</div><div class="line">    driver: local</div><div class="line">networks:</div><div class="line">  front-tier:</div><div class="line">    driver: bridge</div><div class="line">  back-tier:</div><div class="line">    driver: bridge</div></pre></td></tr></table></figure></p>
-<p>还有一些其他的选项来支持网络：</p>
-<ul>
-<li>aliases</li>
-<li><p>depends_on用来指定service之间的依赖关系</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">version: &apos;2&apos;</div><div class="line">services:</div><div class="line">  web:</div><div class="line">    build: .</div><div class="line">    depends_on:</div><div class="line">      - db</div><div class="line">      - redis</div><div class="line">  redis:</div><div class="line">    image: redis</div><div class="line">  db:</div><div class="line">    image: postgres</div></pre></td></tr></table></figure>
-</li>
-<li><p>ipv4_address, ipv6_address</p>
-</li>
-</ul>
-<h2 id="Version2-1"><a href="#Version2-1" class="headerlink" title="Version2.1"></a>Version2.1</h2><p>是version2的升级版，需要docker engine是1.12.0+， compose版本是1.9.0+。</p>
-<p>添加了以下参数</p>
-<ul>
-<li>link_local_ips</li>
-<li>isolation</li>
-<li>volume和network的labels</li>
-<li>volumes的name</li>
-<li>userns_mode</li>
-<li>healthcheck</li>
-<li>sysctls</li>
-<li>pids_limit</li>
-</ul>
-<h2 id="Version2-2"><a href="#Version2-2" class="headerlink" title="Version2.2"></a>Version2.2</h2><p>version2.1的升级，，需要docker engine是1.14.0+， compose版本是1.13.0+。允许指定默认的scale数。<br>添加了下面参数：</p>
-<ul>
-<li>init</li>
-<li>scale</li>
-</ul>
-<h2 id="version2-3"><a href="#version2-3" class="headerlink" title="version2.3"></a>version2.3</h2><p>version2.2的升级，，需要docker engine是17.06.0+， compose版本是1.16.0+。</p>
-<p>添加了下面参数:</p>
-<ul>
-<li>target for build configurations</li>
-<li>start_period for healthchecks</li>
-</ul>
-<h2 id="version3"><a href="#version3" class="headerlink" title="version3"></a>version3</h2><p>主要是解决compose和docker swarm mode的兼容性问题。</p>
-<ul>
-<li>移除选项：volume_driver, volumes_from, cpu_shares, cpu_quota, cpuset, mem_limit, memswap_limit, extends, group_add</li>
-<li>添加选项：deploy</li>
-</ul>
-<h2 id="version3-3"><a href="#version3-3" class="headerlink" title="version3.3"></a>version3.3</h2><p>version3的升级版。添加以下参数：</p>
-<ul>
-<li>build的labels</li>
-<li>credential_spec</li>
-<li>configs</li>
-<li>deploy endpoint_mode</li>
-</ul>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/09/04/label的生命周期/" title="label的生命周期" itemprop="url">label的生命周期</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-09-04T09:41:38.000Z" itemprop="datePublished"> 发表于 2017-09-04</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>Prometheus label让我们为我们的app部署与组织间建立模型。直接支持所有可能出现的配置是不太可能，但是prometheus给力一个relabel功能，给出了足够大的灵活性。</p>
-<p>基本原则：你的服务发现给你提供了一些元数据，例如机器类型、tag、region，这些都可以在_<em>meta</em>*的label中找到。然后你可以在relbel_configs配置中把他们进行定制化修改。还可以制定drop和keep操作。</p>
-<p>在我们抓取target的时候也一样，metric_relabel_config配置可以让我们纠正数据的时间戳。还可以过滤掉一些比较<a href="https://www.robustperception.io/dropping-metrics-at-scrape-time-with-prometheus/" target="_blank" rel="external">昂贵，比如 太大</a>的metric。</p>
-<p>为了更好的理解这些内容，看下图：<br><img src="http://www.robustperception.io/wp-content/uploads/2016/03/Life-of-a-Label-Target-Labels.png" alt=""></p>
-<p>这个图包含了创建target、爬取、在时序数据插入DB之前的操作等。</p>
-<ul>
-<li>从服务发现获取target</li>
-<li>基于配置设置_<em>param</em>*的label</li>
-<li>如果job,<strong>scheme</strong>或者<strong>metrics_path</strong>的label没有设置，就基于配置设置一下</li>
-<li>是否有<strong>address</strong>的label<ul>
-<li>没有，丢掉这个target</li>
-<li>有，执行relabel_config<ul>
-<li>drop操作的话直接drop掉</li>
-<li><strong>address</strong>有么有端口<ul>
-<li>有端口， <strong>address</strong>是否包含 “/“<ul>
-<li>drop target</li>
-<li>删除所有以_<em>meta</em>开头的label</li>
-</ul>
-</li>
-<li>没有端口，<strong>scheme</strong>是http就默认80，https就默认443</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<p>下面是实际爬取过程中发生的事情：<br><img src="http://www.robustperception.io/wp-content/uploads/2016/03/Life-of-a-Label-Scraping.png" alt="爬取流程图"></p>
-<p>_<em>param</em>*的label包含每个URL参数的第一个值，可以进行relabel。在爬取的时候，这些会与第二个以及后续的参数值连接在一起。</p>
-<p>因为metric_relabel_configs需要每次爬取的时候都执行一次，最好还是通过improve instrumentation。</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/09/01/Prometheus配置/" title="Prometheus配置" itemprop="url">Prometheus配置</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-09-01T07:34:21.000Z" itemprop="datePublished"> 发表于 2017-09-01</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>主要定义了需要抓取的job和这些job所包含的instance，还有告警规则文件。</p>
-<p>可以执行 prometheus -h 来查看具体支持的命令行参数。</p>
-<p>Prometheus可以在运行时reload，如果新的配置是有效的，我们只需要发送一个SIGHUP给到Prometheus进程，或者发送一个HTTP POST请求到/-/reload终端REST API。</p>
-<h2 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h2><p>可以通过-config.file指定具体文件，需要是yaml格式。</p>
-<p>下面是来源于<a href="https://github.com/prometheus/prometheus/blob/master/config/testdata/conf.good.yml的示例配置文件：" target="_blank" rel="external">https://github.com/prometheus/prometheus/blob/master/config/testdata/conf.good.yml的示例配置文件：</a></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div><div class="line">221</div><div class="line">222</div><div class="line">223</div><div class="line">224</div><div class="line">225</div><div class="line">226</div><div class="line">227</div><div class="line">228</div></pre></td><td class="code"><pre><div class="line"># 全局配置</div><div class="line">global:</div><div class="line">  scrape_interval:     15s</div><div class="line">  evaluation_interval: 30s</div><div class="line">  # scrape_timeout is set to the global default (10s).</div><div class="line"></div><div class="line">  external_labels:</div><div class="line">    monitor: codelab</div><div class="line">    foo:     bar</div><div class="line"></div><div class="line"># 告警规则文件</div><div class="line">rule_files:</div><div class="line">- &quot;first.rules&quot;</div><div class="line">- &quot;my/*.rules&quot;</div><div class="line"></div><div class="line"># 与实际远程写入相关的配置</div><div class="line">remote_write:</div><div class="line">  - url: http://remote1/push</div><div class="line">    write_relabel_configs:</div><div class="line">    - source_labels: [__name__]</div><div class="line">      regex:         expensive.*</div><div class="line">      action:        drop</div><div class="line">  - url: http://remote2/push</div><div class="line"></div><div class="line"># 抓取配置</div><div class="line">scrape_configs:</div><div class="line">- job_name: prometheus</div><div class="line"></div><div class="line">  honor_labels: true</div><div class="line">  # scrape_interval is defined by the configured global (15s).</div><div class="line">  # scrape_timeout is defined by the global default (10s).</div><div class="line"></div><div class="line">  # metrics_path defaults to &apos;/metrics&apos;</div><div class="line">  # scheme defaults to &apos;http&apos;.</div><div class="line"></div><div class="line">  #基于文件的服务发现</div><div class="line">  file_sd_configs:</div><div class="line">    - files:</div><div class="line">      - foo/*.slow.json</div><div class="line">      - foo/*.slow.yml</div><div class="line">      - single/file.yml</div><div class="line">      refresh_interval: 10m</div><div class="line">    - files:</div><div class="line">      - bar/*.yaml</div><div class="line"></div><div class="line">  static_configs:</div><div class="line">  - targets: [&apos;localhost:9090&apos;, &apos;localhost:9191&apos;]</div><div class="line">    labels:</div><div class="line">      my:   label</div><div class="line">      your: label</div><div class="line"></div><div class="line">  relabel_configs:</div><div class="line">  - source_labels: [job, __meta_dns_name]</div><div class="line">    regex:         (.*)some-[regex]</div><div class="line">    target_label:  job</div><div class="line">    replacement:   foo-$&#123;1&#125;</div><div class="line">    # action defaults to &apos;replace&apos;</div><div class="line">  - source_labels: [abc]</div><div class="line">    target_label:  cde</div><div class="line">  - replacement:   static</div><div class="line">    target_label:  abc</div><div class="line">  - regex:</div><div class="line">    replacement:   static</div><div class="line">    target_label:  abc</div><div class="line"></div><div class="line">  bearer_token_file: valid_token_file</div><div class="line"></div><div class="line"></div><div class="line">- job_name: service-x</div><div class="line"></div><div class="line">  basic_auth:</div><div class="line">    username: admin_name</div><div class="line">    password: &quot;multiline\nmysecret\ntest&quot;</div><div class="line"></div><div class="line">  scrape_interval: 50s</div><div class="line">  scrape_timeout:  5s</div><div class="line"></div><div class="line">  sample_limit: 1000</div><div class="line"></div><div class="line">  metrics_path: /my_path</div><div class="line">  scheme: https</div><div class="line"></div><div class="line">  dns_sd_configs:</div><div class="line">  - refresh_interval: 15s</div><div class="line">    names:</div><div class="line">    - first.dns.address.domain.com</div><div class="line">    - second.dns.address.domain.com</div><div class="line">  - names:</div><div class="line">    - first.dns.address.domain.com</div><div class="line">    # refresh_interval defaults to 30s.</div><div class="line"></div><div class="line">  relabel_configs:</div><div class="line">  - source_labels: [job]</div><div class="line">    regex:         (.*)some-[regex]</div><div class="line">    action:        drop</div><div class="line">  - source_labels: [__address__]</div><div class="line">    modulus:       8</div><div class="line">    target_label:  __tmp_hash</div><div class="line">    action:        hashmod</div><div class="line">  - source_labels: [__tmp_hash]</div><div class="line">    regex:         1</div><div class="line">    action:        keep</div><div class="line">  - action:        labelmap</div><div class="line">    regex:         1</div><div class="line">  - action:        labeldrop</div><div class="line">    regex:         d</div><div class="line">  - action:        labelkeep</div><div class="line">    regex:         k</div><div class="line"></div><div class="line">  metric_relabel_configs:</div><div class="line">  - source_labels: [__name__]</div><div class="line">    regex:         expensive_metric.*</div><div class="line">    action:        drop</div><div class="line"></div><div class="line">- job_name: service-y</div><div class="line"></div><div class="line"># 基于consul的服务发现</div><div class="line">  consul_sd_configs:</div><div class="line">  - server: &apos;localhost:1234&apos;</div><div class="line">    token: mysecret</div><div class="line">    services: [&apos;nginx&apos;, &apos;cache&apos;, &apos;mysql&apos;]</div><div class="line">    scheme: https</div><div class="line">    tls_config:</div><div class="line">      ca_file: valid_ca_file</div><div class="line">      cert_file: valid_cert_file</div><div class="line">      key_file:  valid_key_file</div><div class="line">      insecure_skip_verify: false</div><div class="line"></div><div class="line">  relabel_configs:</div><div class="line">  - source_labels: [__meta_sd_consul_tags]</div><div class="line">    separator:     &apos;,&apos;</div><div class="line">    regex:         label:([^=]+)=([^,]+)</div><div class="line">    target_label:  $&#123;1&#125;</div><div class="line">    replacement:   $&#123;2&#125;</div><div class="line"></div><div class="line">- job_name: service-z</div><div class="line"></div><div class="line">  tls_config:</div><div class="line">    cert_file: valid_cert_file</div><div class="line">    key_file: valid_key_file</div><div class="line"></div><div class="line">  bearer_token: mysecret</div><div class="line"></div><div class="line">- job_name: service-kubernetes</div><div class="line"></div><div class="line">  kubernetes_sd_configs:</div><div class="line">  - role: endpoints</div><div class="line">    api_server: &apos;https://localhost:1234&apos;</div><div class="line"></div><div class="line">    basic_auth:</div><div class="line">      username: &apos;myusername&apos;</div><div class="line">      password: &apos;mysecret&apos;</div><div class="line"></div><div class="line"># 基于kubernetes的服务发现</div><div class="line">- job_name: service-kubernetes-namespaces</div><div class="line"></div><div class="line">  kubernetes_sd_configs:</div><div class="line">  - role: endpoints</div><div class="line">    api_server: &apos;https://localhost:1234&apos;</div><div class="line">    namespaces:</div><div class="line">      names:</div><div class="line">        - default</div><div class="line"></div><div class="line"># 基于marathon的服务发现</div><div class="line">- job_name: service-marathon</div><div class="line">  marathon_sd_configs:</div><div class="line">  - servers:</div><div class="line">    - &apos;https://marathon.example.com:443&apos;</div><div class="line"></div><div class="line">    tls_config:</div><div class="line">      cert_file: valid_cert_file</div><div class="line">      key_file: valid_key_file</div><div class="line"></div><div class="line">- job_name: service-ec2</div><div class="line">  ec2_sd_configs:</div><div class="line">    - region: us-east-1</div><div class="line">      access_key: access</div><div class="line">      secret_key: mysecret</div><div class="line">      profile: profile</div><div class="line"></div><div class="line">- job_name: service-azure</div><div class="line">  azure_sd_configs:</div><div class="line">    - subscription_id: 11AAAA11-A11A-111A-A111-1111A1111A11</div><div class="line">      tenant_id: BBBB222B-B2B2-2B22-B222-2BB2222BB2B2</div><div class="line">      client_id: 333333CC-3C33-3333-CCC3-33C3CCCCC33C</div><div class="line">      client_secret: mysecret</div><div class="line">      port: 9100</div><div class="line"></div><div class="line">- job_name: service-nerve</div><div class="line">  nerve_sd_configs:</div><div class="line">    - servers:</div><div class="line">      - localhost</div><div class="line">      paths:</div><div class="line">      - /monitoring</div><div class="line"></div><div class="line">- job_name: 0123service-xxx</div><div class="line">  metrics_path: /metrics</div><div class="line">  static_configs:</div><div class="line">    - targets:</div><div class="line">      - localhost:9090</div><div class="line"></div><div class="line">- job_name: 測試</div><div class="line">  metrics_path: /metrics</div><div class="line">  static_configs:</div><div class="line">    - targets:</div><div class="line">      - localhost:9090</div><div class="line"></div><div class="line">- job_name: service-triton</div><div class="line">  triton_sd_configs:</div><div class="line">  - account: &apos;testAccount&apos;</div><div class="line">    dns_suffix: &apos;triton.example.com&apos;</div><div class="line">    endpoint: &apos;triton.example.com&apos;</div><div class="line">    port: 9163</div><div class="line">    refresh_interval: 1m</div><div class="line">    version: 1</div><div class="line">    tls_config:</div><div class="line">      cert_file: testdata/valid_cert_file</div><div class="line">      key_file: testdata/valid_key_file</div><div class="line"></div><div class="line"># 关于alertmanager相关的配置</div><div class="line">alerting:</div><div class="line">  alertmanagers:</div><div class="line">  - scheme: https</div><div class="line">    static_configs:</div><div class="line">    - targets:</div><div class="line">      - &quot;1.2.3.4:9093&quot;</div><div class="line">      - &quot;1.2.3.5:9093&quot;</div><div class="line">      - &quot;1.2.3.6:9093&quot;</div></pre></td></tr></table></figure>
-<p>scrape_config部分描述一些列的target和参数，指定抓取策略。一般情况下，一个scrape配置就对应一个job。</p>
-<p>target可以是通过static_config静态配置的，也可以是使用某种动态发现机制进行动态获取的。</p>
-<p>另外，relabel_config允许在抓取之前更新任意target的label。</p>
-<p>已经测试过file_sd_config是可以跟随文件的变化，动态调整target的。<br>但是对于rule文件的reload，并不能自动识别并执行，官网建议是通过<a href="https://github.com/prometheus/prometheus/issues/108" target="_blank" rel="external"><strong>定时触发prometheus的reload</strong></a>来实现这个东西。<br>个人认为：如果rule 的修改也并不是那么频繁，而且既有的app里已经包含队列的话，可以在每次修改rule之后，每隔几分钟消费一次reload事件。或者可以修改prometheus的rule相关代码，让其定时消费mysql或者某些目录的rule文件，如有变化则更新rule的缓存。</p>
-<p>其他与动态加载rule相关 </p>
-<ul>
-<li><a href="https://groups.google.com/forum/#!topic/prometheus-developers/UsiCxDbFjN0" target="_blank" rel="external">https://groups.google.com/forum/#!topic/prometheus-developers/UsiCxDbFjN0</a></li>
-<li><a href="https://www.robustperception.io/reloading-prometheus-configuration/" target="_blank" rel="external">https://www.robustperception.io/reloading-prometheus-configuration/</a></li>
-<li></li>
-</ul>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/09/01/Prometheus关键概念/" title="Prometheus关键概念" itemprop="url">Prometheus关键概念</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-09-01T03:28:51.000Z" itemprop="datePublished"> 发表于 2017-09-01</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>job和instance<br>在prometheus看来，每个单独的抓取目标是一个instance，通常对应一个单独的进程。同种类型的instance的集合组成一种job。</p>
-<p>例如，一个API server的job会有下面的instance：</p>
-<ul>
-<li>job: api-server<ul>
-<li>instance 1.2.3.4:5769</li>
-<li>instance 1.2.3.4:5768</li>
-</ul>
-</li>
-</ul>
-<h2 id="自动产生的label"><a href="#自动产生的label" class="headerlink" title="自动产生的label"></a>自动产生的label</h2><p>在prometheus抓取target的时候，会自动在后面追加一些label：</p>
-<ul>
-<li>job</li>
-<li>instance</li>
-</ul>
-<p>如果这些label是否已经出现在抓取的数据中，就参考honor_labels的配置部分。</p>
-<p>每个instance的抓取，prometheus都存储一个sample：</p>
-<ul>
-<li>up{job=”<job-name>“, instance=”<instance-id>“}: 1 表示这个instance是否健康的存在</instance-id></job-name></li>
-<li>scrape_duration_seconds{job=”<job-name>“, instance=”<instance-id>“}: 抓取时间</instance-id></job-name></li>
-<li>scrape_samples_post_metric_relabeling{job=”<job-name>“, instance=”<instance-id>“}:metric被relabel的sample个数</instance-id></job-name></li>
-<li>scrape_samples_scraped{job=”<job-name>“, instance=”<instance-id>“}: target中暴露的sample个数</instance-id></job-name></li>
-</ul>
-<p>up时间序列一般用来监控instance的可用性。</p>
-<p>但是，如果这样的话，我的instance就没有办法动态添加进去，因为Prometheus并没有提供动态修改target的REST API.</p>
-<p><a href="https://prometheus.io/docs/querying/api/" target="_blank" rel="external">https://prometheus.io/docs/querying/api/</a></p>
-<p><a href="http://ordina-jworks.github.io/monitoring/2016/09/23/Monitoring-with-Prometheus.html#architecture" target="_blank" rel="external">一片不错的prometheus监控使用总结</a></p>
-<p>相关链接： <a href="https://groups.google.com/forum/#!topic/prometheus-users/fTPKx5Eg8bo" target="_blank" rel="external">https://groups.google.com/forum/#!topic/prometheus-users/fTPKx5Eg8bo</a></p>
-<p><a href="https://github.com/prometheus/jmx_exporter/pull/180#issuecomment-326229999" target="_blank" rel="external">https://github.com/prometheus/jmx_exporter/pull/180#issuecomment-326229999</a></p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/08/31/marathon-蓝绿部署/" title="marathon-蓝绿部署" itemprop="url">marathon-蓝绿部署</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-08-31T10:59:00.000Z" itemprop="datePublished"> 发表于 2017-08-31</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>蓝绿部署是一种安全部署app的方式，它会创建两个版本的app(BLUE和GREEN)。要部署一个新版本的app，应该先将所有旧版本的请求、挂起的操作等处理完，并且将流量定向到新版本app那边。蓝绿部署预估app的停掉的时间，允许我们在必要时快速从BLUE版本恢复。详细过程，参考<a href="http://martinfowler.com/bliki/BlueGreenDeployment.html" target="_blank" rel="external">蓝绿部署</a></p>
-<p>不错的解释：<a href="http://www.tuicool.com/articles/2Iji2ue" target="_blank" rel="external">http://www.tuicool.com/articles/2Iji2ue</a></p>
-<p><a href="https://www.v2ex.com/t/344341" target="_blank" rel="external">https://www.v2ex.com/t/344341</a></p>
-<p>在生产环境中，最好将这个过程脚本化，将它集成进已经存在的部署系统中。下面，我们提供一个使用DC/OS CLI的例子。</p>
-<h2 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h2><p>我们需要把BLUE，也就是当前版本的app，替换成GREEN(新版本)。</p>
+<p>目前并不支持更新原有的quota，需要先删除，后添加。</p>
+<h2 id="工作原理"><a href="#工作原理" class="headerlink" title="工作原理"></a>工作原理</h2><p>首先mesos master会处理quota相关的请求，然后allocator来实施quota。</p>
+<p>要注意quota具体怎样被实施是依赖于你所使用的allocator的。还有就是实施过程中，可能会对正在运行的framework造成一些影响，因为要把资源重新分配一下。还有资源是只可扩展的资源，端口号这种不行….</p>
+<h2 id="quota请求处理过程"><a href="#quota请求处理过程" class="headerlink" title="quota请求处理过程"></a>quota请求处理过程</h2><p>添加的过程</p>
 <ol>
-<li>在marathon上启动新版本的app。给app名字一个唯一的id，比如git的commit id。在这个例子中，我们把GREEN添加到新版本app的名字中：<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># launch green</div><div class="line"> dcos marathon app add green-myapp.json</div></pre></td></tr></table></figure>
-</li>
+<li>认证</li>
+<li>解析与验证request</li>
+<li>如果开启了授权，就授权认证</li>
+<li>运行capacity heuristic</li>
+<li>存储quota</li>
+<li>解除outstanding offer</li>
 </ol>
-<p>注意：如果你使用的不是dcos的CLI，而是API，那命令会长很多。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">curl -H &quot;Content-Type: application/json&quot; -X POST -d @green-myapp.json &lt;hosturl&gt;/marathon/v2/apps</div></pre></td></tr></table></figure></p>
+<p>移除的过程</p>
 <ol>
-<li>扩容GREEN的app。初始的时候一般是0，设置一下需要的实例数量。记住，现在还并没有流量过来：我们并没有到LB那边注册。</li>
+<li>认证</li>
+<li>确认request有效性</li>
+<li>鉴权</li>
+<li>移除quota</li>
 </ol>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># scale green</div><div class="line">dcos marathon app update /green-myapp instances=1</div></pre></td></tr></table></figure>
-<ol>
-<li><p>等所有的GREEN app都健康部署。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># wait until healthy</div><div class="line">dcos marathon app show /green-myapp | jq &apos;.tasks[].healthCheckResults[] | select (.alive == false)&apos;</div></pre></td></tr></table></figure>
-</li>
-<li><p>如果看到又不健康的，就中止部署，开始rollback</p>
-</li>
-<li>把GREEN app加入到LB中</li>
-<li><p>选一个或多个BLUE app。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># pick tasks from blue</div><div class="line">dcos marathon task list /blue-myapp</div></pre></td></tr></table></figure>
-</li>
-<li><p>更新LB，将这些BLUE app移除资源池</p>
-</li>
-<li>等所有的BLUE app都被移除完，这个过程可以通过app的metrics终端API进行监控。</li>
-<li>一旦BLUE app的操作都完成，就杀掉BLUE app的进程，并缩容，避免被杀掉的重启.<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># kill and scale blue tasks</div><div class="line">echo &quot;&#123;\&quot;ids\&quot;:[\&quot;&lt;task_id&gt;\&quot;]&#125;&quot; | curl -H &quot;Content-Type: application/json&quot; -X POST -d @- &lt;hosturl&gt;/marathon/v2/tasks/delete?scale=true</div></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>marathon会移除指定的所有的实例。上面的hosturl是master node所在的位置<br>10.重复步骤2-9，直到不再有BLUE app</p>
-<ol>
-<li>从marathon中移除BLUE app。<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># remove blue</div><div class="line">dcos marathon app remove /blue-myapp</div></pre></td></tr></table></figure>
-</li>
-</ol>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/08/31/marathon-应用部署/" title="marathon-应用部署" itemprop="url">marathon-应用部署</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-08-31T10:23:25.000Z" itemprop="datePublished"> 发表于 2017-08-31</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>每次app的配置文件修改生效就出发一次deployment。一次deployment是一系列动作的集合：</p>
+<h4 id="capacity-heuristic检查"><a href="#capacity-heuristic检查" class="headerlink" title="capacity heuristic检查"></a>capacity heuristic检查</h4><p>配置错误的quota可能会导致所有的framework都分配不到资源。例如假设一个opetaror给不存在的role 设置了100CPU的quota，而当前集群只用100CPU.</p>
+<p>为了防止这种极端情形的出现，mesos master会用一个capacity heuristic来检查quota是不是对于当前集群资源合理。这个heuristic会测试总的quota是不是超过了集群非静态保留的总资源。</p>
+<blockquote>
+<p>总资源 - 静态保留资源 》= 总资源 + quota request</p>
+</blockquote>
+<p>注意即便当前是有足够的资源的，但是agent随时可能挂掉，导致集群不能满足配置的quota的需求。</p>
+<p>使用force标志可以让check通过，通常是因为operator知道后期会有新的资源加进来。</p>
+<h4 id="接触outstanding-offer"><a href="#接触outstanding-offer" class="headerlink" title="接触outstanding offer"></a>接触outstanding offer</h4><p>设置新quota的过程中，master会接触outstanding offer。这避免了当前剩余的没有offer出去，但是很多分配出去给其他framework的资源还没有被使用，造成的资源不足情况。因此，按照下面规则解除outstanding offer：</p>
 <ul>
-<li>启动或者停止一个或多个app</li>
-<li>升级一个或多个app</li>
-<li>扩展一个或多个app</li>
+<li>解除至少跟quota请求中一样多的资源</li>
+<li>如果一个agent有一个offer需要被解除，那么这个agent的所有offer都会被解除。This is done in order to make the potential offer bigger, which increases the chances that a quota’ed framework will be able to use the offer.</li>
+<li>尽可能多的解除当前quota的role的framework的offer。这会让每个订阅这个role的framework收到一个offer。</li>
 </ul>
-<p>Deloyment需要花费时间，并不能马上使app恢复可用。</p>
-<p>只要每个app只被一次deployment修改，那么你就可以同时执行多个deployment。在我们尝试执行一个已经被别人修改过的deployment 的时候，marathon会驳回此次deployment。</p>
-<h4 id="依赖"><a href="#依赖" class="headerlink" title="依赖"></a>依赖</h4><p>没有依赖的app可以以任意顺序部署。如果app间有依赖，那么deployment就应该严格按照app的依赖顺序执行。</p>
-<p><img src="https://mesosphere.github.io/marathon/img/dependency.png" alt=""></p>
-<p>如上图，app是以来db的。</p>
-<p>启动： 先启动db，再启动app<br>停止： 先停止app，再停止db<br>升级： 参考 Rolling Restart 部分<br>扩容： db先扩容，然后app</p>
-<h4 id="Rolling-Restart"><a href="#Rolling-Restart" class="headerlink" title="Rolling Restart"></a>Rolling Restart</h4><p>我们可以通过 Rolling Restart来部署新版本的app。通常，有两个阶段：启动一些新版本的进程，然后停掉旧版本的进程。</p>
-<p>在marathon中，可以在app级别使用minimumHealthCapacity 定义一个upgrade strategy。</p>
-<p>minimumHealthCapacity是指达升级过程中，处于正常服务状态的实例不能少于整体的百分之多少。如果是0， 在新版本部署前，就把所有的旧版本杀掉。如果是1，就先启动所有的新版本实例，然后再杀掉所有的旧版本实例。</p>
-<p>这个动作在有依赖关系的时候会复杂一些。上面的例子来说：</p>
-<ol>
-<li>先升级db到所有的实例都完成；</li>
-<li>升级app到所有的实例都完成。<br>上面两个app的具体过程，还是按照upgradeStrategy来处理。假设我们设置的db和app对应的参数分别是0.6和0.8，那么过程中就会出现db有12个实例（6个新的，6个旧的），app出现32个实例（16个新的，16个旧的）</li>
-</ol>
-<h4 id="强制deployment"><a href="#强制deployment" class="headerlink" title="强制deployment"></a>强制deployment</h4><p>一个app只能同时被一个deployment修改。其他的修改必须等待当前的完成才行。如果运行deployement的时候加上force标记就可以打破这个限制。</p>
-<p>但是<strong>注意</strong>： force标记只适用于失败的deployment</p>
-<p>如果指定了force，那么所有其他的修改都会被取消。这个操作可能让系统进入一个不一致状态，尤其是在一个app执行rolling upgrade的时候，会导致一部分新版本app与一些旧版本app并行的秦广。如果新的deployment没有更新这些app，就会一直处于这种不一致状态了。</p>
-<p>唯一可以进行force-update的app是那些只有一个app实例的。<strong>要强制部署多个app的唯一理由，是修正一个失败的deployment。</strong></p>
-<h4 id="失败的deployment"><a href="#失败的deployment" class="headerlink" title="失败的deployment"></a>失败的deployment</h4><p>deployment是包含很多严谨的、有次序的步骤的。</p>
-<p>下面是一些永远不能成功的情景：</p>
+<h4 id="通过wDRF-Allocator实施"><a href="#通过wDRF-Allocator实施" class="headerlink" title="通过wDRF Allocator实施"></a>通过wDRF Allocator实施</h4><p>wDRF Allocator首先会根据quota设置的分配资源给role。如果所有的quota都满足了，就为剩余的role执行标准的wDRF。</p>
+<p>注意： 一个已经quota的role不会会获取到多一些的未被预定的不可撤销的资源。如果这个role中framework没有选择可撤销的资源，那么他们可能会在role满足之后停止获取offer。这时设置任何比这个role的fair share还低的quota值都很可能导致给这个role的总资源降低。</p>
+<p>注意：当前auota保证也是一个quota限制。就是说，一旦一个role的quota满足了，这个role就不会获得更多的资源了。这是为了减轻缺乏quota限制。</p>
+<p>如果有多个framework订阅了一个role，这个role有一个quota，标准的wDRF算法来决定这些framework的offer比例。</p>
+<p>默认的wDRF allocator认为只有不可撤销的资源才是quota可用的。</p>
+<h2 id="容灾"><a href="#容灾" class="headerlink" title="容灾"></a>容灾</h2><p>如果一个role里有quota，master容灾恢复就很重要。在恢复过程中会有一段时间并不是所有的agent都向master注册了自己。因此不可能所有的quota都被满足。</p>
+<p>为了定位这个问题，如果恢复的时候任何前面的quota被探测到后，allocator就进入recovery模式，在这个过程中，allocator并不保证offer。只有满足下面任何一个条件的时候才退出这个模式</p>
 <ul>
-<li>新app没启动成功</li>
-<li>新app不能进入healthy状态</li>
-<li>新app的依赖没有声明、或者不可用</li>
-<li>集群资源耗尽</li>
-<li>app使用docker container，docker相关配置没有启用</li>
+<li>指定数量的agent重新注册自己(默认80%)</li>
+<li>一个超时时间(默认10分钟)</li>
 </ul>
-<p>这些情况会导致app一直循环重启，又不能成功，需要重新部署正确的app配置才行。</p>
-<h4 id="v2-deployment终端API"><a href="#v2-deployment终端API" class="headerlink" title="/v2/deployment终端API"></a>/v2/deployment终端API</h4><p>参考 <a href="https://mesosphere.github.io/marathon/docs/rest-api.html" target="_blank" rel="external">marathon的REST API</a></p>
+<h2 id="当前不足"><a href="#当前不足" class="headerlink" title="当前不足"></a>当前不足</h2><ul>
+<li>quota不允许指定详细资源粒度(例如每个节点上10个CPU)</li>
+<li>不允许指定约束条件(比如，在互斥节点上分配2 * 5个CPU，形成HA)</li>
+<li>不能为默认的role *设置quota</li>
+<li>目前不支持更新</li>
+</ul>
+<p>参考： <a href="http://mesos.apache.org/documentation/latest/quota/" target="_blank" rel="external">http://mesos.apache.org/documentation/latest/quota/</a></p>
 
         
         
@@ -798,28 +226,132 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/08/31/RunningAlert/" title="RunningAlert" itemprop="url">RunningAlert</a>
+      <a href="/2017/07/27/阿里中间件笔记/" title="阿里中间件笔记" itemprop="url">阿里中间件笔记</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
 		
   <p class="article-time">
-    <time datetime="2017-08-31T09:20:38.000Z" itemprop="datePublished"> 发表于 2017-08-31</time>
+    <time datetime="2017-07-27T06:34:20.000Z" itemprop="datePublished"> 发表于 2017-07-27</time>
     
   </p>
 </header>
     <div class="article-content">
         
-        <h2 id="ReadMe"><a href="#ReadMe" class="headerlink" title="ReadMe"></a>ReadMe</h2><p>一个大数据集群监控项目，主要依赖于当前比较流行的<a href="https://prometheus.io/" target="_blank" rel="external">Prometheus</a>。</p>
-<h2 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h2><h4 id="1-采集注册"><a href="#1-采集注册" class="headerlink" title="1. 采集注册"></a>1. 采集注册</h4><p>指的是向JsonExporter<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">app_name : h2_streaming_...</div><div class="line">url: http://sdfsfdsd:0080/metrics</div><div class="line">service_type : spark_streaming</div></pre></td></tr></table></figure></p>
-<p>提供数据示例参考，也就是马上爬取一下metrics，并显示出来，以方便表达式编写。</p>
-<h4 id="2-json-exporter-开始采集"><a href="#2-json-exporter-开始采集" class="headerlink" title="2. json_exporter 开始采集"></a>2. json_exporter 开始采集</h4><p>启动marathon上json_exporter的docker镜像，并指定当前对应的参数。开始metric的采集工作。</p>
-<h4 id="3-指定alertManager的告警规则"><a href="#3-指定alertManager的告警规则" class="headerlink" title="3. 指定alertManager的告警规则"></a>3. 指定alertManager的告警规则</h4><p>直接开放给用户直接编辑</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">ALERT &#123;&#123; pro_alert.alert_name &#125;&#125;</div><div class="line">   IF absent(json_val&#123;rowkey=~&quot;&#123;&#123; pro_alert.key_regex &#125;&#125;&quot;, app_name=&quot;&#123;&#123; app_name &#125;&#125;&quot;&#125;)</div><div class="line">   FOR &#123;&#123; pro_alert.time_spent &#125;&#125;s</div><div class="line">   LABELS &#123; severity = &quot;critical&quot;&#125;</div><div class="line">   ANNOTATIONS &#123;</div><div class="line">    summary= &quot;&#123;&#123; pro_alert.summary &#125;&#125;&quot;,</div><div class="line">    description= &quot;&#123;&#123; pro_alert.description &#125;&#125;&quot;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">ALERT &#123;&#123; pro_alert.alert_name &#125;&#125;</div><div class="line">   IF consul_health_service_status&#123;check=&quot;service:web&quot;,node=&quot;agent-two&quot;,service_id=&quot;web&quot;,service_name=&quot;web&quot;,status=&quot;critical&quot;&#125;  == 1</div><div class="line">   FOR &#123;&#123; pro_alert.time_spent &#125;&#125;s</div><div class="line">   LABELS &#123; severity = &quot;critical&quot;&#125;</div><div class="line">   ANNOTATIONS &#123;</div><div class="line">    summary= &quot;&#123;&#123; pro_alert.summary &#125;&#125;&quot;,</div><div class="line">    description= &quot;&#123;&#123; pro_alert.description &#125;&#125;&quot;</div><div class="line">  &#125;</div></pre></td></tr></table></figure>
-<p>之后，保存或者保存并立即生效。</p>
-<p>立即生效其实就是调用一下prometheus的alertManager的/-/reload/接口。</p>
-<p>之后Prometheus会自动检验对应metric规则，并发送给AlertManager的receiver，并产生告警动作。</p>
+        <p>AliSQL：何登成</p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><ul>
+<li>主从复制，数据一致性</li>
+<li>HA依赖外部组件</li>
+</ul>
+<h2 id="解决【XCluster】"><a href="#解决【XCluster】" class="headerlink" title="解决【XCluster】"></a>解决【XCluster】</h2><p>基于paxos标准构建alisql集群</p>
+<ul>
+<li>高性能、可异地部署、网络抖动高容忍<ul>
+<li>batching和pipelining，有了pipeline可以同个时间点传输多批数据，问题是乱序收取、日志空洞。等全部到来的时候再去处理，两外的方案是乱序也通过多数派确认提交。</li>
+</ul>
+</li>
+<li>独立基础库，可单独部署【并不限于alisql使用】</li>
+</ul>
+<p>raft是不会出现日志空洞的，但是不能支持pipeline。poxos可以使用pipelining，但是会有乱序。</p>
+<p>sysbench是一个模块化的、跨平台、多线程基准测试工具，主要用于评估测试各种不同系统参数下的数据库负载情况。</p>
+<h2 id="HIStroe：阿里OLAP，-焦方飞"><a href="#HIStroe：阿里OLAP，-焦方飞" class="headerlink" title="HIStroe：阿里OLAP， 焦方飞"></a>HIStroe：阿里OLAP， 焦方飞</h2><p>MPP计算</p>
+<p>知识网格的列式存储</p>
+<p>存储：</p>
+<p>succinct data</p>
+<p>lsm  index</p>
+<p>查询优化： 让更苛刻的条件优先执行</p>
+<p>Hi-index原理，不需要解压数据就可以检索</p>
+<h2 id="rocketMQ-万亿级数据洪峰下的消息引擎-冯嘉"><a href="#rocketMQ-万亿级数据洪峰下的消息引擎-冯嘉" class="headerlink" title="rocketMQ: 万亿级数据洪峰下的消息引擎 冯嘉"></a>rocketMQ: 万亿级数据洪峰下的消息引擎 冯嘉</h2>
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/25/Roles/" title="Roles" itemprop="url">Roles</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-25T03:37:29.000Z" itemprop="datePublished"> 发表于 2017-07-25</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="role"><a href="#role" class="headerlink" title="role"></a>role</h2><p>好多host-level的OS(例如Linux，BSDs等)都支持多用户。同样的，mesos也是一个多用户集群管理系统，使用一个mesos集群管理一个组织的所有资源，服务于这个组织的用户。</p>
+<p>mesos里与资源相关的东西如下：</p>
+<ul>
+<li>用户之间对于资源的公平共享</li>
+<li>保证用户资源(优先级、隔离、限额等)</li>
+<li>精确地资源计算能力<ul>
+<li>分别有多少资源是 已分配/未分配等等</li>
+<li>基于每个用户计算</li>
+</ul>
+</li>
+</ul>
+<p>在mesos中，我们为所有用户分配一个或多个role。其实，role就是mesos资源的消费者。这个消费者可以代表一个组织的一个用户，也可能是一个组、一个群、一个service，一个framework等等。</p>
+<p>调度器会订阅一个或多个role，监听他们申请到的资源，然后执行调度任务。</p>
+<p>下面是一些例子：</p>
+<ul>
+<li>保证一个role可以分配到指定的资源（通过quota指定）</li>
+<li>保证个别agent上的一些或者所有资源都分配给一个指定的role(通过reservations)</li>
+<li>保证资源是在role之间公平共享(通过DRF)</li>
+<li>声明某些role获取相对更多的资源(通过weight)</li>
+</ul>
+<h2 id="role与acl"><a href="#role与acl" class="headerlink" title="role与acl"></a>role与acl</h2><p>有两种方式来控制一个framework应该订阅哪些role。首先，可以指定ACLs。其次，可以在mesos master启动的时候传递–roles参数，代表role的白名单，逗号隔开。注意在HA环境下，要保证多个master的启动白名单是一致的。</p>
+<h2 id="role与framework的关联"><a href="#role与framework的关联" class="headerlink" title="role与framework的关联"></a>role与framework的关联</h2><p>framework通过制定FrameworkInfo里的roles订阅role。</p>
+<p>作为用户，你可以在启动framework的时候指定要订阅哪些role。具体怎样弄需要看你的framework相关的接口是怎样的。例如，一个单用户的scheduler可能会通过–mesos_role参数指定，多用户的scheduerl就通过 –mesos_roles参数指定。或者也可以通过一个LDAP系统动态调整framwork和role之间的订阅关系。</p>
+<h4 id="订阅多个role"><a href="#订阅多个role" class="headerlink" title="订阅多个role"></a>订阅多个role</h4><p>上面有提到，一个framework可以同时订阅多个role，通过MULTI_ROLE实现。</p>
+<p>一个framework对外提供资源的时候，这些资源只能属于一个role。framework可以通过Offer对象的allocation_info.role字段来确认某个offer是提供给哪个role的，或者通过每个提供的Resource对象的allocation_info.role字段。（当前实现中，在一个Offer中的所有资源都是提供给同一个role的）</p>
+<h4 id="同一个role的多个framework"><a href="#同一个role的多个framework" class="headerlink" title="同一个role的多个framework"></a>同一个role的多个framework</h4><p>多个framework可以订阅同一个role。例如：一个framework可以创建一个持久化的数据卷，然后往里面写数据。一旦这个写数据的任务完成后，这个数据卷就可以提供给订阅同一个role的其他的framewo使用了。第二个framework就可以读取前一个framework写的数据。</p>
+<p>然而，配置多个framework使用同一个role的时候需要慎重一些，因为所有的framework都能够访问到这个role申请到的资源。例如，如果一个framework把一些敏感信息存到了数据卷中，其他的framework就可以读取了。类似地，如果一个framework创建了一个持久化的数据卷，其他framework可以直接偷走自己用来启动自己的任务。通常来说，订阅同一个role的framework之间是具有良好的协作关系的。</p>
+<h2 id="资源与role的关系"><a href="#资源与role的关系" class="headerlink" title="资源与role的关系"></a>资源与role的关系</h2><p>资源通过reservation分配给一个role。资源可以永久静态地或者动态地提供给role使用。framework和operator可以指定一定量的资源作为某个role的最小持有量。</p>
+<h2 id="默认的role"><a href="#默认的role" class="headerlink" title="默认的role"></a>默认的role</h2><p>名称为*的role是一个特殊的role。没有分配的资源是用这个*代表的。</p>
+<p>对于没有提供FrameworkInfo.role的framework注册，会分配给他的就是*这个role。</p>
+<h2 id="role与资源分配"><a href="#role与资源分配" class="headerlink" title="role与资源分配"></a>role与资源分配</h2><p>默认，mesos master使用基于权重的资源分配方式(weighted Dominant Resource Fairness)。 In particular, this implementation of wDRF first identifies which role is furthest below its fair share of the role’s dominant resource. 然后每个订阅这个role的framework就获取到返回的资源。</p>
+<p>资源分配过程可以通过指定role的权重进行自定义控制。</p>
+<h2 id="Role与quota"><a href="#Role与quota" class="headerlink" title="Role与quota"></a>Role与quota</h2><p>为了保证一个role能够分配到指定大小的资源，我们可以通过/quota终端指定quota。</p>
+<p>资源分配者在公平分配剩余资源之前，会首先满足quota的需求。</p>
+<h2 id="Role与Principal"><a href="#Role与Principal" class="headerlink" title="Role与Principal"></a>Role与Principal</h2><p>Principal代表一个与mesos互动的实体，更像是用户名。例如，framework在向mesos master注册的时候会提供principal，在使用HTTP终端的时候会提供principal。一个实体需要提供principal来认证自己的身份。</p>
+<p>Role，仅仅用来控制资源分配。</p>
 
         
         
@@ -862,51 +394,500 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/08/30/marathon坑记/" title="marathon坑记" itemprop="url">marathon坑记</a>
+      <a href="/2017/07/24/mesos的containerizer/" title="mesos的containerizer" itemprop="url">mesos的containerizer</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
 		
   <p class="article-time">
-    <time datetime="2017-08-30T06:17:42.000Z" itemprop="datePublished"> 发表于 2017-08-30</time>
+    <time datetime="2017-07-24T10:17:14.000Z" itemprop="datePublished"> 发表于 2017-07-24</time>
     
   </p>
 </header>
     <div class="article-content">
         
-        <h2 id="资源不足"><a href="#资源不足" class="headerlink" title="资源不足"></a>资源不足</h2><h4 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h4><p>运行marathon官网提供的docker get started案例(<a href="https://mesosphere.github.io/marathon/docs/application-basics.html)可以成功。" target="_blank" rel="external">https://mesosphere.github.io/marathon/docs/application-basics.html)可以成功。</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;id&quot;: &quot;basic-3&quot;,</div><div class="line">  &quot;cmd&quot;: &quot;python3 -m http.server 8080&quot;,</div><div class="line">  &quot;cpus&quot;: 0.5,</div><div class="line">  &quot;mem&quot;: 32.0,</div><div class="line">  &quot;container&quot;: &#123;</div><div class="line">    &quot;type&quot;: &quot;DOCKER&quot;,</div><div class="line">    &quot;docker&quot;: &#123;</div><div class="line">      &quot;image&quot;: &quot;python:3&quot;,</div><div class="line">      &quot;network&quot;: &quot;BRIDGE&quot;,</div><div class="line">      &quot;portMappings&quot;: [</div><div class="line">        &#123; &quot;containerPort&quot;: 8080, &quot;hostPort&quot;: 0 &#125;</div><div class="line">      ]</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>我自己提了一个,屡次卡住不能deploy成功。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;id&quot;: &quot;/docker-tt&quot;,</div><div class="line">  &quot;cmd&quot;: null,</div><div class="line">  &quot;cpus&quot;: 1,</div><div class="line">  &quot;mem&quot;: 128,</div><div class="line">  &quot;disk&quot;: 0,</div><div class="line">  &quot;instances&quot;: 1,</div><div class="line">  &quot;acceptedResourceRoles&quot;: [</div><div class="line">    &quot;*&quot;</div><div class="line">  ],</div><div class="line">  &quot;container&quot;: &#123;</div><div class="line">    &quot;type&quot;: &quot;DOCKER&quot;,</div><div class="line">    &quot;volumes&quot;: [],</div><div class="line">    &quot;docker&quot;: &#123;</div><div class="line">      &quot;image&quot;: &quot;nginx:stable-alpine&quot;,</div><div class="line">      &quot;network&quot;: &quot;BRIDGE&quot;,</div><div class="line">      &quot;portMappings&quot;: [</div><div class="line">        &#123;</div><div class="line">          &quot;containerPort&quot;: 80,</div><div class="line">          &quot;hostPort&quot;: 880,</div><div class="line">          &quot;servicePort&quot;: 10000,</div><div class="line">          &quot;protocol&quot;: &quot;tcp&quot;,</div><div class="line">          &quot;name&quot;: &quot;nn&quot;,</div><div class="line">          &quot;labels&quot;: &#123;&#125;</div><div class="line">        &#125;</div><div class="line">      ],</div><div class="line">      &quot;privileged&quot;: false,</div><div class="line">      &quot;parameters&quot;: [],</div><div class="line">      &quot;forcePullImage&quot;: false</div><div class="line">    &#125;</div><div class="line">  &#125;,</div><div class="line">  &quot;portDefinitions&quot;: [</div><div class="line">    &#123;</div><div class="line">      &quot;port&quot;: 10000,</div><div class="line">      &quot;protocol&quot;: &quot;tcp&quot;,</div><div class="line">      &quot;name&quot;: &quot;default&quot;,</div><div class="line">      &quot;labels&quot;: &#123;&#125;</div><div class="line">    &#125;</div><div class="line">  ]</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>参考了官网的<a href="https://mesosphere.github.io/marathon/docs/troubleshooting.html#an-app-stays-in-quot-waiting-quot-forever" target="_blank" rel="external">这个链接</a> 的第一个，提示说：如果app一直都处于<strong>waiting</strong>的状态，那么很可能是由于资源不足的造成的，例如CPU，内存，磁盘等。</p>
-<p>最后还说，如果还找不到问题，就到github提一个issue，把/state的内容贴近issue，这样就可以让社区的人帮忙分析。 </p>
-<p>按照提示，我么有找到任何资源匮乏，当前的framework占用资源都是0.在查看slaves提供的物理资源的时候被亮瞎了狗眼：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&quot;resources&quot;: &#123;</div><div class="line">    &quot;disk&quot;: 12758,</div><div class="line">    &quot;mem&quot;: 2767,</div><div class="line">    &quot;gpus&quot;: 0,</div><div class="line">    &quot;cpus&quot;: 2,</div><div class="line">    &quot;ports&quot;: &quot;[31000-32000]&quot;</div><div class="line">&#125;,</div></pre></td></tr></table></figure></p>
-<p>注意<strong>ports</strong>…..每个slave为什么要把自己的端口范围也限制啊……跪了。把上面的docker启动host端口改为31111后，测试通过，成功部署了nginx服务。</p>
-<h4 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h4><p><a href="https://mesosphere.github.io/marathon/docs/ports.html" target="_blank" rel="external">官网端口映射相关</a></p>
-<p>portMapping： 对于所有需要给外部访问的docker容器，端口映射都很重要。一个端口映射是一个包含host port、container port、service port以及protocaol的tuple。有时也需要多个端口映射定义。不固定的hostPort默认是0，这样marathons会随机选一个端口。在Docker的USER模式下，hostPort是几乎不变的：hostport并不是必要的，如果没有制定，那么marathon不会自动随机选一个。这样就允许container可以在USER网络里发布，只包含containerPort和发现信息，但是不暴露这些端口给hsot网络。</p>
-<p>portDefinitions： 一个数据定义了端口资源池。只在使用HOST网络，并且没有指定portMapping的时候是必须要有的。</p>
-<p>servicePort：当在marathon创建新的app时，要为其指定一个或多个service port。你可以指定合理的port，也可以设为0让marathon自动分配可用端口。如果自己选择，就需要确保这个端口在所有app中是唯一的。</p>
-<p>如果containerport和hostport同时被设置为0，那么他俩的端口虽然是会被随机分配，但是他俩是一样的，比如8888，那么就都是8888。</p>
-<h5 id="配置实例"><a href="#配置实例" class="headerlink" title="配置实例"></a>配置实例</h5><h6 id="host"><a href="#host" class="headerlink" title="host"></a>host</h6><p>host网络模式是默认的网络模式，也是非docker app的唯一网络模式。注意在你的dockerfile里expose端口并不是必须的。</p>
-<h6 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&quot;container&quot;: &#123;</div><div class="line">  &quot;type&quot;: &quot;DOCKER&quot;,</div><div class="line">  &quot;docker&quot;: &#123;</div><div class="line">    &quot;image&quot;: &quot;my-image:1.0&quot;,</div><div class="line">    &quot;network&quot;: &quot;HOST&quot;</div><div class="line">  &#125;</div><div class="line">&#125;,</div></pre></td></tr></table></figure>
-<p>指定端口的两种方式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&quot;ports&quot;: [</div><div class="line">        2001, 2002, 3000</div><div class="line">    ],</div></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&quot;portDefinitions&quot;: [</div><div class="line">        &#123;&quot;port&quot;: 2001&#125;, &#123;&quot;port&quot;: 2002&#125;, &#123;&quot;port&quot;: 3000&#125;</div><div class="line">    ],</div></pre></td></tr></table></figure>
-<p>这时环境变量$PORT0,$PORT1, $PORT2就分别是2001，2002，3000，如果都是0的话就都是随机分配的。</p>
-<p>另外，保证一个服务发现程序例如haproxy从service port请求host port也是必须的。那么我们或许希望这个app的service ports与host ports保持一致，那么就可以设置requirePorts为true。这样marathons就只调度这个app到有这些端口的agent上了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&quot;ports&quot;: [</div><div class="line">        2001, 2002, 3000</div><div class="line">    ],</div><div class="line">    &quot;requirePorts&quot; : true</div></pre></td></tr></table></figure></p>
-<p>现在，service 和host的ports就都是2001， 2002， 3000了。</p>
-<p>定义portDefinitions队列可以让我们制定protocol，每个port都有一个名字和自己的label。在启动新的task的时候，marathon会把metadata发送给mesos。mesos会在这个task的discovery字段中暴露这些信息。自定义网络发现服务可以读取这个字段，发现app服务。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&quot;portDefinitions&quot;: [</div><div class="line">     &#123;</div><div class="line">         &quot;port&quot;: 0,</div><div class="line">         &quot;protocol&quot;: &quot;tcp&quot;,</div><div class="line">         &quot;name&quot;: &quot;http&quot;,</div><div class="line">         &quot;labels&quot;: &#123;&quot;VIP_0&quot;: &quot;10.0.0.1:80&quot;&#125;</div><div class="line">     &#125;</div><div class="line"> ],</div></pre></td></tr></table></figure>
-<p>这是一个动态的tcp端口，name为http，并包含一个label。 port字段是必须的，protocol、name、labels是可选的。如果portDefinitions中只定义port字段的时候，其实跟定义ports数组没有分别。</p>
-<p>注意：如果ports和portDefinitions内容不一致，那么就不能同时定义。</p>
-<h5 id="bridge"><a href="#bridge" class="headerlink" title="bridge"></a>bridge</h5><p>bridge网络模型允许映射hostport到内部的container端口，而且只能用于docker container。通常在使用一个拥有固定端口的docker image的时候只用这种方式。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&quot;container&quot;: &#123;</div><div class="line">   &quot;type&quot;: &quot;DOCKER&quot;,</div><div class="line">   &quot;docker&quot;: &#123;</div><div class="line">     &quot;image&quot;: &quot;my-image:1.0&quot;,</div><div class="line">     &quot;network&quot;: &quot;BRIDGE&quot;</div><div class="line">   &#125;</div><div class="line"> &#125;,</div></pre></td></tr></table></figure>
-<p>指定USER网络<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">&quot;container&quot;: &#123;</div><div class="line">    &quot;type&quot;: &quot;DOCKER&quot;,</div><div class="line">    &quot;docker&quot;: &#123;</div><div class="line">      &quot;image&quot;: &quot;my-image:1.0&quot;,</div><div class="line">      &quot;network&quot;: &quot;USER&quot;</div><div class="line">    &#125;</div><div class="line">  &#125;,</div><div class="line">  &quot;ipAddress&quot;: &#123;</div><div class="line">    &quot;networkName&quot;: &quot;someUserNetwork&quot;</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
-<p>指定端口</p>
-<p>端口隐射与把-p参数传递给docker命令行差不多。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">&quot;container&quot;: &#123;</div><div class="line">  &quot;type&quot;: &quot;DOCKER&quot;,</div><div class="line">  &quot;docker&quot;: &#123;</div><div class="line">    &quot;image&quot;: &quot;my-image:1.0&quot;,</div><div class="line">    &quot;network&quot;: &quot;BRIDGE&quot;,</div><div class="line">    &quot;portMappings&quot;: [</div><div class="line">      &#123; &quot;containerPort&quot;: 0, &quot;hostPort&quot;: 0 &#125;,</div><div class="line">      &#123; &quot;containerPort&quot;: 0, &quot;hostPort&quot;: 0 &#125;,</div><div class="line">      &#123; &quot;containerPort&quot;: 0, &quot;hostPort&quot;: 0 &#125;</div><div class="line">    ]</div><div class="line">  &#125;</div><div class="line">&#125;,</div></pre></td></tr></table></figure></p>
-<p>上面的例子中，containerPort会和hostPort一致，都是随机的。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">&quot;container&quot;: &#123;</div><div class="line">  &quot;type&quot;: &quot;DOCKER&quot;,</div><div class="line">  &quot;docker&quot;: &#123;</div><div class="line">    &quot;image&quot;: &quot;my-image:1.0&quot;,</div><div class="line">    &quot;network&quot;: &quot;BRIDGE&quot;,</div><div class="line">    &quot;portMappings&quot;: [</div><div class="line">      &#123; &quot;containerPort&quot;: 80, &quot;hostPort&quot;: 0 &#125;,</div><div class="line">      &#123; &quot;containerPort&quot;: 443, &quot;hostPort&quot;: 0 &#125;,</div><div class="line">      &#123; &quot;containerPort&quot;: 4000, &quot;hostPort&quot;: 0 &#125;</div><div class="line">    ]</div><div class="line">  &#125;</div><div class="line">&#125;,</div></pre></td></tr></table></figure>
-<p>这个例子，marathon会随机分配端口来与容器的80，443，4000进行对应。</p>
-<p>marathon会为每port都穿件service port。service port用来给服务发现程序使用，通常用一些常见的port。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">&quot;container&quot;: &#123;</div><div class="line">  &quot;type&quot;: &quot;DOCKER&quot;,</div><div class="line">  &quot;docker&quot;: &#123;</div><div class="line">    &quot;image&quot;: &quot;my-image:1.0&quot;,</div><div class="line">    &quot;network&quot;: &quot;BRIDGE&quot;,</div><div class="line">    &quot;portMappings&quot;: [</div><div class="line">      &#123; &quot;containerPort&quot;: 80, &quot;hostPort&quot;: 0, &quot;protocol&quot;: &quot;tcp&quot;, &quot;servicePort&quot;: 2000 &#125;,</div><div class="line">      &#123; &quot;containerPort&quot;: 443, &quot;hostPort&quot;: 0, &quot;protocol&quot;: &quot;tcp&quot;, &quot;servicePort&quot;: 2001 &#125;,</div><div class="line">      &#123; &quot;containerPort&quot;: 4000, &quot;hostPort&quot;: 0, &quot;protocol&quot;: &quot;udp&quot;, &quot;servicePort&quot;: 3000&#125;</div><div class="line">    ]</div><div class="line">  &#125;</div><div class="line">&#125;,</div></pre></td></tr></table></figure></p>
-<p>host port还是随机的，但是service port固定了。HAProxy就可以配置路由从这些<br>service port 到host port 了。</p>
+        <h2 id="Docker-Containerizer"><a href="#Docker-Containerizer" class="headerlink" title="Docker Containerizer"></a>Docker Containerizer</h2><p>Docker containerizer使用dockers engine管理container。</p>
+<h4 id="container启动过程"><a href="#container启动过程" class="headerlink" title="container启动过程"></a>container启动过程</h4><ul>
+<li>Docker containerizer 在ContainerInfo::type为DOCKER的时候尝试在docker里启动task</li>
+<li>Docker containerizer先pull image</li>
+<li>调用pre-launch的hook</li>
+<li>executor以下面两种方式启动起来<ul>
+<li>mesos agent运行在一个docker container中<ul>
+<li>这种方式需要提供–docker_mesos_image的参数。使用指定的docker image启动mesos agent</li>
+<li>如果task包含自定义的executor，那么这个executor就在docker container中被启动</li>
+<li>如果task并不包含executor。就是说它定义了一个command，默认的mesos-docker-executor就在docker container中通过docker Cli执行这个command。</li>
+</ul>
+</li>
+<li>mesos agent不运行在docker container中<ul>
+<li>如果task中包含自定义的executor，那么在docker container中执行</li>
+<li>如果task不博阿涵自定义的executor，也就是定义了一个command，就fork一个子进程来执行默认的mesos-docker-executor. 然后mesos-docker-executor产生一个shell通过docker cli执行这个command。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="Mesos-Containerizer"><a href="#Mesos-Containerizer" class="headerlink" title="Mesos Containerizer"></a>Mesos Containerizer</h2><p>Mesos Containerizer是原生的。Mesos Containerizer会处理所有没有制定ContainerInfo::DockerInfo的executor/task。</p>
+<h4 id="container启动过程-1"><a href="#container启动过程-1" class="headerlink" title="container启动过程"></a>container启动过程</h4><ul>
+<li>在每个isolator上调用prepare</li>
+<li>使用Launcher fork出executor。在isolated之前，这个被fork出来的executor是不能执行的</li>
+<li>Isolate这个executor。通过pid调用每个isolator的isolate方法</li>
+<li>抽取executor</li>
+<li>执行executor。就是上面的executor会获得执行的信号。先执行一些准备的命令，然后再执行executor的内容。</li>
+</ul>
+<h4 id="Launcher"><a href="#Launcher" class="headerlink" title="Launcher"></a>Launcher</h4><p>Launcher负责产生和销毁container。</p>
+<ul>
+<li>在containerizerd context中fork新的进程。这个子进程会执行给定路径的可执行文件，接受参数、flag和环境变量等。</li>
+<li>子进程的IO会根据指定的方式进行重定向</li>
+</ul>
+<h6 id="linux-launcher"><a href="#linux-launcher" class="headerlink" title="linux launcher"></a>linux launcher</h6><ul>
+<li>为container创建一个freezer 的cgroup</li>
+<li>创建一个posix的pipe为host和container进程提供通信通道</li>
+<li>使用系统的clone方法生成子进程(也就是container进程)</li>
+<li>把新生成的container放进freezer的对应层级中</li>
+<li>通过上面的pip给子进程一个signal，让它继续执行</li>
+</ul>
+<h6 id="Posix-launcher-TBD"><a href="#Posix-launcher-TBD" class="headerlink" title="Posix launcher (TBD)"></a>Posix launcher (TBD)</h6><h4 id="Isolators"><a href="#Isolators" class="headerlink" title="Isolators"></a>Isolators</h4><p>Isolator负责创建container中的运行环境【CPU, NETWORK, 存储，内存等】</p>
+<h2 id="Containerizer-states"><a href="#Containerizer-states" class="headerlink" title="Containerizer states"></a>Containerizer states</h2><p>Docker</p>
+<ul>
+<li>FETCHING</li>
+<li>PULLING</li>
+<li>RUNNING</li>
+<li>DESTROYING</li>
+</ul>
+<p>Mesos</p>
+<ul>
+<li>PREPARING</li>
+<li>ISOLATING</li>
+<li>FETCHING</li>
+<li>RUNNING</li>
+<li>DESTROYING</li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/20/docker内OS的相关事宜/" title="docker内OS的相关事宜" itemprop="url">docker内OS的相关事宜</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-20T06:59:20.000Z" itemprop="datePublished"> 发表于 2017-07-20</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>假设宿主机是centos7，然后docker镜像使用ubuntu16.04。</p>
+<p>那么dockers容器在启动的时候是怎样运行ubuntu的，这种情境咋总是感觉跟启动虚拟机一样呢？</p>
+<p>各种cgroup什么的还好理解，但是这些os内核它是怎样运作起来的呢？</p>
+<h2 id="答案"><a href="#答案" class="headerlink" title="答案"></a>答案</h2><p>容器是依赖宿主机内核的，如果内核不能满足容器需求，就不能run。 这么看来，其实docker也不是那么“万能”的。</p>
+<p>甚至如果容器里需要使用高版本内核的时候，宿主机不能支持，那么这个容器就run不起来………….理论上是这样，用的时候就要注意了。不知道这种docker是不是会自动下载这个内核，然后完全单独运行的话，其实本质上，真的和虚拟机差不多了</p>
+<p>都独立内核了，ns和cg都不能用宿主机的了，那就是彻底的虚拟机了。</p>
+<p>docker 和 传统的虚拟机的区别就是 ， 传统虚拟机假装有一套新的硬件，系统跑在硬件上就行了， docker 假装有一个系统，进程跑在系统里就行了，其实个人认为准确说，应该是docker假装有一个内核。</p>
+<h2 id="翻译"><a href="#翻译" class="headerlink" title="翻译"></a>翻译</h2><p>docker最开始使用的是LXC，后来切换到了libcontainer。这样就可以跟宿主机共享操作系统资源。docker使用一种分层的文件系统AUFS，并且管理自己的网络。</p>
+<p>AUFS是一个分层的文件系统，将只读的和可写的部分merge在一起。OS公用的地方是只读的，每个container自己挂载的是可写的。</p>
+<p>假设我们有一个1g的image，需要1000个节点的扩容。如果使用一个完整的VM的话，需要1000G的空间。使用Docker的话，这1000个container节点可以共享1g的OS资源。</p>
+<p>一个完整的VM拥有自己的一组资源，基本不共享什么东西。用重量换得了更多的独立性。Docker相反，独立性相对差一些，但是很轻量。所以可以在宿主机上跑上千个container。</p>
+<p>一个完整的VM通常要花费几分钟才能启动，一个docker container则只需要几秒。</p>
+<p>两个东西各有优缺点。</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://stackoverflow.com/questions/33112137/run-different-linux-os-in-docker-container" target="_blank" rel="external">https://stackoverflow.com/questions/33112137/run-different-linux-os-in-docker-container</a></li>
+<li><a href="https://stackoverflow.com/questions/33112137/run-different-linux-os-in-docker-container" target="_blank" rel="external">https://stackoverflow.com/questions/33112137/run-different-linux-os-in-docker-container</a></li>
+<li><a href="https://stackoverflow.com/questions/16047306/how-is-docker-different-from-a-normal-virtual-machine" target="_blank" rel="external">https://stackoverflow.com/questions/16047306/how-is-docker-different-from-a-normal-virtual-machine</a></li>
+<li><a href="https://docs.docker.com/engine/faq/#what-is-different-between-a-docker-container-and-a-vm" target="_blank" rel="external">https://docs.docker.com/engine/faq/#what-is-different-between-a-docker-container-and-a-vm</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/14/使用portainer监控docker容器/" title="使用portainer监控docker容器" itemprop="url">使用portainer监控docker容器</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-14T06:57:22.000Z" itemprop="datePublished"> 发表于 2017-07-14</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>我们先监控一个远程的docker daemon，那么这个docker daemon先要允许远程访问才行。</p>
+<p>修改113的配置文件/etc/docker/daemon.json<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;registry-mirrors&quot;: [&quot;https://docker.mirrors.ustc.edu.cn&quot;,&quot;http://3a35aff6.m.daocloud.io&quot;,&quot;http://ethanzhu.m.tenxcloud.net&quot;],</div><div class="line">  &quot;hosts&quot;: [&quot;tcp://0.0.0.0:2375&quot;]</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>注意，启用hosts，也就是远程接口之后，本地的命令行就不能用了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">[root@etl03 ~]# docker images</div><div class="line">Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?</div><div class="line">[root@etl03 ~]# docker -H 0.0.0.0:2375 images</div><div class="line">REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE</div><div class="line">sso                 latest              f8fdedf3edca        13 hours ago        246MB</div><div class="line">centos              7.3.1611            67591570dd29        7 months ago        192MB</div></pre></td></tr></table></figure></p>
+<p>在112上启动portainer<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker run -d -p 9000:9000 --rm -v /var/run/docker.sock:/var/run/docker.sock portainer/portainer</div></pre></td></tr></table></figure></p>
+<p>如果要持久化一些配置文件的话，可以参考以下命令：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker run -d -p 9000:9000 -v /path/on/host/data:/data portainer/portainer</div></pre></td></tr></table></figure></p>
+<p>配置初始密码，然后</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://docs.docker.com/engine/reference/commandline/dockerd/#extended-description" target="_blank" rel="external">https://docs.docker.com/engine/reference/commandline/dockerd/#extended-description</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/14/docker问题整理/" title="docker问题整理" itemprop="url">docker问题整理</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-14T06:15:37.000Z" itemprop="datePublished"> 发表于 2017-07-14</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="容器内ping不同外部宿主机"><a href="#容器内ping不同外部宿主机" class="headerlink" title="容器内ping不同外部宿主机"></a>容器内ping不同外部宿主机</h2><p>默认使用bridge网络，应该是通畅的。通常就是简单的防火墙导致，需要注意的是：<strong>调整防火墙之后，需要重启docker engine才能生效</strong>，仅仅重启docker容器是不会起作用的。。。。</p>
+<h2 id="loopback-devices的告警"><a href="#loopback-devices的告警" class="headerlink" title="loopback devices的告警"></a>loopback devices的告警</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">WARNING: devicemapper: usage of loopback devices is strongly discouraged for production use.</div><div class="line">         Use `--storage-opt dm.thinpooldev` to specify a custom block storage device.</div><div class="line">WARNING: IPv4 forwarding is disabled</div><div class="line">WARNING: bridge-nf-call-iptables is disabled</div><div class="line">WARNING: bridge-nf-call-ip6tables is disabled</div></pre></td></tr></table></figure>
+<p>参考</p>
+<ul>
+<li><a href="http://www.dockerinfo.net/2182.html" target="_blank" rel="external">http://www.dockerinfo.net/2182.html</a></li>
+</ul>
+<h2 id="容器名称变化"><a href="#容器名称变化" class="headerlink" title="容器名称变化"></a>容器名称变化</h2><p>主要是对于代理层，比如有三个backend服务节点，只要一重启，这三个容器的host和ip有可能都会变。</p>
+<p>方案：</p>
+<ul>
+<li>代理 + 动态服务发现。nginx/haproxy + consul/etcd</li>
+<li>traefix，专为此种场景提供了定制接口配置。</li>
+</ul>
+<p>参考： </p>
+<ul>
+<li><a href="http://blog.hypriot.com/post/microservices-bliss-with-docker-and-traefik/" target="_blank" rel="external">http://blog.hypriot.com/post/microservices-bliss-with-docker-and-traefik/</a></li>
+<li><a href="https://www.consul.io/intro/getting-started/install.html" target="_blank" rel="external">https://www.consul.io/intro/getting-started/install.html</a></li>
+</ul>
+<h2 id="devicemapper-Can’t-set-cookie-dm-task-set-cookie-failed"><a href="#devicemapper-Can’t-set-cookie-dm-task-set-cookie-failed" class="headerlink" title="devicemapper: Can’t set cookie dm_task_set_cookie failed"></a>devicemapper: Can’t set cookie dm_task_set_cookie failed</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker: failed to register layer: devmapper: Error activating devmapper device for &apos;24ea1e709520627a2862d2b9130b6aff77dde03fef39cc0169568cde5883b013&apos;: devicemapper: Can&apos;t set cookie dm_task_set_cookie failed.</div></pre></td></tr></table></figure>
+<p>问题貌似是在我重新启动</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Error response from daemon: driver &quot;devicemapper&quot; failed to remove root filesystem for 1d7c4b287c27ef61fd0d9ac37c401c5da213b81b31dcc42448b1864b6b838f14: failed to remove device f45fd625ac4cdaccddfdd0ea02ac97f9e529a13594a4cfc92a883b8674d2658a: devicemapper: Can not set cookie: dm_task_set_cookie failed</div></pre></td></tr></table></figure>
+<p>临时方案：echo ‘y’ | sudo dmsetup udevcomplete_all<br><a href="https://github.com/kubevirt/kubevirt/issues/321" target="_blank" rel="external">https://github.com/kubevirt/kubevirt/issues/321</a></p>
+<h2 id="动态配置"><a href="#动态配置" class="headerlink" title="动态配置"></a>动态配置</h2><p>一共有三个方案可以支持</p>
+<h4 id="使用自定义的DNS服务器"><a href="#使用自定义的DNS服务器" class="headerlink" title="使用自定义的DNS服务器"></a>使用自定义的DNS服务器</h4><p>这个方案仅仅是应对容器内需要访问容器外的其他机器的host时起作用，如果还需要变化其他配置，那么可以忽略掉</p>
+<h4 id="使用env或者env文件"><a href="#使用env或者env文件" class="headerlink" title="使用env或者env文件"></a>使用env或者env文件</h4><ol>
+<li>首先要把应用依赖的外部配置从代码里面抽出来，做成配置文件</li>
+<li>容器启动的时候，执行一个自定义脚本，脚本内容就是从容器系统环境变量里面读取环境变量，然后用sed替换配置文件里面的配置</li>
+<li>那么在docker run启动容器的阶段，通过-e选项传递你的配置值到容器的环境变量，就能修改容器内应用的配置</li>
+<li>迁移到其他环境，修改docker run -e的环境变量配置就OK</li>
+</ol>
+<h4 id="直接使用-v挂载不同环境的配置文件"><a href="#直接使用-v挂载不同环境的配置文件" class="headerlink" title="直接使用-v挂载不同环境的配置文件"></a>直接使用-v挂载不同环境的配置文件</h4><p>这种与第二种本质上没有太大区别。但是关键在于env或者env文件是在client端的，而-v挂载目录是需要在server端的。也就是是说每个server都需要有那个目录或者文件才行，而env方式的话，就只需要client端有就可以了。</p>
+<p>鉴于server端一般是多于client端的，所以选用env的会相对多一些。</p>
+<h2 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h2><p>docker attach容器后，退出的时候ctrl + q</p>
+<h4 id="docker默认的docker0"><a href="#docker默认的docker0" class="headerlink" title="docker默认的docker0"></a>docker默认的docker0</h4><p>bridge是不支持服务发现的，也就在这个网络里的docker容器相互之间并不能通过名称通信。<br>要支持服务发现的话，需要自定义一个bridge网络。</p>
+<p>只有swarm service可以连到overylay网络，独立的容器是连不上的。</p>
+<p>docker是会动态修改宿主机的iptables规则的。</p>
+<p>参考： <a href="https://docs.docker.com/engine/userguide/networking/" target="_blank" rel="external">https://docs.docker.com/engine/userguide/networking/</a></p>
+<h2 id="关闭防火墙引起的问题"><a href="#关闭防火墙引起的问题" class="headerlink" title="关闭防火墙引起的问题"></a>关闭防火墙引起的问题</h2><p>在dockerd运行的时候，关闭防火墙的话，会清空iptables里的docker相关规则，导致docker容器启动失败。</p>
+<p>centos7, docker ce17</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">iptables: No chain/target/match by that name</div></pre></td></tr></table></figure>
+<p>解决办法，在关闭防火墙之后再启动dockerd，或者重启dockerd，它会自己根据现有docker网络和容器重建iptables相关规则。</p>
+<h2 id="devicemapper-Can-not-set-cookie-dm-task-set-cookie-failed"><a href="#devicemapper-Can-not-set-cookie-dm-task-set-cookie-failed" class="headerlink" title="devicemapper: Can not set cookie: dm_task_set_cookie failed"></a>devicemapper: Can not set cookie: dm_task_set_cookie failed</h2><p>重命名container名称导致。</p>
+<p>解决：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">echo &apos;y&apos; | sudo dmsetup udevcomplete_all</div></pre></td></tr></table></figure></p>
+<p>最好能执行<code>docker rm $(docker ps -a -q)</code>把现有container都移除。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/12/centos7-搭建DNS服务器/" title="centos7-搭建DNS服务器" itemprop="url">centos7-搭建DNS服务器</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-12T03:29:47.000Z" itemprop="datePublished"> 发表于 2017-07-12</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="主服务器"><a href="#主服务器" class="headerlink" title="主服务器"></a>主服务器</h2><h4 id="安装bind9"><a href="#安装bind9" class="headerlink" title="安装bind9"></a>安装bind9</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">yum install bind bind-utils -y</div></pre></td></tr></table></figure>
+<h4 id="编辑-etc-named-conf"><a href="#编辑-etc-named-conf" class="headerlink" title="编辑/etc/named.conf"></a>编辑/etc/named.conf</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">options &#123;</div><div class="line">    listen-on port 53 &#123; any; &#125;;</div><div class="line">	listen-on-v6 port 53 &#123; ::1; &#125;;</div><div class="line">	directory 	&quot;/var/named&quot;;</div><div class="line">	dump-file 	&quot;/var/named/data/cache_dump.db&quot;;</div><div class="line">	statistics-file &quot;/var/named/data/named_stats.txt&quot;;</div><div class="line">	memstatistics-file &quot;/var/named/data/named_mem_stats.txt&quot;;</div><div class="line">	allow-query     &#123; any; &#125;;</div><div class="line">	allow-transfer&#123; localhost; 10.2.19.113; &#125;;</div><div class="line"></div><div class="line">......</div><div class="line">...</div><div class="line"></div><div class="line">zone &quot;will.com&quot; IN &#123;</div><div class="line">type master;</div><div class="line">file &quot;forward.unixmen&quot;;</div><div class="line">allow-update &#123; none; &#125;;</div><div class="line">&#125;;</div><div class="line"></div><div class="line">zone &quot;19.2.10.in-addr.arpa&quot; IN &#123;</div><div class="line">type master;</div><div class="line">file &quot;reverse.unixmen&quot;;</div><div class="line">allow-update &#123; none; &#125;;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<h4 id="创建上面我们配置的zone文件"><a href="#创建上面我们配置的zone文件" class="headerlink" title="创建上面我们配置的zone文件"></a>创建上面我们配置的zone文件</h4><p>vi /var/named/forward.unixmen<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">$TTL 86400</div><div class="line">@   IN  SOA     etl02.will.com. root.will.com. (</div><div class="line">        2017071001  ;Serial</div><div class="line">        3600        ;Refresh</div><div class="line">        1800        ;Retry</div><div class="line">        604800      ;Expire</div><div class="line">        86400       ;Minimum TTL</div><div class="line">)</div><div class="line">@       IN  NS          etl02.will.com.</div><div class="line">@       IN  NS          etl03.will.com.</div><div class="line">@       IN  NS          schedule.will.com.</div><div class="line">@       IN  A           10.2.19.112</div><div class="line">@       IN  A           10.2.19.113</div><div class="line">@       IN  A           10.2.19.62</div><div class="line">etl02       IN  A   10.2.19.112</div><div class="line">etl03    IN  A   10.2.19.113</div><div class="line">schedule    IN  A   10.2.19.62</div></pre></td></tr></table></figure></p>
+<p>检查配置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[root@etl02 ~]# named-checkzone will.com /var/named/forward.unixmen</div><div class="line">zone will.com/IN: loaded serial 2017071001</div><div class="line">OK</div></pre></td></tr></table></figure></p>
+<p>vi /var/named/reverse.unixmen<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">$TTL 86400</div><div class="line">@   IN  SOA     etl02.will.com. root.will.com. (</div><div class="line">        2017071001  ;Serial</div><div class="line">        3600        ;Refresh</div><div class="line">        1800        ;Retry</div><div class="line">        604800      ;Expire</div><div class="line">        86400       ;Minimum TTL</div><div class="line">)</div><div class="line">@       IN  NS          etl02.will.com.</div><div class="line">@       IN  NS          etl03.will.com.</div><div class="line">@       IN  NS          schedule.will.com.</div><div class="line">@       IN  PTR         will.com.</div><div class="line">etl02       IN  A   10.2.19.112</div><div class="line">etl03    IN  A   10.2.19.113</div><div class="line">schedule    IN  A   10.2.19.62</div><div class="line">62     IN  PTR         schedule.will.com.</div><div class="line">112     IN  PTR         etl02.will.com.</div><div class="line">113     IN  PTR         etl03.will.com.</div></pre></td></tr></table></figure></p>
+<p>同样检查一下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[root@etl02 ~]# named-checkzone will.com /var/named/reverse.unixmen </div><div class="line">zone will.com/IN: loaded serial 2017071001</div><div class="line">OK</div></pre></td></tr></table></figure></p>
+<h2 id="启动DNS服务"><a href="#启动DNS服务" class="headerlink" title="启动DNS服务"></a>启动DNS服务</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">systemctl enable named</div><div class="line">systemctl start named</div></pre></td></tr></table></figure>
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><ol>
+<li>编辑/etc/resolv.conf文件, 修改nameserver为etl02.will.com</li>
+<li>编辑网卡配置文件/etc/sysconfig/network-scripts/ifcfg-eth0, 修改DNS为我们的DNS服务器地址10.2.19.112</li>
+<li>重启网络服务：systemctl restart network</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line">[root@etl02 ~]# dig etl02.will.com</div><div class="line"></div><div class="line">; &lt;&lt;&gt;&gt; DiG 9.9.4-RedHat-9.9.4-50.el7_3.1 &lt;&lt;&gt;&gt; etl02.will.com</div><div class="line">;; global options: +cmd</div><div class="line">;; Got answer:</div><div class="line">;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, status: NOERROR, id: 48492</div><div class="line">;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 3, ADDITIONAL: 3</div><div class="line"></div><div class="line">;; OPT PSEUDOSECTION:</div><div class="line">; EDNS: version: 0, flags:; udp: 4096</div><div class="line">;; QUESTION SECTION:</div><div class="line">;etl02.will.com.		IN	A</div><div class="line"></div><div class="line">;; ANSWER SECTION:</div><div class="line">etl02.will.com.	86400	IN	A	10.2.19.112</div><div class="line"></div><div class="line">;; AUTHORITY SECTION:</div><div class="line">will.com.		86400	IN	NS	etl02.will.com.</div><div class="line">will.com.		86400	IN	NS	schedule.will.com.</div><div class="line">will.com.		86400	IN	NS	etl03.will.com.</div><div class="line"></div><div class="line">;; ADDITIONAL SECTION:</div><div class="line">etl03.will.com.	86400	IN	A	10.2.19.113</div><div class="line">schedule.will.com.	86400	IN	A	10.2.19.62</div><div class="line"></div><div class="line">;; Query time: 0 msec</div><div class="line">;; SERVER: 127.0.0.1#53(127.0.0.1)</div><div class="line">;; WHEN: Fri Jul 14 11:52:31 EDT 2017</div><div class="line">;; MSG SIZE  rcvd: 150</div></pre></td></tr></table></figure>
+<p>参考：<a href="https://www.unixmen.com/setting-dns-server-centos-7/" target="_blank" rel="external">https://www.unixmen.com/setting-dns-server-centos-7/</a></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/04/自如爬虫/" title="自如爬虫" itemprop="url">自如爬虫</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-04T08:08:37.000Z" itemprop="datePublished"> 发表于 2017-07-04</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>筛选房源的URL</p>
+<p>筛选的是北土城的房子：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">https://phoenix.ziroom.com/v7/room/list.json?uid=0&amp;os=android%3A4.2.2&amp;suggestion_type=3&amp;model=HTC+One+X+-+4.2.2+-+API+17+-+720x1280&amp;sort=2&amp;suggestion_value=%E5%8C%97%E5%9C%9F%E5%9F%8E&amp;imei=000000000000000&amp;app_version=5.2.7&amp;network=WIFI&amp;ip=10.0.3.15&amp;size=10&amp;sign=fed60ace709254dbe7ca5b471ea8bb62&amp;timestamp=1499155383&amp;price=%2C&amp;page=1&amp;sign_open=1&amp;city_code=110000</div><div class="line"></div><div class="line">-- 下拉一页面</div><div class="line">https://phoenix.ziroom.com/v7/room/list.json?uid=0&amp;os=android%3A4.2.2&amp;suggestion_type=3&amp;model=HTC+One+X+-+4.2.2+-+API+17+-+720x1280&amp;sort=2&amp;suggestion_value=%E5%8C%97%E5%9C%9F%E5%9F%8E&amp;imei=000000000000000&amp;app_version=5.2.7&amp;network=WIFI&amp;ip=10.0.3.15&amp;size=10&amp;sign=924565090bc8a24dfd8f9dd07e04f4af&amp;timestamp=1499155456&amp;price=%2C&amp;page=2&amp;sign_open=1&amp;city_code=110000</div><div class="line"></div><div class="line">-- 下拉一页面</div><div class="line">https://phoenix.ziroom.com/v7/room/list.json?uid=0&amp;os=android%3A4.2.2&amp;suggestion_type=3&amp;model=HTC+One+X+-+4.2.2+-+API+17+-+720x1280&amp;sort=2&amp;suggestion_value=%E5%8C%97%E5%9C%9F%E5%9F%8E&amp;imei=000000000000000&amp;app_version=5.2.7&amp;network=WIFI&amp;ip=10.0.3.15&amp;size=10&amp;sign=2d87dcd80f06daf1b967b9b445fb302e&amp;timestamp=1499155491&amp;price=%2C&amp;page=3&amp;sign_open=1&amp;city_code=110000</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">uid	0</div><div class="line">os	android:4.2.2</div><div class="line">suggestion_type	3</div><div class="line">model	HTC One X - 4.2.2 - API 17 - 720x1280</div><div class="line">sort	2</div><div class="line">suggestion_value	北土城</div><div class="line">imei	000000000000000</div><div class="line">app_version	5.2.7</div><div class="line">network	WIFI</div><div class="line">ip	10.0.3.15</div><div class="line">size	10</div><div class="line">sign	fed60ace709254dbe7ca5b471ea8bb62</div><div class="line">timestamp	1499155383</div><div class="line">price	,</div><div class="line">page	1</div><div class="line">sign_open	1</div><div class="line">city_code	110000</div></pre></td></tr></table></figure>
+<p>房子详情页<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">https://phoenix.ziroom.com/v7/room/detail.json?sign=a97bdae17004d4c9bc535068316b2185&amp;uid=0&amp;timestamp=1499155557&amp;id=146610&amp;os=android%3A4.2.2&amp;model=HTC+One+X+-+4.2.2+-+API+17+-+720x1280&amp;imei=000000000000000&amp;app_version=5.2.7&amp;sign_open=1&amp;city_code=110000&amp;house_id=20624&amp;network=WIFI&amp;ip=10.0.3.15</div></pre></td></tr></table></figure></p>
+<p>可视化一下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">sign	a97bdae17004d4c9bc535068316b2185</div><div class="line">uid	0</div><div class="line">timestamp	1499155557</div><div class="line">id	146610</div><div class="line">os	android:4.2.2</div><div class="line">model	HTC One X - 4.2.2 - API 17 - 720x1280</div><div class="line">imei	000000000000000</div><div class="line">app_version	5.2.7</div><div class="line">sign_open	1</div><div class="line">city_code	110000</div><div class="line">house_id	20624</div><div class="line">network	WIFI</div><div class="line">ip	10.0.3.15</div></pre></td></tr></table></figure></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/04/pyenv多版本安装/" title="pyenv多版本安装" itemprop="url">pyenv多版本安装</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-04T03:18:32.000Z" itemprop="datePublished"> 发表于 2017-07-04</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">yum install -y git python-pip</div><div class="line">git clone https://github.com/pyenv/pyenv.git ~/.pyenv</div><div class="line">echo &apos;export PYENV_ROOT=&quot;$HOME/.pyenv&quot;&apos; &gt;&gt; ~/.bash_profile</div><div class="line">echo &apos;export PATH=&quot;$PYENV_ROOT/bin:$PATH&quot;&apos; &gt;&gt; ~/.bash_profile</div><div class="line">echo &apos;eval &quot;$(pyenv init -)&quot;&apos; &gt;&gt; ~/.bash_profile</div><div class="line"> yum install readline readline-devel readline-static openssl openssl-devel openssl-static sqlite-devel bzip2-devel bzip2-libs -y</div><div class="line"> pyenv install 3.6.1</div><div class="line"> git clone https://github.com/pyenv/pyenv-virtualenv.git $(pyenv root)/plugins/pyenv-virtualenv</div><div class="line"> pyenv shell 3.6.1</div><div class="line"> echo &apos;eval &quot;$(pyenv virtualenv-init -)&quot;&apos; &gt;&gt; ~/.bash_profile</div><div class="line"> pyenv virtualenv 3.6.1 will_3.6.1</div></pre></td></tr></table></figure>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">pyenv versions</div><div class="line"></div><div class="line">pyenv activate  will_3.6.1</div></pre></td></tr></table></figure>
+<p> 安装加速: 提前下载好对应python版本的tar.zx包，放到~/.pyenv/cache/下，然后再运行 pyenv install 3.6.1</p>
 
         
         
@@ -945,7 +926,7 @@
 
 
   <nav id="page-nav" class="clearfix">
-    <a class="extend prev" rel="prev" href="/page/8/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><span class="page-number current">9</span><a class="page-number" href="/page/10/">10</a><a class="page-number" href="/page/11/">11</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/10/">Next<span></span></a>
+    <a class="extend prev" rel="prev" href="/page/8/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><span class="page-number current">9</span><a class="page-number" href="/page/10/">10</a><a class="page-number" href="/page/11/">11</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/10/">Next<span></span></a>
   </nav>
 
 </div>
@@ -966,7 +947,7 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>187</sup></a></li>
 			
 		
 			
@@ -1018,19 +999,11 @@
 			
 		
 			
-				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+				<li><a href="/tags/Solr/" title="Solr">Solr<sup>1</sup></a></li>
 			
 		
 			
@@ -1043,6 +1016,14 @@
 		
 			
 				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hue/" title="hue">hue<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
 			
 		
 		</ul>

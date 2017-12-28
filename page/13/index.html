@@ -3,6 +3,14 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
+  <script type="text/javascript">
+    (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+    })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+    
+    _st('install','yNiKTKaAnwd1uuxVMfiE','2.0.0');
+  </script>
   <script>
     var _hmt = _hmt || [];
     (function() {
@@ -24,7 +32,7 @@
     <meta name="description" content="左右水色 右手天光">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Will's Blog">
-<meta property="og:url" content="http://willcup.com/page/13/index.html">
+<meta property="og:url" content="https://runningdata.github.io/page/13/index.html">
 <meta property="og:site_name" content="Will's Blog">
 <meta property="og:description" content="左右水色 右手天光">
 <meta name="twitter:card" content="summary">
@@ -74,7 +82,7 @@
 					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
 						<label>Search</label>
 						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
-						<input type="hidden" name="q" value="site:willcup.com">
+						<input type="hidden" name="q" value="site:runningdata.github.io">
 					</form>
 					
 					</li>
@@ -91,868 +99,263 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/04/26/hiveserver2负载均衡/" title="hiveserver2负载均衡" itemprop="url">hiveserver2负载均衡</a>
+      <a href="/2017/03/24/iptables手记/" title="iptables手记" itemprop="url">iptables手记</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
 		
   <p class="article-time">
-    <time datetime="2017-04-26T08:47:44.000Z" itemprop="datePublished"> 发表于 2017-04-26</time>
+    <time datetime="2017-03-24T06:56:16.000Z" itemprop="datePublished"> 发表于 2017-03-24</time>
     
   </p>
 </header>
     <div class="article-content">
         
-        <p>hiveserver2是通过在zookeeper注册一个namespace，然后管理所有的hiveserver实例，实现动态服务发现的。</p>
-<p>znode样式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">/&lt;hiveserver2_namespace&gt;/serverUri=&lt;host:port&gt;;version=&lt;versionInfo&gt;; sequence=&lt;sequence_number&gt;,</div></pre></td></tr></table></figure></p>
-<p>hiveserver实例会在znode上设置一个watch。当znode被修改的时候，watch会发送给hiveserver相关信息。这个通知能够让所有的hiveserver实例知道它是不是对于client端可用。</p>
-<p>当有hiveserver实例退出时，会从zk的对应node里移除，但是只对新的客户端连接生效。(已经连接的session不能生效了)。只有已经连接到这个hiveserver的最后一个client的session结束后，才会自动把这个hiveserver完全关闭，下面这个命令就是做这个工作的。</p>
-<p>使用下面命令移除一个hiveserver<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">hive --service hiveserver2 --deregister &lt;package ID&gt;</div></pre></td></tr></table></figure></p>
-<h4 id="没有zk时的查询"><a href="#没有zk时的查询" class="headerlink" title="没有zk时的查询"></a>没有zk时的查询</h4><p>下面是一个传统的查询流程：</p>
+        <p>先看一下网络流程图，以及所有的控制点<br><img src="/imgs/iptables/iptables_controls.png" alt="网络流程图"><br><img src="/imgs/iptables/iptables_control_detail.png" alt="网络流程细节图"><br><img src="/imgs/iptables/iptables_2.png" alt="控制点规则结构"><br><img src="/imgs/iptables/iptables_3_filter.png" alt="filter表相关流程与控制点图"><br><img src="/imgs/iptables/iptables_3_mangle.png" alt="mangle表相关流程与控制点"><br><img src="/imgs/iptables/iptables_3_nat.png" alt="nat表相关流程与控制点"><br><img src="/imgs/iptables/iptables_4_command.png" alt="语法结构"><br><img src="/imgs/iptables/iptables_4_command1.png" alt="语法结构"></p>
+<p>查看filter表里的数据<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">[root@schedule ~]#iptables -t filter -L</div><div class="line">Chain INPUT (policy ACCEPT)</div><div class="line">target     prot opt source               destination</div><div class="line"></div><div class="line">Chain FORWARD (policy ACCEPT)</div><div class="line">target     prot opt source               destination</div><div class="line"></div><div class="line">Chain OUTPUT (policy ACCEPT)</div><div class="line">target     prot opt source               destination</div></pre></td></tr></table></figure></p>
+<p>添加一条规则， 在OUTPUT上记录所有tcp的日志，默认是添加在syslog里的。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">[root@data-test03 hadoop-client]# iptables -t filter -A OUTPUT -p tcp -j LOG</div><div class="line">[root@data-test03 hadoop-client]# iptables -t filter -L</div><div class="line">Chain INPUT (policy ACCEPT)</div><div class="line">target     prot opt source               destination</div><div class="line"></div><div class="line">Chain FORWARD (policy ACCEPT)</div><div class="line">target     prot opt source               destination</div><div class="line"></div><div class="line">Chain OUTPUT (policy ACCEPT)</div><div class="line">target     prot opt source               destination</div><div class="line">LOG        tcp  --  anywhere             anywhere            LOG level warning</div></pre></td></tr></table></figure></p>
+<p>找一下syslog里是否生效：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">[root@data-test03 hadoop-client]# tail -n 10 /var/log/messages</div><div class="line">Mar 23 18:30:35 data-test03 kernel: IN= OUT=eth0 SRC=10.1.5.81 DST=10.1.5.237 LEN=136 TOS=0x10 PREC=0x00 TTL=64 ID=32153 DF PROTO=TCP SPT=22 DPT=60206 WINDOW=2233 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:30:36 data-test03 kernel: IN= OUT=eth0 SRC=10.1.5.81 DST=10.1.5.237 LEN=136 TOS=0x10 PREC=0x00 TTL=64 ID=32154 DF PROTO=TCP SPT=22 DPT=60206 WINDOW=2233 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:30:36 data-test03 kernel: IN= OUT=eth0 SRC=10.1.5.81 DST=10.1.5.80 LEN=72 TOS=0x00 PREC=0x00 TTL=64 ID=39647 DF PROTO=TCP SPT=56998 DPT=2888 WINDOW=501 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:30:36 data-test03 kernel: IN= OUT=lo SRC=10.1.5.81 DST=10.1.5.81 LEN=228 TOS=0x00 PREC=0x00 TTL=64 ID=42802 DF PROTO=TCP SPT=36920 DPT=8025 WINDOW=265 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:30:36 data-test03 kernel: IN= OUT=lo SRC=10.1.5.81 DST=10.1.5.81 LEN=93 TOS=0x00 PREC=0x00 TTL=64 ID=14446 DF PROTO=TCP SPT=8025 DPT=36920 WINDOW=384 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:30:36 data-test03 kernel: IN= OUT=lo SRC=10.1.5.81 DST=10.1.5.81 LEN=52 TOS=0x00 PREC=0x00 TTL=64 ID=42803 DF PROTO=TCP SPT=36920 DPT=8025 WINDOW=265 RES=0x00 ACK URGP=0 </div><div class="line">Mar 23 18:30:36 data-test03 kernel: IN= OUT=eth0 SRC=10.1.5.81 DST=10.1.5.237 LEN=136 TOS=0x10 PREC=0x00 TTL=64 ID=32155 DF PROTO=TCP SPT=22 DPT=60206 WINDOW=2233 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:30:36 data-test03 kernel: IN= OUT=eth0 SRC=10.1.5.81 DST=10.1.5.80 LEN=93 TOS=0x00 PREC=0x00 TTL=64 ID=13946 DF PROTO=TCP SPT=8025 DPT=38421 WINDOW=499 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:30:36 data-test03 kernel: IN= OUT=eth0 SRC=10.1.5.81 DST=10.1.5.79 LEN=93 TOS=0x00 PREC=0x00 TTL=64 ID=15862 DF PROTO=TCP SPT=8025 DPT=37458 WINDOW=499 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:30:36 data-test03 kernel: IN= OUT=eth0 SRC=10.1.5.81 DST=10.1.5.237 LEN=104 TOS=0x10 PREC=0x00 TTL=64 ID=32156 DF PROTO=TCP SPT=22 DPT=60206 WINDOW=2233 RES=0x00 ACK PSH URGP=0</div></pre></td></tr></table></figure></p>
+<p>为日志添加前缀<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">iptables -t filter -A OUTPUT -p tcp -j LOG --log-prefix will</div></pre></td></tr></table></figure></p>
+<p>再看log<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">[root@data-test03 hadoop-client]# tail -n 5 /var/log/messages</div><div class="line">Mar 23 18:33:58 data-test03 kernel: willIN= OUT=eth0 SRC=10.1.5.81 DST=10.1.5.80 LEN=72 TOS=0x00 PREC=0x00 TTL=64 ID=39849 DF PROTO=TCP SPT=56998 DPT=2888 WINDOW=501 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:33:58 data-test03 kernel: willIN= OUT=lo SRC=10.1.5.81 DST=10.1.5.81 LEN=228 TOS=0x00 PREC=0x00 TTL=64 ID=43206 DF PROTO=TCP SPT=36920 DPT=8025 WINDOW=265 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:33:58 data-test03 kernel: willIN= OUT=lo SRC=10.1.5.81 DST=10.1.5.81 LEN=93 TOS=0x00 PREC=0x00 TTL=64 ID=14648 DF PROTO=TCP SPT=8025 DPT=36920 WINDOW=384 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:33:58 data-test03 kernel: willIN= OUT=lo SRC=10.1.5.81 DST=10.1.5.81 LEN=52 TOS=0x00 PREC=0x00 TTL=64 ID=43207 DF PROTO=TCP SPT=36920 DPT=8025 WINDOW=265 RES=0x00 ACK URGP=0 </div><div class="line">Mar 23 18:33:58 data-test03 kernel: willIN= OUT=eth0 SRC=10.1.5.81 DST=10.1.5.237 LEN=136 TOS=0x10 PREC=0x00 TTL=64 ID=34907 DF PROTO=TCP SPT=22 DPT=60206 WINDOW=2233 RES=0x00 ACK PSH URGP=0</div></pre></td></tr></table></figure></p>
+<p>命令规范：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">iptables -t 表 操作 5个控制点之一 匹配规则 -j 动作 动作的选项</div></pre></td></tr></table></figure></p>
+<p>拒绝79对于8020端口的请求<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">iptables -t filter -A INPUT -p tcp --dport 8020 -s 10.1.5.79 -j REJECT</div></pre></td></tr></table></figure></p>
+<p>匹配包含：基本匹配、隐世匹配、等。</p>
+<p>拒绝79所有请求, 第二条是给一个拒绝原因，顺序执行，如果一起都有的话，只执行第一条动作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">iptables -t filter -A INPUT -s 10.1.5.79 -j REJECT</div><div class="line">iptables -t filter -A INPUT -s 10.1.5.79 -j REJECT --reject-with tcp-reset</div></pre></td></tr></table></figure></p>
+<p>这样就连ping都ping不通了。</p>
+<p><a href="http://blog.csdn.net/czhphp/article/details/19123673" target="_blank" rel="external">网段知识补充</a></p>
+<p>参考：</p>
 <ul>
-<li>通过JDBC/ODBC driver连接到HS2实例，建立一个session</li>
-<li>然后每次查询的时候client都发送语句给HS2，转化成Hadoop上的执行任务</li>
-<li>每个查询的结果都写道一个临时文件中</li>
-<li>客户端driver从HS2抽取临时文件中的数据记录</li>
+<li><a href="http://www.cnblogs.com/yi-meng/p/3213925.html" target="_blank" rel="external">http://www.cnblogs.com/yi-meng/p/3213925.html</a></li>
+<li><a href="http://www.dabu.info/iptables-based-tutorial-grammar-rules.html" target="_blank" rel="external">http://www.dabu.info/iptables-based-tutorial-grammar-rules.html</a></li>
+<li><a href="http://v.youku.com/v_show/id_XNzIxOTAxODky.html?from=s1.8-1-1.2&amp;spm=a2h0k.8191407.0.0" target="_blank" rel="external">http://v.youku.com/v_show/id_XNzIxOTAxODky.html?from=s1.8-1-1.2&amp;spm=a2h0k.8191407.0.0</a></li>
 </ul>
-<p><img src="https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_hadoop-ha/content/figures/2/figures/Query_Ex_Path_No_ZK.png" alt="典型查询流程"></p>
-<h4 id="带有zk的查询"><a href="#带有zk的查询" class="headerlink" title="带有zk的查询"></a>带有zk的查询</h4><p>因为可以使用动态服务发现，所以客户端driver必须知道怎样使用这个特性。对于HDP2.2或者JDBC driver2.0.0版本之后才能支持。</p>
-<p>动态服务发现实现如下：</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/iptables/">iptables</a><a href="/tags/linux/">linux</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/03/23/iptables/" title="iptables" itemprop="url">iptables</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-03-23T09:26:37.000Z" itemprop="datePublished"> 发表于 2017-03-23</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>查看filter表里的数据<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">[root@schedule ~]#iptables -t filter -L</div><div class="line">Chain INPUT (policy ACCEPT)</div><div class="line">target     prot opt source               destination         </div><div class="line"></div><div class="line">Chain FORWARD (policy ACCEPT)</div><div class="line">target     prot opt source               destination         </div><div class="line"></div><div class="line">Chain OUTPUT (policy ACCEPT)</div><div class="line">target     prot opt source               destination</div></pre></td></tr></table></figure></p>
+<p>添加一条规则， 在OUTPUT上记录所有tcp的日志，默认是添加在syslog里的。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">[root@data-test03 hadoop-client]# iptables -t filter -A OUTPUT -p tcp -j LOG</div><div class="line">[root@data-test03 hadoop-client]# iptables -t filter -L</div><div class="line">Chain INPUT (policy ACCEPT)</div><div class="line">target     prot opt source               destination         </div><div class="line"></div><div class="line">Chain FORWARD (policy ACCEPT)</div><div class="line">target     prot opt source               destination         </div><div class="line"></div><div class="line">Chain OUTPUT (policy ACCEPT)</div><div class="line">target     prot opt source               destination         </div><div class="line">LOG        tcp  --  anywhere             anywhere            LOG level warning</div></pre></td></tr></table></figure></p>
+<p>找一下syslog里是否生效：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">[root@data-test03 hadoop-client]# tail -n 10 /var/log/messages</div><div class="line">Mar 23 18:30:35 data-test03 kernel: IN= OUT=eth0 SRC=10.1.5.81 DST=10.1.5.237 LEN=136 TOS=0x10 PREC=0x00 TTL=64 ID=32153 DF PROTO=TCP SPT=22 DPT=60206 WINDOW=2233 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:30:36 data-test03 kernel: IN= OUT=eth0 SRC=10.1.5.81 DST=10.1.5.237 LEN=136 TOS=0x10 PREC=0x00 TTL=64 ID=32154 DF PROTO=TCP SPT=22 DPT=60206 WINDOW=2233 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:30:36 data-test03 kernel: IN= OUT=eth0 SRC=10.1.5.81 DST=10.1.5.80 LEN=72 TOS=0x00 PREC=0x00 TTL=64 ID=39647 DF PROTO=TCP SPT=56998 DPT=2888 WINDOW=501 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:30:36 data-test03 kernel: IN= OUT=lo SRC=10.1.5.81 DST=10.1.5.81 LEN=228 TOS=0x00 PREC=0x00 TTL=64 ID=42802 DF PROTO=TCP SPT=36920 DPT=8025 WINDOW=265 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:30:36 data-test03 kernel: IN= OUT=lo SRC=10.1.5.81 DST=10.1.5.81 LEN=93 TOS=0x00 PREC=0x00 TTL=64 ID=14446 DF PROTO=TCP SPT=8025 DPT=36920 WINDOW=384 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:30:36 data-test03 kernel: IN= OUT=lo SRC=10.1.5.81 DST=10.1.5.81 LEN=52 TOS=0x00 PREC=0x00 TTL=64 ID=42803 DF PROTO=TCP SPT=36920 DPT=8025 WINDOW=265 RES=0x00 ACK URGP=0 </div><div class="line">Mar 23 18:30:36 data-test03 kernel: IN= OUT=eth0 SRC=10.1.5.81 DST=10.1.5.237 LEN=136 TOS=0x10 PREC=0x00 TTL=64 ID=32155 DF PROTO=TCP SPT=22 DPT=60206 WINDOW=2233 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:30:36 data-test03 kernel: IN= OUT=eth0 SRC=10.1.5.81 DST=10.1.5.80 LEN=93 TOS=0x00 PREC=0x00 TTL=64 ID=13946 DF PROTO=TCP SPT=8025 DPT=38421 WINDOW=499 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:30:36 data-test03 kernel: IN= OUT=eth0 SRC=10.1.5.81 DST=10.1.5.79 LEN=93 TOS=0x00 PREC=0x00 TTL=64 ID=15862 DF PROTO=TCP SPT=8025 DPT=37458 WINDOW=499 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:30:36 data-test03 kernel: IN= OUT=eth0 SRC=10.1.5.81 DST=10.1.5.237 LEN=104 TOS=0x10 PREC=0x00 TTL=64 ID=32156 DF PROTO=TCP SPT=22 DPT=60206 WINDOW=2233 RES=0x00 ACK PSH URGP=0</div></pre></td></tr></table></figure></p>
+<p>为日志添加前缀<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">iptables -t filter -A OUTPUT -p tcp -j LOG --log-prefix will</div></pre></td></tr></table></figure></p>
+<p>再看log<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">[root@data-test03 hadoop-client]# tail -n 5 /var/log/messages</div><div class="line">Mar 23 18:33:58 data-test03 kernel: willIN= OUT=eth0 SRC=10.1.5.81 DST=10.1.5.80 LEN=72 TOS=0x00 PREC=0x00 TTL=64 ID=39849 DF PROTO=TCP SPT=56998 DPT=2888 WINDOW=501 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:33:58 data-test03 kernel: willIN= OUT=lo SRC=10.1.5.81 DST=10.1.5.81 LEN=228 TOS=0x00 PREC=0x00 TTL=64 ID=43206 DF PROTO=TCP SPT=36920 DPT=8025 WINDOW=265 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:33:58 data-test03 kernel: willIN= OUT=lo SRC=10.1.5.81 DST=10.1.5.81 LEN=93 TOS=0x00 PREC=0x00 TTL=64 ID=14648 DF PROTO=TCP SPT=8025 DPT=36920 WINDOW=384 RES=0x00 ACK PSH URGP=0 </div><div class="line">Mar 23 18:33:58 data-test03 kernel: willIN= OUT=lo SRC=10.1.5.81 DST=10.1.5.81 LEN=52 TOS=0x00 PREC=0x00 TTL=64 ID=43207 DF PROTO=TCP SPT=36920 DPT=8025 WINDOW=265 RES=0x00 ACK URGP=0 </div><div class="line">Mar 23 18:33:58 data-test03 kernel: willIN= OUT=eth0 SRC=10.1.5.81 DST=10.1.5.237 LEN=136 TOS=0x10 PREC=0x00 TTL=64 ID=34907 DF PROTO=TCP SPT=22 DPT=60206 WINDOW=2233 RES=0x00 ACK PSH URGP=0</div></pre></td></tr></table></figure></p>
+<p>命令规范：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">iptables -t 表 操作 5个控制点之一 匹配规则 -j 动作 动作的选项</div></pre></td></tr></table></figure></p>
+<p>拒绝79对于8020端口的请求<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">iptables -t filter -A INPUT -p tcp --dport 8020 -s 10.1.5.79 -j REJECT</div></pre></td></tr></table></figure></p>
+<p>匹配包含：基本匹配、隐世匹配、等。</p>
+<p>拒绝79所有请求, 第二条是给一个拒绝原因，顺序执行，如果一起都有的话，优先执行第一条动作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">iptables -t filter -A INPUT -s 10.1.5.79 -j REJECT</div><div class="line">iptables -t filter -A INPUT -s 10.1.5.79 -j REJECT --reject-with tcp-reset</div></pre></td></tr></table></figure></p>
+<p>这样就连ping都ping不通了。</p>
+<p>插入到第三行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">iptables -t filter -I INPUT 3 -p tcp -s 10.1.5.237 -j ACCEPT</div></pre></td></tr></table></figure></p>
+<p>删除第3行的规则：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">iptables -t filter -D INPUT 3</div></pre></td></tr></table></figure></p>
+<p><a href="http://blog.csdn.net/czhphp/article/details/19123673" target="_blank" rel="external">网段知识补充</a></p>
+<p>参考：</p>
 <ul>
-<li>多个HS2实例使用zk注册自己</li>
-<li>客户端driver连接zk<blockquote>
-<p> jdbc:hive2://<zookeeper_ensemble>;serviceDiscoveryMode=zooKeeper; zooKeeperNamespace=&lt;hiveserver2_namespace</zookeeper_ensemble></p>
-</blockquote>
+<li><a href="http://www.cnblogs.com/yi-meng/p/3213925.html" target="_blank" rel="external">http://www.cnblogs.com/yi-meng/p/3213925.html</a></li>
+<li><a href="http://www.dabu.info/iptables-based-tutorial-grammar-rules.html" target="_blank" rel="external">http://www.dabu.info/iptables-based-tutorial-grammar-rules.html</a></li>
+<li><a href="http://v.youku.com/v_show/id_XNzIxOTAxODky.html?from=s1.8-1-1.2&amp;spm=a2h0k.8191407.0.0" target="_blank" rel="external">http://v.youku.com/v_show/id_XNzIxOTAxODky.html?from=s1.8-1-1.2&amp;spm=a2h0k.8191407.0.0</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/03/22/ambari集群添加kerberos认证/" title="ambari集群添加kerberos认证" itemprop="url">ambari集群添加kerberos认证</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-03-22T09:07:41.000Z" itemprop="datePublished"> 发表于 2017-03-22</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>host准备<br>ip | 名字 | 备注<br>—|—|—<br>10.1.5.79 | data-test01 | ambari-server/KDC<br>10.1.5.80 | data-test02 |<br>10.1.5.81 | data-test03 |</p>
+<p>1.KDC配置<br>=</p>
+<h5 id="a-安装"><a href="#a-安装" class="headerlink" title="a. 安装"></a>a. 安装</h5><p>在test01上安装KDC:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">yum install -y krb5-server krb5-libs krb5-auth-dialog krb5-workstation</div></pre></td></tr></table></figure></p>
+<p>其他机器安装客户端<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">yum install krb5-devel krb5-workstation -y</div></pre></td></tr></table></figure></p>
+<h5 id="b-编辑配置文件"><a href="#b-编辑配置文件" class="headerlink" title="b.编辑配置文件"></a>b.编辑配置文件</h5><p>/etc/krb5.conf<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">[logging]</div><div class="line"> default = FILE:/var/log/krb5libs.log</div><div class="line"> kdc = FILE:/var/log/krb5kdc.log</div><div class="line"> admin_server = FILE:/var/log/kadmind.log</div><div class="line"></div><div class="line">[libdefaults]</div><div class="line"> default_realm = WILLCLUSTER.COM</div><div class="line"> dns_lookup_realm = false</div><div class="line"> dns_lookup_kdc = false</div><div class="line"> ticket_lifetime = 24h</div><div class="line"> renew_lifetime = 7d</div><div class="line"> forwardable = true</div><div class="line"> udp_preference_limit = 1</div><div class="line"></div><div class="line">[realms]</div><div class="line"> WILLCLUSTER.COM = &#123;</div><div class="line">  kdc = kerberos.willcluster.com</div><div class="line">  admin_server = kerberos.willcluster.com</div><div class="line"> &#125;</div><div class="line"></div><div class="line">[domain_realm]</div><div class="line"> .willcluster.com = WILLCLUSTER.COM</div><div class="line"> willcluster.com = WILLCLUSTER.COM</div></pre></td></tr></table></figure></p>
+<p>/var/kerberos/krb5kdc/kdc.conf<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">[kdcdefaults]</div><div class="line"> kdc_ports = 88</div><div class="line"> kdc_tcp_ports = 88</div><div class="line"></div><div class="line">[realms]</div><div class="line"> WILLCLUSTER.COM = &#123;</div><div class="line">  #master_key_type = aes256-cts</div><div class="line">  acl_file = /var/kerberos/krb5kdc/kadm5.acl</div><div class="line">  dict_file = /usr/share/dict/words</div><div class="line">  admin_keytab = /var/kerberos/krb5kdc/kadm5.keytab</div><div class="line">  supported_enctypes = aes256-cts:normal aes128-cts:normal des3-hmac-sha1:normal arcfour-hmac:normal des-hmac-sha1:normal des-cbc-md5:normal des-cbc-crc:normal</div><div class="line"> &#125;</div></pre></td></tr></table></figure></p>
+<h5 id="c-分发-etc-krb5-conf到各个节点"><a href="#c-分发-etc-krb5-conf到各个节点" class="headerlink" title="c.分发/etc/krb5.conf到各个节点"></a>c.分发/etc/krb5.conf到各个节点</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">scp /etc/krb5.conf data-test02:/etc/</div><div class="line">scp /etc/krb5.conf data-test03:/etc/</div></pre></td></tr></table></figure>
+<h5 id="d-test01上启动服务"><a href="#d-test01上启动服务" class="headerlink" title="d. test01上启动服务"></a>d. test01上启动服务</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">chkconfig --level 35 krb5kdc on</div><div class="line">chkconfig --level 35 kadmin on</div><div class="line">service krb5kdc start</div><div class="line">service kadmin start</div></pre></td></tr></table></figure>
+<p>2.数据库<br>=</p>
+<h6 id="创建kerberos数据库"><a href="#创建kerberos数据库" class="headerlink" title="创建kerberos数据库"></a>创建kerberos数据库</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">kdb5_util create -r WILLCLUSTER.COM -s</div></pre></td></tr></table></figure>
+<h6 id="在test01上创建超级用户"><a href="#在test01上创建超级用户" class="headerlink" title="在test01上创建超级用户"></a>在test01上创建超级用户</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">kadmin.local -q &quot;addprinc root/admin&quot;</div></pre></td></tr></table></figure>
+<h5 id="创建ambari各个服务用户与相应权限"><a href="#创建ambari各个服务用户与相应权限" class="headerlink" title="创建ambari各个服务用户与相应权限"></a>创建ambari各个服务用户与相应权限</h5><p>HDP里的每个服务都必须有自己的principal。为避免每次都输入密码，我们使用keytab文件作为认证，keytab是从kerberos数据库中抽取出来的。</p>
+<p>下面使用超级用户来创建对应service的principal<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">kadmin.local -q &quot;addprinc -randkey yarn/data-test01@WILLCLUSTER.COM&quot;</div><div class="line">kadmin.local -q &quot;addprinc -randkey yarn/data-test02@WILLCLUSTER.COM&quot;</div><div class="line">kadmin.local -q &quot;addprinc -randkey yarn/data-test03@WILLCLUSTER.COM&quot;</div><div class="line"></div><div class="line">kadmin.local -q &quot;addprinc -randkey zookeeper/data-test01@WILLCLUSTER.COM&quot;</div><div class="line">kadmin.local -q &quot;addprinc -randkey zookeeper/data-test02@WILLCLUSTER.COM&quot;</div><div class="line">kadmin.local -q &quot;addprinc -randkey zookeeper/data-test03@WILLCLUSTER.COM&quot;</div><div class="line"></div><div class="line">kadmin.local -q &quot;addprinc -randkey hdfs/data-test01@WILLCLUSTER.COM&quot;</div><div class="line">kadmin.local -q &quot;addprinc -randkey hdfs/data-test02@WILLCLUSTER.COM&quot;</div><div class="line">kadmin.local -q &quot;addprinc -randkey hdfs/data-test03@WILLCLUSTER.COM&quot;</div><div class="line"></div><div class="line">kadmin.local -q &quot;addprinc -randkey nn/data-test01@WILLCLUSTER.COM&quot;</div><div class="line">kadmin.local -q &quot;addprinc -randkey nn/data-test02@WILLCLUSTER.COM&quot;</div><div class="line"></div><div class="line">...</div></pre></td></tr></table></figure></p>
+<p><strong>Tips</strong>：<strong>为什么要每个node都要弄一份呢？</strong></p>
+<p>两个原因：</p>
+<ul>
+<li>如果一个node的kerberos认证通过，并不能自动扩散到所有node。kerberos认证是以node为单位的</li>
+<li>如果多个node共用同一个认证的话，万一这些node的kerberos认证同时发出去，也就是带有同样的时间戳，那么这些请求会被认为是重复的请求，后面来的会被拒绝</li>
+</ul>
+<p>然后抽取keytab文件到本地目录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">kadmin.local -q &quot;xst  -k yarn.keytab  yarn/data-test01@WILLCLUSTER.COM&quot;</div><div class="line">kadmin.local -q &quot;xst  -k yarn.keytab  yarn/data-test02@WILLCLUSTER.COM&quot;</div><div class="line">kadmin.local -q &quot;xst  -k yarn.keytab  yarn/data-test03@WILLCLUSTER.COM&quot;</div><div class="line"></div><div class="line">kadmin.local -q &quot;xst  -k zookeeper.keytab zookeeper/data-test01@WILLCLUSTER.COM&quot;</div><div class="line">kadmin.local -q &quot;xst  -k zookeeper.keytab zookeeper/data-test02@WILLCLUSTER.COM&quot;</div><div class="line">kadmin.local -q &quot;xst  -k zookeeper.keytab zookeeper/data-test03@WILLCLUSTER.COM&quot;</div><div class="line"></div><div class="line">...</div></pre></td></tr></table></figure></p>
+<p>再把keytab文件分发到每个服务对应的每个节点<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">scp yarn.keytab zookeeper.keytab data-test02:/usr/hdp/current/hadoop-client/conf</div><div class="line">scp yarn.keytab zookeeper.keytab data-test03:/usr/hdp/current/hadoop-client/conf</div></pre></td></tr></table></figure></p>
+<p>或者也可以先将所有的keytab合并到一个里面，方便copy，但是这也带来了各个node权限控制的问题。进入ktutil，读取原有的keytab，写入到统一的一个keytab文件。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">ktutil: rkt yarn.keytab</div><div class="line">ktutil: rkt zookeeper.keytab</div><div class="line">....</div><div class="line">ktutil: wkt all_in_one.keytab</div></pre></td></tr></table></figure></p>
+<p>写完之后查看一下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">klist -ket  all_in_one.keytab</div></pre></td></tr></table></figure></p>
+<p>3.HDP相关<br>=</p>
+<p>给HDP配置kerberos包含两个部分：</p>
+<ul>
+<li>创建unix系统里对应用户名的service principal。因为hadoop默认是使用的ShellBasedUnixGroupsMapping，它继承自GroupMappingServiceProvider接口，使用namenode的linux文件与用户权限系统。</li>
+<li>在对应service的配置文件中添加kerberos相关配置。</li>
+</ul>
+<h4 id="3-1-创建unix系统里对应用户名的service-principal"><a href="#3-1-创建unix系统里对应用户名的service-principal" class="headerlink" title="3.1 创建unix系统里对应用户名的service principal"></a>3.1 创建unix系统里对应用户名的service principal</h4><p>HDP使用一个基于规则的系统来创建service principal和对应unix用户的映射。这些rule配置在core-site.xml的hadoop.security.auth_to_local属性。默认是把所有的principal对应于这个principal的第一个组件。</p>
+<p>创建一个分层的rule来提供多种复杂的情形。每个rule由三个部分组成：</p>
+<ul>
+<li><p>base<br>以对应的service principal名字的的组件个数开头，跟一个冒号，然后是用户名的pattern。 有点儿类似awk的处理，$0代表realm，$1代表第一个组件，以此类推<br>例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[1:$1@$0] 把 myusername@APACHE.ORG 对应到 myusername@APACHE.ORG </div><div class="line">[2:$1] 把 myusername/admin@APACHE.ORG 对应到 myusername </div><div class="line">[2:$1%$2] 把 myusername/admin@APACHE.ORG 对应到 “myusername%admin</div></pre></td></tr></table></figure>
 </li>
-<li>zk随机返回一个host:port给客户端</li>
-<li>客户端执行单个服务传统查询过程</li>
-</ul>
-<p><img src="https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_hadoop-ha/content/figures/2/figures/Query_Ex_Path_With_ZK.png" alt="带有zk的查询过程"></p>
-<h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><p>hive.zookeeper.quorum zk列表<br>hive.zookeeper.session.timeout 超时就关闭session<br>hive.server2.support.dynamic.service.discovery  设置为true<br>hive.server2.zookeeper.namespace    指定一个就行了，默认是hiveserver2</p>
-<ul>
-<li><a href="https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_hadoop-ha/content/ha-hs2-requests.html" target="_blank" rel="external">https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_hadoop-ha/content/ha-hs2-requests.html</a></li>
-</ul>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/26/hue对于多个hiveserver2的支持/" title="hue对于多个hiveserver2的支持" itemprop="url">hue对于多个hiveserver2的支持</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-26T08:26:28.000Z" itemprop="datePublished"> 发表于 2017-04-26</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>相关连接代码：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">hiveserver2_jdbc_url</span><span class="params">()</span>:</span></div><div class="line">  urlbase = <span class="string">'jdbc:hive2://%s:%s/default'</span> % (beeswax.conf.HIVE_SERVER_HOST.get(),</div><div class="line">                                            beeswax.conf.HIVE_SERVER_PORT.get())</div><div class="line">  <span class="keyword">if</span> get_conf().get(_CNF_HIVESERVER2_USE_SSL, <span class="string">'FALSE'</span>).upper() == <span class="string">'TRUE'</span>:</div><div class="line">    <span class="keyword">return</span> <span class="string">'%s;ssl=true;sslTrustStore=%s;trustStorePassword=%s'</span> % (urlbase,</div><div class="line">            get_conf().get(_CNF_HIVESERVER2_TRUSTSTORE_PATH),</div><div class="line">            get_conf().get(_CNF_HIVESERVER2_TRUSTSTORE_PASSWORD))</div><div class="line">  <span class="keyword">else</span>:</div><div class="line">     <span class="keyword">return</span> urlbase</div></pre></td></tr></table></figure></p>
-<p>可以看到，除非启用SSL，否则咋样都拼不进去下面这种串：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">jdbc:hive2://zkNode1:<span class="number">2181</span>,zkNode2:<span class="number">2181</span>,zkNode3:<span class="number">2181</span>/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2_zk</div></pre></td></tr></table></figure></p>
-<p>Tip:</p>
-<p>可以先用tengine配置TCP代理，然后在这里实现负载均衡，hue端只需要配置代理的地址就可以了。 —— 希望hive的driver可以支持，有待测试。</p>
-<p>参考：</p>
-<ul>
-<li><a href="http://lxw1234.com/archives/2016/05/675.htm" target="_blank" rel="external">http://lxw1234.com/archives/2016/05/675.htm</a></li>
-</ul>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/25/hive中使用向量化查询引擎Vectorized-Query-Execution/" title="hive中使用向量化查询引擎Vectorized-Query-Execution" itemprop="url">hive中使用向量化查询引擎Vectorized-Query-Execution</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-25T11:59:52.000Z" itemprop="datePublished"> 发表于 2017-04-25</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>向量化查询引擎可以在执行scan, filter, aggregate, join等操作的时候很大程度上降低CPU损耗。标准sql执行系统每次只处理一行数据，内部执行的时候会包括很长的代码路径和重要的metadata解析。向量化查询引擎简化了这个过程，一次读取1024行数据，在这个数据块中，每个字段都被存储成向量化的结构(一个原是数据类型的数组)。对于一些简单的算法可以通过快速迭代这个vector完成，只需要在循环过程中调用甚至不用调用几个函数。这些loop以一种流式方式编译，在固定时间内结束，为了提高效率，会使用processor pipline和内存缓存。<a href="https://issues.apache.org/jira/browse/HIVE-4160" target="_blank" rel="external">详细设计</a></p>
-<p>个人理解：就是每行都执行很小的计算，但是要处理N多次。改成一次处理多行，同时针对多行做计算处理，节省CPU时间。</p>
-<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><h4 id="启用"><a href="#启用" class="headerlink" title="启用"></a>启用</h4><p>要使用向量化查询引擎，必须先把hive表存储成ORC格式的。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">set hive.vectorized.execution.enabled = true;</div></pre></td></tr></table></figure></p>
-<p>默认是没有开启向量化查询引擎的，需要手动开启。</p>
-<h4 id="支持的数据类型与操作"><a href="#支持的数据类型与操作" class="headerlink" title="支持的数据类型与操作"></a>支持的数据类型与操作</h4><ul>
-<li>tinyint</li>
-<li>smallint</li>
-<li>int</li>
-<li>bigint</li>
-<li>boolean</li>
-<li>float</li>
-<li>double</li>
-<li>decimal</li>
-<li>date</li>
-<li>timestamp (see Limitations below)</li>
-<li>string<br>其他的数据类型还是会按照传统方式一行行处理。</li>
-</ul>
-<p>支持的表达式：</p>
-<ul>
-<li>简单算法: +, -, *, /, %</li>
-<li>AND, OR, NOT</li>
-<li>比较 &lt;, &gt;, &lt;=, &gt;=, =, !=, BETWEEN, IN ( list-of-constants ) as filters</li>
-<li>布尔表达式 (non-filters) using AND, OR, NOT, &lt;, &gt;, &lt;=, &gt;=, =, !=</li>
-<li>IS [NOT] NULL</li>
-<li>所有的匹配函数 (SIN, LOG, etc.)</li>
-<li>string相关函数 SUBSTR, CONCAT, TRIM, LTRIM, RTRIM, LOWER, UPPER, LENGTH</li>
-<li>类型转换</li>
-<li>UDF</li>
-<li>日期函数 (YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, UNIX_TIMESTAMP)</li>
-<li>IF 条件表达式</li>
-</ul>
-<p>UDF通过向后兼容的方式支持，不过执行的时候就是执行向量化查询引擎，但是没有内置的快。向量化的filter操作是从左到右执行，所以最好把UDF放在带有and的where语句的最后：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">where column1 = 10 and myUDF(column2) = "x"</div></pre></td></tr></table></figure></p>
-<h2 id="限制"><a href="#限制" class="headerlink" title="限制"></a>限制</h2><p>Timestamps 只能是 1677-09-20 到2262-04-11. </p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/21/集群service配置相关/" title="集群service配置相关" itemprop="url">集群service配置相关</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-21T08:41:02.000Z" itemprop="datePublished"> 发表于 2017-04-21</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h2 id="YARN"><a href="#YARN" class="headerlink" title="YARN"></a>YARN</h2><table>
-<thead>
-<tr>
-<th>服务名称</th>
-<th>现有配置</th>
-<th>TO </th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>resourcemanager</td>
-<td>1G</td>
-<td>4G</td>
-</tr>
-<tr>
-<td>nodemanager</td>
-<td>1G</td>
-<td>2G</td>
-</tr>
-<tr>
-<td>timeline server</td>
-<td>1G</td>
-<td>4G</td>
-</tr>
-</tbody>
-</table>
-<p>resource + timline server = 2G</p>
-<h2 id="HDFS"><a href="#HDFS" class="headerlink" title="HDFS "></a>HDFS </h2><table>
-<thead>
-<tr>
-<th>服务名称</th>
-<th>现有配置</th>
-<th>TO</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>datanode</td>
-<td>1G</td>
-<td>2G</td>
-</tr>
-<tr>
-<td>namenode</td>
-<td>3G </td>
-</tr>
-</tbody>
-</table>
-<p>namenode * 2 =  6G</p>
-<h2 id="MAPRED"><a href="#MAPRED" class="headerlink" title="MAPRED"></a>MAPRED</h2><table>
-<thead>
-<tr>
-<th>服务名称</th>
-<th>现有配置</th>
-<th>TO</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>history server</td>
-<td>1G</td>
-<td>2G</td>
-</tr>
-</tbody>
-</table>
-<h2 id="HIVE"><a href="#HIVE" class="headerlink" title="HIVE"></a>HIVE</h2><table>
-<thead>
-<tr>
-<th>服务名称</th>
-<th>配置</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>hiveserver2</td>
-<td>769M</td>
-</tr>
-<tr>
-<td>metastore</td>
-<td>1G</td>
-</tr>
-<tr>
-<td>hcatserver</td>
-<td>1G</td>
-</tr>
-</tbody>
-</table>
-<p>3G</p>
-<h2 id="HBASE"><a href="#HBASE" class="headerlink" title="HBASE"></a>HBASE</h2><table>
-<thead>
-<tr>
-<th>服务名称</th>
-<th>配置</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>regionserver</td>
-<td>2G</td>
-</tr>
-<tr>
-<td>master</td>
-<td>1G</td>
-</tr>
-</tbody>
-</table>
-<p>regionserver <em> 8 + master </em> 2 = 18G</p>
-<h2 id="ZK"><a href="#ZK" class="headerlink" title="ZK"></a>ZK</h2><table>
-<thead>
-<tr>
-<th>服务名称</th>
-<th>配置</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>zk server</td>
-<td>1G</td>
-</tr>
-</tbody>
-</table>
-<p>zk * 3 = 3G</p>
-<h2 id="KAFKA"><a href="#KAFKA" class="headerlink" title="KAFKA"></a>KAFKA</h2><table>
-<thead>
-<tr>
-<th>服务名称</th>
-<th>配置</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>broker</td>
-<td>1G</td>
-</tr>
-</tbody>
-</table>
-<p>broker * 3 =3G</p>
-<h2 id="SPAKR"><a href="#SPAKR" class="headerlink" title="SPAKR"></a>SPAKR</h2><table>
-<thead>
-<tr>
-<th>服务名称</th>
-<th>配置</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>spark history server</td>
-<td>1G</td>
-</tr>
-</tbody>
-</table>
-<h2 id="需要copy的机器"><a href="#需要copy的机器" class="headerlink" title="需要copy的机器"></a>需要copy的机器</h2><p>以下机器copy完成后，全部将内存提升至32G、CPU提升到8核</p>
-<h5 id="迁出机器"><a href="#迁出机器" class="headerlink" title="迁出机器"></a>迁出机器</h5><ul>
-<li>datanode15.will.com     -&gt; NM，DN</li>
-<li>1.103-prd-datanode14.will.com   -&gt;kafka, DN,NM</li>
-<li>1.108-prd-datanode19.will.com -&gt; regionserver, DN,NM</li>
-<li>1.110-prd-datanode21.will.com -&gt; NM, DN</li>
-<li>1.99-prd-datanode10.will.com -&gt; kafka, DB, NM</li>
-<li>1.113-fengkong.data.com 风控 -&gt; NONE</li>
-<li>1.87-prd-datanode05.data.com -&gt; DN, NM, regionserver</li>
-<li>1.97-prd-datanode08.data.com -&gt; DN, NM, regionserver</li>
-<li>1.95-prd-datanode06.data.com -&gt; kafka, DN, NM, SB HbaseMaster</li>
-<li>1.96-prd-datanode07.data.com -&gt; DN, NM, regionserver</li>
-</ul>
-<p>原有机器迁出会占新资源的内存32G <em> 10 + CPU</em>80</p>
-<h5 id="原有机器资源升级"><a href="#原有机器资源升级" class="headerlink" title="原有机器资源升级"></a>原有机器资源升级</h5><p>在原有资源基础上，添加16G内存，CPU核数翻倍【把迁移出去的机器空闲出来的资源充分利用】：</p>
-<ul>
-<li>1.107-prd-datanode18.will.com</li>
-<li>1.109-prd-datanode20.will.com</li>
-<li>1.102-prd-datanode13.will.com</li>
-<li>1.106-prd-datanode17.will.com</li>
-<li>1.100-prd-datanode11.will.com</li>
-<li>1.98-prd-datanode09.will.com</li>
-<li>1.110-prd-datanode21.will.com</li>
-<li>1.86-prd-datanode04.data.com</li>
-<li>1.82-prd-datanode01.data.com</li>
-<li>1.83-prd-datanode02.data.com</li>
-<li>1.84-prd-datanode03.data.com</li>
-<li>1.105-prd-datanode16.will.com</li>
-<li>1.101-prd-datanode12.will.com</li>
-</ul>
-<p>理论上，对原有机器不会有额外资源要求，对新机器资源也不会有影响。</p>
-<h2 id="需要新建的机器"><a href="#需要新建的机器" class="headerlink" title="需要新建的机器"></a>需要新建的机器</h2><h4 id="新服务节点"><a href="#新服务节点" class="headerlink" title="新服务节点"></a>新服务节点</h4><p>可按照service01.will.com开始弄主机名。</p>
-<p>单机配置： 32G内存 + 8核 + 50G硬【整机空间即可】 + CentOS release 6.8 (Final)</p>
-<p>机器数量： 8台<br>共占：内存32G <em> 8 + CPU8 </em> 8 = 内存256G + CPU 64</p>
-<h4 id="新数据节点"><a href="#新数据节点" class="headerlink" title="新数据节点"></a>新数据节点</h4><p>目前最新数据节点的主机名编号到了21，新机器可以datanode22.will.com开始。</p>
-<p>单机配置：32G内存 + 8核CPU + 640G硬盘【/server/目录挂载空间】 + CentOS release 6.8 (Final)</p>
-<p>机器数量： 12【如果物理机资源不够，可以暂时弄10台，以后酌情扩容】</p>
-<p>共占：内存32G <em> 12 + CPU8 </em> 12 = 内存384G + CPU 96</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/20/ambari中启用hive-ACID事务/" title="ambari中启用hive-ACID事务" itemprop="url">ambari中启用hive-ACID事务</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-20T12:21:45.000Z" itemprop="datePublished"> 发表于 2017-04-20</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>场景</p>
-<ul>
-<li>数据重新执行</li>
-<li>数据流重新执行</li>
-<li>逐渐改变的维度</li>
-<li>维度历史变更</li>
-</ul>
-<p>标准sql通过insert、update、delete、事务还有最近出现的merge方式来提供acid操作。这些已经被证明足够使用的了。</p>
-<h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><ul>
-<li>事务表。hive支持单表事务，但是目标表必须需要声明是支持事务的。</li>
-<li>分区表。hive支持表分区，把数据分开以提供快速查询。分区与ACID是相互独立的概念。通常大表都是有分区的。</li>
-<li>ACID操作（insert/update/delete）。</li>
-<li>主键</li>
-<li>流式数据。数据可以通过storm、flume等流式进入hive的事务表中</li>
-<li>优化并发。</li>
-<li>压缩。数据必须时段性的被压缩一下，节省空间，优化数据访问。最好让系统自动处理这件事情。，不过也可以设置外部的调度器。</li>
-</ul>
-<h4 id="启用ACID事务"><a href="#启用ACID事务" class="headerlink" title="启用ACID事务"></a>启用ACID事务</h4><h4 id="hello"><a href="#hello" class="headerlink" title="hello"></a>hello</h4><p>创建一个事务表，并插入一些数据<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">drop</span> <span class="keyword">table</span> <span class="keyword">if</span> <span class="keyword">exists</span> hello_acid;</div><div class="line"><span class="keyword">create</span> <span class="keyword">table</span> hello_acid (<span class="keyword">key</span> <span class="built_in">int</span>, <span class="keyword">value</span> <span class="built_in">int</span>)</div><div class="line">partitioned <span class="keyword">by</span> (load_date <span class="built_in">date</span>)</div><div class="line">clustered <span class="keyword">by</span>(<span class="keyword">key</span>) <span class="keyword">into</span> <span class="number">3</span> buckets</div><div class="line"><span class="keyword">stored</span> <span class="keyword">as</span> orc tblproperties (<span class="string">'transactional'</span>=<span class="string">'true'</span>);</div></pre></td></tr></table></figure></p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> hello_acid <span class="keyword">partition</span> (load_date=<span class="string">'2016-03-01'</span>) <span class="keyword">values</span> (<span class="number">1</span>, <span class="number">1</span>);</div><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> hello_acid <span class="keyword">partition</span> (load_date=<span class="string">'2016-03-02'</span>) <span class="keyword">values</span> (<span class="number">2</span>, <span class="number">2</span>);</div><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> hello_acid <span class="keyword">partition</span> (load_date=<span class="string">'2016-03-03'</span>) <span class="keyword">values</span> (<span class="number">3</span>, <span class="number">3</span>);</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> hello_acid;</div></pre></td></tr></table></figure>
-<p>删除数据：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">delete</span> <span class="keyword">from</span> hello_acid <span class="keyword">where</span> <span class="keyword">key</span> = <span class="number">2</span>;</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> hello_acid;</div></pre></td></tr></table></figure></p>
-<p>更新数据：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">update</span> hello_acid <span class="keyword">set</span> <span class="keyword">value</span> = <span class="number">10</span> <span class="keyword">where</span> <span class="keyword">key</span> = <span class="number">3</span>;</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> hello_acid;</div></pre></td></tr></table></figure></p>
-<p>这些DML语句意在在大数据中执行少量修改，应该是记录级别的数据管理。如果你有小的多个批量修改，应该使用streaming data ingestion。</p>
-<h4 id="Streaming-Data-Ingestion"><a href="#Streaming-Data-Ingestion" class="headerlink" title="Streaming Data Ingestion"></a>Streaming Data Ingestion</h4><p>许多时候我们需要处理连续的实时数据流，想要更方便的操作这些数据。hive可以自动把流式数据加入hive表中，也支持实时的数据抽取与查询。</p>
-<p>现在hive提供两种：</p>
-<ul>
-<li>已经存在是<a href="https://github.com/apache/storm/tree/master/external/storm-hive" target="_blank" rel="external">storm hive bolt</a>方案，<a href="https://flume.apache.org/FlumeUserGuide.html#hive-sink" target="_blank" rel="external">flume hive sink</a>方案。这些工具对数据有较少的操作，重在转移数据</li>
-<li>直接使用低级的<a href="https://cwiki.apache.org/confluence/display/Hive/Streaming+Data+Ingest" target="_blank" rel="external">Streaming Ingest API</a>.</li>
-</ul>
-<p>在使用streaming api之前，需要先创建好分区事务表。从查询角度来看，一切应该都是确定好的。</p>
-<h4 id="4-实践"><a href="#4-实践" class="headerlink" title="4. 实践"></a>4. 实践</h4><p>插入几条数据对我们测试起来很简单，但是实际环境中，我们需要一次性处理几千或者几百万的数据。下面我们通过几个通用场景讨论一下怎样处理数据批次。</p>
-<p>这些模型需要你建立一个主键。hive并不强制主键唯一，所以你必须在你app中控制一下。虽然hive2.1介绍了non-validating 外键，但是这东西目前还并没有被完整全面的验证过。</p>
-<h5 id="4-1-searched-updates"><a href="#4-1-searched-updates" class="headerlink" title="4.1 searched updates"></a>4.1 searched updates</h5><p>hive  ACID支持searched updates，这是一种常见的更新方式。注意，基于hive ACID的架构，更新必须通过批处理的方式执行。一次更新一行这种事情在实际使用中是行不通的。如果想通过某种方式一次性更新大量数据，那么searched updates就可以帮你了。</p>
-<p>假设有一个维度表，包含的一个flag，指示当前记录是不是最新的值。这样我们就可以沿时间追踪维度变更情况。当维度表发生更新的时候，我们就把已经存在记录的设置成old。<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">drop</span> <span class="keyword">table</span> <span class="keyword">if</span> <span class="keyword">exists</span> mydim;</div><div class="line"><span class="keyword">create</span> <span class="keyword">table</span> mydim (<span class="keyword">key</span> <span class="built_in">int</span>, <span class="keyword">name</span> <span class="keyword">string</span>, zip <span class="keyword">string</span>, is_current <span class="built_in">boolean</span>)</div><div class="line">clustered <span class="keyword">by</span>(<span class="keyword">key</span>) <span class="keyword">into</span> <span class="number">3</span> buckets</div><div class="line"><span class="keyword">stored</span> <span class="keyword">as</span> orc tblproperties (<span class="string">'transactional'</span>=<span class="string">'true'</span>);</div></pre></td></tr></table></figure></p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> mydim <span class="keyword">values</span></div><div class="line">  (<span class="number">1</span>, <span class="string">'bob'</span>,   <span class="string">'95136'</span>, <span class="literal">true</span>),</div><div class="line">  (<span class="number">2</span>, <span class="string">'joe'</span>,   <span class="string">'70068'</span>, <span class="literal">true</span>),</div><div class="line">  (<span class="number">3</span>, <span class="string">'steve'</span>, <span class="string">'22150'</span>, <span class="literal">true</span>);</div></pre></td></tr></table></figure>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">drop</span> <span class="keyword">table</span> <span class="keyword">if</span> <span class="keyword">exists</span> updates_staging_table;</div><div class="line"><span class="keyword">create</span> <span class="keyword">table</span> updates_staging_table (<span class="keyword">key</span> <span class="built_in">int</span>, newzip <span class="keyword">string</span>);</div><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> updates_staging_table <span class="keyword">values</span> (<span class="number">1</span>, <span class="number">87102</span>), (<span class="number">3</span>, <span class="number">45220</span>);</div></pre></td></tr></table></figure>
-<p>执行更新,执行前后可以看一下维度表的数据变化，其实就是更新了flag而已。<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">update</span> mydim <span class="keyword">set</span> is_current=<span class="literal">false</span></div><div class="line">  <span class="keyword">where</span> mydim.key <span class="keyword">in</span> (<span class="keyword">select</span> <span class="keyword">key</span> <span class="keyword">from</span> updates_staging_table);</div></pre></td></tr></table></figure></p>
-<h5 id="4-2-searched-deletes"><a href="#4-2-searched-deletes" class="headerlink" title="4.2 searched deletes"></a>4.2 searched deletes</h5><p>批量删除也可以使用staging table轻松搞定。但是需要你在表之间放置一个公共key，有些类似RDBMS中的主键。<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">delete</span> <span class="keyword">from</span> mydim</div><div class="line"><span class="keyword">where</span> mydim.key <span class="keyword">in</span> (<span class="keyword">select</span> <span class="keyword">key</span> <span class="keyword">from</span> updates_staging_table);</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> mydim;</div></pre></td></tr></table></figure></p>
-<h4 id="5-批量覆盖更新"><a href="#5-批量覆盖更新" class="headerlink" title="5. 批量覆盖更新"></a>5. 批量覆盖更新</h4><p>有的时候我们需要批量更新一些数据。例如第一种SCD更新或者数据重导。hive目前还不支持merge操作，在支持之前，我们只能考虑使用先删除后插入的方式，但这样可能会造成查询客户端脏读。或者也可以在重新清洗的时候临时停掉查询。</p>
-<h4 id="6-ACID工具"><a href="#6-ACID工具" class="headerlink" title="6. ACID工具"></a>6. ACID工具</h4><p>ACID事务执行过程中会创建一系列的锁。事务和他们的事务锁可以通过hive的一些工具来查看。</p>
-<h5 id="6-1-查看事务"><a href="#6-1-查看事务" class="headerlink" title="6.1 查看事务"></a>6.1 查看事务</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">show transactions</div></pre></td></tr></table></figure>
-<h5 id="6-1-查看锁"><a href="#6-1-查看锁" class="headerlink" title="6.1 查看锁"></a>6.1 查看锁</h5><p>有read, update，X lock。update锁与update操作互斥，但是与read兼容。X锁，与所有锁都互斥，属于独占。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">show locks</div></pre></td></tr></table></figure></p>
-<h5 id="6-1-终止事务"><a href="#6-1-终止事务" class="headerlink" title="6.1 终止事务"></a>6.1 终止事务</h5><p>注意这并不会马上kill掉所有相关查询。ACID查询是周期性执行的，默认是2.5分钟，如果他们检测到自己的事务被kill，就会执行自动退出。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">abort transactions T1 T2 T3</div></pre></td></tr></table></figure></p>
-<h4 id="7-性能考虑"><a href="#7-性能考虑" class="headerlink" title="7. 性能考虑"></a>7. 性能考虑</h4><ul>
-<li>创建分区</li>
-<li>insert快，update和delete都会比较慢一些，因为要扫描整个分区。</li>
-<li>如果你们的工作里需要大量更新数据，那么请周期行执行compaction操作。不然数据大小会越来越大，查询也会越来越慢。</li>
-</ul>
-<h4 id="8-深入探究"><a href="#8-深入探究" class="headerlink" title="8. 深入探究"></a>8. 深入探究</h4><p>在使用之前一定要深入了解这套系统的工作原理，并且在你的可以容忍丢失的数据上执行测试。过程中也注意备份数据。</p>
-<p>ACID表有一个隐藏字段<code>row__id</code>。这个系统内置的字段名称有可能会变。你应该构建一个基于这个字段的长远的方案。</p>
-<p>这个字段记录的内容有：</p>
-<ul>
-<li>数据被insert或者update的active的事务id</li>
-<li>数据所在bucket的bucketid</li>
-<li>此次事务或者bucket中的rowid</li>
-</ul>
-<p>看一下<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">hive&gt; select row__id from hello_acid;</div><div class="line">OK</div><div class="line">&#123;"transactionid":12,"bucketid":0,"rowid":0&#125;</div><div class="line">&#123;"transactionid":10,"bucketid":1,"rowid":0&#125;</div></pre></td></tr></table></figure></p>
-<p>常用场景就是确认所有的数据都load进来了。假设上游数据provider认为hive里的持久化数据丢失了，那么你的provider(storm Bolt比如)就会告诉你插入这些数据的事务ID。然后我们可以使用这个事务id计算一下实际的记录数。查询的时候使用X替换掉你的事务ID<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">set</span> hive.optimize.ppd=<span class="literal">false</span>;</div><div class="line"><span class="keyword">select</span> <span class="keyword">count</span>(*) <span class="keyword">from</span> hello_acid <span class="keyword">where</span> row__id.transactionid = X;</div></pre></td></tr></table></figure></p>
-<p>记牢，事务中插入的数据有可能会被后续的update或者delete语句影响到，所以如果count数并不符合，那就可能是这些因素造成的。</p>
-<p>参考：</p>
-<p><a href="https://hortonworks.com/hadoop-tutorial/using-hive-acid-transactions-insert-update-delete-data/" target="_blank" rel="external">https://hortonworks.com/hadoop-tutorial/using-hive-acid-transactions-insert-update-delete-data/</a></p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/20/HIVE创建bucketed表/" title="HIVE创建bucketed表" itemprop="url">HIVE创建bucketed表</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-20T10:54:03.000Z" itemprop="datePublished"> 发表于 2017-04-20</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>建表语句<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">CREATE TABLE user_info_bucketed(user_id BIGINT, firstname STRING, lastname STRING)</div><div class="line">COMMENT &apos;A bucketed copy of user_info&apos;</div><div class="line">PARTITIONED BY(ds STRING)</div><div class="line">CLUSTERED BY(user_id) INTO 256 BUCKETS;</div></pre></td></tr></table></figure></p>
-<p>基于字段user_id分桶的。</p>
-<p>使用<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">set</span> hive.enforce.bucketing = <span class="literal">true</span>;  <span class="comment">-- (<span class="doctag">Note:</span> Not needed in Hive 2.x onward)</span></div><div class="line">FROM user_id</div><div class="line"><span class="keyword">INSERT</span> OVERWRITE <span class="keyword">TABLE</span> user_info_bucketed</div><div class="line"><span class="keyword">PARTITION</span> (ds=<span class="string">'2009-02-25'</span>)</div><div class="line"><span class="keyword">SELECT</span> userid, firstname, lastname <span class="keyword">WHERE</span> ds=<span class="string">'2009-02-25'</span>;</div></pre></td></tr></table></figure></p>
-<p>hive怎样把row打散到不同的bucket中去的呢？一般是决定于hash函数，使用什么hash函数又取决于分桶字段的类型。比如整型字段就使用hash_int函数。</p>
-<p>注意，如果分桶字段类型不同于insert进来的数据类型会出错的，或者手动使用不同类型的数据执行分桶操作也会出错。只要设置了<code>set hive.enforce.bucketing=true</code>，就能够正确的把数据发布到对应的地方。</p>
-<p>再来一个例子<br>Bucketed Sorted Table<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> page_view(viewTime <span class="built_in">INT</span>, userid <span class="built_in">BIGINT</span>,</div><div class="line">     page_url <span class="keyword">STRING</span>, referrer_url <span class="keyword">STRING</span>,</div><div class="line">     ip <span class="keyword">STRING</span> <span class="keyword">COMMENT</span> <span class="string">'IP Address of the User'</span>)</div><div class="line"> <span class="keyword">COMMENT</span> <span class="string">'This is the page view table'</span></div><div class="line"> PARTITIONED <span class="keyword">BY</span>(dt <span class="keyword">STRING</span>, country <span class="keyword">STRING</span>)</div><div class="line"> CLUSTERED <span class="keyword">BY</span>(userid) SORTED <span class="keyword">BY</span>(viewTime) <span class="keyword">INTO</span> <span class="number">32</span> BUCKETS</div><div class="line"> <span class="keyword">ROW</span> <span class="keyword">FORMAT</span> <span class="keyword">DELIMITED</span></div><div class="line">   <span class="keyword">FIELDS</span> <span class="keyword">TERMINATED</span> <span class="keyword">BY</span> <span class="string">'\001'</span></div><div class="line">   COLLECTION ITEMS <span class="keyword">TERMINATED</span> <span class="keyword">BY</span> <span class="string">'\002'</span></div><div class="line">   <span class="keyword">MAP</span> <span class="keyword">KEYS</span> <span class="keyword">TERMINATED</span> <span class="keyword">BY</span> <span class="string">'\003'</span></div><div class="line"> <span class="keyword">STORED</span> <span class="keyword">AS</span> SEQUENCEFILE;</div></pre></td></tr></table></figure></p>
-<p>这个表根据userid分桶，每个bucket中按照viewTime升序排列。这种组织结果允许用户更高效的抽取clustered的字段，这里就是userid字段了。排序属性让内部操作能够快速处理估算查询的任务。MAP KEYS和COLLECTION ITEMS关键词可以用来处理字段是list或者map的情况。</p>
-<p>CLUSTERED BY 和 SORTED BY并不影响insert数据。用户需要注意reducer数必须要跟bucket的数量一致，在query语句中还要使用CLUSTER BY 和SORT BY语句。</p>
-<p>还有一种倾斜表。适用于某些表中确认包含倾斜数据的情况。通过指定倾斜key，hive会把他们打散到不同的文件中。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> list_bucket_single (<span class="keyword">key</span> <span class="keyword">STRING</span>, <span class="keyword">value</span> <span class="keyword">STRING</span>)</div><div class="line">  SKEWED <span class="keyword">BY</span> (<span class="keyword">key</span>) <span class="keyword">ON</span> (<span class="number">1</span>,<span class="number">5</span>,<span class="number">6</span>) [<span class="keyword">STORED</span> <span class="keyword">AS</span> DIRECTORIES];</div></pre></td></tr></table></figure>
-<p>下面这个是有两个倾斜key<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">CREATE TABLE list_bucket_multiple (col1 STRING, col2 int, col3 STRING)</div><div class="line">  SKEWED BY (col1, col2) ON ((&apos;s1&apos;,1), (&apos;s3&apos;,3), (&apos;s13&apos;,13), (&apos;s78&apos;,78)) [STORED AS DIRECTORIES];</div></pre></td></tr></table></figure></p>
-<p>参考：</p>
-<ul>
-<li><a href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL+BucketedTables" target="_blank" rel="external">https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL+BucketedTables</a></li>
-<li><a href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL#LanguageManualDDL-BucketedSortedTables" target="_blank" rel="external">https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL#LanguageManualDDL-BucketedSortedTables</a></li>
-</ul>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/19/关于hive-update/" title="关于hive-update" itemprop="url">关于hive-update</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-19T13:49:54.000Z" itemprop="datePublished"> 发表于 2017-04-19</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h2 id="ACID"><a href="#ACID" class="headerlink" title="ACID"></a>ACID</h2><ul>
-<li>A: atomicity。原子性，一个操作要么成功要么失败，不能存在中间状态。</li>
-<li>C：consistency。一致性。一旦某个操作完成之后，后续所有的操作都能访问到上个操作完成之后的状态</li>
-<li>I：isolation。隔离性。一个未完成的操作只对当前操作用户有影响，不能影响到其他用户</li>
-<li>D：durability。持久性。一个操作完成之后，就会把成功的状态持久化，即便系统挂掉也要持久化。</li>
-</ul>
-<p>0.13版本之前，只在分区层次上支持原子性、一致性、持久性。隔离性通过调整可用的锁机制来达成(通过zk或者内存)。0.13之后完全支持了row级别的ACID，这样就可以在别人读取数据的时候添加行，也不会有影响。</p>
-<h4 id="用例"><a href="#用例" class="headerlink" title="用例"></a>用例</h4><p>一般具有ACID特性的事务适用于以下场景</p>
-<ul>
-<li>流式数据接受。许多用户使用flume、storm、kafka等将数据放到hadoop集群中。这些工具可能会以每秒几百条甚至更多的速度写入。hive只能每十五分钟或者1个小时创建一个分区来接受他们。添加分区的策略会导致表里的分区暴增。也可以把流式数据放到既有的分区中，但是这会导致用户脏读（他们可能会看到一些他们开始查询时还没有的数据），还有就是会有很多的小文件产生，这对namenode也是一个很大的压力。有了ACID之后，就可以解决这个问题了</li>
-<li>慢慢改变的维度表。在一个典型的星型数据仓库架构中，维度表可能会随着时间推移慢慢修改。例如，零售商可能会慢慢增开新店，那么新店就应该被添加到store表里，或者已经存在的店面可能会修改店面大小或者其他的因素。这些改变都会产生数据的insert或者update。从0.14开始，支持了</li>
-<li>数据重导。有时手机来的数据发现不对，需要纠正。或者，开始有90%的数据，后面又有全量数据了。或者业务规则改变需要修改对应规则的一些数据。0.14之后用户可以insert、update、delete。</li>
-<li>使用SQL MERGE语句批量更新。</li>
-</ul>
-<h4 id="限制"><a href="#限制" class="headerlink" title="限制"></a>限制</h4><ul>
-<li>BEGIN,COMMIT,ROLLBACK目前还不支持。所有的语言都是auto-commit。后面版本会支持</li>
-<li>只支持ORC的文件格式。</li>
-<li>默认这种事务是关闭的。</li>
-<li>数据表必须是bucketed的。外部表不支持ACID，因为它不受compactor的控制<a href="https://issues.apache.org/jira/browse/HIVE-13175" target="_blank" rel="external">HIVE-13175</a></li>
-<li>在一个非ACID的session里执行ACID操作是不可以的。hive的事务manager必须设置成  <code>org.apache.hadoop.hive.ql.lockmgr.DbTxnManager</code>才能使用ACID表。</li>
-<li>目前只支持快照级别的隔离性。当一个查询开始后，会给它提供一个一致的数据快照。不支持dirty read, read committed, repeatable read, seializable。</li>
-<li>已经存在的zk或者内存锁manager与此类事务并不兼容。这里不详说了，参考<a href="https://cwiki.apache.org/confluence/display/Hive/Hive+Transactions#HiveTransactions-BasicDesign" target="_blank" rel="external">这里</a></li>
-<li><p>使用oracle作为元数据库可能会有些问题，设置<code>datanucleus.connectionPoolingType=DBCP</code></p>
-<h4 id="语法改变"><a href="#语法改变" class="headerlink" title="语法改变"></a>语法改变</h4></li>
-<li><p>添加了 <code>SHOW TRANSACTIONS</code>、<code>SHOW COMPACTIONS</code>、<code>ABORT TRANSACTIONS</code></p>
+<li><p>filter<br>一个正则表达式, 过滤rule。</p>
 </li>
-<li><code>SHOW LOCKS</code>命令改成了提供事务相关的锁的信息。如果在使用ak或者内存的lock manager的话，你会发现其实输出的东西没什么区别。</li>
-<li>alter table的时候增加了一个是否执行表或者分区的压缩。通常用户不用管，系统会自动做这些事情。然而，如果compaction被关闭了，那么系统就不会自动处理了。alter table用来初始化压缩。具体参考<a href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL#LanguageManualDDL-AlterTable/PartitionCompact" target="_blank" rel="external">这里</a>。这会把压缩请求放进一个队列里。要看压缩进度的话，就使用<code>SHOW COMPACTIONS</code>语句。</li>
+<li>substitution【置换】<br>把一个正则转化为一个固定字符串,类似sed，例如：<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">s/@ACME\.COM// 删除第一个 @ACME.DOMAIN</div><div class="line">s/@[A-Z]*\.COM// 删除第一个后面跟着COM的@. </div><div class="line">s/X/Y/g 替换所有的 X成 Y</div></pre></td></tr></table></figure>
+</li>
 </ul>
-<h4 id="基本设计"><a href="#基本设计" class="headerlink" title="基本设计"></a>基本设计</h4><p>HDFS是不支持直接修改文件的。当有人写数据到文件的时候也不提供读的一致性。为了提供这些特性，我们使用了其他的数据仓库工具。表和分区的数据存在一系列的base文件里。新的insert、update、delete存在delta文件中，读取的时候把这些更新都执行上。</p>
-<h5 id="base和delta文件夹"><a href="#base和delta文件夹" class="headerlink" title="base和delta文件夹"></a>base和delta文件夹</h5><p>以前一个分区的所有文件都放在一个单独的目录下。ACID的writer会有一个base文件的目录，还有一堆delta文件的目录。下面是一个没有分区的数据表“t”<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">hive&gt; dfs -ls -R /user/hive/warehouse/t;</div><div class="line">drwxr-xr-x   - ekoifman staff          0 2016-06-09 17:03 /user/hive/warehouse/t/base_0000022</div><div class="line">-rw-r--r--   1 ekoifman staff        602 2016-06-09 17:03 /user/hive/warehouse/t/base_0000022/bucket_00000</div><div class="line">drwxr-xr-x   - ekoifman staff          0 2016-06-09 17:06 /user/hive/warehouse/t/delta_0000023_0000023_0000</div><div class="line">-rw-r--r--   1 ekoifman staff        611 2016-06-09 17:06 /user/hive/warehouse/t/delta_0000023_0000023_0000/bucket_00000</div><div class="line">drwxr-xr-x   - ekoifman staff          0 2016-06-09 17:07 /user/hive/warehouse/t/delta_0000024_0000024_0000</div><div class="line">-rw-r--r--   1 ekoifman staff        610 2016-06-09 17:07 /user/hive/warehouse/t/delta_0000024_0000024_0000/bucket_00000</div></pre></td></tr></table></figure></p>
-<h5 id="compactor"><a href="#compactor" class="headerlink" title="compactor"></a>compactor</h5><p>compactor是在metastore中运行的一系列的后台进程，用来支持ACID系统。包含Initiator, Worker, Cleaner,AcidHouseKeeperService等。</p>
-<h6 id="delta文件压缩"><a href="#delta文件压缩" class="headerlink" title="delta文件压缩"></a>delta文件压缩</h6><p>随着修改表数据的操作越来越多，delta文件也越来越多，需要压缩提高后面的处理效率。类似hbase，也是有minor compaction和major compaction</p>
-<ul>
-<li>Minor compaction把已经存在的同一个bucket的多个delta文件合并成一个</li>
-<li>Majro compaction把bucket中的base文件和delta文件合并到一个新的base文件。这个会耗时多一些，不过也更高效。</li>
+<h5 id="3-1-1-例子"><a href="#3-1-1-例子" class="headerlink" title="3.1.1 例子"></a>3.1.1 例子</h5><ul>
+<li><p>如果你的默认realm是APACHE.COM,但是你想获取所有的ACME.COM的principal，下面的rule可以做到</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">RULE:[1:$1@$0](.@ACME.COM)s/@.//</div><div class="line">DEFAULT</div></pre></td></tr></table></figure>
+</li>
+<li><p>要把名字对应于第二个组件，使用下面规则：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">RULE:[1:$1@$0](.@ACME.COM)s/@.//</div><div class="line">RULE:[2:$1@$0](.@ACME.COM)s/@.// DEFAULT</div></pre></td></tr></table></figure>
+</li>
+<li><p>把所有带有admin的APACHE.ORG对应于admin</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">RULE[2:$1%$2@$0](.%admin@APACHE.ORG)s/./admin/</div><div class="line">DEFAULT</div></pre></td></tr></table></figure>
+</li>
+<li><p>把所有用户名转为小写</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">RULE:[1:$1]/L</div><div class="line">RULE:[2:$1]/L</div><div class="line">RULE:[2:$1;$2](^.*;admin$)s/;admin$///L</div><div class="line">RULE:[2:$1;$2](^.*;guest$)s/;guest$//g/L</div></pre></td></tr></table></figure>
+</li>
 </ul>
-<p>压缩工作是后台自动运行的，不会阻止并发的读写操作。执行压缩之后，系统会等用户读完所有的旧文件之后移除这些旧文件。</p>
-<h6 id="Initiator"><a href="#Initiator" class="headerlink" title="Initiator"></a>Initiator</h6><p>这个模块是负责发现哪些table或者分区需要压缩。使用<code>hive.compactor.initiator.on</code>参数启用。每个compaction task负责处理一个分区(没分区的就是一个表)。如果连续压缩失败，超过<code>hive.compactor.initiator.failed.compacts.threshold</code>设置的阈值,就停止compaction了。</p>
-<h6 id="Worker"><a href="#Worker" class="headerlink" title="Worker"></a>Worker</h6><p>一个Woker处理一个compaction task。通常是MR任务，名字格式是：主机名-compactor-数据库.表名.分区。使用<code>hive.compactor.worker.threads</code>设置每个metastore启动的compactor线程数。</p>
-<h6 id="Cleaner"><a href="#Cleaner" class="headerlink" title="Cleaner"></a>Cleaner</h6><p>用来删除压缩之后，之前的一些旧文件</p>
-<h6 id="AcidHouseKeeperService"><a href="#AcidHouseKeeperService" class="headerlink" title="AcidHouseKeeperService"></a>AcidHouseKeeperService</h6><p>找到心跳超时<code>hive.txn.timeout</code>的事务，终止它。释放资源。</p>
-<h4 id="SHOW-COMPACTIONS"><a href="#SHOW-COMPACTIONS" class="headerlink" title="SHOW COMPACTIONS"></a>SHOW COMPACTIONS</h4><p>这个命令用来显示目前正在运行的compaction信息，还有最近的压缩历史。</p>
-<h4 id="事务-锁-manager"><a href="#事务-锁-manager" class="headerlink" title="事务/锁 manager"></a>事务/锁 manager</h4><p>添加了新的逻辑实体<code>事务管理器</code>，包含原有的<code>database/table/partition lock manager</code>的概念在里面。原来默认的<code>hive.lock.manager</code>是<code>org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager</code>。新的事务管理器现在也负责管理事务锁了。默认的<code>DummyTxnManager</code>跟原有版本的hive一样：并没有事务，使用hive.lock.manager来为表、分区、数据库创建lock manager。新的<code>DbTxnManager</code>使用hive metastore中的<code>DbLockManager</code>管理所有的锁与事务（系统挂掉也不会碍事儿）。这就是说启用事务特性之后，并没有必要弄什么zookeeper来搞这些了。为了避免客户端挂掉、离开当前事务、或者锁悬停的情况，我们需要锁的拥有者和事务发起者以一定频率发送心跳给metastore。如果心跳超时几次，那么这个锁或者食物就会被终止。</p>
-<p>在1.3.0版本中，DbLockManager会持续重试去获取锁。每次获取不到，都会double下一次获取锁的时间间隔，再重试，以支持短时间的查询，也降低metastore压力。假设初始等待时间是100ms，如果重试10次的话，总时间会是91m:42s:300ms。</p>
-<p>注意DbTxnManager的lock manager会获取所有表的锁。默认情况下，对于非事务表的insert操作会获取一个排它锁，不允许其他的读写操作。虽然从技术角度来看是正确的，但是违背hive的传统工作方式的。为了向后兼容，提供了<code>hive.txn.strict.locking.mode</code>参数，可以让lock manager在对于非事务表insert操作的时候获取共享锁。这样就保证在读取的时候，不会出现数据被drop的情况。注意，对于事务表，insert操作是总会获取共享锁的，因为这些表在存储层支持MVCC架构，即便有并发写的时候也能够提供对于读的强一致性(快照隔离).</p>
-<h6 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h6><p>客户端</p>
-<ul>
-<li>hive.support.concurrency - true</li>
-<li>hive.enforce.bucketing - true(2.0版本后不需要)</li>
-<li>hive.exec.dynamic.partition.mode - nonstrict</li>
-<li>hive.txn.manager - org.apache.hadoop.hive.ql.lockmgr.DbTxnManager</li>
-</ul>
-<p>服务端(metastore)</p>
-<ul>
-<li>hive.compactor.initiator.on - true</li>
-<li>hive.compactor.worker.threads - 正数就行，看情况</li>
-</ul>
-<h4 id="事务相关的新配置参数"><a href="#事务相关的新配置参数" class="headerlink" title="事务相关的新配置参数"></a>事务相关的新配置参数</h4><h4 id="表属性"><a href="#表属性" class="headerlink" title="表属性"></a>表属性</h4><p>如果一个表要使用ACID写操作，那么必须在表上设置<code>transactional=true</code>。从0.14.0开始，一旦一个表通过·TBLPROPERTIES (“transactional”=”true”)·定义为一个ACID表之后，就不能在改成非ACID表了，就是说不能执行TBLPROPERTIES (“transactional”=”false”) 这种修改。还有，hive.txn.manager必须设置为org.apache.hadoop.hive.ql.lockmgr.DbTxnManager, 可以再hive-site.xml里设置，也可以在session开始的时候设置。不然insert就会按照老的方式运行，delete操作会被禁止。</p>
-<p>如果一个表的owner不想让系统自动决定什么时候compact，那就在表上设置<code>NO_AUTO_COMPACTION</code>。</p>
-<p>在表创建之后表属性通过TBLPROPERTIES语句设置。</p>
-<p>更多关于压缩的选项可以通过TBLPROPERTIES设置。可以在创建表时设置，也可以执行修改表的时候设置。例如，要覆盖一个压缩任务的MR参数，就可在创建表或者修改表的时候加上<code>compactor.&lt;mr property&gt;=xx</code>。</p>
-<p>表级别设置<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> table_name (</div><div class="line">  <span class="keyword">id</span>                <span class="built_in">int</span>,</div><div class="line">  <span class="keyword">name</span>              <span class="keyword">string</span></div><div class="line">)</div><div class="line">CLUSTERED <span class="keyword">BY</span> (<span class="keyword">id</span>) <span class="keyword">INTO</span> <span class="number">2</span> BUCKETS <span class="keyword">STORED</span> <span class="keyword">AS</span> ORC</div><div class="line">TBLPROPERTIES (<span class="string">"transactional"</span>=<span class="string">"true"</span>,</div><div class="line">  <span class="string">"compactor.mapreduce.map.memory.mb"</span>=<span class="string">"2048"</span>,     <span class="comment">-- specify compaction map job properties</span></div><div class="line">  <span class="string">"compactorthreshold.hive.compactor.delta.num.threshold"</span>=<span class="string">"4"</span>,  <span class="comment">-- trigger minor compaction if there are more than 4 delta directories</span></div><div class="line">  <span class="string">"compactorthreshold.hive.compactor.delta.pct.threshold"</span>=<span class="string">"0.5"</span> <span class="comment">-- trigger major compaction if the ratio of size of delta files to</span></div><div class="line">                                                                   <span class="comment">-- size of base files is greater than 50%</span></div><div class="line">);</div></pre></td></tr></table></figure></p>
-<p>单次请求时候设置<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> table_name <span class="keyword">COMPACT</span> <span class="string">'minor'</span> </div><div class="line">   <span class="keyword">WITH</span> OVERWRITE TBLPROPERTIES (<span class="string">"compactor.mapreduce.map.memory.mb"</span>=<span class="string">"3072"</span>);  <span class="comment">-- specify compaction map job properties</span></div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> table_name <span class="keyword">COMPACT</span> <span class="string">'major'</span></div><div class="line">   <span class="keyword">WITH</span> OVERWRITE TBLPROPERTIES (<span class="string">"tblprops.orc.compress.size"</span>=<span class="string">"8192"</span>);         <span class="comment">-- change any other Hive table properties</span></div></pre></td></tr></table></figure></p>
-<p>参考：<br><a href="https://cwiki.apache.org/confluence/display/Hive/Hive+Transactions" target="_blank" rel="external">https://cwiki.apache.org/confluence/display/Hive/Hive+Transactions</a></p>
-<p><a href="https://hortonworks.com/hadoop-tutorial/using-hive-acid-transactions-insert-update-delete-data/" target="_blank" rel="external">https://hortonworks.com/hadoop-tutorial/using-hive-acid-transactions-insert-update-delete-data/</a></p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/18/django中使用ipython-shell/" title="django中使用ipython-shell" itemprop="url">django中使用ipython-shell</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-18T10:29:15.000Z" itemprop="datePublished"> 发表于 2017-04-18</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>安装两个东西<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">ipython</div><div class="line">django_extensions</div></pre></td></tr></table></figure></p>
-<p>在django配置文件的<code>INSTALLED_APPS</code>中添加<code>jdango_extensions</code></p>
-<p>命令行启动<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">./manage.py shell_plus</div></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">./manage.py shell_plus --notebook</div></pre></td></tr></table></figure>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/17/gradle一次性配置所有的maven仓库/" title="gradle一次性配置所有的maven仓库" itemprop="url">gradle一次性配置所有的maven仓库</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-17T09:32:32.000Z" itemprop="datePublished"> 发表于 2017-04-17</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>在~/.gradle/init.gradle文件中添加<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">allprojects&#123;</div><div class="line">    repositories &#123;</div><div class="line">        def REPOSITORY_URL = &apos;http://maven.oschina.net/content/groups/public&apos;</div><div class="line">        all &#123; ArtifactRepository repo -&gt;</div><div class="line">            if(repo instanceof MavenArtifactRepository)&#123;</div><div class="line">                def url = repo.url.toString()</div><div class="line">                if (url.startsWith(&apos;https://repo1.maven.org/maven2&apos;) || url.startsWith(&apos;https://jcenter.bintray.com/&apos;)) &#123;</div><div class="line">                    project.logger.lifecycle &quot;Repository $&#123;repo.url&#125; replaced by $REPOSITORY_URL.&quot;</div><div class="line">                    remove repo</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        maven &#123;</div><div class="line">            url REPOSITORY_URL</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>基于上面的rule，输入与对应输出如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&quot;JOE@FOO.COM&quot; to &quot;joe&quot;</div><div class="line">&quot;Joe/root@FOO.COM&quot; to &quot;joe&quot;</div><div class="line">&quot;Joe/admin@FOO.COM&quot; to &quot;joe&quot;</div><div class="line">&quot;Joe/guestguest@FOO.COM&quot; to &quot;joe&quot;</div></pre></td></tr></table></figure></p>
+<h4 id="3-2-修改配置文件"><a href="#3-2-修改配置文件" class="headerlink" title="3.2 修改配置文件"></a>3.2 修改配置文件</h4><p>首先，在hadoop-env.sh里配置JSVC_HOME<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">export JSVC_HOME=/usr/libexec/bigtop-utils</div></pre></td></tr></table></figure></p>
+<h6 id="core-site-xml"><a href="#core-site-xml" class="headerlink" title="core-site.xml"></a>core-site.xml</h6><table>
+<thead>
+<tr>
+<th>Property Name</th>
+<th>Property Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hadoop.security.authentication</td>
+<td>kerberos</td>
+</tr>
+<tr>
+<td>hadoop.rpc.protection</td>
+<td>authentication; integrity; privacy</td>
+<td>可选</td>
+</tr>
+<tr>
+<td>hadoop.security.authorization</td>
+<td>true</td>
+</tr>
+<tr>
+<td>hadoop.security.auth_to_local</td>
+<td>上面提到的rule</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">&lt;property&gt; </div><div class="line">     &lt;name&gt;hadoop.security.authentication&lt;/name&gt; </div><div class="line">     &lt;value&gt;kerberos&lt;/value&gt; </div><div class="line">     &lt;description&gt; Set the authentication for the cluster. </div><div class="line">     Valid values are: simple or kerberos.&lt;/description&gt; </div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt; </div><div class="line">     &lt;name&gt;hadoop.security.authorization&lt;/name&gt; </div><div class="line">     &lt;value&gt;true&lt;/value&gt; </div><div class="line">     &lt;description&gt;Enable authorization for different protocols.&lt;/description&gt; </div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">    &lt;name&gt;hadoop.security.auth_to_local&lt;/name&gt; </div><div class="line">    &lt;value&gt; </div><div class="line">    RULE:[2:$1@$0]([jt]t@.*EXAMPLE.COM)s/.*/mapred/ </div><div class="line">    RULE:[2:$1@$0]([nd]n@.*EXAMPLE.COM)s/.*/hdfs/ </div><div class="line">    RULE:[2:$1@$0](hm@.*EXAMPLE.COM)s/.*/hbase/ </div><div class="line">    RULE:[2:$1@$0](rs@.*EXAMPLE.COM)s/.*/hbase/ </div><div class="line">    DEFAULT</div><div class="line">    &lt;/value&gt; </div><div class="line">    &lt;description&gt;The mapping from kerberos principal names</div><div class="line">    to local OS user names.&lt;/description&gt;</div><div class="line">&lt;/property&gt;</div></pre></td></tr></table></figure>
+<p>下面是有关hue和knox的配置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line">&lt;property&gt; </div><div class="line">     &lt;name&gt;hadoop.security.authentication&lt;/name&gt; </div><div class="line">     &lt;value&gt;kerberos&lt;/value&gt; </div><div class="line">     &lt;description&gt;Set the authentication for the cluster. </div><div class="line">     Valid values are: simple or kerberos.&lt;/description&gt; </div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt; </div><div class="line">     &lt;name&gt;hadoop.security.authorization&lt;/name&gt; </div><div class="line">     &lt;value&gt;true&lt;/value&gt; </div><div class="line">     &lt;description&gt;Enable authorization for different protocols. </div><div class="line">     &lt;/description&gt; </div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;hadoop.security.auth_to_local&lt;/name&gt; </div><div class="line">     &lt;value&gt; </div><div class="line">     RULE:[2:$1@$0]([jt]t@.*EXAMPLE.COM)s/.*/mapred/ </div><div class="line">     RULE:[2:$1@$0]([nd]n@.*EXAMPLE.COM)s/.*/hdfs/ </div><div class="line">     RULE:[2:$1@$0](hm@.*EXAMPLE.COM)s/.*/hbase/ </div><div class="line">     RULE:[2:$1@$0](rs@.*EXAMPLE.COM)s/.*/hbase/ </div><div class="line">     DEFAULT</div><div class="line">     &lt;/value&gt; </div><div class="line">     &lt;description&gt;The mapping from kerberos principal names</div><div class="line">     to local OS user names.&lt;/description&gt;</div><div class="line">&lt;/property&gt;</div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;hadoop.proxyuser.knox.groups&lt;/name&gt;</div><div class="line">     &lt;value&gt;users&lt;/value&gt;</div><div class="line">&lt;/property&gt;</div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;hadoop.proxyuser.knox.hosts&lt;/name&gt;</div><div class="line">     &lt;value&gt;Knox.EXAMPLE.COM&lt;/value&gt;</div><div class="line">&lt;/property&gt;</div></pre></td></tr></table></figure></p>
+<p>HTTP Cookie 持久化<br>默认HTTP 认证过程中，cookie是不会保留的。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&lt;property&gt;</div><div class="line">   &lt;name&gt;hadoop.http.authentication.cookie.persistent&lt;/name&gt;</div><div class="line">   &lt;value&gt;true&lt;/value&gt; </div><div class="line">&lt;/property&gt;</div></pre></td></tr></table></figure></p>
+<h6 id="hdfs-site-xml"><a href="#hdfs-site-xml" class="headerlink" title="hdfs-site.xml"></a>hdfs-site.xml</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div></pre></td><td class="code"><pre><div class="line">&lt;property&gt; </div><div class="line">     &lt;name&gt;dfs.permissions&lt;/name&gt; </div><div class="line">     &lt;value&gt;true&lt;/value&gt; </div><div class="line">     &lt;description&gt; If &quot;true&quot;, enable permission checking in</div><div class="line">     HDFS. If &quot;false&quot;, permission checking is turned</div><div class="line">     off, but all other behavior is</div><div class="line">     unchanged. Switching from one parameter value to the other does</div><div class="line">     not change the mode, owner or group of files or</div><div class="line">     directories. &lt;/description&gt; </div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt; </div><div class="line">     &lt;name&gt;dfs.permissions.supergroup&lt;/name&gt; </div><div class="line">     &lt;value&gt;hdfs&lt;/value&gt; </div><div class="line">     &lt;description&gt;The name of the group of</div><div class="line">     super-users.&lt;/description&gt; </div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt; </div><div class="line">     &lt;name&gt;dfs.block.access.token.enable&lt;/name&gt; </div><div class="line">     &lt;value&gt;true&lt;/value&gt; </div><div class="line">     &lt;description&gt; If &quot;true&quot;, access tokens are used as capabilities</div><div class="line">     for accessing datanodes. If &quot;false&quot;, no access tokens are checked on</div><div class="line">     accessing datanodes. &lt;/description&gt; </div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt; </div><div class="line">     &lt;name&gt;dfs.namenode.kerberos.principal&lt;/name&gt; </div><div class="line">     &lt;value&gt;nn/_HOST@EXAMPLE.COM&lt;/value&gt; </div><div class="line">     &lt;description&gt; Kerberos principal name for the</div><div class="line">     NameNode &lt;/description&gt; </div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt; </div><div class="line">     &lt;name&gt;dfs.secondary.namenode.kerberos.principal&lt;/name&gt; </div><div class="line">     &lt;value&gt;nn/_HOST@EXAMPLE.COM&lt;/value&gt; </div><div class="line">     &lt;description&gt;Kerberos principal name for the secondary NameNode. </div><div class="line">     &lt;/description&gt; </div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt; </div><div class="line">     &lt;name&gt;dfs.web.authentication.kerberos.principal&lt;/name&gt; </div><div class="line">     &lt;value&gt;HTTP/_HOST@EXAMPLE.COM&lt;/value&gt; </div><div class="line">     &lt;description&gt; The HTTP Kerberos principal used by Hadoop-Auth in the HTTP endpoint.</div><div class="line">     The HTTP Kerberos principal MUST start with &apos;HTTP/&apos; per Kerberos HTTP</div><div class="line">     SPNEGO specification. </div><div class="line">     &lt;/description&gt; </div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt; </div><div class="line">     &lt;name&gt;dfs.web.authentication.kerberos.keytab&lt;/name&gt; </div><div class="line">     &lt;value&gt;/etc/security/keytabs/spnego.service.keytab&lt;/value&gt; </div><div class="line">     &lt;description&gt;The Kerberos keytab file with the credentials for the HTTP</div><div class="line">     Kerberos principal used by Hadoop-Auth in the HTTP endpoint. </div><div class="line">     &lt;/description&gt; </div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt; </div><div class="line">     &lt;name&gt;dfs.datanode.kerberos.principal&lt;/name&gt; </div><div class="line">     &lt;value&gt;dn/_HOST@EXAMPLE.COM&lt;/value&gt; </div><div class="line">     &lt;description&gt; </div><div class="line">     The Kerberos principal that the DataNode runs as. &quot;_HOST&quot; is replaced by the real</div><div class="line">     host name. </div><div class="line">     &lt;/description&gt; </div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt; </div><div class="line">     &lt;name&gt;dfs.namenode.keytab.file&lt;/name&gt; </div><div class="line">     &lt;value&gt;/etc/security/keytabs/nn.service.keytab&lt;/value&gt; </div><div class="line">     &lt;description&gt; </div><div class="line">     Combined keytab file containing the namenode service and host</div><div class="line">     principals. </div><div class="line">     &lt;/description&gt; </div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt; </div><div class="line">     &lt;name&gt;dfs.secondary.namenode.keytab.file&lt;/name&gt; </div><div class="line">     &lt;value&gt;/etc/security/keytabs/nn.service.keytab&lt;/value&gt; </div><div class="line">     &lt;description&gt; </div><div class="line">     Combined keytab file containing the namenode service and host</div><div class="line">     principals. </div><div class="line">     &lt;/description&gt; </div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt; </div><div class="line">     &lt;name&gt;dfs.datanode.keytab.file&lt;/name&gt; </div><div class="line">     &lt;value&gt;/etc/security/keytabs/dn.service.keytab&lt;/value&gt; </div><div class="line">     &lt;description&gt; </div><div class="line">     The filename of the keytab file for the DataNode. </div><div class="line">     &lt;/description&gt; </div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt; </div><div class="line">     &lt;name&gt;dfs.access.time.precision&lt;/name&gt; </div><div class="line">     &lt;value&gt;0&lt;/value&gt; </div><div class="line">     &lt;description&gt;The access time for HDFS file is precise upto this</div><div class="line">     value.The default value is 1 hour. Setting a value of 0</div><div class="line">     disables access times for HDFS. </div><div class="line">     &lt;/description&gt; </div><div class="line">&lt;/property&gt; </div><div class="line">&lt;property&gt; </div><div class="line">     &lt;name&gt;dfs.namenode.kerberos.internal.spnego.principal&lt;/name&gt; </div><div class="line">     &lt;value&gt;$&#123;dfs.web.authentication.kerberos.principal&#125;&lt;/value&gt; </div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt; </div><div class="line">     &lt;name&gt;dfs.secondary.namenode.kerberos.internal.spnego.principal&lt;/name&gt; </div><div class="line">     &lt;value&gt;$&#123;dfs.web.authentication.kerberos.principal&#125;&lt;/value&gt; </div><div class="line">&lt;/property&gt;</div></pre></td></tr></table></figure>
+<p>另外，还需加上如下配置：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">export HADOOP_SECURE_DN_USER=hdfs</div><div class="line">export HADOOP_SECURE_DN_PID_DIR=/grid/0/var/run/hadoop/$HADOOP_SECURE_DN_USER</div></pre></td></tr></table></figure>
+<h6 id="yarn-site-xml"><a href="#yarn-site-xml" class="headerlink" title="yarn-site.xml"></a>yarn-site.xml</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div></pre></td><td class="code"><pre><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;yarn.resourcemanager.principal&lt;/name&gt;</div><div class="line">     &lt;value&gt;yarn/localhost@EXAMPLE.COM&lt;/value&gt;</div><div class="line">&lt;/property&gt;</div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;yarn.resourcemanager.keytab&lt;/name&gt;</div><div class="line">     &lt;value&gt;/etc/krb5.keytab&lt;/value&gt;</div><div class="line">&lt;/property&gt;</div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;yarn.nodemanager.principal&lt;/name&gt;</div><div class="line">     &lt;value&gt;yarn/localhost@EXAMPLE.COM&lt;/value&gt;</div><div class="line">&lt;/property&gt;</div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;yarn.nodemanager.keytab&lt;/name&gt;</div><div class="line">     &lt;value&gt;/etc/krb5.keytab&lt;/value&gt;</div><div class="line">&lt;/property&gt;</div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;yarn.nodemanager.container-executor.class&lt;/name&gt;</div><div class="line">     &lt;value&gt;org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor&lt;/value&gt;</div><div class="line">&lt;/property&gt;</div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;yarn.nodemanager.linux-container-executor.path&lt;/name&gt;</div><div class="line">     &lt;value&gt;hadoop-3.0.0-SNAPSHOT/bin/container-executor&lt;/value&gt;</div><div class="line">&lt;/property&gt;</div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;yarn.nodemanager.linux-container-executor.group&lt;/name&gt;</div><div class="line">     &lt;value&gt;hadoop&lt;/value&gt;</div><div class="line">&lt;/property&gt;</div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;yarn.timeline-service.principal&lt;/name&gt;</div><div class="line">     &lt;value&gt;yarn/localhost@EXAMPLE.COM&lt;/value&gt;</div><div class="line">&lt;/property&gt;</div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;yarn.timeline-service.keytab&lt;/name&gt;</div><div class="line">     &lt;value&gt;/etc/krb5.keytab&lt;/value&gt;</div><div class="line">&lt;/property&gt;</div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;yarn.resourcemanager.webapp.delegation-token-auth-filter.enabled&lt;/name&gt;</div><div class="line">     &lt;value&gt;true&lt;/value&gt;</div><div class="line">&lt;/property&gt;</div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;yarn.timeline-service.http-authentication.type&lt;/name&gt;</div><div class="line">     &lt;value&gt;kerberos&lt;/value&gt;</div><div class="line">&lt;/property&gt;</div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;yarn.timeline-service.http-authentication.kerberos.principal&lt;/name&gt;</div><div class="line">     &lt;value&gt;HTTP/localhost@EXAMPLE.COM&lt;/value&gt;</div><div class="line">&lt;/property&gt;</div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;yarn.timeline-service.http-authentication.kerberos.keytab&lt;/name&gt;</div><div class="line">     &lt;value&gt;/etc/krb5.keytab&lt;/value&gt;</div><div class="line">&lt;/property&gt;</div></pre></td></tr></table></figure>
+<h6 id="mapred-site-xml"><a href="#mapred-site-xml" class="headerlink" title="mapred-site.xml"></a>mapred-site.xml</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;mapreduce.jobhistory.keytab&lt;/name&gt;</div><div class="line">     &lt;value&gt;/etc/security/keytabs/jhs.service.keytab&lt;/value&gt;</div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;mapreduce.jobhistory.principal&lt;/name&gt;</div><div class="line">     &lt;value&gt;jhs/_HOST@TODO-KERBEROS-DOMAIN&lt;/value&gt;</div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;mapreduce.jobhistory.webapp.address&lt;/name&gt;</div><div class="line">     &lt;value&gt;TODO-JOBHISTORYNODE-HOSTNAME:19888&lt;/value&gt;</div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;mapreduce.jobhistory.webapp.https.address&lt;/name&gt;</div><div class="line">     &lt;value&gt;TODO-JOBHISTORYNODE-HOSTNAME:19889&lt;/value&gt;</div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;mapreduce.jobhistory.webapp.spnego-keytab-file&lt;/name&gt;</div><div class="line">     &lt;value&gt;/etc/security/keytabs/spnego.service.keytab&lt;/value&gt;</div><div class="line">&lt;/property&gt; </div><div class="line"> </div><div class="line">&lt;property&gt;</div><div class="line">     &lt;name&gt;mapreduce.jobhistory.webapp.spnego-principal&lt;/name&gt;</div><div class="line">     &lt;value&gt;HTTP/_HOST@TODO-KERBEROS-DOMAIN&lt;/value&gt;</div><div class="line">&lt;/property&gt;</div></pre></td></tr></table></figure>
 <p>参考：</p>
 <ul>
-<li><a href="https://docs.gradle.org/current/userguide/init_scripts.html" target="_blank" rel="external">https://docs.gradle.org/current/userguide/init_scripts.html</a></li>
-<li><a href="https://yrom.net/blog/2015/02/07/change-gradle-maven-repo-url/" target="_blank" rel="external">https://yrom.net/blog/2015/02/07/change-gradle-maven-repo-url/</a></li>
+<li><a href="http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.2/bk_Security_Guide/content/install-kdc.html" target="_blank" rel="external">http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.2/bk_Security_Guide/content/install-kdc.html</a></li>
+<li><a href="https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.2/bk_installing_manually_book/content/ch_security_for_manual_installs_chapter.html" target="_blank" rel="external">https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.2/bk_installing_manually_book/content/ch_security_for_manual_installs_chapter.html</a></li>
+<li><a href="http://blog.csdn.net/wulantian/article/details/42173023" target="_blank" rel="external">http://blog.csdn.net/wulantian/article/details/42173023</a></li>
 </ul>
 
         
@@ -996,21 +399,528 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/04/16/linkedin--gobblin/" title="linkedin--gobblin" itemprop="url">linkedin--gobblin</a>
+      <a href="/2017/03/17/《集体智慧编程》--5---优化/" title="《集体智慧编程》--5---优化" itemprop="url">《集体智慧编程》--5---优化</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
 		
   <p class="article-time">
-    <time datetime="2017-04-16T09:00:37.000Z" itemprop="datePublished"> 发表于 2017-04-16</time>
+    <time datetime="2017-03-17T09:58:19.000Z" itemprop="datePublished"> 发表于 2017-03-17</time>
     
   </p>
 </header>
     <div class="article-content">
         
-        <p>这些年来，linkedin的数据设施团队为集成多种数据源到hadoop生态系统中提供了很多解决方案。目前，有15中整合pipeline正在运行，包含重要的数据质量、元数据管理、元数据开发、运维相关的调整等等。</p>
-<p>这些挑战与经验促使我们构建了gobblin。gobblin是为从各种数据源【数据库、rest api、 ftp server， 文件等】抽取、转化、加载数据到hadoop上。gobblin包含了日常通用的数据ETL操作任务，如任务调度、任务分区、错误处理、状态管理、数据质量检测、数据发布等等。Gobblin把多种数据源集成进同样的执行框架中，然后在同一个地方管理不同的数据源的元数据。 还有自动扩容、容错、数据质量保证、扩展性高、处理数据模型演化等特性，gobblin很易用、而且可以自我服务，是一个高效的数据集成框架。</p>
+        <p>针对问题：<br>受多种变量的影响，存在许多可能解，结果因这些变量组合的变化产生巨大反应。</p>
+<p>优化算法是通过尝试许多不同题解并给这些题解打分以确认其质量的方式找到一个问题的最优解。</p>
+<h1 id="成本函数"><a href="#成本函数" class="headerlink" title="成本函数"></a>成本函数</h1><p>成本函数需要一个返回值代表方案的好坏。旅游团的例子中：</p>
+<ul>
+<li>价格</li>
+<li>旅行时间</li>
+<li>等待时间</li>
+<li>汽车租用时间</li>
+</ul>
+<p>我们需要明确怎样把上面所有的成本综合在一起，表示最终的成本。</p>
+<h2 id="获取方案的方法"><a href="#获取方案的方法" class="headerlink" title="获取方案的方法"></a>获取方案的方法</h2><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>原理</th>
+<th>缺点</th>
+<th>优点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>随机搜索</td>
+<td>随机生成N个方案，选取其中成本最低的方案</td>
+<td>低效</td>
+<td></td>
+</tr>
+<tr>
+<td>爬山法</td>
+<td>以一个随机解开始，在其临近解集中寻找更好的解，类似走成本的下坡路</td>
+<td>陷入局部最优</td>
+<td></td>
+</tr>
+<tr>
+<td>模拟退火算法</td>
+<td>退火是将合金加热后再慢慢冷却的过程。大量的原子因为受到激发而向四周跳跃，然后又逐渐稳定到一个低能的状态，所以这些原子能够找到一个低能阶的配置。<br>以一个随机解开始，用一个变量表示温度，开始时高，逐渐变低。第一次迭代，算法会随机选中某个数据，然后朝某个方向变化。它总是会接受一个更优的解，但是在算法开始阶段也会接受表现稍差的解。随着算法进行，越来越不能接受较差的解，最后只接受更优解。 <br>算法接受较差解的概率 P = exp[-(highcost-lowcost)/temperature]</td>
+<td>前提：最优解接近其他优解</td>
+</tr>
+<tr>
+<td>遗传算法</td>
+<td>随机生成一组解，成为<strong>种群</strong>。计算整个种群的成本函数，得到一个有序列表，选出表现比较好的几个。然后对一个既有解做微小的、简单的、随机的改变，这称为<strong>变异</strong>。另一种方法是选择最优解中的两个，按照某种方式进行结合，称为<strong>交叉</strong>或者<strong>配对</strong>。这样就会衍生很多不同的解。</td>
+<td>前提：最优解接近其他优解</td>
+</tr>
+</tbody>
+</table>
+<p>注意：利用优化算法解决问题的基本要求是：问题本身有一个定义好的成本函数，并且相似的解会产生相似的结果。</p>
+<h2 id="学生分宿舍"><a href="#学生分宿舍" class="headerlink" title="学生分宿舍"></a>学生分宿舍</h2><p>如何将有限的资源分配给表达了偏好的人，并尽可能使他们都满意。(或根据他们的意愿，尽可能让他们都满意)。</p>
+<p>将违反意愿的程度作为成本函数借用上述算法求解。</p>
+<h2 id="网络可视化"><a href="#网络可视化" class="headerlink" title="网络可视化"></a>网络可视化</h2><p>运用优化算法构建条例明晰的网络图。成本函数就是计算相互交叉线的条数。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/03/15/索引相关/" title="索引相关" itemprop="url">索引相关</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-03-15T05:24:04.000Z" itemprop="datePublished"> 发表于 2017-03-15</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ul>
+<li>哈希存储引擎</li>
+</ul>
+<p>哈希表的持久化实现，支持增、删、改以及随机读取操作，但不支持顺序扫描，对应的存储系统为key-value存储系统。对于key-value的插入以及查询，哈希表的复杂度都是O(1)，明显比树的操作O(n)快,如果不需要有序的遍历数据，哈希表就是your Mr.Right</p>
+<ul>
+<li>B树存储引擎</li>
+</ul>
+<p>不仅支持单条记录的增、删、读、改操作，还支持顺序扫描（B+树的叶子节点之间的指针），对应的存储系统就是关系数据库（Mysql等）。</p>
+<ul>
+<li>LSM树【Log-Structured Merge-Tree】</li>
+</ul>
+<p>存储引擎和B树存储引擎一样，同样支持增、删、读、改、顺序扫描操作。而且通过批量存储技术规避磁盘随机写入问题。当然凡事有利有弊，LSM树和B+树相比，LSM树牺牲了部分读性能，用来大幅提高写性能。</p>
+<p>==LSM树的设计思想==非常朴素：将对数据的修改增量保持在内存中，达到指定的大小限制后将这些修改操作批量写入磁盘，不过读取的时候稍微麻烦，需要合并磁盘中历史数据和内存中最近修改操作，所以写入性能大大提升，读取时可能需要先看是否命中内存，否则需要访问较多的磁盘文件。极端的说，基于LSM树实现的HBase的写性能比Mysql高了一个数量级，读性能低了一个数量级。</p>
+<p><strong>LSM树原理把一棵大树拆分成N棵小树，它首先写入内存中，随着小树越来越大，内存中的小树会flush到磁盘中，磁盘中的树定期可以做merge操作，合并成一棵大树，以优化读性能.</strong></p>
+<p>因为小树先写到内存中，为了防止内存数据丢失，写内存的同时需要暂时持久化到磁盘，对应了HBase的MemStore和HLog.</p>
+<p>MemStore上的树达到一定大小之后，需要flush到HRegion磁盘中（一般是Hadoop DataNode），这样MemStore就变成了DataNode上的磁盘文件StoreFile，定期HRegionServer对DataNode的数据做merge操作，彻底删除无效空间，多棵小树在这个时机合并成大树，来增强读性能。</p>
+<p>按照大小进行compact有三个缺点：</p>
+<ul>
+<li>因为不能确定单行数据的版本都在哪里，所以无法保证一致性。最坏的情况下，每个sstable里都有一个某row的版本，分别包含不同的字段；</li>
+<li>如果有大量删除操作的话，在merge以前很多数据的空间都是没有必要占用的；</li>
+<li>在每个sstable在merge完成之前还是会占用很大的数据空间。最坏的情况就是，一个sstable并没有任何东西删除，那么Cassandra就使用同样大小的空间来进行compact操作。</li>
+</ul>
+<h2 id="Leveled-Compaction"><a href="#Leveled-Compaction" class="headerlink" title="Leveled Compaction"></a>Leveled Compaction</h2><p>Leveled Compaction 创建相对小的固定大小的sstable(默认5M)，按照level分组。每层的sstable都不重复，每一层都是前一层的10倍大小。</p>
+<p>解决了以上三个问题：</p>
+<ul>
+<li>level compaction保证90%的读请求只需要一个sstable里。最坏也就是每层有一个版本，加入10T数据，也就只有7个版本【10的7次方】</li>
+<li>最多只有10%的空间浪费给要被删除的数据</li>
+<li>每次只有10倍于sstable固定大小的空间被用于compaction的过程</li>
+</ul>
+<p>由于level compaction上面的原理，相对于hbase 的基于大小的compaction，会有两倍的io。如果是以插入为主的系统，额外的io可能相对于上面的益处更严重一些，因为插入为主的话，还是很少出现row的相同版本的。</p>
+<p>参考：</p>
+<ul>
+<li><a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.44.2782&amp;rep=rep1&amp;type=pdf" target="_blank" rel="external">http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.44.2782&amp;rep=rep1&amp;type=pdf</a></li>
+<li><a href="http://www.cnblogs.com/yanghuahui/p/3483754.html" target="_blank" rel="external">http://www.cnblogs.com/yanghuahui/p/3483754.html</a></li>
+<li><a href="http://www.open-open.com/lib/view/open1424916275249.html" target="_blank" rel="external">http://www.open-open.com/lib/view/open1424916275249.html</a></li>
+<li><a href="http://www.datastax.com/dev/blog/leveled-compaction-in-apache-cassandra" target="_blank" rel="external">http://www.datastax.com/dev/blog/leveled-compaction-in-apache-cassandra</a></li>
+<li><a href="http://hbasefly.com/2016/03/25/hbase-hfile/" target="_blank" rel="external">http://hbasefly.com/2016/03/25/hbase-hfile/</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/03/09/对于runningdata失败任务流重启的思考/" title="对于runningdata失败任务流重启的思考" itemprop="url">对于runningdata失败任务流重启的思考</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-03-09T02:09:41.000Z" itemprop="datePublished"> 发表于 2017-03-09</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>对于单个ETL的重导。可以在ETL里自己写IF语句，然后配置调度的时候.</p>
+<h2 id="重导的方案A："><a href="#重导的方案A：" class="headerlink" title="重导的方案A："></a>重导的方案A：</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">files=$1</div><div class="line">other_files=$2</div><div class="line">sh $other_files</div><div class="line">if [ $? -eq 0 ]; then</div><div class="line">     echo &quot;echo $other_files done&quot; &gt; $file</div><div class="line">fi</div></pre></td></tr></table></figure>
+<p>然后在azkaban执行这个就可以了。<br>other_files里是我们实际要执行的命令，$file是我们的azkaban执行的command.<br>一个更简便的方案，就是把azkaban的命令写成这样，省去自己判断上个命令推出状态：<br><code>ipconfig &amp;&amp; echo xxxxxxxxxxxxxx &gt; test.sh</code><br>如果第一个命令出问题，那么肯定就不会执行第二个了。<br>这样就可以执行日常任务的时候进行任务恢复了，只要是某个任务出现功能性失败，那么就会报错，而且不影响要执行的命令脚本；而成功的任务则会在执行完成后，修改执行的命令脚本，只是echo一下这个任务已经执行过了就好了。<br>然后每次要执行失败任务恢复的时候，就直接重新执行整个flow，前面成功执行过的就会自动pass，输出已经执行过了。</p>
+<p>还有一个问题，就是如果是代码问题，例如sql问题，必须通过修改ETL里的sql或者配置、或者presql等来解决的话，应该怎样处理？</p>
+<p>最简单的支持方式是：直接提供一个页面给管理员，编辑azkaban执行的任务文件，再进行重调。</p>
+<p>现在我们azkaban的任务调度形式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">hive -f /var/azkaban-metamap/h2h-20170308050120/fact_jlc@redeem_record.hql</div></pre></td></tr></table></figure></p>
+<p>对应修改成的就是：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">hive -f /var/azkaban-metamap/h2h-20170308050120/fact_jlc@redeem_record.hql &amp;&amp; echo &quot;select &apos;/var/azkaban-metamap/h2h-20170308050120/fact_jlc@redeem_record.hql&apos; done&quot;</div></pre></td></tr></table></figure></p>
+<p>如果出现问题，需要从这个地方开始恢复数据的话，走以下流程：</p>
+<ul>
+<li>a. 编辑修改ETL</li>
+<li>b. 测试新ETL是否无误</li>
+<li>c. review hql，如需要修改个别地方手动修改</li>
+<li>d. 打开编辑/var/azkaban-metamap/h2h-20170308050120/fact_jlc@redeem_record.hql的web页面，将c步骤中获取的内容放进来</li>
+<li>e. 到azkaban重新执行今天的任务</li>
+</ul>
+<p>期望出现的现象：</p>
+<ul>
+<li>a. 前面已经执行过的任务，自动输出已执行并跳过</li>
+<li>b. 失败任务继续执行，读取的/var/azkaban-metamap/h2h-20170308050120/fact_jlc@redeem_record.hql是已经修改了的没有问题的文件</li>
+</ul>
+<p>额外提示：</p>
+<ul>
+<li>a. 如果使用此种失败重启的方式，那么所有依赖关系都会被认为是<strong>强依赖</strong>。假设一个极端情况，就是一个大宽表依赖10个小表，并服务于8个应用，如果只有一个小表失败，就得使得整个宽表都不能跑。有可能这个小表只服务于一个小业务模块，但是其他几个就很重要。这样影响面比较大。</li>
+<li>b. 如果使用此种重启方式，使用弱依赖，也就是当前表的失败并不影响下游任务继续执行的话，那么重新调度的时下游就不能执行了，因为它可能已经echo自己是成功的了。变态支持此方案的话，需要在d步骤的时候，添加一个hook，遍历所有没有成功的ETL的所有子节点，然后把这些子节点恢复为可执行状态。</li>
+</ul>
+<h2 id="方案B"><a href="#方案B" class="headerlink" title="方案B"></a>方案B</h2><p>指定ETL，生成这个ETL及其所有相关字节点的任务，上传到azkaban进行调度。</p>
+<p><strong>问题</strong>：<br>如果多个ETL失败，交叉的子节点会重复执行。</p>
+<p><strong>解决方案</strong>：<br>一次接收多个ETL为参数，放进set里，再去生成相应任务</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/03/07/《集体智慧编程》--2---分级聚类/" title="《集体智慧编程》--2---分级聚类" itemprop="url">《集体智慧编程》--2---分级聚类</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-03-07T02:45:22.000Z" itemprop="datePublished"> 发表于 2017-03-07</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>分级聚类：<strong>每个群组都从单一元素开始，迭代过程中，分级聚类算法计算每两个群组间的距离，并将距离最近的两个群组合并成一个新的群组。这个过程一直重复下去，知道只剩下一个群组为止。</strong></p>
+<p><img src="http://blog.pureisle.net/wp-content/uploads/2012/09/11-600x375.png" alt=""></p>
+<p>也可以用树表示，树状图还能通过节点距离快速获取两个类的<strong>紧密程度</strong>。</p>
+<p><img src="http://images2015.cnblogs.com/blog/822124/201703/822124-20170306200317656-1586066395.png" alt=""></p>
+<p>参考：<a href="http://jingyan.baidu.com/article/29697b9109d147ab21de3c44.html" target="_blank" rel="external">http://jingyan.baidu.com/article/29697b9109d147ab21de3c44.html</a></p>
+<p>【个人从分级聚类的概念出发，其实这个2是个可变的，也就是说可以5个为一群，对应的树就是每个节点有5个分叉】</p>
+<p>这一章还是使用皮尔逊相关度系数来作为衡量标准。皮尔逊相关系数是一种度量两个变量间相关程度的方法。它是一个介于 1 和 -1 之间的值，其中，1 表示变量完全正相关， 0 表示无关，-1 表示完全负相关。</p>
+<p>分层角力算法以一组对应于原始数据向的聚类开始。函数的主循环部分会尝试每一组可能的配对并计算他们的相关度，找出最佳配对。新生成的聚类中包含的数据是两个旧聚类的数据均值。</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://segmentfault.com/q/1010000000094674" target="_blank" rel="external">皮尔逊相关度系数</a></li>
+<li><a href="http://blog.csdn.net/beta2/article/details/5045020" target="_blank" rel="external">相似度度量</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/02/27/Fabric自动化运维脚本/" title="Fabric自动化运维脚本" itemprop="url">Fabric自动化运维脚本</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-02-27T02:50:36.000Z" itemprop="datePublished"> 发表于 2017-02-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>综合考察了salt和Fabric两个东西，最后使用灵活的Fabric来自动化运维HDFS集群的日志文件维护。</p>
+<p>使用前提：</p>
+<ul>
+<li>node之间的ssh互信</li>
+<li>本机安装fabric</li>
+</ul>
+<p>下面是fabric.py的脚本：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> fabric.api <span class="keyword">import</span> *</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_host</span><span class="params">()</span>:</span></div><div class="line">    hosts = list()</div><div class="line">    <span class="keyword">with</span> open(<span class="string">'/etc/hosts'</span>, <span class="string">'r'</span>) <span class="keyword">as</span> hf:</div><div class="line">        <span class="keyword">for</span> line <span class="keyword">in</span> hf.readlines():</div><div class="line">            ss = line.split()</div><div class="line">            <span class="keyword">if</span> <span class="string">'node'</span> <span class="keyword">in</span> ss[<span class="number">1</span>]:</div><div class="line">		hosts.append(ss[<span class="number">0</span>])</div><div class="line">    hosts.remove(<span class="string">'10.0.1.111'</span>)</div><div class="line">    hosts.remove(<span class="string">'10.0.1.112'</span>)</div><div class="line">    <span class="keyword">return</span> hosts</div><div class="line"></div><div class="line">env.hosts = get_host()</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">hello</span><span class="params">()</span>:</span></div><div class="line">    print(<span class="string">"Hello world!"</span>)</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">will</span><span class="params">()</span>:</span></div><div class="line">    run(<span class="string">'ifconfig'</span>)</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">clean_log</span><span class="params">()</span>:</span></div><div class="line"><span class="comment">#    run("ls /var/log/hadoop/hdfs/ | awk '&#123;if (index($0, '2017') &gt; 0) print $0&#125;' | exec rm -rf &#123;&#125; \ ; ")</span></div><div class="line">    <span class="keyword">with</span> settings(warn_only=<span class="keyword">True</span>):    </div><div class="line">	local(<span class="string">'echo `date` &gt;&gt; ~/clean_log.log'</span>)</div><div class="line">	<span class="keyword">if</span> run(<span class="string">'find /var/log/hadoop/hdfs/ -mtime +3 -name "*log-2016*" -exec rm -rvf &#123;&#125; \;'</span>).failed:</div><div class="line">            print(<span class="string">'failed for %s '</span> % env.host)</div><div class="line">        <span class="keyword">if</span> run(<span class="string">'find /var/log/hadoop/hdfs/ -mtime +3 -name "*will.com.out.[3,4,5,6,7,8]" -exec rm -rvf &#123;&#125; \;'</span>).failed:</div><div class="line">	    print(<span class="string">'failed for %s '</span> % env.host)</div><div class="line">        <span class="keyword">if</span> run(<span class="string">'find /var/log/hadoop/hdfs/ -mtime +3 -name "*will.com.log.[3,4,5,6,7,8]" -exec rm -rvf &#123;&#125; \;'</span>).failed:</div><div class="line">            print(<span class="string">'failed for %s '</span> % env.host)</div></pre></td></tr></table></figure></p>
+<p>上面例子中，是读取了当前/etc/hosts文件中的所有host的IP，之后逐一执行远程命令，删除过期的日志。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/02/17/安装dockercenter的ucp/" title="安装dockercenter的ucp" itemprop="url">安装dockercenter的ucp</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-02-17T10:53:36.000Z" itemprop="datePublished"> 发表于 2017-02-17</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker pull docker/ucp:2.1.0</div><div class="line">2.1.0: Pulling from docker/ucp</div><div class="line">b7f33cc0b48e: Pulling fs layer </div><div class="line">8257d57cc15c: Pulling fs layer </div><div class="line">b7f33cc0b48e: Pull complete </div><div class="line">8257d57cc15c: Extracting [==================================================&gt;] 348.8 kB/348.8 kB</div><div class="line">8257d57cc15c: Pull complete </div><div class="line">f691f14109b2: Pull complete </div><div class="line">Digest: sha256:fd43a6560b6f5731d0e383a7b5fe6da91cea11bc6b3fd65afe08f5e4a97dbc90</div><div class="line">Status: Downloaded newer image for docker/ucp:2.1.0</div><div class="line">[root@controller wil]# docker run --rm -it --name ucp   -v /var/run/docker.sock:/var/run/docker.sock   docker/ucp:2.1.0 install   --host-address 10.1.5.129   --interactive</div><div class="line"></div><div class="line">INFO[0000] Verifying your system is compatible with UCP </div><div class="line">INFO[0000] Your engine version 1.13.1, build 092cba3 (3.10.0-514.2.2.el7.x86_64) is compatible </div><div class="line">WARN[0003] Your system uses devicemapper.  We can not accurately detect available storage space.  Please make sure you have at least 3.00 GB available in /server/dspace </div><div class="line">Admin Username: unable to scan value: unexpected newline</div><div class="line">FATA[0005] unable to get admin username, giving up    </div><div class="line">[root@controller wil]# docker login</div><div class="line">Login with your Docker ID to push and pull images from Docker Hub. If you don&apos;t have a Docker ID, head over to https://hub.docker.com to create one.</div><div class="line">Username (willcup): </div><div class="line">Password: </div><div class="line">Login Succeeded</div><div class="line">[root@controller wil]# docker run --rm -it --name ucp   -v /var/run/docker.sock:/var/run/docker.sock   docker/ucp:2.1.0 install   --host-address 10.1.5.129   --interactive</div><div class="line">INFO[0000] Verifying your system is compatible with UCP </div><div class="line">INFO[0000] Your engine version 1.13.1, build 092cba3 (3.10.0-514.2.2.el7.x86_64) is compatible </div><div class="line">WARN[0001] Your system uses devicemapper.  We can not accurately detect available storage space.  Please make sure you have at least 3.00 GB available in /server/dspace </div><div class="line">Admin Username: willcup</div><div class="line">Admin Password: </div><div class="line">Confirm Admin Password: </div><div class="line">INFO[0021] Pulling required images... (this may take a while)</div></pre></td></tr></table></figure>
+<p>可以看到如果不先docker login的话，启动时候就报错找不到admin name。然而启动的时候又让我们自己定义admin name和passwd。醉了。</p>
+<p>打开debug：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker run --rm -it --name ucp   -v /var/run/docker.sock:/var/run/docker.sock   docker/ucp:2.1.0 install   --host-address 10.1.5.129   -D --interactive</div><div class="line">DEBU[0000] New UCP Instance ID will be &quot;XZNK:CP6T:DHHE:XJZA:OXOM:CLS6:RIRW:SAVZ:4JIL:G3Q4:DJ7F:L7P3&quot; </div><div class="line">INFO[0000] Verifying your system is compatible with UCP </div><div class="line">DEBU[0000] Checking for compatible kernel version       </div><div class="line">DEBU[0000] Kernel version 3.10.0-514.2.2.el7.x86_64 is compatible </div><div class="line">DEBU[0000] Checking for compatible engine version       </div><div class="line">INFO[0000] Your engine version 1.13.1, build 092cba3 (3.10.0-514.2.2.el7.x86_64) is compatible </div><div class="line">DEBU[0000] Container ucp-phase2 not present: Error: No such container: ucp-phase2 </div><div class="line">DEBU[0000] Detected container ucp                       </div><div class="line">DEBU[0000] Container ucp-controller not present: Error: No such container: ucp-controller </div><div class="line">DEBU[0000] Container ucp-swarm-manager not present: Error: No such container: ucp-swarm-manager </div><div class="line">DEBU[0000] Container ucp-swarm-join not present: Error: No such container: ucp-swarm-join </div><div class="line">DEBU[0000] Container ucp-kv not present: Error: No such container: ucp-kv </div><div class="line">DEBU[0000] Container ucp-proxy not present: Error: No such container: ucp-proxy </div><div class="line">DEBU[0000] Container ucp-client-root-ca not present: Error: No such container: ucp-client-root-ca </div><div class="line">DEBU[0000] Container ucp-cluster-root-ca not present: Error: No such container: ucp-cluster-root-ca </div><div class="line">DEBU[0000] Container ucp-auth-store not present: Error: No such container: ucp-auth-store </div><div class="line">DEBU[0000] Container ucp-auth-api not present: Error: No such container: ucp-auth-api </div><div class="line">DEBU[0000] Container ucp-auth-worker not present: Error: No such container: ucp-auth-worker </div><div class="line">DEBU[0000] Container ucp-kv-backup not present: Error: No such container: ucp-kv-backup </div><div class="line">DEBU[0000] Container ucp-kv-restore not present: Error: No such container: ucp-kv-restore </div><div class="line">DEBU[0000] Container ucp-metrics not present: Error: No such container: ucp-metrics </div><div class="line">DEBU[0000] Validating base system meets minimum requirements </div><div class="line">DEBU[0000] Your system meets minimum memory requirements:  3.88 GB &gt;= 2.00 GB </div><div class="line">WARN[0000] Your system uses devicemapper.  We can not accurately detect available storage space.  Please make sure you have at least 3.00 GB available in /server/dspace </div><div class="line">Admin Username: will</div><div class="line">Admin Password: </div><div class="line">Confirm Admin Password: </div><div class="line">DEBU[0207] Checking for images                          </div><div class="line">INFO[0207] All required images are present              </div><div class="line">DEBU[0208] Local Name: controller                       </div><div class="line">WARN[0208] None of the hostnames we&apos;ll be using in the UCP certificates [controller 127.0.0.1 172.17.0.1] contain a domain component.  Your generated certs may fail TLS validation unless you only use one of these shortnames or IPs to connect.  You can use the --san flag to add more aliases </div><div class="line"></div><div class="line">You may enter additional aliases (SANs) now or press enter to proceed with the above list.</div><div class="line">Additional aliases: willalias</div><div class="line">DEBU[0222] User entered: willalias</div><div class="line">                     </div><div class="line">DEBU[0222] Hostnames: [controller 127.0.0.1 172.17.0.1 willalias] </div><div class="line">DEBU[0245] Launching phase 2 with: [install --host-address 10.1.5.129 -D --interactive] (6f2f352ea35e614de1005fe6d93c9843c3f972dc1e7cf5191ea9ed7a0e46fb25) </div><div class="line">DEBU[0000] Beginning phase 2 install for instance XZNK:CP6T:DHHE:XJZA:OXOM:CLS6:RIRW:SAVZ:4JIL:G3Q4:DJ7F:L7P3 </div><div class="line">DEBU[0000] Checking for compatible kernel version       </div><div class="line">DEBU[0000] Kernel version 3.10.0-514.2.2.el7.x86_64 is compatible </div><div class="line">DEBU[0000] Checking for compatible engine version       </div><div class="line">DEBU[0000] Detected container ucp-phase2                </div><div class="line">DEBU[0001] Container ucp-controller not present: Error: No such container: ucp-controller </div><div class="line">DEBU[0001] Container ucp-swarm-manager not present: Error: No such container: ucp-swarm-manager </div><div class="line">DEBU[0001] Container ucp-swarm-join not present: Error: No such container: ucp-swarm-join </div><div class="line">DEBU[0001] Container ucp-kv not present: Error: No such container: ucp-kv </div><div class="line">DEBU[0001] Container ucp-proxy not present: Error: No such container: ucp-proxy </div><div class="line">DEBU[0001] Container ucp-client-root-ca not present: Error: No such container: ucp-client-root-ca </div><div class="line">DEBU[0001] Container ucp-cluster-root-ca not present: Error: No such container: ucp-cluster-root-ca </div><div class="line">DEBU[0001] Container ucp-auth-store not present: Error: No such container: ucp-auth-store </div><div class="line">DEBU[0001] Container ucp-auth-api not present: Error: No such container: ucp-auth-api </div><div class="line">DEBU[0001] Container ucp-auth-worker not present: Error: No such container: ucp-auth-worker </div><div class="line">DEBU[0001] Container ucp-kv-backup not present: Error: No such container: ucp-kv-backup </div><div class="line">DEBU[0001] Container ucp-kv-restore not present: Error: No such container: ucp-kv-restore </div><div class="line">DEBU[0001] Container ucp-metrics not present: Error: No such container: ucp-metrics </div><div class="line">DEBU[0001] Local Name: controller                       </div><div class="line">DEBU[0001] Hostnames: [controller 127.0.0.1 172.17.0.1 willalias] </div><div class="line">DEBU[0001] This node is known as efpood09fyouiyib1f78y5oa6 </div><div class="line">DEBU[0001] Got node IP 10.1.5.129 from swarm            </div><div class="line">DEBU[0001] EnginePortCheck: port 2375, prpl http, err Get http://10.1.5.129:2375/info: dial tcp 10.1.5.129:2375: getsockopt: connection refused </div><div class="line">DEBU[0001] EnginePortCheck: port 2375, prpl https, err Get https://10.1.5.129:2375/info: dial tcp 10.1.5.129:2375: getsockopt: connection refused </div><div class="line">DEBU[0001] EnginePortCheck: port 2376, prpl http, err Get http://10.1.5.129:2376/info: dial tcp 10.1.5.129:2376: getsockopt: connection refused </div><div class="line">DEBU[0001] EnginePortCheck: port 2376, prpl https, err Get https://10.1.5.129:2376/info: dial tcp 10.1.5.129:2376: getsockopt: connection refused </div><div class="line">DEBU[0001] Checking for available and accessible port 12387 </div><div class="line">DEBU[0001] Checking for available and accessible port 12380 </div><div class="line">DEBU[0001] Checking for available and accessible port 12381 </div><div class="line">DEBU[0001] Checking for available and accessible port 443 </div><div class="line">DEBU[0001] Checking for available and accessible port 12382 </div><div class="line">DEBU[0001] Checking for available and accessible port 2376 </div><div class="line">DEBU[0001] Checking for available and accessible port 12383 </div><div class="line">DEBU[0001] Checking for available and accessible port 12376 </div><div class="line">DEBU[0001] Checking for available and accessible port 12384 </div><div class="line">DEBU[0001] Checking for available and accessible port 4789 </div><div class="line">DEBU[0001] Checking for available and accessible port 12385 </div><div class="line">DEBU[0001] Checking for available and accessible port 12379 </div><div class="line">DEBU[0001] Checking for available and accessible port 12386 </div><div class="line">DEBU[0038] Checking for liveness of http://10.1.5.129:4789/ </div><div class="line">DEBU[0039] Connected to http://10.1.5.129:4789/         </div><div class="line">DEBU[0063] Checking for liveness of http://10.1.5.129:12387/ </div><div class="line">DEBU[0063] Connected to http://10.1.5.129:12387/        </div><div class="line">DEBU[0089] Checking for liveness of http://10.1.5.129:12382/ </div><div class="line">DEBU[0089] Connected to http://10.1.5.129:12382/        </div><div class="line">DEBU[0114] Checking for liveness of http://10.1.5.129:12384/ </div><div class="line">DEBU[0114] Connected to http://10.1.5.129:12384/        </div><div class="line">DEBU[0126] Checking for liveness of http://10.1.5.129:12376/ </div><div class="line">DEBU[0126] Connected to http://10.1.5.129:12376/        </div><div class="line">DEBU[0158] Checking for liveness of http://10.1.5.129:12383/ </div><div class="line">DEBU[0161] Connected to http://10.1.5.129:12383/        </div><div class="line">DEBU[0183] Checking for liveness of http://10.1.5.129:443/ </div><div class="line">DEBU[0185] Connected to http://10.1.5.129:443/          </div><div class="line">DEBU[0199] Checking for liveness of http://10.1.5.129:2376/ </div><div class="line">DEBU[0201] Connected to http://10.1.5.129:2376/         </div><div class="line">DEBU[0235] Checking for liveness of http://10.1.5.129:12386/ </div><div class="line">DEBU[0240] Connected to http://10.1.5.129:12386/        </div><div class="line">DEBU[0260] Checking for liveness of http://10.1.5.129:12381/ </div><div class="line">DEBU[0260] Connected to http://10.1.5.129:12381/        </div><div class="line">DEBU[0271] Checking for liveness of http://10.1.5.129:12385/ </div><div class="line">DEBU[0271] Connected to http://10.1.5.129:12385/        </div><div class="line">DEBU[0295] Checking for liveness of http://10.1.5.129:12379/ </div><div class="line">DEBU[0295] Connected to http://10.1.5.129:12379/        </div><div class="line">DEBU[0321] Checking for liveness of http://10.1.5.129:12380/ </div><div class="line">DEBU[0321] Connected to http://10.1.5.129:12380/        </div><div class="line">DEBU[0429] All ports are open and available             </div><div class="line">DEBU[0429] Purging old state from UCP volumes mounted in /var/lib/docker/ucp </div><div class="line">INFO[0429] Establishing mutual Cluster Root CA with Swarm </div><div class="line">INFO[0429] Installing UCP with host address 10.1.5.129 - If this is incorrect, please specify an alternative address with the &apos;--host-address&apos; flag </div><div class="line">INFO[0429] Generating UCP Client Root CA                </div><div class="line">DEBU[0429] Writing /var/lib/docker/ucp/ucp-client-root-ca/key.pem </div><div class="line">INFO[0430] Deploying UCP Service                        </div><div class="line">DEBU[0433] Local task container not found, trying again. </div><div class="line">DEBU[0459] Local task container not found, trying again. </div><div class="line">................</div><div class="line">................</div><div class="line">DEBU[0461] Local task container not found, trying again. </div><div class="line">ERRO[0461] Unable to get local task container for ucp-agent service </div><div class="line">FATA[0461] unable to find local task container</div></pre></td></tr></table></figure></p>
+<p>重新仔细阅读一下官方文档，发现有些前置条件没有满足：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">Docker Engine 1.13.0</div><div class="line">Docker Remote API 1.25</div><div class="line">Compose 1.9</div></pre></td></tr></table></figure></p>
+<p>刚才docker remote没有开启，compose的版本也不够。</p>
+<p>先升级一下所有docker节点的compose：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">[root@dnode2 willyarnbase]# curl -L &quot;https://github.com/docker/compose/releases/download/1.11.1/docker-compose-$(uname -s)-$(uname -m)&quot; -o /usr/local/bin/docker-compose</div><div class="line">  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current</div><div class="line">                                 Dload  Upload   Total   Spent    Left  Speed</div><div class="line">100   600    0   600    0     0    534      0 --:--:--  0:00:01 --:--:--   534</div><div class="line">100 8053k  100 8053k    0     0   403k      0  0:00:19  0:00:19 --:--:--  806k</div><div class="line">[root@dnode2 willyarnbase]# docker-compose -v</div><div class="line">docker-compose version 1.11.1, build 7c5d5e4</div></pre></td></tr></table></figure></p>
+<p>再编辑/etc/docker/daemon.json配置文件，添加下面配置，启动docker remote API:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&quot;hosts&quot;: [&quot;tcp://0.0.0.0:4243&quot;,&quot;unix:///var/run/docker.sock&quot;]</div></pre></td></tr></table></figure></p>
+<p>然后访问此docker节点的4243接口，例如：<a href="http://10.1.5.129:4243/images/json，测试可以获取到当前节点的image信息，代表已经成功启用了docker" target="_blank" rel="external">http://10.1.5.129:4243/images/json，测试可以获取到当前节点的image信息，代表已经成功启用了docker</a> remote api。</p>
+<p>访问<a href="http://10.1.5.129:4243/version，查看相关版本信息：" target="_blank" rel="external">http://10.1.5.129:4243/version，查看相关版本信息：</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">&quot;Version&quot;: &quot;1.13.1&quot;,</div><div class="line">&quot;ApiVersion&quot;: &quot;1.26&quot;,</div><div class="line">&quot;MinAPIVersion&quot;: &quot;1.12&quot;,</div><div class="line">&quot;GitCommit&quot;: &quot;092cba3&quot;,</div><div class="line">&quot;GoVersion&quot;: &quot;go1.7.5&quot;,</div><div class="line">&quot;Os&quot;: &quot;linux&quot;,</div><div class="line">&quot;Arch&quot;: &quot;amd64&quot;,</div><div class="line">&quot;KernelVersion&quot;: &quot;3.10.0-514.2.2.el7.x86_64&quot;,</div><div class="line">&quot;BuildTime&quot;: &quot;2017-02-08T06:38:28.018621521+00:00&quot;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>版本是1.26，已经满足前面的各个docker组件的版本需求，把这个配置scp给其他的docker节点即可。</p>
+<p>参考： <a href="https://docs.docker.com/engine/api/v1.26/" target="_blank" rel="external">https://docs.docker.com/engine/api/v1.26/</a></p>
+<p>再去controller启动ucp：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker run --rm -it --name ucp   -v /var/run/docker.sock:/var/run/docker.sock   docker/ucp:2.1.0 install   --host-address 10.1.5.129  --interactive</div><div class="line">INFO[0000] Verifying your system is compatible with UCP </div><div class="line">INFO[0000] Your engine version 1.13.1, build 092cba3 (3.10.0-514.2.2.el7.x86_64) is compatible </div><div class="line">FATA[0019] This swarm is already managed by UCP. Please either uninstall UCP first using the &apos;uninstall-ucp&apos; operation or upgrade your cluster to a newer version</div></pre></td></tr></table></figure></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/02/09/机器学习与R语言——模型Tips/" title="机器学习与R语言——模型Tips" itemprop="url">机器学习与R语言——模型Tips</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-02-09T06:21:36.000Z" itemprop="datePublished"> 发表于 2017-02-09</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>通用<br>=<br>对于NA缺失值的处理，连续型的可以给以均值、枚举型应该给一个unknown的计数。</p>
+<p>距离类的算法，需要将各个特征进行标准化【z-score、max-min】</p>
+<p>kmeans聚类<br>=<br>选择类的数量：根据业务判断</p>
+<p>聚类结果的各类中的数量不应相差过于悬殊【也跟业务有关】</p>
+<p>可以根据各个cluster中的特征z-score看出各个cluster自己的特性，并为之冠以业务名称。</p>
+<p>模型性能评价<br>=<br>我们通常只用了分类结果，但是隐藏的概率没有看到。</p>
+<p>例如，一个分类器可以同99%的把握确信包含“免费”和“铃声”等词语的短信是垃圾短信，但是只有51%的把握确信包含“今晚”的短信是垃圾短信。这两种情况都会被预测为垃圾短信，但是对两者做判断的确信程度就很大。一个是99，另一个才只有51，后者就极容易出现错误判断。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&gt; head(subset(sms_results, actual_type != predict_type))</div></pre></td></tr></table></figure></p>
+<h4 id="混淆矩阵"><a href="#混淆矩阵" class="headerlink" title="混淆矩阵"></a>混淆矩阵</h4><p>通常使用二元的混淆矩阵：</p>
+<p>准确率、错误率<br>kappa统计量<br>灵敏度（真阳性lv）、特异性（真阴性率）<br>精确度（阳性预测值）、召回率<br>F度量（综合精确度和召回率）</p>
+<p>使用ROC曲线来可视化模型的可用性，ROC曲线是Y为真阳性比例、X为假阳性比例的线图。<br>AUC是ROC曲线下的面积，一般作为评价分类器的统计量。(Area Under the ROC)</p>
+<h4 id="抽样"><a href="#抽样" class="headerlink" title="抽样"></a>抽样</h4><p>分层抽样：在从全量数据中抽取训练集或测试集的时候有个问题，就是每个类别中的数量可能过大或过小，因此我们应该从每个类别中按同样比例随机抽取数据。</p>
+<p>K折交叉验证的方法默认就是使用分层抽样进行每次数据集的划分的。</p>
+<p>较小数据集的时候，自助法抽样比K折的效果更好一些。</p>
+<h4 id="提高模型的性能"><a href="#提高模型的性能" class="headerlink" title="提高模型的性能"></a>提高模型的性能</h4><p>可以使用caret进行自动参数调整，考虑三个问题：</p>
+<ul>
+<li>需要使用数据来训练哪种机器学习模型</li>
+<li>哪些模型参数是可以调整的，能调整的空间有多大</li>
+<li>使用何种评价标准来评估模型从而找到最优的候选者</li>
+<li></li>
+</ul>
+<p>朴素贝叶斯<br>=<br>假设数据集的所有特征都具有相同的重要性和独立性。</p>
+<p>在贝叶斯算法中，概率值是相乘的，所以概率为0的值将导致该消息是垃圾邮件的后验概率为0.这种问题使用一种叫做拉普拉斯估计(Laplace estimator)的方法解决，本质上就是给频率表中的每个技术都加上一个较小的数，保证每一类中每个特征发生的概率是非零的。</p>
+<p>决策树<br>=<br>boosting算法思想：通过将很多能力弱的学习算法组合在一起，就可以创建一个团队，这比任何一个单独学习算法都强的多。每个模型都有一组特定的优点和缺点，对于特定的问题，可能更好，也可能更差，而使用优缺互补的多种学习方法的结合，就可以显著提高分类器的准确性。</p>
+<p>C5.0中是添加一个trials参数，表示在模型增强团队中使用的独立决策树的数量。trials设置了一个上限，如果该算法识别出额外的试验似乎没有提高模型准确性，那么它将停止添加决策树。</p>
+<p>为啥默认不用boosting呢？一是时间因素，二是如果训练数据集很杂乱，那么boosting可能根本不会改善模型性能。</p>
+<p>针对具体业务，设置风险矩阵cost matrix，添加到模型训练过程中，虽然整体预测准确率会降低，但是能够降低业务风险。</p>
+<p>规则学习<br>=<br>规则学习经常以一种类似决策树学习的方式被使用。分类规则代表的是if-else逻辑语句形式的知识，可以用来对未标记的案例指定一个分类。</p>
+<p>与决策树不同的是，决策树必须从上倒下地应用，而规则是单独存在的事实。根据相同数据建立的模型，规则学习的结果通常比决策树的结果更简洁、更直接、更容易理解。</p>
+<p>规则学习擅长识别偶发事件。</p>
+<p>决策树是分而治之，规则学习是独立而治之，区别是考虑决策节点的时候是否受过去决策历史的影响。</p>
+<p>分类规则也可以直接从决策树获得。从一个叶子节点开始沿着树枝回到树根，就获得一系列的决策，这些决策可以组合成一个单一的规则。</p>
+<p>当训练模型事，如果制定rules=TRUE,C5.0函数就利用分类规则生成模型了。</p>
 
         
         
@@ -1049,7 +959,7 @@
 
 
   <nav id="page-nav" class="clearfix">
-    <a class="extend prev" rel="prev" href="/page/12/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="page-number" href="/page/12/">12</a><span class="page-number current">13</span><a class="page-number" href="/page/14/">14</a><a class="page-number" href="/page/15/">15</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/14/">Next<span></span></a>
+    <a class="extend prev" rel="prev" href="/page/12/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="page-number" href="/page/12/">12</a><span class="page-number current">13</span><a class="page-number" href="/page/14/">14</a><a class="page-number" href="/page/15/">15</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/14/">Next<span></span></a>
   </nav>
 
 </div>
@@ -1070,7 +980,7 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>187</sup></a></li>
 			
 		
 			
@@ -1122,19 +1032,11 @@
 			
 		
 			
-				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+				<li><a href="/tags/Solr/" title="Solr">Solr<sup>1</sup></a></li>
 			
 		
 			
@@ -1147,6 +1049,14 @@
 		
 			
 				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hue/" title="hue">hue<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
 			
 		
 		</ul>

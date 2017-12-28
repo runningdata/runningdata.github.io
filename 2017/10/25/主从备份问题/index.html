@@ -3,6 +3,14 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
+  <script type="text/javascript">
+    (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+    })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+    
+    _st('install','yNiKTKaAnwd1uuxVMfiE','2.0.0');
+  </script>
   <script>
     var _hmt = _hmt || [];
     (function() {
@@ -27,13 +35,13 @@
 当前已经有了健壮的主从结构/或者">
 <meta property="og:type" content="article">
 <meta property="og:title" content="主从备份问题">
-<meta property="og:url" content="http://willcup.com/2017/10/25/主从备份问题/index.html">
+<meta property="og:url" content="https://runningdata.github.io/2017/10/25/主从备份问题/index.html">
 <meta property="og:site_name" content="Will's Blog">
 <meta property="og:description" content="昨天同事聊起mysql的主从备份问题。我们都知道mysql的主从同步是通过binlog实现的，抛开已经成行的主从不说，如果要新增从库的话，那么具体是精准的copy数据库镜像，然后记录binlog位置的呢？如果说copy镜像的话，那么一定要停库或者锁表了，如果是copy主库的话，那势必会影响线上业务了。
 参考了一些资料，自己脑袋也跟着转了一下，总结出以下几种情况。
 
 当前已经有了健壮的主从结构/或者">
-<meta property="og:image" content="http://willcup.com/C:\Users\will\Pictures\xtrabakcup.png">
+<meta property="og:image" content="https://runningdata.github.io/C:\Users\will\Pictures\xtrabakcup.png">
 <meta property="og:updated_time" content="2017-12-27T13:41:24.797Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="主从备份问题">
@@ -41,7 +49,7 @@
 参考了一些资料，自己脑袋也跟着转了一下，总结出以下几种情况。
 
 当前已经有了健壮的主从结构/或者">
-<meta name="twitter:image" content="http://willcup.com/C:\Users\will\Pictures\xtrabakcup.png">
+<meta name="twitter:image" content="https://runningdata.github.io/C:\Users\will\Pictures\xtrabakcup.png">
 
     
     <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
@@ -86,7 +94,7 @@
 					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
 						<label>Search</label>
 						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
-						<input type="hidden" name="q" value="site:willcup.com">
+						<input type="hidden" name="q" value="site:runningdata.github.io">
 					</form>
 					
 					</li>
@@ -164,7 +172,7 @@
 
 	<div class="article-share" id="share">
 	
-	  <div data-url="http://willcup.com/2017/10/25/主从备份问题/" data-title="主从备份问题 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  <div data-url="https://runningdata.github.io/2017/10/25/主从备份问题/" data-title="主从备份问题 | Will&#39;s Blog" data-tsina="null" class="share clearfix">
 	  </div>
 	
 	</div>
@@ -198,7 +206,7 @@
 
 	
 <!-- 多说评论框 start -->
-  <div class="ds-thread" data-thread-key="2017/10/25/主从备份问题/" data-title="主从备份问题" data-url="http://willcup.com/2017/10/25/主从备份问题/"></div>
+  <div class="ds-thread" data-thread-key="2017/10/25/主从备份问题/" data-title="主从备份问题" data-url="https://runningdata.github.io/2017/10/25/主从备份问题/"></div>
 <!-- 多说评论框 end -->
 <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
 <script type="text/javascript">
@@ -239,7 +247,7 @@ var duoshuoQuery = {short_name:"ruoyuchen"};
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>187</sup></a></li>
 			
 		
 			
@@ -291,19 +299,11 @@ var duoshuoQuery = {short_name:"ruoyuchen"};
 			
 		
 			
-				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+				<li><a href="/tags/Solr/" title="Solr">Solr<sup>1</sup></a></li>
 			
 		
 			
@@ -316,6 +316,14 @@ var duoshuoQuery = {short_name:"ruoyuchen"};
 		
 			
 				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hue/" title="hue">hue<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
 			
 		
 		</ul>

@@ -3,6 +3,14 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
+  <script type="text/javascript">
+    (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+    })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+    
+    _st('install','yNiKTKaAnwd1uuxVMfiE','2.0.0');
+  </script>
   <script>
     var _hmt = _hmt || [];
     (function() {
@@ -27,17 +35,17 @@
 localhost:8983/admin/collections?action=CREATE&amp;amp;name=willCollection&amp;amp;numShards=2&amp;amp;replicationFa">
 <meta property="og:type" content="article">
 <meta property="og:title" content="solr上手（四）">
-<meta property="og:url" content="http://willcup.com/2015/08/06/solr上手-4/index.html">
+<meta property="og:url" content="https://runningdata.github.io/2015/08/06/solr上手-4/index.html">
 <meta property="og:site_name" content="Will's Blog">
 <meta property="og:description" content="走马观花过完了solr官方的入门文档，我们下一个目的就是搞清楚Collection的CURD, 以及弄清楚schema在哪里配置或者生成的。
 找到官方wiki跟做.
 创建Collection
 localhost:8983/admin/collections?action=CREATE&amp;amp;name=willCollection&amp;amp;numShards=2&amp;amp;replicationFa">
-<meta property="og:image" content="http://willcup.com/imgs/solr/4.1 solrCloud创建collection.png">
-<meta property="og:image" content="http://willcup.com/imgs/solr/4.2 创建collection后即可在core看到信息.png">
-<meta property="og:image" content="http://willcup.com/imgs/solr/4.3 schema配置文件.png">
-<meta property="og:image" content="http://willcup.com/imgs/solr/4.4 solr的zookeeper存储.png">
-<meta property="og:image" content="http://willcup.com/imgs/solr/4.5solr的线上schema查询.png">
+<meta property="og:image" content="https://runningdata.github.io/imgs/solr/4.1 solrCloud创建collection.png">
+<meta property="og:image" content="https://runningdata.github.io/imgs/solr/4.2 创建collection后即可在core看到信息.png">
+<meta property="og:image" content="https://runningdata.github.io/imgs/solr/4.3 schema配置文件.png">
+<meta property="og:image" content="https://runningdata.github.io/imgs/solr/4.4 solr的zookeeper存储.png">
+<meta property="og:image" content="https://runningdata.github.io/imgs/solr/4.5solr的线上schema查询.png">
 <meta property="og:updated_time" content="2017-12-27T13:39:20.405Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="solr上手（四）">
@@ -45,7 +53,7 @@ localhost:8983/admin/collections?action=CREATE&amp;amp;name=willCollection&amp;a
 找到官方wiki跟做.
 创建Collection
 localhost:8983/admin/collections?action=CREATE&amp;amp;name=willCollection&amp;amp;numShards=2&amp;amp;replicationFa">
-<meta name="twitter:image" content="http://willcup.com/imgs/solr/4.1 solrCloud创建collection.png">
+<meta name="twitter:image" content="https://runningdata.github.io/imgs/solr/4.1 solrCloud创建collection.png">
 
     
     <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
@@ -90,7 +98,7 @@ localhost:8983/admin/collections?action=CREATE&amp;amp;name=willCollection&amp;a
 					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
 						<label>Search</label>
 						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
-						<input type="hidden" name="q" value="site:willcup.com">
+						<input type="hidden" name="q" value="site:runningdata.github.io">
 					</form>
 					
 					</li>
@@ -155,7 +163,7 @@ localhost:8983/admin/collections?action=CREATE&amp;amp;name=willCollection&amp;a
 
 	<div class="article-share" id="share">
 	
-	  <div data-url="http://willcup.com/2015/08/06/solr上手-4/" data-title="solr上手（四） | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  <div data-url="https://runningdata.github.io/2015/08/06/solr上手-4/" data-title="solr上手（四） | Will&#39;s Blog" data-tsina="null" class="share clearfix">
 	  </div>
 	
 	</div>
@@ -189,7 +197,7 @@ localhost:8983/admin/collections?action=CREATE&amp;amp;name=willCollection&amp;a
 
 	
 <!-- 多说评论框 start -->
-  <div class="ds-thread" data-thread-key="2015/08/06/solr上手-4/" data-title="solr上手（四）" data-url="http://willcup.com/2015/08/06/solr上手-4/"></div>
+  <div class="ds-thread" data-thread-key="2015/08/06/solr上手-4/" data-title="solr上手（四）" data-url="https://runningdata.github.io/2015/08/06/solr上手-4/"></div>
 <!-- 多说评论框 end -->
 <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
 <script type="text/javascript">
@@ -230,7 +238,7 @@ var duoshuoQuery = {short_name:"ruoyuchen"};
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>187</sup></a></li>
 			
 		
 			
@@ -282,19 +290,11 @@ var duoshuoQuery = {short_name:"ruoyuchen"};
 			
 		
 			
-				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+				<li><a href="/tags/Solr/" title="Solr">Solr<sup>1</sup></a></li>
 			
 		
 			
@@ -307,6 +307,14 @@ var duoshuoQuery = {short_name:"ruoyuchen"};
 		
 			
 				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hue/" title="hue">hue<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
 			
 		
 		</ul>

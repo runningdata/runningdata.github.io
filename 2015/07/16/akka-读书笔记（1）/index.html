@@ -3,6 +3,14 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
+  <script type="text/javascript">
+    (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+    })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+    
+    _st('install','yNiKTKaAnwd1uuxVMfiE','2.0.0');
+  </script>
   <script>
     var _hmt = _hmt || [];
     (function() {
@@ -31,7 +39,7 @@
 akka是被设计为一个工具而不是一个框架。框架是一个栈的某个独立的元素【比如UI层、web层等】，而akka可以用于这个栈中的任何部分，也可以为这些部分之间提供连接。akka的每个module是由jar包组成的，已经尽量较少了各个jar之间的耦合，甚至akka-actor除了scal">
 <meta property="og:type" content="article">
 <meta property="og:title" content="akka in action 读书笔记（1）">
-<meta property="og:url" content="http://willcup.com/2015/07/16/akka-读书笔记（1）/index.html">
+<meta property="og:url" content="https://runningdata.github.io/2015/07/16/akka-读书笔记（1）/index.html">
 <meta property="og:site_name" content="Will's Blog">
 <meta property="og:description" content="什么是AKKAakka：
 
@@ -41,17 +49,17 @@ akka是被设计为一个工具而不是一个框架。框架是一个栈的某�
 事件驱动编程模型
 
 akka是被设计为一个工具而不是一个框架。框架是一个栈的某个独立的元素【比如UI层、web层等】，而akka可以用于这个栈中的任何部分，也可以为这些部分之间提供连接。akka的每个module是由jar包组成的，已经尽量较少了各个jar之间的耦合，甚至akka-actor除了scal">
-<meta property="og:image" content="http://willcup.com/imgs/akka/akka1.1.png">
-<meta property="og:image" content="http://willcup.com/imgs/akka/akka1.2.png">
-<meta property="og:image" content="http://willcup.com/imgs/akka/akka1.3.png">
-<meta property="og:image" content="http://willcup.com/imgs/akka/akka1.4.png">
-<meta property="og:image" content="http://willcup.com/imgs/akka/akka1.5.png">
-<meta property="og:image" content="http://willcup.com/imgs/akka/akka1.6.png">
-<meta property="og:image" content="http://willcup.com/imgs/akka/akka1.7.png">
-<meta property="og:image" content="http://willcup.com/imgs/akka/akka1.8.png">
-<meta property="og:image" content="http://willcup.com/imgs/akka/akka1.9.png">
-<meta property="og:image" content="http://willcup.com/imgs/akka/akka1.10.png">
-<meta property="og:image" content="http://willcup.com/imgs/akka/akka1.11.png">
+<meta property="og:image" content="https://runningdata.github.io/imgs/akka/akka1.1.png">
+<meta property="og:image" content="https://runningdata.github.io/imgs/akka/akka1.2.png">
+<meta property="og:image" content="https://runningdata.github.io/imgs/akka/akka1.3.png">
+<meta property="og:image" content="https://runningdata.github.io/imgs/akka/akka1.4.png">
+<meta property="og:image" content="https://runningdata.github.io/imgs/akka/akka1.5.png">
+<meta property="og:image" content="https://runningdata.github.io/imgs/akka/akka1.6.png">
+<meta property="og:image" content="https://runningdata.github.io/imgs/akka/akka1.7.png">
+<meta property="og:image" content="https://runningdata.github.io/imgs/akka/akka1.8.png">
+<meta property="og:image" content="https://runningdata.github.io/imgs/akka/akka1.9.png">
+<meta property="og:image" content="https://runningdata.github.io/imgs/akka/akka1.10.png">
+<meta property="og:image" content="https://runningdata.github.io/imgs/akka/akka1.11.png">
 <meta property="og:updated_time" content="2017-12-27T13:39:20.401Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="akka in action 读书笔记（1）">
@@ -63,7 +71,7 @@ akka是被设计为一个工具而不是一个框架。框架是一个栈的某�
 事件驱动编程模型
 
 akka是被设计为一个工具而不是一个框架。框架是一个栈的某个独立的元素【比如UI层、web层等】，而akka可以用于这个栈中的任何部分，也可以为这些部分之间提供连接。akka的每个module是由jar包组成的，已经尽量较少了各个jar之间的耦合，甚至akka-actor除了scal">
-<meta name="twitter:image" content="http://willcup.com/imgs/akka/akka1.1.png">
+<meta name="twitter:image" content="https://runningdata.github.io/imgs/akka/akka1.1.png">
 
     
     <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
@@ -108,7 +116,7 @@ akka是被设计为一个工具而不是一个框架。框架是一个栈的某�
 					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
 						<label>Search</label>
 						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
-						<input type="hidden" name="q" value="site:willcup.com">
+						<input type="hidden" name="q" value="site:runningdata.github.io">
 					</form>
 					
 					</li>
@@ -257,7 +265,7 @@ akka是被设计为一个工具而不是一个框架。框架是一个栈的某�
 
 	<div class="article-share" id="share">
 	
-	  <div data-url="http://willcup.com/2015/07/16/akka-读书笔记（1）/" data-title="akka in action 读书笔记（1） | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  <div data-url="https://runningdata.github.io/2015/07/16/akka-读书笔记（1）/" data-title="akka in action 读书笔记（1） | Will&#39;s Blog" data-tsina="null" class="share clearfix">
 	  </div>
 	
 	</div>
@@ -291,7 +299,7 @@ akka是被设计为一个工具而不是一个框架。框架是一个栈的某�
 
 	
 <!-- 多说评论框 start -->
-  <div class="ds-thread" data-thread-key="2015/07/16/akka-读书笔记（1）/" data-title="akka in action 读书笔记（1）" data-url="http://willcup.com/2015/07/16/akka-读书笔记（1）/"></div>
+  <div class="ds-thread" data-thread-key="2015/07/16/akka-读书笔记（1）/" data-title="akka in action 读书笔记（1）" data-url="https://runningdata.github.io/2015/07/16/akka-读书笔记（1）/"></div>
 <!-- 多说评论框 end -->
 <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
 <script type="text/javascript">
@@ -332,7 +340,7 @@ var duoshuoQuery = {short_name:"ruoyuchen"};
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>187</sup></a></li>
 			
 		
 			
@@ -384,19 +392,11 @@ var duoshuoQuery = {short_name:"ruoyuchen"};
 			
 		
 			
-				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+				<li><a href="/tags/Solr/" title="Solr">Solr<sup>1</sup></a></li>
 			
 		
 			
@@ -409,6 +409,14 @@ var duoshuoQuery = {short_name:"ruoyuchen"};
 		
 			
 				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hue/" title="hue">hue<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
 			
 		
 		</ul>

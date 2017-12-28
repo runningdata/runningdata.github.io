@@ -3,6 +3,14 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
+  <script type="text/javascript">
+    (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+    })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+    
+    _st('install','yNiKTKaAnwd1uuxVMfiE','2.0.0');
+  </script>
   <script>
     var _hmt = _hmt || [];
     (function() {
@@ -24,7 +32,7 @@
     <meta name="description" content="左右水色 右手天光">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Will's Blog">
-<meta property="og:url" content="http://willcup.com/page/2/index.html">
+<meta property="og:url" content="https://runningdata.github.io/page/2/index.html">
 <meta property="og:site_name" content="Will's Blog">
 <meta property="og:description" content="左右水色 右手天光">
 <meta name="twitter:card" content="summary">
@@ -74,7 +82,7 @@
 					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
 						<label>Search</label>
 						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
-						<input type="hidden" name="q" value="site:willcup.com">
+						<input type="hidden" name="q" value="site:runningdata.github.io">
 					</form>
 					
 					</li>
@@ -84,260 +92,6 @@
     </header>
     <div id="container">
       <div id="main">
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/12/15/presto命令行/" title="presto命令行" itemprop="url">presto命令行</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-12-15T06:28:04.000Z" itemprop="datePublished"> 发表于 2017-12-15</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/12/15/presto之hive-connector/" title="presto之hive-connector" itemprop="url">presto之hive-connector</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-12-15T03:40:46.000Z" itemprop="datePublished"> 发表于 2017-12-15</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h4 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h4><p>hive是由三个部分组成的</p>
-<ul>
-<li>特定格式的HDFS文件</li>
-<li>metadata数据库，通常是mysql</li>
-<li>HQL及其执行引擎</li>
-</ul>
-<p>presto会用到前面两者。</p>
-<h4 id="支持的文件类型"><a href="#支持的文件类型" class="headerlink" title="支持的文件类型"></a>支持的文件类型</h4><p>ORC、Parquet、Avro、RCFile、SequenceFile、JSON、Text</p>
-<h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><p>创建<code>etc/catalog/hive.properties</code>文件，挂载<code>hive-hadoop2</code> connector作为<code>hive</code> catalog，替换掉你的hive metastore的thrift host和port：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">connector.name=hive-hadoop2</div><div class="line">hive.metastore.uri=thrift://example.net:9083</div></pre></td></tr></table></figure>
-<h4 id="多个hive集群"><a href="#多个hive集群" class="headerlink" title="多个hive集群"></a>多个hive集群</h4><p>随便你使用多少catalog，添加其他的hive 集群就是了，新增properties文件到<code>etc/catalog</code>就可以了。</p>
-<h4 id="HDFS配置"><a href="#HDFS配置" class="headerlink" title="HDFS配置"></a>HDFS配置</h4><p>对于基本设置，presto自动配置了HDFS client，不需要额外的配置文件。但是对于hdfs联邦和NN HA的情况，需要额外指定一下参数才能正常访问HDFS cluster。这个要添加<code>hive.config.resources</code>引用到你的hdfs配置文件中：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">hive.config.resources=/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml</div></pre></td></tr></table></figure></p>
-<p>官方建议尽量少添加配置项，多余的配置项可能更容易引起问题。</p>
-<p>还有就是这些配置文件必须在每个presto节点上都是有效存在的。</p>
-<h4 id="HDFS用户"><a href="#HDFS用户" class="headerlink" title="HDFS用户"></a>HDFS用户</h4><p>在没有整合Kerberos的HDFS中，presto会使用presto进程的运行用户访问HDFS。我们可以通过配置presto的JVM参数指定访问HDFS的用户。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">-DHADOOP_USER_NAME=hdfs_user</div></pre></td></tr></table></figure></p>
-<h4 id="访问带有kerberos认证的HDFS"><a href="#访问带有kerberos认证的HDFS" class="headerlink" title="访问带有kerberos认证的HDFS"></a>访问带有kerberos认证的HDFS</h4><p>kerberos认证对于HDFS和hive metastore是都支持的。但是，通过ticket cache进行认证的还没有支持。</p>
-<h4 id="hive配置项"><a href="#hive配置项" class="headerlink" title="hive配置项"></a>hive配置项</h4><table>
-<thead>
-<tr>
-<th>Property</th>
-<th>Name</th>
-<th>Description    Default</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>hive.metastore.uri</td>
-<td>Hive metastore 的thrift URI. 如果多个的话，默认使用第一个，后面的作为备用，逗号隔开。Example: thrift://192.0.2.3:9083 or thrift://192.0.2.3:9083,thrift://192.0.2.4:9083</td>
-<td></td>
-</tr>
-<tr>
-<td>hive.config.resources</td>
-<td>逗号分隔的HDFS配置文件, 每个presto server所在的节点都要有效存在.  Example: /etc/hdfs-site.xml</td>
-<td></td>
-</tr>
-<tr>
-<td>hive.storage-format</td>
-<td>创建新表的默认文件格式</td>
-<td>RCBINARY</td>
-</tr>
-<tr>
-<td>hive.compression-codec</td>
-<td>写文件的压缩格式</td>
-<td>GZIP</td>
-</tr>
-<tr>
-<td>hive.force-local-scheduling</td>
-<td>Force splits to be scheduled on the same node as the Hadoop DataNode process serving the split data. This is useful for installations where Presto is collocated with every DataNode.</td>
-<td>false</td>
-</tr>
-<tr>
-<td>hive.respect-table-format</td>
-<td>Should new partitions be written using the existing table format or the default Presto format?</td>
-<td>true</td>
-</tr>
-<tr>
-<td>hive.immutable-partitions</td>
-<td>新数据能不能insert到已经存在的partitions?</td>
-<td>false</td>
-</tr>
-<tr>
-<td>hive.max-partitions-per-writers</td>
-<td>每个writer的最大partition数.</td>
-<td>100</td>
-</tr>
-<tr>
-<td>hive.max-partitions-per-scan</td>
-<td>单个table scan可扫描的最大partition数</td>
-<td>100,000</td>
-</tr>
-<tr>
-<td>hive.metastore.authentication.type</td>
-<td>Hive metastore认证类型,可是是 NONE 或者 KERBEROS.</td>
-<td>NONE</td>
-</tr>
-<tr>
-<td>hive.metastore.service.principal</td>
-<td>The Kerberos principal of the Hive metastore service.</td>
-<td></td>
-</tr>
-<tr>
-<td>hive.metastore.client.principal</td>
-<td>The Kerberos principal that Presto will use when connecting to the Hive metastore service.</td>
-<td></td>
-</tr>
-<tr>
-<td>hive.metastore.client.keytab</td>
-<td>Hive metastore client keytab 位置.</td>
-<td></td>
-</tr>
-<tr>
-<td>hive.hdfs.authentication.type</td>
-<td>HDFS 认证类型，可以是 NONE 或者 KERBEROS.</td>
-<td>NONE</td>
-</tr>
-<tr>
-<td>hive.hdfs.impersonation.enabled</td>
-<td>启用 HDFS终端user可以假装.</td>
-<td>false</td>
-</tr>
-<tr>
-<td>hive.hdfs.presto.principal</td>
-<td>The Kerberos principal that Presto will use when connecting to HDFS.</td>
-<td></td>
-</tr>
-<tr>
-<td>hive.hdfs.presto.keytab</td>
-<td>HDFS client keytab 位置.</td>
-<td></td>
-</tr>
-<tr>
-<td>hive.security</td>
-<td>参考Hive Security Configuration.</td>
-<td></td>
-</tr>
-<tr>
-<td>security.config-file</td>
-<td>Path of config file to use when hive.security=file. See File Based Authorization for details.</td>
-<td></td>
-</tr>
-<tr>
-<td>hive.non-managed-table-writes-enabled</td>
-<td>Enable writes to non-managed (external) Hive tables.</td>
-<td>false</td>
-</tr>
-</tbody>
-</table>
-<h4 id="schema演化"><a href="#schema演化" class="headerlink" title="schema演化"></a>schema演化</h4><p>hive允许同一个table的不同partition的数据有不同的schema。有的时候字段类型也有变化，Hive connector 也支持。</p>
-<ul>
-<li>tinyint, smallint, integer，bigint与varchar 之间的相互转化</li>
-<li>real转为double</li>
-<li>int类型的扩展转换，比如tinyint、smallint。</li>
-</ul>
-<p>和hive一样，转化失败就会返回null，比如把’foo’转为int</p>
-<h4 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h4><p>hive connector支持查询与操作hive表和库。然而一些特殊的操作还是需要通过hive执行。</p>
-<p>下面创建一个指定位置的hive库：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">SCHEMA</span> hive.web</div><div class="line"><span class="keyword">WITH</span> (location = <span class="string">'s3://my-bucket/'</span>)</div></pre></td></tr></table></figure></p>
-<p>创建一个ORC格式存储的page_views 表，使用date和conuntry进行分区，根据user进行分桶，共计50个桶(注意分区字段必须是最后的字段)</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> hive.web.page_views (</div><div class="line">  view_time <span class="keyword">timestamp</span>,</div><div class="line">  user_id <span class="built_in">bigint</span>,</div><div class="line">  page_url <span class="built_in">varchar</span>,</div><div class="line">  ds <span class="built_in">date</span>,</div><div class="line">  country <span class="built_in">varchar</span></div><div class="line">)</div><div class="line"><span class="keyword">WITH</span> (</div><div class="line">  <span class="keyword">format</span> = <span class="string">'ORC'</span>,</div><div class="line">  partitioned_by = <span class="built_in">ARRAY</span>[<span class="string">'ds'</span>, <span class="string">'country'</span>],</div><div class="line">  bucketed_by = <span class="built_in">ARRAY</span>[<span class="string">'user_id'</span>],</div><div class="line">  bucket_count = <span class="number">50</span></div><div class="line">)</div></pre></td></tr></table></figure>
-<p>删除分区<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">DELETE</span> <span class="keyword">FROM</span> hive.web.page_views</div><div class="line"><span class="keyword">WHERE</span> ds = <span class="built_in">DATE</span> <span class="string">'2016-08-09'</span></div><div class="line">  <span class="keyword">AND</span> country = <span class="string">'US'</span></div></pre></td></tr></table></figure></p>
-<p>查询：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> hive.web.page_views</div></pre></td></tr></table></figure></p>
-<p>创建外部表：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> hive.web.request_logs (</div><div class="line">  request_time <span class="keyword">timestamp</span>,</div><div class="line">  <span class="keyword">url</span> <span class="built_in">varchar</span>,</div><div class="line">  ip <span class="built_in">varchar</span>,</div><div class="line">  user_agent <span class="built_in">varchar</span></div><div class="line">)</div><div class="line"><span class="keyword">WITH</span> (</div><div class="line">  <span class="keyword">format</span> = <span class="string">'TEXTFILE'</span>,</div><div class="line">  external_location = <span class="string">'s3://my-bucket/data/logs/'</span></div><div class="line">)</div></pre></td></tr></table></figure></p>
-<p>删除外部表，只会删除metadata，不会删除真实数据。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">DROP TABLE hive.web.request_logs</div></pre></td></tr></table></figure>
-<h4 id="不足"><a href="#不足" class="headerlink" title="不足"></a>不足</h4><p>delete只支持where语句能满足整个分区的情况，也就是说只能一个分区为单位进行delete。</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
 
    
     
@@ -472,61 +226,6 @@ engineer    sales  marketing
 </ul>
 <h4 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h4><p>YARN Capacity Scheduler, if you need more understanding about how to configure Capacity Scheduler<br>Write YARN application using node labels, you can see following two links as examples: YARN distributed shell, Hadoop MapReduce</p>
 
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/12/14/slider源码走读1/" title="slider源码走读1" itemprop="url">slider源码走读1</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-12-14T07:12:59.000Z" itemprop="datePublished"> 发表于 2017-12-14</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        
         
         
         <p class="article-more-link">
@@ -1023,9 +722,346 @@ engineer    sales  marketing
 
 
 
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/12/07/hive-llap启动/" title="hive-llap启动" itemprop="url">hive-llap启动</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-12-07T09:22:12.000Z" itemprop="datePublished"> 发表于 2017-12-07</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h4 id="前提"><a href="#前提" class="headerlink" title="前提"></a>前提</h4><ul>
+<li>tez</li>
+<li>slider</li>
+</ul>
+<h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><h5 id="conf-hive-env-sh"><a href="#conf-hive-env-sh" class="headerlink" title="conf/hive-env.sh"></a>conf/hive-env.sh</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"># 到tez的配置目录里找tez-site.xml</div><div class="line">export TEZ_HOME=/usr/hdp/current/tez-client</div><div class="line">export TEZ_CONF_DIR=$TEZ_HOME/conf</div><div class="line"></div><div class="line">HADOOP_HOME=/usr/hdp/current/hadoop-client/</div></pre></td></tr></table></figure>
+<h5 id="hive-site-xml"><a href="#hive-site-xml" class="headerlink" title="hive-site.xml"></a>hive-site.xml</h5><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">   <span class="tag">&lt;<span class="name">name</span>&gt;</span>hive.execution.mode<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">   <span class="tag">&lt;<span class="name">value</span>&gt;</span>llap<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">   <span class="tag">&lt;<span class="name">description</span>&gt;</span></div><div class="line">     Expects one of [container, llap].</div><div class="line">     Chooses whether query fragments will run in container or in llap</div><div class="line">   <span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line"> <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div></pre></td></tr></table></figure>
+<h5 id="tez-site-xml"><a href="#tez-site-xml" class="headerlink" title="tez-site.xml"></a>tez-site.xml</h5><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">   <span class="tag">&lt;<span class="name">name</span>&gt;</span>tez.lib.uris<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">   <span class="tag">&lt;<span class="name">value</span>&gt;</span>/hdp/apps/$&#123;hdp.version&#125;/tez/apache-tez-0.8.5-bin.tar.gz<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line"> <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div></pre></td></tr></table></figure>
+<h4 id="slider查看"><a href="#slider查看" class="headerlink" title="slider查看"></a>slider查看</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">[root@servicenode04 apache-hive-2.3.2-bin]# slider list</div><div class="line">2017-12-07 18:10:01,421 [main] INFO  impl.TimelineClientImpl - Timeline service address: http://datanode04.will.com:8188/ws/v1/timeline/</div><div class="line">2017-12-07 18:10:02,387 [main] WARN  shortcircuit.DomainSocketFactory - The short-circuit local reads feature cannot be used because libhadoop cannot be loaded.</div><div class="line">2017-12-07 18:10:02,403 [main] INFO  client.RMProxy - Connecting to ResourceManager at datanode02.will.com/10.2.19.83:8050</div><div class="line">llap_service                       RUNNING  application_1511064572746_27005             http://datanode02.will.com:8088/proxy/application_1511064572746_27005/</div></pre></td></tr></table></figure>
+<h4 id="报错"><a href="#报错" class="headerlink" title="报错"></a>报错</h4><h5 id="container大小"><a href="#container大小" class="headerlink" title="container大小"></a>container大小</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">[root@servicenode04 apache-hive-2.3.2-bin]# ./bin/hive --service llap --instances 5 </div><div class="line">llap</div><div class="line">INFO cli.LlapServiceDriver: LLAP service driver invoked with arguments=-directory</div><div class="line">INFO conf.HiveConf: Found configuration file file:/server/apache-hive-2.3.2-bin/conf/hive-site.xml</div><div class="line">Failed: Container size (-1B) should be greater than minimum allocation(2.00GB)</div><div class="line">java.lang.IllegalArgumentException: Container size (-1B) should be greater than minimum allocation(2.00GB)</div><div class="line">	at com.google.common.base.Preconditions.checkArgument(Preconditions.java:92)</div><div class="line">	at org.apache.hadoop.hive.llap.cli.LlapServiceDriver.run(LlapServiceDriver.java:313)</div><div class="line">	at org.apache.hadoop.hive.llap.cli.LlapServiceDriver.main(LlapServiceDriver.java:116)</div><div class="line">INFO cli.LlapServiceDriver: LLAP service driver finished</div></pre></td></tr></table></figure>
+<p>提示是container大小还没有最小的大。加个参数就行了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">./bin/hive --service llap --size 2147483648 --instances 3</div></pre></td></tr></table></figure></p>
+<h5 id="配置漏项"><a href="#配置漏项" class="headerlink" title="配置漏项"></a>配置漏项</h5><p>生成slider项目目录之后，启动llap失败。到yarn的日志里翻看，发现异常：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">yarn logs --applicationId application_1511064572746_25101 |less</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">017-12-06T11:56:39,771 WARN  [main ()] org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon: Failed to start LLAP Daemon with exception</div><div class="line">java.lang.NullPointerException</div><div class="line">        at org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon.&lt;init&gt;(LlapDaemon.java:139) ~[hive-llap-server-2.3.2.jar:2.3.2]</div><div class="line">        at org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon.main(LlapDaemon.java:521) [hive-llap-server-2.3.2.jar:2.3.2]</div><div class="line">End of LogType:llap-daemon-root-datanode02.will.com.log</div></pre></td></tr></table></figure>
+<p>找到对应版本的源码里，发现是少了配置项<code>String hosts = HiveConf.getTrimmedVar(daemonConf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);</code>,也就是<code>hive.llap.daemon.service.hosts</code>，应该配置为@llap_service.</p>
+<h5 id="tez版本问题"><a href="#tez版本问题" class="headerlink" title="tez版本问题"></a>tez版本问题</h5><p>重新生产slider项目，再次，运行，还是异常退出了，继续看yarn的log。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">ue</div><div class="line">2017-12-07T17:12:20,582 WARN  [main ()] org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon: Failed to start LLAP Daemon with exception</div><div class="line">java.lang.NoClassDefFoundError: org/apache/tez/hadoop/shim/HadoopShimsLoader</div><div class="line">        at org.apache.hadoop.hive.llap.daemon.impl.ContainerRunnerImpl.&lt;init&gt;(ContainerRunnerImpl.java:157) ~[hive-llap-server-2.3.2.jar:2.3.2]</div><div class="line">        at org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon.&lt;init&gt;(LlapDaemon.java:283) ~[hive-llap-server-2.3.2.jar:2.3.2]</div><div class="line">        at org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon.main(LlapDaemon.java:521) [hive-llap-server-2.3.2.jar:2.3.2]</div><div class="line">Caused by: java.lang.ClassNotFoundException: org.apache.tez.hadoop.shim.HadoopShimsLoader</div><div class="line">        at java.net.URLClassLoader.findClass(URLClassLoader.java:381) ~[?:1.8.0_60]</div><div class="line">        at java.lang.ClassLoader.loadClass(ClassLoader.java:424) ~[?:1.8.0_60]</div><div class="line">        at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:331) ~[?:1.8.0_60]</div><div class="line">        at java.lang.ClassLoader.loadClass(ClassLoader.java:357) ~[?:1.8.0_60]</div><div class="line">        ... 3 more</div><div class="line">End of LogType:llap-daemon-root-datanode05.will.com.log</div></pre></td></tr></table></figure></p>
+<p>查了一下，这个类是tez的。我当前使用的是0.7版本的，到github上试了一下，这个版本还没有这个类。那就自己下载个有这个类的tez，上传到hdfs，重新修改tez-site.xml，指定下位置。</p>
+<h5 id="log4j版本问题？"><a href="#log4j版本问题？" class="headerlink" title="log4j版本问题？"></a>log4j版本问题？</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">Exception in thread &quot;main&quot; java.lang.NoClassDefFoundError: org/apache/commons/logging/LogFactory</div><div class="line">        at org.apache.hadoop.service.AbstractService.&lt;clinit&gt;(AbstractService.java:43)</div><div class="line">Caused by: java.lang.ClassNotFoundException: org.apache.commons.logging.LogFactory</div><div class="line">        at java.net.URLClassLoader.findClass(URLClassLoader.java:381)</div><div class="line">        at java.lang.ClassLoader.loadClass(ClassLoader.java:424)</div><div class="line">        at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:331)</div><div class="line">        at java.lang.ClassLoader.loadClass(ClassLoader.java:357)</div><div class="line">        ... 1 more</div><div class="line">End of LogType:llap-daemon-root-datanode11.will.com.out</div></pre></td></tr></table></figure>
+<p>这次是hadoop的AbstractService初始化的时候，找不到commons-logging的类了…好累</p>
+<p>看这行日志上面输出了类路径之类的东西：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">+ exec /server/java/jdk1.8.0_60/bin/java -Dproc_llapdaemon -Xms4096m -Xmx4096m -XX:+UseG1GC -XX:+ResizeTLAB -XX:+UseNUMA -XX:-ResizePLAB -server -Djava.net.p</div><div class="line">referIPv4Stack=true -XX:NewRatio=8 -XX:+UseNUMA -XX:+PrintGCDetails -verbose:gc -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=4 -XX:GCLogFileSize=100M -XX</div><div class="line">:+PrintGCDateStamps -Xloggc:/server/hadoop/yarn/log/application_1511064572746_27003/container_e51_1511064572746_27003_01_000006//gc.log -Djava.io.tmpdir=/ser</div><div class="line">ver/hadoop/yarn/local/usercache/root/appcache/application_1511064572746_27003/container_e51_1511064572746_27003_01_000006/tmp/ -Dlog4j.configurationFile=llap</div><div class="line">-daemon-log4j2.properties -Dllap.daemon.log.dir=/server/hadoop/yarn/log/application_1511064572746_27003/container_e51_1511064572746_27003_01_000006/ -Dllap.d</div><div class="line">aemon.log.file=llap-daemon-root-datanode02.will.com.log -Dllap.daemon.root.logger=query-routing -Dllap.daemon.log.level=INFO -classpath &apos;/server/hadoop/yar</div><div class="line">n/local/usercache/root/appcache/application_1511064572746_27003/container_e51_1511064572746_27003_01_000006/app/install//conf/:/server/hadoop/yarn/local/user</div><div class="line">cache/root/appcache/application_1511064572746_27003/container_e51_1511064572746_27003_01_000006/app/install//lib/*:/server/hadoop/yarn/local/usercache/root/a</div><div class="line">ppcache/application_1511064572746_27003/container_e51_1511064572746_27003_01_000006/app/install//lib/tez/*:/server/hadoop/yarn/local/usercache/root/appcache/</div><div class="line">application_1511064572746_27003/container_e51_1511064572746_27003_01_000006/app/install//lib/udfs/*:.:&apos;</div></pre></td></tr></table></figure></p>
+<p>明显发现这个classpath是不包含hadoop相关的类的。一番查找，找到hive根目录下的<code>scripts/llap/bin/runLlapDaemon.sh</code>文件，添加一下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">CLASSPATH=$&#123;LLAP_DAEMON_CONF_DIR&#125;:$&#123;LLAP_DAEMON_HOME&#125;/lib/*:$&#123;LLAP_DAEMON_HOME&#125;/lib/tez/*:$&#123;LLAP_DAEMON_HOME&#125;/lib/udfs/*:.`hadoop classpath`</div></pre></td></tr></table></figure></p>
+<p>再重新生成slider项目。</p>
+<p>参考：</p>
+<p><a href="http://housong.github.io/2017/hive-llap/" target="_blank" rel="external">http://housong.github.io/2017/hive-llap/</a></p>
+<p><a href="http://blog.csdn.net/qingzhenli/article/details/72723018" target="_blank" rel="external">http://blog.csdn.net/qingzhenli/article/details/72723018</a></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/12/06/开源年会/" title="开源年会" itemprop="url">开源年会</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-12-06T08:17:00.000Z" itemprop="datePublished"> 发表于 2017-12-06</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h4 id="霍泰稳-本土社区运营的思考"><a href="#霍泰稳-本土社区运营的思考" class="headerlink" title="霍泰稳  本土社区运营的思考"></a>霍泰稳  本土社区运营的思考</h4><h5 id="运营"><a href="#运营" class="headerlink" title="运营"></a>运营</h5><ul>
+<li>社区开始需要灵魂人物，后面不应该需要，而应该是品牌效应<br>  开始的时候，要频繁出去跑，与各种专家交往，成为交际花。当品牌已经有了的时候，就要重点突出品牌，而不是个人了。</li>
+<li>架构<br>  一线人员参与内容，因为内容专业性很强。使用架构组织内容的生产，总编辑 -&gt; 6个专题首席编辑(java, ruby，每个专题有一个首席编辑，负责组建对应主题的编辑运营团队) -&gt; 若干社区编辑。</li>
+<li><p>付费</p>
+<ul>
+<li>不要被人当成公益组织，不带道德光环。费用是按照翻译字数/写作字数，或者专家约稿收取。多多少少有些补贴。</li>
+<li><p>大会门票理所当然也不会是免费的。</p>
+<p>这样才能让人们知道自己的支持是有价值、有价格的。</p>
+</li>
+</ul>
+</li>
+<li>开源和免费完全没关系</li>
+</ul>
+<h5 id="工具"><a href="#工具" class="headerlink" title="工具"></a>工具</h5><ul>
+<li>raven。自动展示infoQ的英文站文章，然后社区编辑过来领取任务，进行翻译。有些众包平台的意思，以前都是专人整理Excel，每天发送一次，统计一次。</li>
+<li>wiki。</li>
+<li>stuQ. 流程</li>
+</ul>
+<h5 id="经验"><a href="#经验" class="headerlink" title="经验"></a>经验</h5><ul>
+<li>运营公司的心态去做社区，与时俱进调整价值观</li>
+<li>青出于蓝，找到可以帮助自己的黑马</li>
+<li>坚持创新</li>
+</ul>
+<h4 id="kylin-成长之路"><a href="#kylin-成长之路" class="headerlink" title="kylin 成长之路"></a>kylin 成长之路</h4><p>teradata太昂贵，数据都放在HDFS，原来需要将HDFS的数据先load到teardata才能查询。调研之后，就决定自己做。luke负责这个东西，找到蒋旭(了解SQL分析与支持，了解Hadoop)。13年开始做，14年10月1日，ebay内部上了生产环境，同时放到github上进行开源，很快收获了很多的好的评价。</p>
+<p>14年11月成为apache孵化器项目，接受了很多mentor的指导，代码迁移到apache代码库，成员加入apache，各种license的处理与剥离。解决大量用户的各种问题，快速升级。获得了国外知名技术社区的关注，并给以奖项。</p>
+<p>kylin与apache建立私人关系，开始在国内美团、京东、bat等开始铺展，进一步推动孵化器向顶级项目转化。apache社区的人有人说：中国人喜欢用QQ群等工具尽享项目讨论，而不符合apache社区的邮件讨论的风格。</p>
+<p>也有人投反对票，前端有google的不明确license前端字体。随后，kylin快速处理，发布新的release，以供审核。</p>
+<p>后来成立了kylingence，专门搞kylin。开源版知识产权属于apache社区。</p>
+<p>kylin2.0主要变化是支持雪花模型，支持spark进行构建工作，2.1支持查询下压(下压给hive或者spark sql进行查询)。</p>
+<p>核心代码人员有5个，活跃的commiter不到10个，contributter有70个左右。</p>
+<ul>
+<li>对用户友好，好用。kylin最开始就很完善，包括前端、后端、性能</li>
+<li>构建生态。合适地利用其他技术，不要重复造轮子</li>
+<li>轻量级构建。对管理员友好，易于扩展、容灾等</li>
+<li>倾听社区用户。解决用户痛点，才能得民心</li>
+</ul>
+<p>贡献到kylin</p>
+<ul>
+<li>加入社区讨论，知道大家在做什么，难点在哪儿</li>
+<li>贡献patch，或者github提PR，量大了就直接提为committer</li>
+</ul>
+<h4 id="carbonData"><a href="#carbonData" class="headerlink" title="carbonData"></a>carbonData</h4><p>保证代码质量：充分的review，大牛多不能保证质量</p>
+<p>把apache 文档研究了一个月，把项目关键路径规划了一下</p>
+<p>去美国找了基金会的导师，这个比较重要</p>
+<p>有人会说你的代码跟我们的代码相似，就懵了….就跟他说受了你的鼓舞~~~~然后成了导师</p>
+<p>apache way</p>
+<p>只要有人用起来，就会被鞭子抽着跑</p>
+<h4 id="apache-weex"><a href="#apache-weex" class="headerlink" title="apache weex"></a>apache weex</h4><p>使用HTML + css描述app结构、样式，逻辑写在script中。可以远程加载成为native 界面。</p>
+<p><a href="http://weex.apache.org/cn/" target="_blank" rel="external">http://weex.apache.org/cn/</a></p>
+<ul>
+<li>内部事业部推销</li>
+<li>外部邀请使用者参与进来</li>
+<li>跟内部apache项目团队取经</li>
+</ul>
+<p>开源的目的：</p>
+<ul>
+<li>加大曝光率，增强内部竞争优势：阿里内部有很多类似weex的东西</li>
+<li>国际化</li>
+<li>去掉商业背景，业界共享</li>
+</ul>
+<p>问题：</p>
+<p>目前committer只有7个，而且都是阿里的。近一年内，只release了一次。</p>
+<p>原因：</p>
+<p>团队业务属性比较重，这种开发方式与apache这种社区的方式有些区别，JIRA上基本都是内部业务的，并没有跟apache社区的结合同步起来。文档更新不及时、版本划分不明晰等。</p>
+<ul>
+<li>单元测试质量与覆盖率</li>
+</ul>
+<h4 id="RocketMQ"><a href="#RocketMQ" class="headerlink" title="RocketMQ"></a>RocketMQ</h4><p>所有成功的开源项目，背后都是一个商业化公司在运营。</p>
+<p>社区：reader、user，还有writer，负责宣传工具的好处。</p>
+<p>有很多同质的项目，比如kafka。</p>
+<p>社区要大、要建生态、定规范(方便同质产品的互操作)、商业化解决方案。</p>
+<p>捐献项目(宽进严出)</p>
+<ul>
+<li>找导师，3位以上，其中一个是主席(activeMQ的相关人)，找对了champion，就成功了一半</li>
+<li>找mentor</li>
+<li>找proposer，项目的介绍，项目的承诺：不能孤立，人员多元化</li>
+</ul>
+<p>apache协议</p>
+<ul>
+<li>可以用或者改我的软件，告诉我改了哪儿？ 在license中说明</li>
+<li>扩展协议要与apache协议兼容</li>
+<li>用我的软件，出问题我不负责</li>
+</ul>
+<p>apache way（价值主张）</p>
+<ul>
+<li>社区大于产品</li>
+<li>writer，就是社区运营</li>
+<li>社区中每个人都是个体，不受任何人雇佣，没有任何上下级关系</li>
+<li>社区的表彰是基于对社区的共享，持续关注并提交PR，就会被邀请成为commiter，然后负责更多的事情，一直到成为PMC</li>
+</ul>
+<p>流程</p>
+<ul>
+<li>apache license的扫描等</li>
+<li>单元测试必须在3分钟之内做完。</li>
+<li>集成测试，maven</li>
+</ul>
+<p>PR的模板</p>
+<ul>
+<li>简单告诉改动了什么</li>
+<li>怎样验证此次改动</li>
+</ul>
+<h4 id="阿里类docker工具-pouch"><a href="#阿里类docker工具-pouch" class="headerlink" title="阿里类docker工具: pouch"></a>阿里类docker工具: pouch</h4><h5 id="隔离性"><a href="#隔离性" class="headerlink" title="隔离性"></a>隔离性</h5><p>docker容器内free -g，其实是宿主机的内存，但是java应用的内存分配是根据这个自动分配的，所以会有些问题。</p>
+<p>基于磁盘和网络的隔离与限制</p>
+<h5 id="仓库的p2p分发"><a href="#仓库的p2p分发" class="headerlink" title="仓库的p2p分发"></a>仓库的p2p分发</h5><p>降低各种客户端同时对registry进行pull或push等。P2P就是类迅雷的东西了，每个客户端也是一个服务端</p>
+<p>##### </p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/12/05/slider对于app的要求/" title="slider对于app的要求" itemprop="url">slider对于app的要求</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-12-05T09:49:35.000Z" itemprop="datePublished"> 发表于 2017-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>slider把app安装并运行在yarn上，但是app并不一定要是针对yarn定制的。</p>
+<p>app应该是被slider发布，也就是yarn负责安装，slider负责配置，最后yarn负责执行。yarn会在销毁container的时候kill掉执行的进程，所以被部署的app应该知道这个，并能够在没有人工参与的前提下自动启动一个新的container运行自己的component。</p>
+<p>app的component还应该能够自己动态发现其他的component，在启动和执行的时候都要能发现，因为后面server或者进程失败的话，也会导致component位置变化。</p>
+<h4 id="must"><a href="#must" class="headerlink" title="must"></a>must</h4><ul>
+<li>使用tar进行安装运行，而且运行用户不能是root</li>
+<li>自包含或者所有的依赖都已经预装了</li>
+<li>支持节点的动态发现，比如通过ZK</li>
+<li>节点能够动态rebind自己，就是说如果即便节点被删除，app仍能继续运行</li>
+<li>把kill作为通用机制处理</li>
+<li>支持多个实例运行在同个集群中，不同app实例可以共享同一个server</li>
+<li>当多个role实例被分配到同一个物理节点的时候，要能够正确操作。</li>
+<li>安全可靠。yarn不会再sandbox中运行代码的</li>
+<li>如果与HDFS交互，注意兼容性</li>
+<li>持久化数据到HDFS，配置好文件位置。slider中每个app实例都需要有一个目录。</li>
+<li>配置目录要可配置，最好不要是绝对路径</li>
+<li>log输出不要是一个固定的位置</li>
+<li>不明确让它停止，就一直跑下去。slider吧app的终止作为失败处理，会自动重启container。</li>
+</ul>
+<h4 id="must-not"><a href="#must-not" class="headerlink" title="must not"></a>must not</h4><ul>
+<li>人工的启动和关闭</li>
+</ul>
+<h4 id="should"><a href="#should" class="headerlink" title="should"></a>should</h4><ul>
+<li>发布一个RPC或者HTTP端口，可以通过zk或者admin API。slider会提供一个发布机制</li>
+<li>可通过标准的hadoop机制进行配置：text、xml文件。不然，就需要自定义的解析器</li>
+<li>支持明确的参数来指定配置目录</li>
+<li>允许通过-D类似方式指定运行参数</li>
+<li>不要运行复杂脚本</li>
+<li>提供给slider获取集群节点和状态的方式，这样slider才能探测失败的worker节点并处理</li>
+<li>启动的时候能够感知位置。</li>
+<li>支持简单的探活，可以是http get</li>
+<li>退出的时候返回一个可读的内容，方便针对性处理</li>
+<li>支持集群大小调整</li>
+<li>支持ambari类似的平台管理</li>
+</ul>
+<h4 id="may"><a href="#may" class="headerlink" title="may"></a>may</h4><ul>
+<li>动态分配RPC或者web端口</li>
+<li>包含一个单独的进程，运行在指定位置，这个进程一挂，就引起app终止。这样的进程也能运行在slider am的container中。如果一个活着的cluster不能处理这个进程的restart或者migration，这个slider app就不能处理slider am的restart</li>
+<li>汇报load/cost</li>
+</ul>
+<h4 id="may-not"><a href="#may-not" class="headerlink" title="may not"></a>may not</h4><ul>
+<li>yarn可写</li>
+<li>纯java</li>
+<li>支持动态配置</li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
 
   <nav id="page-nav" class="clearfix">
-    <a class="extend prev" rel="prev" href="/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/3/">Next<span></span></a>
+    <a class="extend prev" rel="prev" href="/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/3/">Next<span></span></a>
   </nav>
 
 </div>
@@ -1046,7 +1082,7 @@ engineer    sales  marketing
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>187</sup></a></li>
 			
 		
 			
@@ -1098,19 +1134,11 @@ engineer    sales  marketing
 			
 		
 			
-				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+				<li><a href="/tags/Solr/" title="Solr">Solr<sup>1</sup></a></li>
 			
 		
 			
@@ -1123,6 +1151,14 @@ engineer    sales  marketing
 		
 			
 				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hue/" title="hue">hue<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
 			
 		
 		</ul>

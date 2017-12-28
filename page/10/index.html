@@ -3,6 +3,14 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
+  <script type="text/javascript">
+    (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+    })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+    
+    _st('install','yNiKTKaAnwd1uuxVMfiE','2.0.0');
+  </script>
   <script>
     var _hmt = _hmt || [];
     (function() {
@@ -24,7 +32,7 @@
     <meta name="description" content="左右水色 右手天光">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Will's Blog">
-<meta property="og:url" content="http://willcup.com/page/10/index.html">
+<meta property="og:url" content="https://runningdata.github.io/page/10/index.html">
 <meta property="og:site_name" content="Will's Blog">
 <meta property="og:description" content="左右水色 右手天光">
 <meta name="twitter:card" content="summary">
@@ -74,7 +82,7 @@
 					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
 						<label>Search</label>
 						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
-						<input type="hidden" name="q" value="site:willcup.com">
+						<input type="hidden" name="q" value="site:runningdata.github.io">
 					</form>
 					
 					</li>
@@ -91,425 +99,403 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/08/24/marathon/" title="marathon" itemprop="url">marathon</a>
+      <a href="/2017/07/03/RunningData执行用户迁移计划/" title="RunningData执行用户迁移计划" itemprop="url">RunningData执行用户迁移计划</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
 		
   <p class="article-time">
-    <time datetime="2017-08-24T09:38:08.000Z" itemprop="datePublished"> 发表于 2017-08-24</time>
+    <time datetime="2017-07-03T06:41:20.000Z" itemprop="datePublished"> 发表于 2017-07-03</time>
     
   </p>
 </header>
     <div class="article-content">
         
-        <ol>
-<li>mesos 给 resource offer给sheculer</li>
-<li>scheduler 调用lanunch task，把要求的资源发过去</li>
-<li>mesos启动task</li>
+        <h2 id="超级用户准备"><a href="#超级用户准备" class="headerlink" title="超级用户准备"></a>超级用户准备</h2><ul>
+<li>jlc</li>
+<li>wplan</li>
+<li>xiaov</li>
+</ul>
+<h2 id="文件权限"><a href="#文件权限" class="headerlink" title="文件权限"></a>文件权限</h2><h4 id="HDFS"><a href="#HDFS" class="headerlink" title="HDFS"></a>HDFS</h4><ul>
+<li>所有数仓调整owner为所在事业部的超级用户<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">hdfs dfs -chown jlc:jlc -R /log/statistics</div><div class="line"></div><div class="line"></div><div class="line">hdfs dfs -ls /apps/hive/warehouse/ | awk &apos;&#123;print(&quot;hdfs dfs -chown -R &quot;, $4, &quot;:&quot;,$4, $8)&#125;&apos;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="本地"><a href="#本地" class="headerlink" title="本地"></a>本地</h4><table>
+<thead>
+<tr>
+<th>名称</th>
+<th>位置</th>
+<th>操作q</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sqoop目录权限</td>
+<td>/server/app/sqoop</td>
+<td>rm -vfr /server/app/sqoop/vo</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>/server/metamap/metamap_django</td>
+<td>/server/metamap/metamap_django/*.java</td>
+</tr>
+</tbody>
+</table>
+<h2 id="azkaban执行用户"><a href="#azkaban执行用户" class="headerlink" title="azkaban执行用户"></a>azkaban执行用户</h2><ul>
+<li>sqoop</li>
+<li>hive</li>
+</ul>
+<p>需要修改M2H，H2H，H2M以及新版本的generate_job_file里的执行用户，包含两个地方</p>
+<ul>
+<li>生成执行脚本</li>
+<li>生成命令【测试执行】</li>
+</ul>
+<p>在settings文件中添加参数USE_ROOT</p>
+<h2 id="jenkins调度"><a href="#jenkins调度" class="headerlink" title="jenkins调度"></a>jenkins调度</h2><p>资产匹配问题: 62远程调用106上的脚步任务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">Message from syslogd@datanode17 at Jul  3 15:50:52 ...</div><div class="line"> kernel:BUG: soft lockup - CPU#7 stuck for 67s! [python:2708]</div></pre></td></tr></table></figure></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/06/26/关于kylin分时段merge之后体积变小/" title="关于kylin分时段merge之后体积变小" itemprop="url">关于kylin分时段merge之后体积变小</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-06-26T11:01:24.000Z" itemprop="datePublished"> 发表于 2017-06-26</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>我们设置了一个cube，指定的mandatory dimension为create_year，问了一下，说是因为有按照年去查询指标的需求。</p>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>mandatory dimension: create_year</p>
+<p>自动merge : 7天、28天</p>
+<h2 id="现象"><a href="#现象" class="headerlink" title="现象"></a>现象</h2><p>merge之前单天的数据大小平均为3G，而单周的数据大小平均为11G。</p>
+<p>就是说： <strong>merge完之后数据变小了</strong>！</p>
+<p>那么为什么呢？</p>
+<p>几个人想了好半天，终于有个同事想到了….就是因为对于不包含merge时间【一般是天】的所有其他维度的组合，都减少了6倍的大小。</p>
+<p>那么，由此延伸，我们是可以将create_day设置为mandatory dimension的，这样每天的cube就会减少很多大小，merge以后也不会有对应的压缩。这样对于单天记录的体积会有很大压缩提升。。。</p>
+<p>那么对于年指标的查询应该怎样处理呢？由于这种比较少，建议可以前端解决。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/06/25/hbase频繁挂掉/" title="hbase频繁挂掉" itemprop="url">hbase频繁挂掉</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-06-25T01:57:58.000Z" itemprop="datePublished"> 发表于 2017-06-25</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">2017-06-25 09:42:34,262 ERROR [RS_OPEN_REGION-datanode20:16020-0] coprocessor.CoprocessorHost: The coprocessor org.apache.kylin.stora</div><div class="line">ge.hbase.cube.v2.coprocessor.endpoint.CubeVisitService threw org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.ipc.StandbyExcep</div><div class="line">tion): Operation category READ is not supported in state standby</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div></pre></td><td class="code"><pre><div class="line">2017-06-25 09:42:34,336 FATAL [RS_OPEN_REGION-datanode20:16020-2] regionserver.HRegionServer: ABORTING region server datanode20.yinke</div><div class="line">r.com,16020,1498354685968: The coprocessor org.apache.kylin.storage.hbase.cube.v1.coprocessor.observer.AggregateRegionObserver threw </div><div class="line">org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.ipc.StandbyException): Operation category READ is not supported in state stan</div><div class="line">dby</div><div class="line"></div><div class="line"></div><div class="line">2017-06-25 09:42:34,336 FATAL [RS_OPEN_REGION-datanode20:16020-2] regionserver.HRegionServer: RegionServer abort: loaded coprocessors are: [org.apache.hadoop.hbase.security.access.SecureBulkLoadEndpoint]</div><div class="line"></div><div class="line"></div><div class="line">2017-06-25 09:42:34,338 FATAL [RS_OPEN_REGION-datanode20:16020-0] regionserver.HRegionServer: ABORTING region server datanode20.will.com,16020,1498354685968: The coprocessor org.apache.kylin.storage.hbase.cube.v1.coprocessor.observer.AggregateRegionObserver threw org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.ipc.StandbyException): Operation category READ is not supported in state standby</div><div class="line"></div><div class="line"></div><div class="line">2017-06-25 09:42:34,370 INFO  [RS_OPEN_REGION-datanode20:16020-1] regionserver.RegionCoprocessorHost: Loaded coprocessor org.apache.k</div><div class="line">ylin.storage.hbase.cube.v2.coprocessor.endpoint.CubeVisitService from HTD of KYLIN_4L40B34P11 successfully.</div><div class="line">2017-06-25 09:42:34,379 ERROR [RS_OPEN_REGION-datanode20:16020-2] handler.OpenRegionHandler: Failed open of region=KYLIN_HBWCQ5ZQR1,\</div><div class="line">x001,1494915979852.71f4a908f1e460ac95dfadcf5ab8ecfd., starting to roll back the global memstore size.</div><div class="line">2017-06-25 09:42:34,381 INFO  [RS_OPEN_REGION-datanode20:16020-2] coordination.ZkOpenRegionCoordination: Opening of region &#123;ENCODED =</div><div class="line">&gt; 71f4a908f1e460ac95dfadcf5ab8ecfd, NAME =&gt; &apos;KYLIN_HBWCQ5ZQR1,\x001,1494915979852.71f4a908f1e460ac95dfadcf5ab8ecfd.&apos;, STARTKEY =&gt; &apos;\x</div><div class="line">001&apos;, ENDKEY =&gt; &apos;\x002&apos;&#125; failed, transitioning from OPENING to FAILED_OPEN in ZK, expecting version 3</div><div class="line">2017-06-25 09:42:34,382 ERROR [RS_OPEN_REGION-datanode20:16020-0] handler.OpenRegionHandler: Failed open of region=KYLIN_HBWCQ5ZQR1,\</div><div class="line">x00\x15,1494915979852.c4940efcc8efa3f3a9b7c2a546a1d1f5., starting to roll back the global memstore size.</div><div class="line">org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.ipc.StandbyException): Operation category READ is not supported in state stan</div><div class="line">dby</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">java.io.IOException: Cannot append; log is closed</div><div class="line">        at org.apache.hadoop.hbase.regionserver.wal.FSHLog.append(FSHLog.java:1223)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.wal.WALUtil.writeRegionEventMarker(WALUtil.java:95)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.HRegion.writeRegionOpenMarker(HRegion.java:978)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.HRegion.openHRegion(HRegion.java:6335)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.HRegion.openHRegion(HRegion.java:6289)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.HRegion.openHRegion(HRegion.java:6260)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.HRegion.openHRegion(HRegion.java:6216)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.HRegion.openHRegion(HRegion.java:6167)</div><div class="line">        at org.apache.hadoop.hbase.regionserver.handler.OpenRegionHandler.openRegion(OpenRegionHandler.java:362)</div><div class="line">        ...............</div><div class="line">2017-06-25 09:42:44,168 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020.logRoller] regionserver.LogRoller: LogRoller exit</div><div class="line">ing.</div><div class="line">2017-06-25 09:42:44,168 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020] regionserver.CompactSplitThread: Waiting for Spl</div><div class="line">it Thread to finish...</div><div class="line">2017-06-25 09:42:44,168 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020] regionserver.CompactSplitThread: Waiting for Mer</div><div class="line">ge Thread to finish...</div><div class="line">2017-06-25 09:42:44,168 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020] regionserver.CompactSplitThread: Waiting for Lar</div><div class="line">ge Compaction Thread to finish...</div><div class="line">2017-06-25 09:42:44,168 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020] regionserver.CompactSplitThread: Waiting for Sma</div><div class="line">ll Compaction Thread to finish...</div><div class="line">2017-06-25 09:42:44,170 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020.leaseChecker] regionserver.Leases: regionserver/d</div><div class="line">atanode20.will.com/10.2.19.109:16020.leaseChecker closing leases</div><div class="line">2017-06-25 09:42:44,171 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020.leaseChecker] regionserver.Leases: regionserver/d</div><div class="line">atanode20.will.com/10.2.19.109:16020.leaseChecker closed leases</div><div class="line">2017-06-25 09:42:44,183 INFO  [regionserver/datanode20.will.com/10.2.19.109:16020] ipc.RpcServer: Stopping server on 16020</div></pre></td></tr></table></figure>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/06/22/NN-HA后引发的问题/" title="NN-HA后引发的问题" itemprop="url">NN-HA后引发的问题</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-06-22T03:19:07.000Z" itemprop="datePublished"> 发表于 2017-06-22</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h6 id="最表面问题"><a href="#最表面问题" class="headerlink" title="最表面问题:"></a>最表面问题:</h6><p>几乎所有用户执行权限都出现问题。</p>
+<h6 id="问题原因："><a href="#问题原因：" class="headerlink" title="问题原因："></a>问题原因：</h6><ul>
+<li>所有HDFS之上的应用都是使用linux的posix文件权限控制</li>
+<li>当Active NN是DN17的时候，DN17本机并没有这些用户的相关权限信息。<h6 id="解决方法："><a href="#解决方法：" class="headerlink" title="解决方法："></a>解决方法：</h6></li>
+<li>尝试copyNN01的用户以及组信息到DN17<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">/etc/passwd</div><div class="line">/etc/shadow</div><div class="line"></div><div class="line"></div><div class="line">/etc/group</div><div class="line">/etc/gshadow</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">[root@namenode01 hdfs]# cat /etc/group | grep xiaov</div><div class="line">xiaov:x:1015:zhoujian,wangchenqi,zhangyuntao,wangxu,wanghao_fengkong,linzhixin,yangqiankun,tianye,zhaoyanchao,tinyv,wangyin,lihaoyue,zhuxiuwei,yangluan,qizhenpeng,zhanglining,xiaovtest,yanghuanyuzi,zhanghaigang,shichengjie,luanzhiwei,wangyasen,kangyimin,luiyahui,liuyahui,liulinyuan,caoyunqing,tianyang,chengyao,gezhao,hehaojun,hujunjie,liuwei,xiongpeng</div><div class="line">xiaovtest:x:1040:</div><div class="line">metastoremanager:x:1041:xiaovtest,wangchenqi</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>将上面所有的用户保存到另一台的xiaov文件中，然后执行下面的逻辑：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">for name in `cat xiaov | awk &apos;&#123;split($0, atr,&quot;,&quot;);   </div><div class="line"> </div><div class="line"> for (i=0;i&lt;length(atr);i++) &#123;</div><div class="line"> print(atr[i])</div><div class="line"> &#125;</div><div class="line"> &#125;&apos;`;</div><div class="line">do</div><div class="line">useradd $name -G xiaov</div><div class="line">done</div></pre></td></tr></table></figure></p>
+<ul>
+<li>使用fabric维护用户权限相关信息，每次都同时操作两台NN。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line">-- fabric.py</div><div class="line"></div><div class="line">nns=(&apos;namenode01.will.com&apos;, &apos;datanode17.will.com&apos;)</div><div class="line"></div><div class="line">env.roledefs = &#123;</div><div class="line">    &apos;services&apos;: services,</div><div class="line">    &apos;datanodes&apos;: datanodes,</div><div class="line">    &apos;tmp&apos;: tmpnodes,</div><div class="line">    &apos;nns&apos;: nns</div><div class="line">&#125;</div><div class="line"></div><div class="line">------------------</div><div class="line"></div><div class="line">[root@datanode21 ~]# fab cmd:roles=nns,cmd=&quot;echo hello from `hostname`&quot;</div><div class="line">This text is green!</div><div class="line">This sentence is red, except for these words, which are green.</div><div class="line">[namenode01.will.com] Executing task &apos;cmd&apos;</div><div class="line">[namenode01.will.com] run: echo hello from datanode21.will.com</div><div class="line">[namenode01.will.com] out: hello from datanode21.will.com</div><div class="line">[namenode01.will.com] out: </div><div class="line"></div><div class="line">[datanode17.will.com] Executing task &apos;cmd&apos;</div><div class="line">[datanode17.will.com] run: echo hello from datanode21.will.com</div><div class="line">[datanode17.will.com] out: hello from datanode21.will.com</div><div class="line">[datanode17.will.com] out: </div><div class="line"></div><div class="line"></div><div class="line">Done.</div><div class="line">Disconnecting from datanode17.will.com... done.</div><div class="line">Disconnecting from namenode01.will.com... done</div></pre></td></tr></table></figure>
+<h4 id="NN切换的相关日志"><a href="#NN切换的相关日志" class="headerlink" title="NN切换的相关日志"></a>NN切换的相关日志</h4><p>NN01的log。</p>
+<p>出现这个错误后，NN自己直接shutdown<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line">2017-06-15 22:35:35,329 WARN  client.QuorumJournalManager (QuorumCall.java:waitFor(134)) - Waited 18014 ms (timeout=20000 ms) for a r</div><div class="line">esponse for sendEdits. Succeeded so far: [10.2.19.121:8485]</div><div class="line">2017-06-15 22:35:36,331 WARN  client.QuorumJournalManager (QuorumCall.java:waitFor(134)) - Waited 19015 ms (timeout=20000 ms) for a r</div><div class="line">esponse for sendEdits. Succeeded so far: [10.2.19.121:8485]</div><div class="line">2017-06-15 22:35:37,317 FATAL namenode.FSEditLog (JournalSet.java:mapJournalsAndReportErrors(398)) - Error: flush failed for required</div><div class="line"> journal (JournalAndStream(mgr=QJM to [10.2.19.123:8485, 10.2.19.127:8485, 10.2.19.121:8485], stream=QuorumOutputStream starting at t</div><div class="line">xid 118442295))</div><div class="line">java.io.IOException: Timed out waiting 20000ms for a quorum of nodes to respond.</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.client.AsyncLoggerSet.waitForWriteQuorum(AsyncLoggerSet.java:137)</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.client.QuorumOutputStream.flushAndSync(QuorumOutputStream.java:107)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream.flush(EditLogOutputStream.java:113)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream.flush(EditLogOutputStream.java:107)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.JournalSet$JournalSetOutputStream$8.apply(JournalSet.java:533)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.JournalSet.mapJournalsAndReportErrors(JournalSet.java:393)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.JournalSet.access$100(JournalSet.java:57)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.JournalSet$JournalSetOutputStream.flush(JournalSet.java:529)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.FSEditLog.logSync(FSEditLog.java:647)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.FSNamesystem.startFileInt(FSNamesystem.java:2512)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.FSNamesystem.startFile(FSNamesystem.java:2377)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.create(NameNodeRpcServer.java:708)</div><div class="line">        at org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolServerSideTranslatorPB.create(ClientNamenodeProtocolServerSideTran</div><div class="line">slatorPB.java:405)</div><div class="line">        at org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$ClientNamenodeProtocol$2.callBlockingMethod(ClientNamen</div><div class="line">odeProtocolProtos.java)</div><div class="line">        at org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:616)</div><div class="line">        at org.apache.hadoop.ipc.RPC$Server.call(RPC.java:969)</div><div class="line">        at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2206)</div><div class="line">        at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2202)</div><div class="line">        at java.security.AccessController.doPrivileged(Native Method)</div><div class="line">        at javax.security.auth.Subject.doAs(Subject.java:422)</div><div class="line">        at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1709)</div><div class="line">        at org.apache.hadoop.ipc.Server$Handler.run(Server.java:2200)</div><div class="line">2017-06-15 22:35:37,318 WARN  client.QuorumJournalManager (QuorumOutputStream.java:abort(72)) - Aborting QuorumOutputStream starting </div><div class="line">at txid 118442295</div><div class="line">2017-06-15 22:35:37,337 INFO  BlockStateChange (BlockManager.java:computeReplicationWorkForBlocks(1531)) - BLOCK* neededReplications </div><div class="line">= 0, pendingReplications = 0.</div><div class="line">2017-06-15 22:35:37,342 INFO  util.ExitUtil (ExitUtil.java:terminate(124)) - Exiting with status 1</div><div class="line">2017-06-15 22:35:37,396 INFO  namenode.NameNode (LogAdapter.java:info(47)) - SHUTDOWN_MSG: </div><div class="line">/************************************************************</div><div class="line">SHUTDOWN_MSG: Shutting down NameNode at namenode01.will.com/10.2.19.72</div></pre></td></tr></table></figure></p>
+<p>DN17的log<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">2017-06-19 16:34:39,682 WARN  client.QuorumJournalManager (QuorumCall.java:waitFor(134)) - Waited 27324 ms (timeout=20000 ms) for a r</div><div class="line">esponse for selectInputStreams. No responses yet.</div><div class="line"></div><div class="line">.........</div><div class="line">2017-06-19 16:34:46,859 INFO  util.JvmPauseMonitor (JvmPauseMonitor.java:run(196)) - Detected pause in JVM or host machine (eg GC): p</div><div class="line">ause of approximately 6029ms</div><div class="line">No GCs detected</div><div class="line">2017-06-19 16:34:49,739 INFO  util.JvmPauseMonitor (JvmPauseMonitor.java:run(196)) - Detected pause in JVM or host machine (eg GC): p</div><div class="line">ause of approximately 2380ms</div><div class="line">No GCs detected</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">2017-06-26 13:39:04,029 INFO  ipc.Server (Server.java:doRead(891)) - Socket Reader #1 for port 8020: readAndProcess from client 10.2.</div><div class="line">19.83 threw exception [java.io.IOException: Connection reset by peer]</div><div class="line">java.io.IOException: Connection reset by peer</div><div class="line">        at sun.nio.ch.FileDispatcherImpl.read0(Native Method)</div><div class="line">        at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:39)</div><div class="line">        at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:223)</div><div class="line">        at sun.nio.ch.IOUtil.read(IOUtil.java:197)</div><div class="line">        at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:380)</div><div class="line">        at org.apache.hadoop.ipc.Server.channelRead(Server.java:2773)</div><div class="line">        at org.apache.hadoop.ipc.Server.access$2800(Server.java:136)</div><div class="line">        at org.apache.hadoop.ipc.Server$Connection.readAndProcess(Server.java:1606)</div><div class="line">        at org.apache.hadoop.ipc.Server$Listener.doRead(Server.java:880)</div><div class="line">        at org.apache.hadoop.ipc.Server$Listener$Reader.doRunLoop(Server.java:746)</div><div class="line">        at org.apache.hadoop.ipc.Server$Listener$Reader.run(Server.java:717)</div><div class="line">2017-06-26 13:39:04,066 INFO  ipc.Server (Server.java:doRead(891)) - Socket Reader #1 for port 8020: readAndProcess from client 10.2.</div><div class="line">19.110 threw exception [java.io.IOException: Connection reset by peer]</div><div class="line">java.io.IOException: Connection reset by peer</div><div class="line">        at sun.nio.ch.FileDispatcherImpl.read0(Native Method)</div><div class="line">        at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:39)</div><div class="line">        at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:223)</div><div class="line">        at sun.nio.ch.IOUtil.read(IOUtil.java:197)</div><div class="line"></div><div class="line">.......</div><div class="line"></div><div class="line"></div><div class="line">2017-06-26 13:39:08,310 WARN  client.QuorumJournalManager (IPCLoggerChannel.java:call(406)) - Took 4136ms to send a batch of 3 edits (262 bytes) to remote journal 10.2.19.121:8485</div><div class="line">2017-06-26 13:39:08,310 WARN  client.QuorumJournalManager (IPCLoggerChannel.java:call(406)) - Took 4130ms to send a batch of 3 edits (262 bytes) to remote journal 10.2.19.123:8485</div><div class="line">2017-06-26 13:39:08,310 WARN  client.QuorumJournalManager (IPCLoggerChannel.java:call(388)) - Remote journal 10.2.19.127:8485 failed to write txns 134233020-134233022. Will try to write to this JN again after the next log roll.</div><div class="line">org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC&apos;s epoch 15 is less than the last promised epoch 16</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:418)</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.server.Journal.checkWriteRequest(Journal.java:446)</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.server.Journal.journal(Journal.java:341)</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.journal(JournalNodeRpcServer.java:148)</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.protocolPB.QJournalProtocolServerSideTranslatorPB.journal(QJournalProtocolServerSideTranslatorPB.java:158)</div><div class="line">        at org.apache.hadoop.hdfs.qjournal.protocol.QJournalProtocolProtos$QJournalProtocolService$2.callBlockingMethod(QJournalProto</div><div class="line">colProtos.java:25421)</div><div class="line">        at org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:616)</div><div class="line">        at org.apache.hadoop.ipc.RPC$Server.call(RPC.java:969)</div><div class="line">        at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2206)</div><div class="line">        at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2202)</div><div class="line">        at java.security.AccessController.doPrivileged(Native Method)</div><div class="line">        at javax.security.auth.Subject.doAs(Subject.java:422)</div><div class="line">        at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1709)</div><div class="line">        at org.apache.hadoop.ipc.Server$Handler.run(Server.java:2200)</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">..........</div><div class="line"></div><div class="line">org.apache.hadoop.hdfs.qjournal.client.QuorumException: Got too many exceptions to achieve quorum size 2/3. 3 exceptions thrown:</div><div class="line">10.2.19.127:8485: IPC&apos;s epoch 15 is less than the last promised epoch 16</div></pre></td></tr></table></figure>
+<p>又一次<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">2017-06-28 10:05:21,397 INFO  namenode.FSNamesystem (FSNamesystem.java:stopStandbyServices(1297)) - Stopping services started for standby state</div><div class="line">2017-06-28 10:05:21,398 WARN  ha.EditLogTailer (EditLogTailer.java:doWork(349)) - Edit log tailer interrupted</div><div class="line">java.lang.InterruptedException: sleep interrupted</div><div class="line">        at java.lang.Thread.sleep(Native Method)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.ha.EditLogTailer$EditLogTailerThread.doWork(EditLogTailer.java:347)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.ha.EditLogTailer$EditLogTailerThread.access$200(EditLogTailer.java:284)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.ha.EditLogTailer$EditLogTailerThread$1.run(EditLogTailer.java:301)</div><div class="line">        at org.apache.hadoop.security.SecurityUtil.doAsLoginUserOrFatal(SecurityUtil.java:449)</div><div class="line">        at org.apache.hadoop.hdfs.server.namenode.ha.EditLogTailer$EditLogTailerThread.run(EditLogTailer.java:297)</div><div class="line">2017-06-28 10:05:21,403 INFO  namenode.FSNamesystem (FSNamesystem.java:startActiveServices(1098)) - Starting services required for active state</div></pre></td></tr></table></figure></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/06/13/RunningDataV2版本迁移计划/" title="runningdatav2版本迁移计划" itemprop="url">runningdatav2版本迁移计划</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-06-13T08:45:17.000Z" itemprop="datePublished"> 发表于 2017-06-13</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h4 id="注意点"><a href="#注意点" class="headerlink" title="注意点"></a>注意点</h4><ul>
+<li>编辑、更新<ul>
+<li>各类ETL自动创建与之对应的ExecObj对象【重载save方法实现】</li>
+<li>个别自动分析依赖的ETL同时新建或更新相关ExecBlood【H2H, H2M】</li>
+<li>个别需要输入产出的ETL类型需要添加outputs字段，并在save的时候自创创建对应的NullETL对象【JAR】</li>
+<li>根据自身特性创建自身的rel_name 【save的时候分析并添加上】</li>
+</ul>
+</li>
+<li>调度相关<ul>
+<li>(日月周)日常调度【完成依赖解析与任务文件生成，测试通过】</li>
+<li>定时调度【执行部分使用既有方案】</li>
+<li>临时调度【使用既有方案】</li>
+<li>新建调度时，针对的对象应该是修改为ExecObj</li>
+</ul>
+</li>
+</ul>
+<h4 id="影响范围"><a href="#影响范围" class="headerlink" title="影响范围"></a>影响范围</h4><ul>
+<li>整体过程中xstorm新建、编辑不可用</li>
+<li>任务调度中间可能出现失败</li>
+</ul>
+<h4 id="实施步骤"><a href="#实施步骤" class="headerlink" title="实施步骤"></a>实施步骤</h4><ol>
+<li>向各事业部发送不可用通知</li>
+<li>数据库备份</li>
+<li>确保新的save方法都已经注释掉,否则会影响清洗过程。</li>
+<li>将数据库对应model字段全部添加上<blockquote>
+<p>./manage.py migrate metamap 0052 –settings=metamap.config</p>
+</blockquote>
+</li>
 </ol>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/08/24/python-mesos-framework/" title="python-mesos-framework" itemprop="url">python-mesos-framework</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-08-24T07:35:31.000Z" itemprop="datePublished"> 发表于 2017-08-24</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> mesos.interface</div><div class="line"><span class="keyword">from</span> mesos.interface <span class="keyword">import</span> mesos_pb2</div><div class="line"><span class="keyword">import</span> mesos.native</div></pre></td></tr></table></figure>
-<h4 id="ImportError-No-module-named-google-protobuf-internal"><a href="#ImportError-No-module-named-google-protobuf-internal" class="headerlink" title="ImportError: No module named google.protobuf.internal"></a>ImportError: No module named google.protobuf.internal</h4><blockquote>
-<p>pip install protobuf</p>
-</blockquote>
-<h4 id="ImportError-usr-lib-python2-7-site-packages-mesos-scheduler-scheduler-so-undefined-symbol-svn-txdelta2"><a href="#ImportError-usr-lib-python2-7-site-packages-mesos-scheduler-scheduler-so-undefined-symbol-svn-txdelta2" class="headerlink" title="ImportError: /usr/lib/python2.7/site-packages/mesos/scheduler/_scheduler.so: undefined symbol: svn_txdelta2"></a>ImportError: /usr/lib/python2.7/site-packages/mesos/scheduler/_scheduler.so: undefined symbol: svn_txdelta2</h4><blockquote>
-<p>yum install subversion-devel -y</p>
-</blockquote>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/08/23/prometheus的alertmanager部分/" title="prometheus的alertmanager部分" itemprop="url">prometheus的alertmanager部分</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-08-23T03:07:29.000Z" itemprop="datePublished"> 发表于 2017-08-23</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><h4 id="分组"><a href="#分组" class="headerlink" title="分组"></a>分组</h4><p>把近似的告警放进单个通知中。</p>
-<p>例如：一个服务的几百台实例分布在不同的机器中，如果出现局部的网络问题，那么可能会报出部分服务大约100个报警信息，我们是需要知道哪些实例有问题的，这样才能快速定位区域。但是没有必要发送几百条通知，只需要一条通知，包含所有的实例列表就可以了。</p>
-<h4 id="inhibit"><a href="#inhibit" class="headerlink" title="inhibit"></a>inhibit</h4><p>inhibition是用来避免关联报警的。</p>
-<p>例如：如果一个集群不可用的告警已经firing了。那么Altermanager可以让其他的与集群相关的告警不发出。这样能避免此种类型的告警爆炸问题。</p>
-<h4 id="silence"><a href="#silence" class="headerlink" title="silence"></a>silence</h4><p>一般用来指定不告警的时段。通常基于matcher进行配置。</p>
-<h2 id="告警规则"><a href="#告警规则" class="headerlink" title="告警规则"></a>告警规则</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">ALERT &lt;alert name&gt;</div><div class="line">  IF &lt;expression&gt;</div><div class="line">  [ FOR &lt;duration&gt; ]    发生持续时长</div><div class="line">  [ LABELS &lt;label set&gt; ]    为告警指定label，同样label的告警会被最新的告警覆盖</div><div class="line">  [ ANNOTATIONS &lt;label set&gt; ]</div></pre></td></tr></table></figure>
-<p>例子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"># Alert for any instance that is unreachable for &gt;5 minutes.</div><div class="line">ALERT InstanceDown</div><div class="line">  IF up == 0</div><div class="line">  FOR 5m</div><div class="line">  LABELS &#123; severity = &quot;page&quot; &#125;</div><div class="line">  ANNOTATIONS &#123;</div><div class="line">    summary = &quot;Instance &#123;&#123; $labels.instance &#125;&#125; down&quot;,</div><div class="line">    description = &quot;&#123;&#123; $labels.instance &#125;&#125; of job &#123;&#123; $labels.job &#125;&#125; has been down for more than 5 minutes.&quot;,</div><div class="line">  &#125;</div><div class="line"></div><div class="line"># Alert for any instance that have a median request latency &gt;1s.</div><div class="line">ALERT APIHighRequestLatency</div><div class="line">  IF api_http_request_latencies_second&#123;quantile=&quot;0.5&quot;&#125; &gt; 1</div><div class="line">  FOR 1m</div><div class="line">  ANNOTATIONS &#123;</div><div class="line">    summary = &quot;High request latency on &#123;&#123; $labels.instance &#125;&#125;&quot;,</div><div class="line">    description = &quot;&#123;&#123; $labels.instance &#125;&#125; has a median request latency above 1s (current value: &#123;&#123; $value &#125;&#125;s)&quot;,</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
-<p>label存的是实例的label信息，value是IF表达式的结果。</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/08/22/apache-atlas数据治理/" title="apache-atlas数据治理" itemprop="url">apache-atlas数据治理</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-08-22T06:46:36.000Z" itemprop="datePublished"> 发表于 2017-08-22</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>Atlas是一个可扩展的一系列的核心基础管理服务。</p>
-<p>特性</p>
-<ul>
-<li>数据分类<ul>
-<li>为数据定义面向业务的分类标签</li>
-<li>定义、annotate、自动获取数据集之间的关系【source、target、中间处理的process】</li>
-<li>导出元数据到第三方系统</li>
-</ul>
-</li>
-<li>中心化监听<ul>
-<li>捕获每个app、process等数据交互的安全信息</li>
-<li>捕获每个步骤【execution、step、activities】的操作信息</li>
-</ul>
-</li>
-<li>搜索和lineage<ul>
-<li>预定义导航路径来检索数据分类和监听信息</li>
-<li>基于文本的索引，定位对应数据和监听的事件</li>
-<li>对数据集的血统可视化，可以看到操作、安全等信息</li>
-</ul>
-</li>
-<li>安全和策略引擎<ul>
-<li>基于数据分类、属性、角色的运行时Rationalize compliance policy</li>
-<li>Advanced definition of policies for preventing data derivation based on classification (i.e. re-identification) – Prohibitions</li>
-<li>Column and Row level masking based on cell values and attibutes.</li>
-</ul>
-</li>
-</ul>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/08/18/prometheus自定义exporter/" title="prometheus自定义exporter" itemprop="url">prometheus自定义exporter</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-08-18T07:30:10.000Z" itemprop="datePublished"> 发表于 2017-08-18</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h2 id="可维护性和简洁度"><a href="#可维护性和简洁度" class="headerlink" title="可维护性和简洁度"></a>可维护性和简洁度</h2><p>最核心的地方是考虑一下获取metrics的成本与途径。</p>
-<p>如果已经有了一个不错的、不怎么修改的metrics，那么就很容易搞定。例如haproxy exporter</p>
-<p>如果有上百个metrcis，而且随着版本变化metric也一直在变，那就会有得受了。例如mysql exporter </p>
-<p>node exporter介于两者之间，是个别的module总在变化。</p>
-<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>exporter不应该关心app在哪里的配置，也能够使用filter过滤一些太稀碎的metric。</p>
-<p>与监控系统协作的时候，framework和protocol相关的东西会很复杂。</p>
-<p>最好是既有系统的数据结构能有prometheus一致，或者近似。这样就可以自动转化metric的形式，例如Cloudwatch, SNMP and Collectd。</p>
-<p>其实更多情况是不那么标准的。例如jmx exporter， 用户必须说明怎样进行metric转化才行。</p>
-<p>YAML是标准的prometheus配置文件格式。</p>
-<h2 id="metrics"><a href="#metrics" class="headerlink" title="metrics"></a>metrics</h2><h4 id="命名"><a href="#命名" class="headerlink" title="命名"></a>命名</h4><h4 id="label"><a href="#label" class="headerlink" title="label"></a>label</h4><p>避免使用type作为label名称，太通用，而且无意义。应该是用避免使用一些类似region, zone, cluster,az,datacenter,dc,woner,customer,stage,environment, env等字眼。</p>
-<h4 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> prometheus_client <span class="keyword">import</span> start_http_server, Metric, REGISTRY</div><div class="line"><span class="keyword">import</span> json</div><div class="line"><span class="keyword">import</span> requests</div><div class="line"><span class="keyword">import</span> sys</div><div class="line"><span class="keyword">import</span> time</div><div class="line"></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">JsonCollector</span><span class="params">()</span>:</span></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">init</span><span class="params">(self, endpoint, appname, srvtype, separator=<span class="string">'__'</span>)</span>:</span></div><div class="line">        self._endpoint = endpoint</div><div class="line">        self._appname = appname</div><div class="line">        self._separator = separator</div><div class="line">        self._srvtype = srvtype</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, target)</span>:</span></div><div class="line">        self.init(target.url, target.appname, target.srvtype)</div><div class="line"></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">handle_type</span><span class="params">(self, prefix, d, metric</span></span></div><div class="line">        <span class="string">'''</span></div><div class="line">        本来是应该使用具体的metric类型的，调用其add_metric接口。</div><div class="line">        但是由于这是一个JSON到prometheus的通用方法，所以没有那样处理。</div><div class="line">        '''</div><div class="line">        prefix = prefix.upper<span class="params">()</span></div><div class="line">        if isinstance<span class="params">(d, dict)</span>:</div><div class="line">            self.extract_dict<span class="params">(prefix, d, metric)</span></div><div class="line">        elif isinstance<span class="params">(d, list)</span>:</div><div class="line">            self.extract_list<span class="params">(prefix, d, metric)</span></div><div class="line">        else:</div><div class="line">            if not isinstance<span class="params">(d, <span class="params">(str, unicode)</span>)</span>:</div><div class="line">                metric.add_sample<span class="params">(<span class="string">'json_val'</span>,</span></div><div class="line">                                  value=d, labels=&#123;<span class="string">'app_name'</span>: self._appname, <span class="string">'rowkey'</span>: prefix&#125;)</div><div class="line">            else:</div><div class="line">                try:</div><div class="line">                    val = float<span class="params">(d)</span></div><div class="line">                    metric.add_sample<span class="params">(<span class="string">'json_val'</span>,</span></div><div class="line">                                  value=val, labels=&#123;<span class="string">'app_name'</span>: self._appname, <span class="string">'rowkey'</span>: prefix&#125;)</div><div class="line">                except ValueError:</div><div class="line">                    print<span class="params">(<span class="string">'Error convert %s to float for %s'</span> % <span class="params">(d, prefix)</span>)</span></div><div class="line">    </div><div class="line">    </div><div class="line">    def extract_dict<span class="params">(self, prefix, dd, metric)</span>:</div><div class="line">        for k, v in dd.items<span class="params">()</span>:</div><div class="line">            if len<span class="params">(prefix)</span> == <span class="number">0</span>:</div><div class="line">                self.handle_type<span class="params">(k, v, metric)</span></div><div class="line">            else:</div><div class="line">                self.handle_type<span class="params">(prefix + self._separator + k, v, metric)</span></div><div class="line">    </div><div class="line">    </div><div class="line">    def extract_list<span class="params">(self, prefix, dd, metric)</span>:</div><div class="line">        for i in dd:</div><div class="line">            if len<span class="params">(prefix)</span> == <span class="number">0</span>:</div><div class="line">                self.handle_type<span class="params">(dd.index<span class="params">(i)</span>, i, metric)</span></div><div class="line">            else:</div><div class="line">                self.handle_type<span class="params">(prefix + self._separator + dd.index<span class="params">(i)</span>, i, metric)</span></div><div class="line"></div><div class="line">    def collect<span class="params">(self)</span>:</div><div class="line">        <span class="string">'''</span></div><div class="line">        此处需要注意，接口返回的是这里的结果，不要把metric弄成成员变量。</div><div class="line">        应该每次都new一个返回去，不然add_sample会把所有的变量都累加进去</div><div class="line">        '''</div><div class="line">        try:</div><div class="line">            response = json.loads<span class="params">(requests.get<span class="params">(self._endpoint)</span>.content.decode<span class="params">(<span class="string">'UTF-8'</span>)</span>)</span></div><div class="line">            metric = Metric<span class="params">(self._srvtype, <span class="string">'spark program id'</span>, <span class="string">'summary'</span>)</span></div><div class="line">            self.handle_type<span class="params">(<span class="string">''</span>, response, metric)</span></div><div class="line">            yield metric</div><div class="line">        except Exception, e:</div><div class="line">            print e.message</div><div class="line"></div><div class="line"></div><div class="line">class Target<span class="params">()</span>:</div><div class="line">    def __init__<span class="params">(self, srvtype, appname, url)</span>:</div><div class="line">        self.srvtype = srvtype</div><div class="line">        self.appname = appname</div><div class="line">        self.url = url</div><div class="line"></div><div class="line">if __name__ == <span class="string">'__main__'</span>:</div><div class="line">    # Usage: json_exporter.py port</div><div class="line">    </div><div class="line">    print<span class="params">(sys.argv)</span></div><div class="line">    start_http_server<span class="params">(int<span class="params">(sys.argv[<span class="number">1</span>])</span>)</span></div><div class="line">    targets = list<span class="params">()</span></div><div class="line">    targets.append<span class="params">(Target<span class="params">(<span class="string">'flume'</span>, <span class="string">'haijun_flume_test1'</span>, <span class="string">'http://10.2.19.94:34545/metrics'</span>)</span>)</span></div><div class="line">    targets.append<span class="params">(Target<span class="params">(<span class="string">'spark_streaming'</span>, <span class="string">'h5_streaming_test1'</span>, <span class="string">'http://datanode02.will.com:8088/proxy/application_1501827559666_32228/metrics/json'</span>)</span>)</span></div><div class="line">    for target in targets:</div><div class="line">        REGISTRY.register<span class="params">(JsonCollector<span class="params">(target)</span>)</span></div><div class="line">    #REGISTRY.register<span class="params">(JsonCollector<span class="params">()</span>)</span></div><div class="line"></div><div class="line">    while True: time.sleep<span class="params">(<span class="number">10</span>)</span></div></pre></td></tr></table></figure>
-<p>下面是爬取yarn中指定名称规范的运行中的app的简单示例代码。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> requests</div><div class="line"><span class="keyword">import</span> json</div><div class="line"><span class="keyword">import</span> re</div><div class="line"></div><div class="line"></div><div class="line">url = <span class="string">'http://datanode02.will.com:8088/ws/v1/cluster/apps?states=RUNNING'</span></div><div class="line">html_doc = requests.get(url).content</div><div class="line">result = json.loads(html_doc)</div><div class="line"><span class="keyword">for</span> app <span class="keyword">in</span> result[<span class="string">'apps'</span>][<span class="string">'app'</span>]:</div><div class="line">    <span class="keyword">if</span> re.match(<span class="string">'.*_online'</span>, app[<span class="string">'name'</span>]): </div><div class="line">        print(app[<span class="string">'name'</span>], app[<span class="string">'trackingUrl'</span>] + <span class="string">'metrics/json'</span>)</div></pre></td></tr></table></figure></p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/07/28/Quota/" title="Quota" itemprop="url">Quota</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-07-28T06:06:28.000Z" itemprop="datePublished"> 发表于 2017-07-28</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>在mesos上运行多个framework的时候有个问题，就是如果当前没有其他framework接受剩余资源，默认的WDRF分配器可能会把剩余资源分配给已经满足公平共享的framework。并没有把剩余资源留下备用的机制。尽管dynamic reservations允许operator和framework可在指定的mesos agent上动态保留资源，但是并不能从根本上解决问题，因为每个agent都可能挂掉。</p>
-<p>Mesos 0.27提出了quota，用来保证一个role会获取指定大小的最小资源保留。当然，这个role也可以获得比这个quota配置的更多的资源。</p>
-<p>quota有些类似reserved resource，稍有不同。quota资源不能绑定到指定的agent上，就是说一个quota保证一个role会有指定大小的资源，但是可以是在集群的任意位置。然而 reservations是用来指定特定的资源给指定role的特定的agent使用。quota只能让operator通过HTTP终端进行配置，而dynamic reservations则可以通过framework的principal验证后进行控制。</p>
-<p>注意：reserved reservations是用来满足一个role的quota配置的。例如，如果一个role指定定了一个4CPU和一个agent上的2个CPU的reserved reservations。那么这个role有一个4CPU的最小保证，而不是6个。</p>
-<h2 id="Terminology【术语】"><a href="#Terminology【术语】" class="headerlink" title="Terminology【术语】"></a>Terminology【术语】</h2><p>operator是一个管理mesos集群的东西，可以是人，工具，或者脚本。</p>
-<p>在计算机领域，quota通常指下面的事情：</p>
-<ul>
-<li>一个最小保证</li>
-<li>一个最大范围</li>
-<li>以上两者</li>
-</ul>
-<p>在mesos中，quota是一个role即将游泳的资源的最小保证。</p>
-<h2 id="动力和限制"><a href="#动力和限制" class="headerlink" title="动力和限制"></a>动力和限制</h2><p>通过下面场景，进一步了解quota。</p>
-<h4 id="场景1：-贪婪framework"><a href="#场景1：-贪婪framework" class="headerlink" title="场景1： 贪婪framework"></a>场景1： 贪婪framework</h4><p>在一个集群中有两个framework，每个都订阅了自己特有的role，每个role都有相同的权重。frameworkA定于了role RA，frameworkB订阅了role RB。集群中只有一种单一资源：100CPU. fA只需要10个CPU，而FB需要全部的CPU。如果没有Quota的话，FA就会根据默认的公平调度，每个framework都50个CPU，那么就会有40个是浪费的。</p>
-<h4 id="场景2：-新framework的资源"><a href="#场景2：-新framework的资源" class="headerlink" title="场景2： 新framework的资源"></a>场景2： 新framework的资源</h4><p>贪婪framework FB订阅role RB，是当前集群唯一的framework，那么它就都占了100CPU.如果一个fa新加入进来，需要等待FB的任务完成后才能获取属于自己的50CPU资源。</p>
-<p>对于场景2来说，quota自己是不足以解决这个问题的，然而可以一直保持一个资源池作为保留或者或者进行资源抢占。</p>
-<h2 id="Operator-HTTP终端"><a href="#Operator-HTTP终端" class="headerlink" title="Operator HTTP终端"></a>Operator HTTP终端</h2><p>master的/quota HTTP终端使operator可以操控quota。目前是提供一种类REST接口，支持下面的操作：</p>
-<ul>
-<li>POST设置一个新的quota</li>
-<li>DELETE 移除一个已经存在的quota</li>
-<li>GET 查询当前的quota</li>
-</ul>
-<p>目前并不支持更新原有的quota，需要先删除，后添加。</p>
-<h2 id="工作原理"><a href="#工作原理" class="headerlink" title="工作原理"></a>工作原理</h2><p>首先mesos master会处理quota相关的请求，然后allocator来实施quota。</p>
-<p>要注意quota具体怎样被实施是依赖于你所使用的allocator的。还有就是实施过程中，可能会对正在运行的framework造成一些影响，因为要把资源重新分配一下。还有资源是只可扩展的资源，端口号这种不行….</p>
-<h2 id="quota请求处理过程"><a href="#quota请求处理过程" class="headerlink" title="quota请求处理过程"></a>quota请求处理过程</h2><p>添加的过程</p>
+<p>可能需要手动添加exec_obj_id字段…【历史原因】<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line"><span class="comment">--</span></div><div class="line"><span class="comment">-- Add field exec_obj to anaetl</span></div><div class="line"><span class="comment">--</span></div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_anaetl`</span> <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="built_in">integer</span> <span class="literal">NULL</span>;</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_anaetl`</span> <span class="keyword">ALTER</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="keyword">DROP</span> <span class="keyword">DEFAULT</span>;</div><div class="line"><span class="comment">--</span></div><div class="line"><span class="comment">-- Add field exec_obj to etl</span></div><div class="line"><span class="comment">--</span></div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_etl`</span> <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="built_in">integer</span> <span class="literal">NULL</span>;</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_etl`</span> <span class="keyword">ALTER</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="keyword">DROP</span> <span class="keyword">DEFAULT</span>;</div><div class="line"><span class="comment">--</span></div><div class="line"><span class="comment">-- Add field exec_obj to jarapp</span></div><div class="line"><span class="comment">--</span></div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_jarapp`</span> <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="built_in">integer</span> <span class="literal">NULL</span>;</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_jarapp`</span> <span class="keyword">ALTER</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="keyword">DROP</span> <span class="keyword">DEFAULT</span>;</div><div class="line"><span class="comment">--</span></div><div class="line"><span class="comment">-- Add field exec_obj to sqoophive2mysql</span></div><div class="line"><span class="comment">--</span></div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_sqoophive2mysql`</span> <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="built_in">integer</span> <span class="literal">NULL</span>;</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_sqoophive2mysql`</span> <span class="keyword">ALTER</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="keyword">DROP</span> <span class="keyword">DEFAULT</span>;</div><div class="line"><span class="comment">--</span></div><div class="line"><span class="comment">-- Add field exec_obj to sqoopmysql2hive</span></div><div class="line"><span class="comment">--</span></div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_sqoopmysql2hive`</span> <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="built_in">integer</span> <span class="literal">NULL</span>;</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_sqoopmysql2hive`</span> <span class="keyword">ALTER</span> <span class="keyword">COLUMN</span> <span class="string">`exec_obj_id`</span> <span class="keyword">DROP</span> <span class="keyword">DEFAULT</span>;</div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> <span class="string">`metamap_anaetl_30a76f4d`</span> <span class="keyword">ON</span> <span class="string">`metamap_anaetl`</span> (<span class="string">`exec_obj_id`</span>);</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_anaetl`</span> <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> <span class="string">`metamap_anaetl_exec_obj_id_1bac03db_fk_metamap_execobj_id`</span> FOREIGN <span class="keyword">KEY</span> (<span class="string">`exec_obj_id`</span>) <span class="keyword">REFERENCES</span> <span class="string">`metamap_execobj`</span> (<span class="string">`id`</span>);</div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> <span class="string">`metamap_etl_30a76f4d`</span> <span class="keyword">ON</span> <span class="string">`metamap_etl`</span> (<span class="string">`exec_obj_id`</span>);</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_etl`</span> <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> <span class="string">`metamap_etl_exec_obj_id_8c6a086a_fk_metamap_execobj_id`</span> FOREIGN <span class="keyword">KEY</span> (<span class="string">`exec_obj_id`</span>) <span class="keyword">REFERENCES</span> <span class="string">`metamap_execobj`</span> (<span class="string">`id`</span>);</div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> <span class="string">`metamap_jarapp_30a76f4d`</span> <span class="keyword">ON</span> <span class="string">`metamap_jarapp`</span> (<span class="string">`exec_obj_id`</span>);</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_jarapp`</span> <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> <span class="string">`metamap_jarapp_exec_obj_id_6340f92e_fk_metamap_execobj_id`</span> FOREIGN <span class="keyword">KEY</span> (<span class="string">`exec_obj_id`</span>) <span class="keyword">REFERENCES</span> <span class="string">`metamap_execobj`</span> (<span class="string">`id`</span>);</div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> <span class="string">`metamap_sqoophive2mysql_30a76f4d`</span> <span class="keyword">ON</span> <span class="string">`metamap_sqoophive2mysql`</span> (<span class="string">`exec_obj_id`</span>);</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_sqoophive2mysql`</span> <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> <span class="string">`metamap_sqoophive2mys_exec_obj_id_ee2cb5c2_fk_metamap_execobj_id`</span> FOREIGN <span class="keyword">KEY</span> (<span class="string">`exec_obj_id`</span>) <span class="keyword">REFERENCES</span> <span class="string">`metamap_execobj`</span> (<span class="string">`id`</span>);</div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> <span class="string">`metamap_sqoopmysql2hive_30a76f4d`</span> <span class="keyword">ON</span> <span class="string">`metamap_sqoopmysql2hive`</span> (<span class="string">`exec_obj_id`</span>);</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> <span class="string">`metamap_sqoopmysql2hive`</span> <span class="keyword">ADD</span> <span class="keyword">CONSTRAINT</span> <span class="string">`metamap_sqoopmysql2hi_exec_obj_id_9d61c4ff_fk_metamap_execobj_id`</span> FOREIGN <span class="keyword">KEY</span> (<span class="string">`exec_obj_id`</span>) <span class="keyword">REFERENCES</span> <span class="string">`metamap_execobj`</span> (<span class="string">`id`</span>);</div></pre></td></tr></table></figure></p>
 <ol>
-<li>认证</li>
-<li>解析与验证request</li>
-<li>如果开启了授权，就授权认证</li>
-<li>运行capacity heuristic</li>
-<li>存储quota</li>
-<li>解除outstanding offer</li>
+<li>按照以下顺序开始清洗</li>
 </ol>
-<p>移除的过程</p>
+<ul>
+<li><p>clean_etl </p>
+<p>  生成对应ETL的ExecObj</p>
+</li>
+<li><p>clean_rel </p>
+<p>  清洗H2M,M2H中不规范的name，规范化hive表名到rel_name字段中</p>
+</li>
+<li><p>clean_m2h </p>
+<p>  清洗M2H任务，生成对应的ExecObj。另外找到所有TBLBlood中父表是此表rel_name的记录，新建与之对应的ExecBlood记录</p>
+</li>
+<li><p>before_clean_blood</p>
+<p>  过滤一下TblBlood中的parent，对于不存在于H2H和M2好的父表，临时创建为之创建NULLETL，并创建对应ExecObj，然后再创建ExecBlood。 </p>
+<p>  <strong>==注意==</strong>：由于NULLETL的特殊性，需要在此创建ExecObj的deptask的日月周调度【在save方法中已实现】</p>
+</li>
+<li><p>clean_blood</p>
+<p>  清洗TblBlood到对应ExecBlood，因为前面已经处理了所有情况，不该出现任务child或者parent不存在的问题。</p>
+<p>  自检sql</p>
+  <figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">SELECT</span> <span class="keyword">name</span> <span class="keyword">from</span> metamap_execobj <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="keyword">name</span> <span class="keyword">HAVING</span> <span class="keyword">count</span>(<span class="number">1</span>) &gt; <span class="number">1</span>;</div><div class="line"></div><div class="line"><span class="keyword">SELECT</span> * <span class="keyword">from</span> metamap_execobj <span class="keyword">where</span> <span class="keyword">name</span> = <span class="string">'w_data_platform@drop_d_regula_stock'</span>;</div><div class="line"></div><div class="line"><span class="keyword">SELECT</span> * <span class="keyword">from</span> metamap_execobj <span class="keyword">where</span> <span class="keyword">name</span> = <span class="string">'app_jlc@jlc_life_accumulative'</span>;</div></pre></td></tr></table></figure>
+</li>
+<li><p>clean_h2m</p>
+<p>  清洗H2M到ExecObj对象，获取依赖ETL的H2H ExecObj对象，添加对应ExecBlood。<br>  如果是JAR产生的表，暂不支持，需要额外处理【JAR添加自身的output】。</p>
+<p>  <strong>==注意==</strong>：<br>  H2M中的个别现象，多个周期的数据存放在同一个表中：<br>  SELECT * from metamap_sqoophive2mysql where id in (71,72,73,74,75,76)<br>  需要额外手动维护execblood</p>
+</li>
+<li><p>clean_jar</p>
+<p>  清洗JAR到ExecObj对象</p>
+</li>
+<li><p>clean_email</p>
+<p>  清洗ANAETL到ExecObj对象</p>
+</li>
+<li><p>clean_task</p>
+<p>  分别执行clean， type=4, type=1等(1,2,3,4,6)</p>
+  <figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">--- 这些都是ana_etl本身的valid是0</span></div><div class="line"><span class="keyword">SELECT</span> * <span class="keyword">from</span> metamap_willdependencytask <span class="keyword">where</span> <span class="keyword">id</span> <span class="keyword">in</span> (<span class="number">864</span>, <span class="number">870</span>, <span class="number">759</span>, <span class="number">643</span>, <span class="number">164</span>, <span class="number">143</span>, <span class="number">85</span>)</div></pre></td></tr></table></figure>
+</li>
+<li><p>clean_ptask</p>
+<p>  更新定时任务的task参数，由原来的will_deptask的id，更新为type为100的最新清洗完的task id.</p>
+</li>
+<li><p>clean_null</p>
+<p>  为所有的NULLETL对象创建日月周的task调度</p>
+</li>
+</ul>
 <ol>
-<li>认证</li>
-<li>确认request有效性</li>
-<li>鉴权</li>
-<li>移除quota</li>
+<li>测试各种任务调度【日常调度、定时调度、即时调度】</li>
+<li><p>clean_exec_id</p>
+<p> 清洗原有的ETL对象的exec_obj_id字段</p>
+</li>
+<li><p>放开ETL对象的save方法注释</p>
+</li>
+<li>恢复线上使用，开启beta测试，随时解决未发现的新生bug</li>
+<li>修改日调度脚本中的url到新版本</li>
+<li>添加调度的页面覆盖回来[sche/edit_new.html， /views/sche_etl_v2.py]</li>
 </ol>
-<h4 id="capacity-heuristic检查"><a href="#capacity-heuristic检查" class="headerlink" title="capacity heuristic检查"></a>capacity heuristic检查</h4><p>配置错误的quota可能会导致所有的framework都分配不到资源。例如假设一个opetaror给不存在的role 设置了100CPU的quota，而当前集群只用100CPU.</p>
-<p>为了防止这种极端情形的出现，mesos master会用一个capacity heuristic来检查quota是不是对于当前集群资源合理。这个heuristic会测试总的quota是不是超过了集群非静态保留的总资源。</p>
-<blockquote>
-<p>总资源 - 静态保留资源 》= 总资源 + quota request</p>
-</blockquote>
-<p>注意即便当前是有足够的资源的，但是agent随时可能挂掉，导致集群不能满足配置的quota的需求。</p>
-<p>使用force标志可以让check通过，通常是因为operator知道后期会有新的资源加进来。</p>
-<h4 id="接触outstanding-offer"><a href="#接触outstanding-offer" class="headerlink" title="接触outstanding offer"></a>接触outstanding offer</h4><p>设置新quota的过程中，master会接触outstanding offer。这避免了当前剩余的没有offer出去，但是很多分配出去给其他framework的资源还没有被使用，造成的资源不足情况。因此，按照下面规则解除outstanding offer：</p>
-<ul>
-<li>解除至少跟quota请求中一样多的资源</li>
-<li>如果一个agent有一个offer需要被解除，那么这个agent的所有offer都会被解除。This is done in order to make the potential offer bigger, which increases the chances that a quota’ed framework will be able to use the offer.</li>
-<li>尽可能多的解除当前quota的role的framework的offer。这会让每个订阅这个role的framework收到一个offer。</li>
-</ul>
-<h4 id="通过wDRF-Allocator实施"><a href="#通过wDRF-Allocator实施" class="headerlink" title="通过wDRF Allocator实施"></a>通过wDRF Allocator实施</h4><p>wDRF Allocator首先会根据quota设置的分配资源给role。如果所有的quota都满足了，就为剩余的role执行标准的wDRF。</p>
-<p>注意： 一个已经quota的role不会会获取到多一些的未被预定的不可撤销的资源。如果这个role中framework没有选择可撤销的资源，那么他们可能会在role满足之后停止获取offer。这时设置任何比这个role的fair share还低的quota值都很可能导致给这个role的总资源降低。</p>
-<p>注意：当前auota保证也是一个quota限制。就是说，一旦一个role的quota满足了，这个role就不会获得更多的资源了。这是为了减轻缺乏quota限制。</p>
-<p>如果有多个framework订阅了一个role，这个role有一个quota，标准的wDRF算法来决定这些framework的offer比例。</p>
-<p>默认的wDRF allocator认为只有不可撤销的资源才是quota可用的。</p>
-<h2 id="容灾"><a href="#容灾" class="headerlink" title="容灾"></a>容灾</h2><p>如果一个role里有quota，master容灾恢复就很重要。在恢复过程中会有一段时间并不是所有的agent都向master注册了自己。因此不可能所有的quota都被满足。</p>
-<p>为了定位这个问题，如果恢复的时候任何前面的quota被探测到后，allocator就进入recovery模式，在这个过程中，allocator并不保证offer。只有满足下面任何一个条件的时候才退出这个模式</p>
-<ul>
-<li>指定数量的agent重新注册自己(默认80%)</li>
-<li>一个超时时间(默认10分钟)</li>
-</ul>
-<h2 id="当前不足"><a href="#当前不足" class="headerlink" title="当前不足"></a>当前不足</h2><ul>
-<li>quota不允许指定详细资源粒度(例如每个节点上10个CPU)</li>
-<li>不允许指定约束条件(比如，在互斥节点上分配2 * 5个CPU，形成HA)</li>
-<li>不能为默认的role *设置quota</li>
-<li>目前不支持更新</li>
-</ul>
-<p>参考： <a href="http://mesos.apache.org/documentation/latest/quota/" target="_blank" rel="external">http://mesos.apache.org/documentation/latest/quota/</a></p>
+<p>稳定运行一周，将dep task中旧的task全部删除</p>
+<p>TODO</p>
+<ol>
+<li>H2M的依赖手动添加以下。SELECT * from metamap_sqoophive2mysql where id in (71,72,73,74,75,76)</li>
+<li>测试各种ETL的save方法</li>
+</ol>
+<p>新增逻辑：</p>
+<ol>
+<li></li>
+</ol>
 
         
         
@@ -552,132 +538,23 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/07/27/阿里中间件笔记/" title="阿里中间件笔记" itemprop="url">阿里中间件笔记</a>
+      <a href="/2017/06/09/gobblin-architecture译文/" title="gobblin-architecture译文" itemprop="url">gobblin-architecture译文</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
 		
   <p class="article-time">
-    <time datetime="2017-07-27T06:34:20.000Z" itemprop="datePublished"> 发表于 2017-07-27</time>
+    <time datetime="2017-06-09T06:44:08.000Z" itemprop="datePublished"> 发表于 2017-06-09</time>
     
   </p>
 </header>
     <div class="article-content">
         
-        <p>AliSQL：何登成</p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><ul>
-<li>主从复制，数据一致性</li>
-<li>HA依赖外部组件</li>
-</ul>
-<h2 id="解决【XCluster】"><a href="#解决【XCluster】" class="headerlink" title="解决【XCluster】"></a>解决【XCluster】</h2><p>基于paxos标准构建alisql集群</p>
-<ul>
-<li>高性能、可异地部署、网络抖动高容忍<ul>
-<li>batching和pipelining，有了pipeline可以同个时间点传输多批数据，问题是乱序收取、日志空洞。等全部到来的时候再去处理，两外的方案是乱序也通过多数派确认提交。</li>
-</ul>
-</li>
-<li>独立基础库，可单独部署【并不限于alisql使用】</li>
-</ul>
-<p>raft是不会出现日志空洞的，但是不能支持pipeline。poxos可以使用pipelining，但是会有乱序。</p>
-<p>sysbench是一个模块化的、跨平台、多线程基准测试工具，主要用于评估测试各种不同系统参数下的数据库负载情况。</p>
-<h2 id="HIStroe：阿里OLAP，-焦方飞"><a href="#HIStroe：阿里OLAP，-焦方飞" class="headerlink" title="HIStroe：阿里OLAP， 焦方飞"></a>HIStroe：阿里OLAP， 焦方飞</h2><p>MPP计算</p>
-<p>知识网格的列式存储</p>
-<p>存储：</p>
-<p>succinct data</p>
-<p>lsm  index</p>
-<p>查询优化： 让更苛刻的条件优先执行</p>
-<p>Hi-index原理，不需要解压数据就可以检索</p>
-<h2 id="rocketMQ-万亿级数据洪峰下的消息引擎-冯嘉"><a href="#rocketMQ-万亿级数据洪峰下的消息引擎-冯嘉" class="headerlink" title="rocketMQ: 万亿级数据洪峰下的消息引擎 冯嘉"></a>rocketMQ: 万亿级数据洪峰下的消息引擎 冯嘉</h2>
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/07/25/Roles/" title="Roles" itemprop="url">Roles</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-07-25T03:37:29.000Z" itemprop="datePublished"> 发表于 2017-07-25</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h2 id="role"><a href="#role" class="headerlink" title="role"></a>role</h2><p>好多host-level的OS(例如Linux，BSDs等)都支持多用户。同样的，mesos也是一个多用户集群管理系统，使用一个mesos集群管理一个组织的所有资源，服务于这个组织的用户。</p>
-<p>mesos里与资源相关的东西如下：</p>
-<ul>
-<li>用户之间对于资源的公平共享</li>
-<li>保证用户资源(优先级、隔离、限额等)</li>
-<li>精确地资源计算能力<ul>
-<li>分别有多少资源是 已分配/未分配等等</li>
-<li>基于每个用户计算</li>
-</ul>
-</li>
-</ul>
-<p>在mesos中，我们为所有用户分配一个或多个role。其实，role就是mesos资源的消费者。这个消费者可以代表一个组织的一个用户，也可能是一个组、一个群、一个service，一个framework等等。</p>
-<p>调度器会订阅一个或多个role，监听他们申请到的资源，然后执行调度任务。</p>
-<p>下面是一些例子：</p>
-<ul>
-<li>保证一个role可以分配到指定的资源（通过quota指定）</li>
-<li>保证个别agent上的一些或者所有资源都分配给一个指定的role(通过reservations)</li>
-<li>保证资源是在role之间公平共享(通过DRF)</li>
-<li>声明某些role获取相对更多的资源(通过weight)</li>
-</ul>
-<h2 id="role与acl"><a href="#role与acl" class="headerlink" title="role与acl"></a>role与acl</h2><p>有两种方式来控制一个framework应该订阅哪些role。首先，可以指定ACLs。其次，可以在mesos master启动的时候传递–roles参数，代表role的白名单，逗号隔开。注意在HA环境下，要保证多个master的启动白名单是一致的。</p>
-<h2 id="role与framework的关联"><a href="#role与framework的关联" class="headerlink" title="role与framework的关联"></a>role与framework的关联</h2><p>framework通过制定FrameworkInfo里的roles订阅role。</p>
-<p>作为用户，你可以在启动framework的时候指定要订阅哪些role。具体怎样弄需要看你的framework相关的接口是怎样的。例如，一个单用户的scheduler可能会通过–mesos_role参数指定，多用户的scheduerl就通过 –mesos_roles参数指定。或者也可以通过一个LDAP系统动态调整framwork和role之间的订阅关系。</p>
-<h4 id="订阅多个role"><a href="#订阅多个role" class="headerlink" title="订阅多个role"></a>订阅多个role</h4><p>上面有提到，一个framework可以同时订阅多个role，通过MULTI_ROLE实现。</p>
-<p>一个framework对外提供资源的时候，这些资源只能属于一个role。framework可以通过Offer对象的allocation_info.role字段来确认某个offer是提供给哪个role的，或者通过每个提供的Resource对象的allocation_info.role字段。（当前实现中，在一个Offer中的所有资源都是提供给同一个role的）</p>
-<h4 id="同一个role的多个framework"><a href="#同一个role的多个framework" class="headerlink" title="同一个role的多个framework"></a>同一个role的多个framework</h4><p>多个framework可以订阅同一个role。例如：一个framework可以创建一个持久化的数据卷，然后往里面写数据。一旦这个写数据的任务完成后，这个数据卷就可以提供给订阅同一个role的其他的framewo使用了。第二个framework就可以读取前一个framework写的数据。</p>
-<p>然而，配置多个framework使用同一个role的时候需要慎重一些，因为所有的framework都能够访问到这个role申请到的资源。例如，如果一个framework把一些敏感信息存到了数据卷中，其他的framework就可以读取了。类似地，如果一个framework创建了一个持久化的数据卷，其他framework可以直接偷走自己用来启动自己的任务。通常来说，订阅同一个role的framework之间是具有良好的协作关系的。</p>
-<h2 id="资源与role的关系"><a href="#资源与role的关系" class="headerlink" title="资源与role的关系"></a>资源与role的关系</h2><p>资源通过reservation分配给一个role。资源可以永久静态地或者动态地提供给role使用。framework和operator可以指定一定量的资源作为某个role的最小持有量。</p>
-<h2 id="默认的role"><a href="#默认的role" class="headerlink" title="默认的role"></a>默认的role</h2><p>名称为*的role是一个特殊的role。没有分配的资源是用这个*代表的。</p>
-<p>对于没有提供FrameworkInfo.role的framework注册，会分配给他的就是*这个role。</p>
-<h2 id="role与资源分配"><a href="#role与资源分配" class="headerlink" title="role与资源分配"></a>role与资源分配</h2><p>默认，mesos master使用基于权重的资源分配方式(weighted Dominant Resource Fairness)。 In particular, this implementation of wDRF first identifies which role is furthest below its fair share of the role’s dominant resource. 然后每个订阅这个role的framework就获取到返回的资源。</p>
-<p>资源分配过程可以通过指定role的权重进行自定义控制。</p>
-<h2 id="Role与quota"><a href="#Role与quota" class="headerlink" title="Role与quota"></a>Role与quota</h2><p>为了保证一个role能够分配到指定大小的资源，我们可以通过/quota终端指定quota。</p>
-<p>资源分配者在公平分配剩余资源之前，会首先满足quota的需求。</p>
-<h2 id="Role与Principal"><a href="#Role与Principal" class="headerlink" title="Role与Principal"></a>Role与Principal</h2><p>Principal代表一个与mesos互动的实体，更像是用户名。例如，framework在向mesos master注册的时候会提供principal，在使用HTTP终端的时候会提供principal。一个实体需要提供principal来认证自己的身份。</p>
-<p>Role，仅仅用来控制资源分配。</p>
+        <h2 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h2><p>gobblin主要考虑的是扩展性，永固可以添加新的adapter或者集成已经存在的adapter来加入新的source，从新的source抽取数据。架构图：<br><img src="http://gobblin.readthedocs.io/en/latest/img/Gobblin-Architecture-Overview.png" alt="架构图"></p>
+<p>一个gobblin job是一些列组件协同的结果。所有的组件都是可插拔可扩展的。(<a href="http://gobblin.readthedocs.io/en/latest/Gobblin-Architecture#gobblin-constructs" target="_blank" rel="external">http://gobblin.readthedocs.io/en/latest/Gobblin-Architecture#gobblin-constructs</a>)</p>
+<p>一个gobblin job有一些列的task组成，每个task对应着一个工作单元，负责抽取一部分数据。这些task会根据配置选择(红色部分)通过gobblin runtime执行(上面橙色的部分)。</p>
+<p><a href="http://gobblin.readthedocs.io/en/latest/Gobblin-Architecture/" target="_blank" rel="external">http://gobblin.readthedocs.io/en/latest/Gobblin-Architecture/</a></p>
 
         
         
@@ -720,75 +597,20 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/07/24/mesos的containerizer/" title="mesos的containerizer" itemprop="url">mesos的containerizer</a>
+      <a href="/2017/06/07/nginx代理HDP集群代码段/" title="nginx代理HDP集群代码段" itemprop="url">nginx代理HDP集群代码段</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
 		
   <p class="article-time">
-    <time datetime="2017-07-24T10:17:14.000Z" itemprop="datePublished"> 发表于 2017-07-24</time>
+    <time datetime="2017-06-07T11:43:46.000Z" itemprop="datePublished"> 发表于 2017-06-07</time>
     
   </p>
 </header>
     <div class="article-content">
         
-        <h2 id="Docker-Containerizer"><a href="#Docker-Containerizer" class="headerlink" title="Docker Containerizer"></a>Docker Containerizer</h2><p>Docker containerizer使用dockers engine管理container。</p>
-<h4 id="container启动过程"><a href="#container启动过程" class="headerlink" title="container启动过程"></a>container启动过程</h4><ul>
-<li>Docker containerizer 在ContainerInfo::type为DOCKER的时候尝试在docker里启动task</li>
-<li>Docker containerizer先pull image</li>
-<li>调用pre-launch的hook</li>
-<li>executor以下面两种方式启动起来<ul>
-<li>mesos agent运行在一个docker container中<ul>
-<li>这种方式需要提供–docker_mesos_image的参数。使用指定的docker image启动mesos agent</li>
-<li>如果task包含自定义的executor，那么这个executor就在docker container中被启动</li>
-<li>如果task并不包含executor。就是说它定义了一个command，默认的mesos-docker-executor就在docker container中通过docker Cli执行这个command。</li>
-</ul>
-</li>
-<li>mesos agent不运行在docker container中<ul>
-<li>如果task中包含自定义的executor，那么在docker container中执行</li>
-<li>如果task不博阿涵自定义的executor，也就是定义了一个command，就fork一个子进程来执行默认的mesos-docker-executor. 然后mesos-docker-executor产生一个shell通过docker cli执行这个command。</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<h2 id="Mesos-Containerizer"><a href="#Mesos-Containerizer" class="headerlink" title="Mesos Containerizer"></a>Mesos Containerizer</h2><p>Mesos Containerizer是原生的。Mesos Containerizer会处理所有没有制定ContainerInfo::DockerInfo的executor/task。</p>
-<h4 id="container启动过程-1"><a href="#container启动过程-1" class="headerlink" title="container启动过程"></a>container启动过程</h4><ul>
-<li>在每个isolator上调用prepare</li>
-<li>使用Launcher fork出executor。在isolated之前，这个被fork出来的executor是不能执行的</li>
-<li>Isolate这个executor。通过pid调用每个isolator的isolate方法</li>
-<li>抽取executor</li>
-<li>执行executor。就是上面的executor会获得执行的信号。先执行一些准备的命令，然后再执行executor的内容。</li>
-</ul>
-<h4 id="Launcher"><a href="#Launcher" class="headerlink" title="Launcher"></a>Launcher</h4><p>Launcher负责产生和销毁container。</p>
-<ul>
-<li>在containerizerd context中fork新的进程。这个子进程会执行给定路径的可执行文件，接受参数、flag和环境变量等。</li>
-<li>子进程的IO会根据指定的方式进行重定向</li>
-</ul>
-<h6 id="linux-launcher"><a href="#linux-launcher" class="headerlink" title="linux launcher"></a>linux launcher</h6><ul>
-<li>为container创建一个freezer 的cgroup</li>
-<li>创建一个posix的pipe为host和container进程提供通信通道</li>
-<li>使用系统的clone方法生成子进程(也就是container进程)</li>
-<li>把新生成的container放进freezer的对应层级中</li>
-<li>通过上面的pip给子进程一个signal，让它继续执行</li>
-</ul>
-<h6 id="Posix-launcher-TBD"><a href="#Posix-launcher-TBD" class="headerlink" title="Posix launcher (TBD)"></a>Posix launcher (TBD)</h6><h4 id="Isolators"><a href="#Isolators" class="headerlink" title="Isolators"></a>Isolators</h4><p>Isolator负责创建container中的运行环境【CPU, NETWORK, 存储，内存等】</p>
-<h2 id="Containerizer-states"><a href="#Containerizer-states" class="headerlink" title="Containerizer states"></a>Containerizer states</h2><p>Docker</p>
-<ul>
-<li>FETCHING</li>
-<li>PULLING</li>
-<li>RUNNING</li>
-<li>DESTROYING</li>
-</ul>
-<p>Mesos</p>
-<ul>
-<li>PREPARING</li>
-<li>ISOLATING</li>
-<li>FETCHING</li>
-<li>RUNNING</li>
-<li>DESTROYING</li>
-</ul>
+        <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">#user  nobody;</div><div class="line">worker_processes  1;</div><div class="line"></div><div class="line"></div><div class="line">events &#123;</div><div class="line">    worker_connections  1024;</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">http &#123;</div><div class="line">    include       mime.types;</div><div class="line">    default_type  application/octet-stream;</div><div class="line"></div><div class="line"></div><div class="line">upstream jobhis &#123;</div><div class="line">        server servicenode03.will.com:19888 fail_timeout=30s;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    upstream azk &#123;</div><div class="line">        server schedule.will.com:8081 fail_timeout=30s;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    upstream yarn &#123;</div><div class="line">        server datanode02.will.com:8088 fail_timeout=30s;</div><div class="line">    &#125;</div><div class="line"></div><div class="line"></div><div class="line">    sendfile        on;</div><div class="line">    keepalive_timeout  65;</div><div class="line"></div><div class="line"></div><div class="line">    server &#123;</div><div class="line">        listen       81;</div><div class="line">        server_name  localhost;</div><div class="line"></div><div class="line">	subs_filter_types *;</div><div class="line">#        subs_filter overwrite willhistory i;</div><div class="line">        subs_filter datanode02.will.com:8088 $host:$server_port;</div><div class="line">	subs_filter 10.2.19.(\d*) unknown_ip ir;</div><div class="line">	subs_filter (data|name|service)node(\d*).will.com $1_$2.data.com ir;</div><div class="line">#        subs_filter will.com will.data.com ir;</div><div class="line"></div><div class="line"></div><div class="line">        #charset koi8-r;</div><div class="line"></div><div class="line">        #access_log  logs/host.access.log  main;</div><div class="line"></div><div class="line">	location /cluster/app &#123;</div><div class="line">                auth_request /auth;</div><div class="line">                try_files $uri @yarn;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        location /proxy &#123;</div><div class="line">                auth_request /auth;</div><div class="line">                try_files $uri @yarn;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        location /jobhistory &#123;</div><div class="line">               auth_request /auth;</div><div class="line">               try_files $uri @jobhis;</div><div class="line">		rewrite ^/jobhistory/logs/(data|service|name)_(\d*).data.com:(\d*)/(.*)$  /jobhistory/logs/$1node$2.will.com:$3/$4 break;</div><div class="line">        &#125;</div><div class="line"></div><div class="line"></div><div class="line">	location / &#123;</div><div class="line">                try_files $uri @azk;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">	location @jobhis&#123;</div><div class="line">            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</div><div class="line">            proxy_set_header Host $http_host;</div><div class="line">            proxy_redirect off;</div><div class="line">            proxy_pass http://jobhis;</div><div class="line">        &#125;</div><div class="line"></div><div class="line"></div><div class="line">        location = /auth &#123;</div><div class="line">           internal;</div><div class="line">           proxy_pass http://10.2.19.62:8088/metamap/nginx_auth_test;</div><div class="line">           proxy_set_header Content-Length &quot;&quot;;</div><div class="line">           proxy_set_header X-Original-URI $request_uri;</div><div class="line">           proxy_pass_request_body off;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        location /static &#123;</div><div class="line">                 try_files $uri @yarn;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">	location @yarn&#123;</div><div class="line">            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</div><div class="line">            proxy_set_header Host $http_host;</div><div class="line">            proxy_redirect off;</div><div class="line">            proxy_pass http://yarn;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        location @azk&#123;</div><div class="line">            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</div><div class="line">            proxy_set_header Host $http_host;</div><div class="line">            proxy_redirect off;</div><div class="line">            proxy_pass http://azk;</div><div class="line">	    subs_filter_types *;</div><div class="line">	    subs_filter datanode(\d\d).will.com will.will.com ir;</div><div class="line">	    subs_filter 10.2.19.(\d*) unknowip ir;</div><div class="line">        &#125;</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">        error_page   500 502 503 504  /50x.html;</div><div class="line">        location = /50x.html &#123;</div><div class="line">            root   html;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">   </div><div class="line">    &#125;</div><div class="line"></div><div class="line"></div><div class="line">   </div><div class="line">&#125;</div></pre></td></tr></table></figure>
 
         
         
@@ -831,39 +653,219 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/07/20/docker内OS的相关事宜/" title="docker内OS的相关事宜" itemprop="url">docker内OS的相关事宜</a>
+      <a href="/2017/05/26/fabric与anisible对比/" title="fabric与anisible对比" itemprop="url">fabric与anisible对比</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
 		
   <p class="article-time">
-    <time datetime="2017-07-20T06:59:20.000Z" itemprop="datePublished"> 发表于 2017-07-20</time>
+    <time datetime="2017-05-26T03:18:37.000Z" itemprop="datePublished"> 发表于 2017-05-26</time>
     
   </p>
 </header>
     <div class="article-content">
         
-        <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>假设宿主机是centos7，然后docker镜像使用ubuntu16.04。</p>
-<p>那么dockers容器在启动的时候是怎样运行ubuntu的，这种情境咋总是感觉跟启动虚拟机一样呢？</p>
-<p>各种cgroup什么的还好理解，但是这些os内核它是怎样运作起来的呢？</p>
-<h2 id="答案"><a href="#答案" class="headerlink" title="答案"></a>答案</h2><p>容器是依赖宿主机内核的，如果内核不能满足容器需求，就不能run。 这么看来，其实docker也不是那么“万能”的。</p>
-<p>甚至如果容器里需要使用高版本内核的时候，宿主机不能支持，那么这个容器就run不起来………….理论上是这样，用的时候就要注意了。不知道这种docker是不是会自动下载这个内核，然后完全单独运行的话，其实本质上，真的和虚拟机差不多了</p>
-<p>都独立内核了，ns和cg都不能用宿主机的了，那就是彻底的虚拟机了。</p>
-<p>docker 和 传统的虚拟机的区别就是 ， 传统虚拟机假装有一套新的硬件，系统跑在硬件上就行了， docker 假装有一个系统，进程跑在系统里就行了，其实个人认为准确说，应该是docker假装有一个内核。</p>
-<h2 id="翻译"><a href="#翻译" class="headerlink" title="翻译"></a>翻译</h2><p>docker最开始使用的是LXC，后来切换到了libcontainer。这样就可以跟宿主机共享操作系统资源。docker使用一种分层的文件系统AUFS，并且管理自己的网络。</p>
-<p>AUFS是一个分层的文件系统，将只读的和可写的部分merge在一起。OS公用的地方是只读的，每个container自己挂载的是可写的。</p>
-<p>假设我们有一个1g的image，需要1000个节点的扩容。如果使用一个完整的VM的话，需要1000G的空间。使用Docker的话，这1000个container节点可以共享1g的OS资源。</p>
-<p>一个完整的VM拥有自己的一组资源，基本不共享什么东西。用重量换得了更多的独立性。Docker相反，独立性相对差一些，但是很轻量。所以可以在宿主机上跑上千个container。</p>
-<p>一个完整的VM通常要花费几分钟才能启动，一个docker container则只需要几秒。</p>
-<p>两个东西各有优缺点。</p>
-<p>参考：</p>
+        <p>主要是跟anisible做对比，搞数据集群的环境越来越大，机器越来越多，不弄点儿自动化维护的工具，真心折腾不过来，而且容易出现失误。</p>
+<p>这两天陪媳妇去图书馆自习，我就看书，看了一本不错的小说《兄弟》：余华写的，相当不错，笑中带泪，奔放中带着坚韧。因为近期工作中想要用一下docker来部署生产环境，为算法的同学提供动态可自定义的各种语言程序运行环境。前面听过几场关于docker环境部署的，听过几个人使用anisible进行docker部署，所以就在图书馆拿了本《奔跑吧：anisible》。</p>
+<h2 id="吸引"><a href="#吸引" class="headerlink" title="吸引"></a>吸引</h2><p>里面提到anisible的我看中的功能性卖点：</p>
 <ul>
-<li><a href="https://stackoverflow.com/questions/33112137/run-different-linux-os-in-docker-container" target="_blank" rel="external">https://stackoverflow.com/questions/33112137/run-different-linux-os-in-docker-container</a></li>
-<li><a href="https://stackoverflow.com/questions/33112137/run-different-linux-os-in-docker-container" target="_blank" rel="external">https://stackoverflow.com/questions/33112137/run-different-linux-os-in-docker-container</a></li>
-<li><a href="https://stackoverflow.com/questions/16047306/how-is-docker-different-from-a-normal-virtual-machine" target="_blank" rel="external">https://stackoverflow.com/questions/16047306/how-is-docker-different-from-a-normal-virtual-machine</a></li>
-<li><a href="https://docs.docker.com/engine/faq/#what-is-different-between-a-docker-container-and-a-vm" target="_blank" rel="external">https://docs.docker.com/engine/faq/#what-is-different-between-a-docker-container-and-a-vm</a></li>
+<li>host分组</li>
+<li>任务有顺序依赖的执行</li>
+<li>获取上一个task的输出，比如docker容器mysql部署后，把这个容器的id保存给下一个容器web服务的配置文件使用。</li>
+<li>配置文件模板化，接受外来变量赋值后，copy进入指定主机的指定目录。</li>
 </ul>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><p>但是有一个比较恶心的问题，要记住一些概念</p>
+<ul>
+<li>inventory 主机</li>
+<li>task<ul>
+<li>module 具体执行的一些功能模块</li>
+</ul>
+</li>
+<li>handler 等待被task触发</li>
+<li>fact 主机相关的一些信息，比如CPU、内存、ip啥的</li>
+</ul>
+<h4 id="问题-1"><a href="#问题-1" class="headerlink" title="问题"></a>问题</h4><ul>
+<li>module之类的都是别人封装好的，自己要完全按照人家的规则走，不舒服</li>
+<li>有些需要额外处理的东西还是要自己写python代码处理，因为有些自定义的处理逻辑，是不会存在于既有的module中的</li>
+</ul>
+<p>那么恶心的事情就出现了：既要去使用module中别人给自己制定的规则， 又他么要自己写代码完成自己的逻辑。还不如fabric，完全按照自己的代码去执行逻辑。</p>
+<h2 id="fabric"><a href="#fabric" class="headerlink" title="fabric"></a>fabric</h2><p>今儿早上看了一下fabric</p>
+<ul>
+<li>主机分组 【Y：有role进行分组】</li>
+<li>任务 【Y】</li>
+<li>任务依赖 【Y：通过定义额外的任务组合惹怒我】</li>
+<li>主机信息【并没有感觉有什么用】</li>
+<li><strong>task间变量传递</strong>【上一个任务给环境中的变量赋值，下一个任务可以直接接收到，比如dict】 —— <strong>失败</strong></li>
+</ul>
+<p>直接上自己的脚本文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">from fabric.api import *</div><div class="line"></div><div class="line"># 不指定用户的话，就是当前用户，跟ssh一样</div><div class="line">env.hosts = [</div><div class="line">    &apos;user@192.168.1.1&apos;,</div><div class="line">    &apos;user@192.168.1.2&apos;,</div><div class="line">]</div><div class="line"></div><div class="line"># 必须全面指定 ： user@ip:port</div><div class="line">env.passwords = &#123;</div><div class="line">    &apos;user@192.168.1.1:22&apos;: &apos;password1&apos;,</div><div class="line">    &apos;user@192.168.1.2:22&apos;: &apos;password2&apos;,</div><div class="line">&#125;</div><div class="line"></div><div class="line"># 这个标识有么有都可以 1.6.3版本</div><div class="line">@task</div><div class="line">def echo():</div><div class="line">    run(&apos;echo &quot;hello,world&quot;&apos;)</div></pre></td></tr></table></figure></p>
+<p>动态为自己的机器分组, 那么就在fabric.py里执行以下逻辑：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">services = []</div><div class="line">datanodes = []</div><div class="line">hosts = list()</div><div class="line"></div><div class="line">def get_host():</div><div class="line">    with open(&apos;/etc/hosts&apos;, &apos;r&apos;) as hf:</div><div class="line">        for line in hf.readlines():</div><div class="line">            ss = line.split()</div><div class="line">            if &apos;node&apos; in ss[1]:</div><div class="line">                hosts.append(ss[0])</div><div class="line">            if &apos;servicenode&apos; in ss[1]:</div><div class="line">                services.append(ss[0])</div><div class="line">            if &apos;datanode&apos; in ss[1]:</div><div class="line">                datanodes.append(ss[0])</div><div class="line">    hosts.remove(&apos;10.2.19.104&apos;)</div><div class="line"></div><div class="line">env.hosts=hosts</div><div class="line"></div><div class="line">env.roledefs = &#123;</div><div class="line">    &apos;services&apos;: services,</div><div class="line">    &apos;datanodes&apos;: datanodes</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>其实这里的/etc/hosts就相当于anisible的inventory文件了。</p>
+<p>调用的时候指定host组：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">fab cmd:roles=services,cmd=&apos;df -h&apos;</div></pre></td></tr></table></figure></p>
+<p>至此：放弃fabric……不能支持依赖部署，或者容器编排。离开……【尝试在任务重使用变量赋值失败，因为每个remote机器赋值都是对于自己的，并不能对全局变量赋值。但是其实通过获取任务的output，所以不放弃了】</p>
+<p>稻草一枚：</p>
+<ul>
+<li><a href="http://fabric-chs.readthedocs.io/zh_CN/chs/api/core/tasks.html" target="_blank" rel="external">http://fabric-chs.readthedocs.io/zh_CN/chs/api/core/tasks.html</a></li>
+<li><a href="https://stackoverflow.com/questions/42946197/return-value-from-fabric-task" target="_blank" rel="external">https://stackoverflow.com/questions/42946197/return-value-from-fabric-task</a></li>
+<li></li>
+</ul>
+<h2 id="并行任务"><a href="#并行任务" class="headerlink" title="并行任务"></a>并行任务</h2><p>fabric现在也支持并行执行task，并且提供一次并行多少的粒度<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">from fabric.api import *</div><div class="line"></div><div class="line">@parallel(pool_size=5)</div><div class="line">def heavy_task():</div><div class="line">    # lots of heavy local lifting or lots of IO here</div></pre></td></tr></table></figure></p>
+<p>指定一次并行5个远程机器<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">fab -P -z 5 heavy_task</div></pre></td></tr></table></figure></p>
+<p><a href="http://docs.fabfile.org/en/1.13/usage/parallel.html" target="_blank" rel="external">http://docs.fabfile.org/en/1.13/usage/parallel.html</a></p>
+<h2 id="获取任务结果"><a href="#获取任务结果" class="headerlink" title="获取任务结果"></a>获取任务结果</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">from fabric.api import task, execute, run, runs_once</div><div class="line"></div><div class="line">@task</div><div class="line">def workhorse():</div><div class="line">    return run(&quot;get my infos&quot;)</div><div class="line"></div><div class="line">@task</div><div class="line">@runs_once</div><div class="line">def go():</div><div class="line">    results = execute(workhorse)</div><div class="line">    print results</div></pre></td></tr></table></figure>
+<p>注意：execute是在任务在每个remote host上执行完之后获取结果，而run的stdout则是在单个任务内返回。</p>
+<p><a href="http://docs.fabfile.org/en/1.13/usage/execution.html#intelligently-executing-tasks-with-execute" target="_blank" rel="external">http://docs.fabfile.org/en/1.13/usage/execution.html#intelligently-executing-tasks-with-execute</a></p>
+<h2 id="文件传递"><a href="#文件传递" class="headerlink" title="文件传递"></a>文件传递</h2><p>使用put放到远程机器<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">with cd(&apos;/tmp&apos;):</div><div class="line">    put(&apos;/path/to/local/test.txt&apos;, &apos;files&apos;)</div><div class="line">    </div><div class="line">put(&apos;bin/project.zip&apos;, &apos;/tmp/project.zip&apos;)</div><div class="line">put(&apos;*.py&apos;, &apos;cgi-bin/&apos;)</div><div class="line">put(&apos;index.html&apos;, &apos;index.html&apos;, mode=0755)</div></pre></td></tr></table></figure></p>
+<p>使用get获取远程机器文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">get(&apos;/path/to/remote_file.txt&apos;, &apos;local_directory&apos;)</div></pre></td></tr></table></figure></p>
+<p>上面的put对比anisible来说，只有一方面不足，就是对于类似nginx配置文件中的一些变量信息，我们需要额外自己引入模板，渲染之后再put出去。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/05/25/linux中的hang进程/" title="linux中的hang进程" itemprop="url">linux中的hang进程</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-05-25T03:10:38.000Z" itemprop="datePublished"> 发表于 2017-05-25</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>5月24号晚上发现62上有两个hang的进程，占满了内存与cpu</p>
+<p>第一个是M2H任务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">root     10082     1 97 May21 ?        3-20:08:33 /server/java/jdk1.8.0_60/bin/java -Xmx4096m -Dhdp.version=2.4.2.0-258 -Djava.net.preferIPv4Stack=true -Dhdp.version=2.4.2.0-258 -Dhadoop.log.dir=/var/log/hadoop/root -Dhadoop.log.file=hadoop.log -Dhadoop.home.dir=/usr/hdp/2.4.2.0-258/hadoop -Dhadoop.id.str=root -Dhadoop.root.logger=INFO,console -Djava.library.path=:/usr/hdp/2.4.2.0-258/hadoop/lib/native/Linux-amd64-64:/usr/hdp/2.4.2.0-258/hadoop/lib/native -Dhadoop.policy.file=hadoop-policy.xml -Djava.net.preferIPv4Stack=true -Xmx4096m -Dhadoop.security.logger=INFO,NullAppender org.apache.sqoop.Sqoop import -Dmapreduce.job.queuename=xstorm --connect jdbc:mysql://10.0.100.73:3306/xiaodai?useCursorFetch=true&amp;dontTrackOpenResources=true&amp;defaultFetchSize=2000 --driver com.mysql.jdbc.Driver --username weixddata_read --password G7iu1BMo9LWs2e --hive-database ods_tinyv --columns ID,USER_ID,WB_USERNAME,MOBILE,BIZ_ID,MSG_TYPE,SMS_TYPE,DATA_SOURCE,SMS_ID,TASK_ID,SEND_STATUS,RES_CODE,REPORT_STATUS,SEND_TIME,REPORT_TIME,SEND_EXCEPTION --where DATE_FORMAT(SEND_TIME, &apos;%Y-%m-%d&apos;)=&apos;2017-05-20&apos; --table SMS_INFO --hive-import --hive-overwrite --target-dir ods_tinyv_SMS_INFO --outdir /server/app/sqoop/vo --bindir /server/app/sqoop/vo --verbose -m 1 --delete-target-dir --hive-import --hive-table o_wb_xiaodai_sms_info_i --hive-partition-key dt --hive-partition-value 2017-05-20 --null-string \\N --null-non-string \\N</div></pre></td></tr></table></figure></p>
+<p>还有一个HIVE任务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">root      3483     1 96 May23 ?        1-11:12:07 /server/java/jdk1.8.0_60/bin/java -Xmx4096m -Dhdp.version=2.4.2.0-258 -Djava.net.preferIPv4Stack=true -Dhdp.version=2.4.2.0-258 -Djava.net.preferIPv4Stack=true -XX:NewRatio=12 -XX:MaxHeapFreeRatio=40 -XX:MinHeapFreeRatio=15 -XX:+UseNUMA -XX:+UseParallelGC -XX:-UseGCOverheadLimit -Dhdp.version=2.4.2.0-258 -Dhadoop.log.dir=/var/log/hadoop/root -Dhadoop.log.file=hadoop.log -Dhadoop.home.dir=/usr/hdp/2.4.2.0-258/hadoop -Dhadoop.id.str=root -Dhadoop.root.logger=INFO,console -Djava.library.path=:/usr/hdp/2.4.2.0-258/hadoop/lib/native/Linux-amd64-64:/usr/hdp/2.4.2.0-258/hadoop/lib/native -Dhadoop.policy.file=hadoop-policy.xml -Djava.net.preferIPv4Stack=true -Xmx4096m -Xmx1024m -Dhadoop.security.logger=INFO,NullAppender -Dhdp.version=2.4.2.0-258 -Dhadoop.log.dir=/var/log/hadoop/root -Dhadoop.log.file=hadoop.log -Dhadoop.home.dir=/usr/hdp/2.4.2.0-258/hadoop -Dhadoop.id.str=root -Dhadoop.root.logger=INFO,console -Djava.library.path=:/usr/hdp/2.4.2.0-258/hadoop/lib/native/Linux-amd64-64:/usr/hdp/2.4.2.0-258/hadoop/lib/native:/usr/hdp/2.4.2.0-258/hadoop/lib/native/Linux-amd64-64:/usr/hdp/2.4.2.0-258/hadoop/lib/native -Dhadoop.policy.file=hadoop-policy.xml -Djava.net.preferIPv4Stack=true -Xmx4096m -Xmx4096m -Xmx1024m -Dhadoop.security.logger=INFO,NullAppender org.apache.hadoop.util.RunJar /usr/hdp/2.4.2.0-258/hive/lib/hive-exec-1.2.1000.2.4.2.0-258.jar org.apache.hadoop.hive.ql.exec.mr.ExecDriver -localtask -plan file:/tmp/root/228f95e6-26ee-4466-bd3d-a91195c86bf4/hive_2017-05-23_10-38-11_000_7465740175512782543-1/-local-10004/plan.xml -jobconffile file:/tmp/root/228f95e6-26ee-4466-bd3d-a91195c86bf4/hive_2017-05-23_10-38-11_000_7465740175512782543-1/-local-10005/jobconf.xml</div></pre></td></tr></table></figure></p>
+<p>手贱，先kill掉了，不然还能看到上面的plan文件，和job配置文件什么的。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/05/18/runningdata改版记录/" title="runningdata改版记录" itemprop="url">runningdata改版记录</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-05-18T02:54:54.000Z" itemprop="datePublished"> 发表于 2017-05-18</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>抽象ETLObjRelated，其他对象继承之</p>
+<ul>
+<li>ETL的字段名tbl_name需要在数据库里修改为name<ul>
+<li>tasks里的exec_etl_sche任务会调用etl.name【老表的tbl_name会报错找不到】</li>
+</ul>
+</li>
+<li>执行metamap 0045的migrations，这个只是添加字段，不会造成额外影响</li>
+<li></li>
+</ul>
+<p>sdf </p>
+<ol>
+<li><p>确保新的save方法都已经注释掉</p>
+</li>
+<li><p>./manage.py migrate metamap 0050 –settings=metamap.config</p>
+</li>
+<li><p>开始清洗</p>
+</li>
+</ol>
+<ul>
+<li>clean_etl</li>
+<li>clean_rel</li>
+<li>clean_m2h</li>
+<li>before_clean_blood</li>
+<li>clean_blood</li>
+<li>clean_h2m</li>
+<li>clean_jar</li>
+<li>clean_email</li>
+<li>clean_task[分别执行clean， type=4, type=1等等]</li>
+<li>clean_period</li>
+</ul>
+<h2 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h2><ol>
+<li>H2M中的个别现象，多个周期的数据存放在同一个表中：<br>SELECT * from metamap_sqoophive2mysql where id in (71,72,73,74,75,76)<br>需要额外手动维护execblood</li>
+<li>放开那些注释</li>
+</ol>
 
         
         
@@ -902,7 +904,7 @@
 
 
   <nav id="page-nav" class="clearfix">
-    <a class="extend prev" rel="prev" href="/page/9/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/page/11/">11</a><a class="page-number" href="/page/12/">12</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/11/">Next<span></span></a>
+    <a class="extend prev" rel="prev" href="/page/9/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/page/11/">11</a><a class="page-number" href="/page/12/">12</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/11/">Next<span></span></a>
   </nav>
 
 </div>
@@ -923,7 +925,7 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>187</sup></a></li>
 			
 		
 			
@@ -975,19 +977,11 @@
 			
 		
 			
-				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+				<li><a href="/tags/Solr/" title="Solr">Solr<sup>1</sup></a></li>
 			
 		
 			
@@ -1000,6 +994,14 @@
 		
 			
 				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hue/" title="hue">hue<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
 			
 		
 		</ul>

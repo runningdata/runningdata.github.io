@@ -3,6 +3,14 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
+  <script type="text/javascript">
+    (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+    })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+    
+    _st('install','yNiKTKaAnwd1uuxVMfiE','2.0.0');
+  </script>
   <script>
     var _hmt = _hmt || [];
     (function() {
@@ -24,7 +32,7 @@
     <meta name="description" content="左右水色 右手天光">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Will's Blog">
-<meta property="og:url" content="http://willcup.com/index.html">
+<meta property="og:url" content="https://runningdata.github.io/index.html">
 <meta property="og:site_name" content="Will's Blog">
 <meta property="og:description" content="左右水色 右手天光">
 <meta name="twitter:card" content="summary">
@@ -74,7 +82,7 @@
 					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
 						<label>Search</label>
 						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
-						<input type="hidden" name="q" value="site:willcup.com">
+						<input type="hidden" name="q" value="site:runningdata.github.io">
 					</form>
 					
 					</li>
@@ -326,69 +334,6 @@
 <p>所有的服务都应该是无状态的，可以飘移到任何地方，这在最开始的时候就已经有了这个考虑。</p>
 <p>服务化扩展使用docker swarm实现，持久化数据的扩展使用TiDB、codis等易于扩展的数据库【分表分库对于一些很复杂的连接sql，外键关联等业务不能支持很好】。</p>
 <p>不可能所有服务都满足CAP，所以先需要对事务进行服务定级。</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/12/26/hue中kylin作为jdbc数据源的问题/" title="hue中kylin作为jdbc数据源的问题" itemprop="url">hue中kylin作为jdbc数据源的问题</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-12-26T03:49:12.000Z" itemprop="datePublished"> 发表于 2017-12-26</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>主要就是普通的jdbc能够提供获取database列表、获取table列表的功能sql。而kylin是没有的。</p>
-<p>官方是没有提供对应的文章，所以研究一下kylin的jdbc相关的代码。</p>
-<p>我们有一个保底的方案： kylin的rest接口。</p>
-<p>参考：</p>
-<ul>
-<li><a href="http://kylin.apache.org/docs/howto/howto_use_restapi.html" target="_blank" rel="external">http://kylin.apache.org/docs/howto/howto_use_restapi.html</a></li>
-<li><a href="https://zhuanlan.zhihu.com/p/30613434" target="_blank" rel="external">https://zhuanlan.zhihu.com/p/30613434</a></li>
-</ul>
 
         
         
@@ -952,9 +897,208 @@
 
 
 
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/12/15/presto之hive-connector/" title="presto之hive-connector" itemprop="url">presto之hive-connector</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-12-15T03:40:46.000Z" itemprop="datePublished"> 发表于 2017-12-15</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h4 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h4><p>hive是由三个部分组成的</p>
+<ul>
+<li>特定格式的HDFS文件</li>
+<li>metadata数据库，通常是mysql</li>
+<li>HQL及其执行引擎</li>
+</ul>
+<p>presto会用到前面两者。</p>
+<h4 id="支持的文件类型"><a href="#支持的文件类型" class="headerlink" title="支持的文件类型"></a>支持的文件类型</h4><p>ORC、Parquet、Avro、RCFile、SequenceFile、JSON、Text</p>
+<h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><p>创建<code>etc/catalog/hive.properties</code>文件，挂载<code>hive-hadoop2</code> connector作为<code>hive</code> catalog，替换掉你的hive metastore的thrift host和port：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">connector.name=hive-hadoop2</div><div class="line">hive.metastore.uri=thrift://example.net:9083</div></pre></td></tr></table></figure>
+<h4 id="多个hive集群"><a href="#多个hive集群" class="headerlink" title="多个hive集群"></a>多个hive集群</h4><p>随便你使用多少catalog，添加其他的hive 集群就是了，新增properties文件到<code>etc/catalog</code>就可以了。</p>
+<h4 id="HDFS配置"><a href="#HDFS配置" class="headerlink" title="HDFS配置"></a>HDFS配置</h4><p>对于基本设置，presto自动配置了HDFS client，不需要额外的配置文件。但是对于hdfs联邦和NN HA的情况，需要额外指定一下参数才能正常访问HDFS cluster。这个要添加<code>hive.config.resources</code>引用到你的hdfs配置文件中：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">hive.config.resources=/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml</div></pre></td></tr></table></figure></p>
+<p>官方建议尽量少添加配置项，多余的配置项可能更容易引起问题。</p>
+<p>还有就是这些配置文件必须在每个presto节点上都是有效存在的。</p>
+<h4 id="HDFS用户"><a href="#HDFS用户" class="headerlink" title="HDFS用户"></a>HDFS用户</h4><p>在没有整合Kerberos的HDFS中，presto会使用presto进程的运行用户访问HDFS。我们可以通过配置presto的JVM参数指定访问HDFS的用户。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">-DHADOOP_USER_NAME=hdfs_user</div></pre></td></tr></table></figure></p>
+<h4 id="访问带有kerberos认证的HDFS"><a href="#访问带有kerberos认证的HDFS" class="headerlink" title="访问带有kerberos认证的HDFS"></a>访问带有kerberos认证的HDFS</h4><p>kerberos认证对于HDFS和hive metastore是都支持的。但是，通过ticket cache进行认证的还没有支持。</p>
+<h4 id="hive配置项"><a href="#hive配置项" class="headerlink" title="hive配置项"></a>hive配置项</h4><table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Name</th>
+<th>Description    Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hive.metastore.uri</td>
+<td>Hive metastore 的thrift URI. 如果多个的话，默认使用第一个，后面的作为备用，逗号隔开。Example: thrift://192.0.2.3:9083 or thrift://192.0.2.3:9083,thrift://192.0.2.4:9083</td>
+<td></td>
+</tr>
+<tr>
+<td>hive.config.resources</td>
+<td>逗号分隔的HDFS配置文件, 每个presto server所在的节点都要有效存在.  Example: /etc/hdfs-site.xml</td>
+<td></td>
+</tr>
+<tr>
+<td>hive.storage-format</td>
+<td>创建新表的默认文件格式</td>
+<td>RCBINARY</td>
+</tr>
+<tr>
+<td>hive.compression-codec</td>
+<td>写文件的压缩格式</td>
+<td>GZIP</td>
+</tr>
+<tr>
+<td>hive.force-local-scheduling</td>
+<td>Force splits to be scheduled on the same node as the Hadoop DataNode process serving the split data. This is useful for installations where Presto is collocated with every DataNode.</td>
+<td>false</td>
+</tr>
+<tr>
+<td>hive.respect-table-format</td>
+<td>Should new partitions be written using the existing table format or the default Presto format?</td>
+<td>true</td>
+</tr>
+<tr>
+<td>hive.immutable-partitions</td>
+<td>新数据能不能insert到已经存在的partitions?</td>
+<td>false</td>
+</tr>
+<tr>
+<td>hive.max-partitions-per-writers</td>
+<td>每个writer的最大partition数.</td>
+<td>100</td>
+</tr>
+<tr>
+<td>hive.max-partitions-per-scan</td>
+<td>单个table scan可扫描的最大partition数</td>
+<td>100,000</td>
+</tr>
+<tr>
+<td>hive.metastore.authentication.type</td>
+<td>Hive metastore认证类型,可是是 NONE 或者 KERBEROS.</td>
+<td>NONE</td>
+</tr>
+<tr>
+<td>hive.metastore.service.principal</td>
+<td>The Kerberos principal of the Hive metastore service.</td>
+<td></td>
+</tr>
+<tr>
+<td>hive.metastore.client.principal</td>
+<td>The Kerberos principal that Presto will use when connecting to the Hive metastore service.</td>
+<td></td>
+</tr>
+<tr>
+<td>hive.metastore.client.keytab</td>
+<td>Hive metastore client keytab 位置.</td>
+<td></td>
+</tr>
+<tr>
+<td>hive.hdfs.authentication.type</td>
+<td>HDFS 认证类型，可以是 NONE 或者 KERBEROS.</td>
+<td>NONE</td>
+</tr>
+<tr>
+<td>hive.hdfs.impersonation.enabled</td>
+<td>启用 HDFS终端user可以假装.</td>
+<td>false</td>
+</tr>
+<tr>
+<td>hive.hdfs.presto.principal</td>
+<td>The Kerberos principal that Presto will use when connecting to HDFS.</td>
+<td></td>
+</tr>
+<tr>
+<td>hive.hdfs.presto.keytab</td>
+<td>HDFS client keytab 位置.</td>
+<td></td>
+</tr>
+<tr>
+<td>hive.security</td>
+<td>参考Hive Security Configuration.</td>
+<td></td>
+</tr>
+<tr>
+<td>security.config-file</td>
+<td>Path of config file to use when hive.security=file. See File Based Authorization for details.</td>
+<td></td>
+</tr>
+<tr>
+<td>hive.non-managed-table-writes-enabled</td>
+<td>Enable writes to non-managed (external) Hive tables.</td>
+<td>false</td>
+</tr>
+</tbody>
+</table>
+<h4 id="schema演化"><a href="#schema演化" class="headerlink" title="schema演化"></a>schema演化</h4><p>hive允许同一个table的不同partition的数据有不同的schema。有的时候字段类型也有变化，Hive connector 也支持。</p>
+<ul>
+<li>tinyint, smallint, integer，bigint与varchar 之间的相互转化</li>
+<li>real转为double</li>
+<li>int类型的扩展转换，比如tinyint、smallint。</li>
+</ul>
+<p>和hive一样，转化失败就会返回null，比如把’foo’转为int</p>
+<h4 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h4><p>hive connector支持查询与操作hive表和库。然而一些特殊的操作还是需要通过hive执行。</p>
+<p>下面创建一个指定位置的hive库：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">SCHEMA</span> hive.web</div><div class="line"><span class="keyword">WITH</span> (location = <span class="string">'s3://my-bucket/'</span>)</div></pre></td></tr></table></figure></p>
+<p>创建一个ORC格式存储的page_views 表，使用date和conuntry进行分区，根据user进行分桶，共计50个桶(注意分区字段必须是最后的字段)</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> hive.web.page_views (</div><div class="line">  view_time <span class="keyword">timestamp</span>,</div><div class="line">  user_id <span class="built_in">bigint</span>,</div><div class="line">  page_url <span class="built_in">varchar</span>,</div><div class="line">  ds <span class="built_in">date</span>,</div><div class="line">  country <span class="built_in">varchar</span></div><div class="line">)</div><div class="line"><span class="keyword">WITH</span> (</div><div class="line">  <span class="keyword">format</span> = <span class="string">'ORC'</span>,</div><div class="line">  partitioned_by = <span class="built_in">ARRAY</span>[<span class="string">'ds'</span>, <span class="string">'country'</span>],</div><div class="line">  bucketed_by = <span class="built_in">ARRAY</span>[<span class="string">'user_id'</span>],</div><div class="line">  bucket_count = <span class="number">50</span></div><div class="line">)</div></pre></td></tr></table></figure>
+<p>删除分区<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">DELETE</span> <span class="keyword">FROM</span> hive.web.page_views</div><div class="line"><span class="keyword">WHERE</span> ds = <span class="built_in">DATE</span> <span class="string">'2016-08-09'</span></div><div class="line">  <span class="keyword">AND</span> country = <span class="string">'US'</span></div></pre></td></tr></table></figure></p>
+<p>查询：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> hive.web.page_views</div></pre></td></tr></table></figure></p>
+<p>创建外部表：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> hive.web.request_logs (</div><div class="line">  request_time <span class="keyword">timestamp</span>,</div><div class="line">  <span class="keyword">url</span> <span class="built_in">varchar</span>,</div><div class="line">  ip <span class="built_in">varchar</span>,</div><div class="line">  user_agent <span class="built_in">varchar</span></div><div class="line">)</div><div class="line"><span class="keyword">WITH</span> (</div><div class="line">  <span class="keyword">format</span> = <span class="string">'TEXTFILE'</span>,</div><div class="line">  external_location = <span class="string">'s3://my-bucket/data/logs/'</span></div><div class="line">)</div></pre></td></tr></table></figure></p>
+<p>删除外部表，只会删除metadata，不会删除真实数据。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">DROP TABLE hive.web.request_logs</div></pre></td></tr></table></figure>
+<h4 id="不足"><a href="#不足" class="headerlink" title="不足"></a>不足</h4><p>delete只支持where语句能满足整个分区的情况，也就是说只能一个分区为单位进行delete。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
 
   <nav id="page-nav" class="clearfix">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/2/">Next<span></span></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/2/">Next<span></span></a>
   </nav>
 
 </div>
@@ -975,7 +1119,7 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>209</sup></a></li>
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>187</sup></a></li>
 			
 		
 			
@@ -1027,19 +1171,11 @@
 			
 		
 			
-				<li><a href="/tags/python/" title="python">python<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+				<li><a href="/tags/Solr/" title="Solr">Solr<sup>1</sup></a></li>
 			
 		
 			
@@ -1052,6 +1188,14 @@
 		
 			
 				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hue/" title="hue">hue<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
 			
 		
 		</ul>
