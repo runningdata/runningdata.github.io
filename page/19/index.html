@@ -99,6 +99,147 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2016/12/05/hive中的权限/" title="hive中的权限" itemprop="url">hive中的权限</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:05:20.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="用例"><a href="#用例" class="headerlink" title="用例"></a>用例</h2><ol>
+<li>把hive当做存储工具。使用pig、MR等并行计算工具访问hive，hdfs权限通过文件认证来解决。metadata的访问需要通过hive配置的认证。</li>
+<li>把hive作为一个查询引擎。又分为两种：</li>
+</ol>
+<ul>
+<li>a. hive命令行。这些用户可以有hdfs权限，也能看到hive的metastore，有点儿像1。</li>
+<li>b. jdbc等通过hiveserver2访问。他们不能访问HDFS。</li>
+</ul>
+<p>三种认证机制。</p>
+<h5 id="Storage-Based-Authorization-in-the-Metastore-Server"><a href="#Storage-Based-Authorization-in-the-Metastore-Server" class="headerlink" title="Storage Based Authorization in the Metastore Server"></a>Storage Based Authorization in the Metastore Server</h5><p>在1和2.a里，用户可以直接访问到数据，hive没有控制这块。hdfs权限验证担当了主要任务。当你访问一个database、table、partition的时候，他会检查你是否有对应目录的权限。为了看到通过hiveserver2访问的用户的真实信息，需要设置hive.server2.enable.doAs为true。</p>
+<h5 id="SQL-Standards-Based-AuthorizationSQL-Standards-Based-Authorization-in-HiveServer2"><a href="#SQL-Standards-Based-AuthorizationSQL-Standards-Based-Authorization-in-HiveServer2" class="headerlink" title="SQL Standards Based AuthorizationSQL Standards Based Authorization in HiveServer2"></a>SQL Standards Based AuthorizationSQL Standards Based Authorization in HiveServer2</h5><p>虽然Storage Based Authorization可以控制对database、table、partition的访问，但是他不能很好地控制对字段和view的访问，因为他是基于文件系统权限控制的。好的控制应该是可以控制用户访问的行和列。hiveserver2可以满足这种需求，可以只提供你的sql需要的行和列。</p>
+<p>SQL Standards Based Authorization是基于sql标准的，可以使用revoke/grant语句控制权限。但是必须在hiveserver2的配置里设置一下。</p>
+<p>注意如果启用了SQL Standards Based Authorization，那么2a这种方式就被禁用了。因为安全起见，不可能使用hive里的访问控制策略来控制hive命令行，用户可以直接访问HDFS，这样就直接绕过了认证机制。</p>
+<h5 id="Default-Hive-Authorization-Legacy-Mode"><a href="#Default-Hive-Authorization-Legacy-Mode" class="headerlink" title="Default Hive Authorization (Legacy Mode)"></a>Default Hive Authorization (Legacy Mode)</h5><p>这并不能完全控制好权限，会有很多漏洞。例如，没有统一的分配权限的用户，所有的用户都可以自己grant权限。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="https://cwiki.apache.org/confluence/display/Hive/Storage+Based+Authorization+in+the+Metastore+Server" target="_blank" rel="external">https://cwiki.apache.org/confluence/display/Hive/Storage+Based+Authorization+in+the+Metastore+Server</a></li>
+<li><a href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Authorization" target="_blank" rel="external">https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Authorization</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/django中模型之间的关系/" title="django中模型之间的关系" itemprop="url">django中模型之间的关系</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:05:17.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="Many-to-One"><a href="#Many-to-One" class="headerlink" title="Many-to-One"></a>Many-to-One</h2><p>使用<code>django.db.models.ForeignKey</code>来定义，像其他的字段类型一样，额外需要一个指定model类的位置。</p>
+<p>例如，有一个Car model，它的生产厂家是Manufacturer，也就是一个厂家对应多个车，但是每个车只属于一个生产厂家。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> django.db <span class="keyword">import</span> models</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Manufacturer</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="comment"># ...</span></div><div class="line">    <span class="keyword">pass</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Car</span><span class="params">(models.Model)</span>:</span></div><div class="line">    manufacturer = models.ForeignKey(Manufacturer, on_delete=models.CASCADE)</div><div class="line">    <span class="comment"># ...</span></div></pre></td></tr></table></figure></p>
+<p>除此之外，也可以创建<a href="https://docs.djangoproject.com/en/1.9/ref/models/fields/#recursive-relationships" target="_blank" rel="external">递归关系</a>以及<a href="https://docs.djangoproject.com/en/1.9/ref/models/fields/#lazy-relationships" target="_blank" rel="external">未定义模型的关系</a>。详见<a href="https://docs.djangoproject.com/en/1.9/ref/models/fields/#ref-foreignkey" target="_blank" rel="external">此处</a>。</p>
+<p>建议把<code>ForeignKey</code>字段设置成目标model的小写形式，弄成别的也不会出错，但是最好规范一些。</p>
+<p>对应数据库里面生成的字段名是<code>manufacturer_id</code>，就是在我们定义的属性的名字后面缀上<code>_id</code>。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Car</span><span class="params">(models.Model)</span>:</span></div><div class="line">    company_that_makes_it = models.ForeignKey(</div><div class="line">        Manufacturer,</div><div class="line">        on_delete=models.CASCADE,</div><div class="line">    )</div><div class="line">    <span class="comment"># ...</span></div></pre></td></tr></table></figure>
+<p>更多<a href="https://docs.djangoproject.com/en/1.9/topics/db/examples/many_to_one/" target="_blank" rel="external">实例</a></p>
+<h2 id="Many-To-Many"><a href="#Many-To-Many" class="headerlink" title="Many-To-Many"></a>Many-To-Many</h2><p>使用<a href="https://docs.djangoproject.com/en/1.9/ref/models/fields/#django.db.models.ManyToManyField" target="_blank" rel="external"><code>ManyToManyField</code></a>关键字定义多对多关系。</p>
+<p>例如，一个Pizza有多个Topping，一个Topping也可以放在多个pizza上。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> django.db <span class="keyword">import</span> models</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Topping</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="comment"># ...</span></div><div class="line">    <span class="keyword">pass</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Pizza</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="comment"># ...</span></div><div class="line">    toppings = models.ManyToManyField(Topping)</div></pre></td></tr></table></figure>
+<p>以上无论哪个对象里放置<code>ManyToManyFiled</code>都可以，但是只能放在其中一个里面，不能都放。</p>
+<p>两者的互相访问<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">pizza.toppings</div><div class="line">topping.pizza_set</div></pre></td></tr></table></figure></p>
+<p>更多<a href="https://docs.djangoproject.com/en/1.9/topics/db/examples/many_to_many/" target="_blank" rel="external">实例</a></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2016/12/05/数据挖据DW整理/" title="数据挖据DW整理" itemprop="url">数据挖据DW整理</a>
   </h1>
   <p class="article-author">By
@@ -422,65 +563,6 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2016/12/05/django使用记录/" title="django使用记录" itemprop="url">django使用记录</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2016-12-05T09:05:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h4 id="Ubuntu安装失败"><a href="#Ubuntu安装失败" class="headerlink" title="Ubuntu安装失败"></a>Ubuntu安装失败</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# pip install Django</div><div class="line">Downloading/unpacking Django</div><div class="line">  Downloading Django-1.9.7-py2.py3-none-any.whl (6.6MB): 6.6MB downloaded</div><div class="line">Cleaning up...</div><div class="line">Exception:</div><div class="line">Traceback (most recent call last):</div><div class="line">  File &quot;/usr/lib/python2.7/dist-packages/pip/basecommand.py&quot;, line 122, in main</div><div class="line">    status = self.run(options, args)</div><div class="line">  File &quot;/usr/lib/python2.7/dist-packages/pip/commands/install.py&quot;, line 278, in run</div><div class="line">    requirement_set.prepare_files(finder, force_root_egg_info=self.bundle, bundle=self.bundle)</div><div class="line">  File &quot;/usr/lib/python2.7/dist-packages/pip/req.py&quot;, line 1259, in prepare_files</div><div class="line">    )[0]</div><div class="line">IndexError: list index out of range</div><div class="line"></div><div class="line">Storing debug log for failure in /root/.pip/pip.log</div></pre></td></tr></table></figure>
-<p>查了一下，貌似只有Ubuntu有这个问题，需要先安装distribute<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pip install --no-use-wheel --upgrade distribute</div></pre></td></tr></table></figure></p>
-<p>之后再安装django就解决了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# python -c &quot;import django; print(django.get_version())&quot;</div><div class="line">1.9.7</div></pre></td></tr></table></figure></p>
-<p>参考：<br><a href="https://www.zhihu.com/question/38484255" target="_blank" rel="external">https://www.zhihu.com/question/38484255</a></p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
       <a href="/2016/12/05/hive杂记/" title="hive杂记" itemprop="url">hive杂记</a>
   </h1>
   <p class="article-author">By
@@ -531,6 +613,65 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">select</div><div class="line">xx.loan_day, </div><div class="line">xx.is_new, </div><div class="line">sum(xx.loan_apply_amoun) loan_apply_amoun_all,	</div><div class="line">xx.dt</div><div class="line">from </div><div class="line">(</div><div class="line">select </div><div class="line">nvl(a.loan_day,&apos;-&apos;) loan_day, </div><div class="line">nvl(b.is_newuser, &apos;-&apos;) is_new, </div><div class="line">case when to_date(a.create_time) &lt;=a.dt then a.apply_amount else 0 end loan_apply_amoun,	</div><div class="line">a.dt statistics_date,	</div><div class="line">&apos;weibo&apos; channel ,</div><div class="line">a.dt dt</div><div class="line">from fact_level.fact_loan_info a </div><div class="line">left join ( </div><div class="line">select id,case when to_date(new_user_date)=dt then &apos;newuser&apos; else &apos;olduser&apos; end is_newuser </div><div class="line">from fact_level.fact_user_info </div><div class="line">where dt between &apos;2017-02-13&apos; and &apos;2017-03-27&apos; and is_new=1 </div><div class="line">)b </div><div class="line">on a.user_id=b.id </div><div class="line">where a.dt between &apos;2017-02-13&apos; and &apos;2017-03-27&apos; and a.loan_unit = &apos;002007001&apos; and to_date(a.create_time)&lt;=a.dt and to_date(a.create_time)&gt;=&apos;2017-02-13&apos; </div><div class="line">)xx</div><div class="line">group by xx.dt,xx.loan_day,xx.is_new </div><div class="line">grouping sets (xx.dt,(xx.dt,xx.loan_day,xx.is_new),(xx.dt,xx.loan_day),(xx.dt,xx.is_new))</div></pre></td></tr></table></figure>
 <p>PS: 并不明白为什么参数不能过多，理论上是可以支持的。有兴趣的同学可以参考一下hive 源码咯。</p>
 <p>我写个邮件问问hive用户组的人。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/django使用记录/" title="django使用记录" itemprop="url">django使用记录</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:05:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h4 id="Ubuntu安装失败"><a href="#Ubuntu安装失败" class="headerlink" title="Ubuntu安装失败"></a>Ubuntu安装失败</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# pip install Django</div><div class="line">Downloading/unpacking Django</div><div class="line">  Downloading Django-1.9.7-py2.py3-none-any.whl (6.6MB): 6.6MB downloaded</div><div class="line">Cleaning up...</div><div class="line">Exception:</div><div class="line">Traceback (most recent call last):</div><div class="line">  File &quot;/usr/lib/python2.7/dist-packages/pip/basecommand.py&quot;, line 122, in main</div><div class="line">    status = self.run(options, args)</div><div class="line">  File &quot;/usr/lib/python2.7/dist-packages/pip/commands/install.py&quot;, line 278, in run</div><div class="line">    requirement_set.prepare_files(finder, force_root_egg_info=self.bundle, bundle=self.bundle)</div><div class="line">  File &quot;/usr/lib/python2.7/dist-packages/pip/req.py&quot;, line 1259, in prepare_files</div><div class="line">    )[0]</div><div class="line">IndexError: list index out of range</div><div class="line"></div><div class="line">Storing debug log for failure in /root/.pip/pip.log</div></pre></td></tr></table></figure>
+<p>查了一下，貌似只有Ubuntu有这个问题，需要先安装distribute<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pip install --no-use-wheel --upgrade distribute</div></pre></td></tr></table></figure></p>
+<p>之后再安装django就解决了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">root@will-vm:/usr/local/metamap/metamap_js# python -c &quot;import django; print(django.get_version())&quot;</div><div class="line">1.9.7</div></pre></td></tr></table></figure></p>
+<p>参考：<br><a href="https://www.zhihu.com/question/38484255" target="_blank" rel="external">https://www.zhihu.com/question/38484255</a></p>
 
         
         
@@ -736,149 +877,9 @@
 
 
 
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2016/12/05/docker-centos-6.4安装手记/" title="docker-centos-6.4安装手记" itemprop="url">docker-centos-6.4安装手记</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2016-12-05T09:04:54.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h2 id="version-Base-not-defined-in-file-libdevmapper-so-1-02-with-link-time-reference"><a href="#version-Base-not-defined-in-file-libdevmapper-so-1-02-with-link-time-reference" class="headerlink" title="version Base not defined in file libdevmapper.so.1.02 with link time reference"></a>version Base not defined in file libdevmapper.so.1.02 with link time reference</h2><p>yum install device-mapper-event-libs -y</p>
-<p>参考： <a href="http://qicheng0211.blog.51cto.com/3958621/1582909" target="_blank" rel="external">http://qicheng0211.blog.51cto.com/3958621/1582909</a></p>
-<h2 id="can’t-initialize-iptables-table-nat’"><a href="#can’t-initialize-iptables-table-nat’" class="headerlink" title="can’t initialize iptables table `nat’"></a>can’t initialize iptables table `nat’</h2><p>编译内核的时候没有选中iptable_nat module相关的组件。<br>重新到内核文件夹中make </p>
-<h2 id="GCC-4-8-or-higher-required"><a href="#GCC-4-8-or-higher-required" class="headerlink" title="GCC 4.8 or higher required"></a>GCC 4.8 or higher required</h2><p>参考：<a href="https://gist.github.com/stephenturner/e3bc5cfacc2dc67eca8b" target="_blank" rel="external">https://gist.github.com/stephenturner/e3bc5cfacc2dc67eca8b</a></p>
-<p>参考：</p>
-<ul>
-<li><a href="http://blog.csdn.net/scaleqiao/article/details/46633011" target="_blank" rel="external">http://blog.csdn.net/scaleqiao/article/details/46633011</a></li>
-<li></li>
-</ul>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2016/12/05/azkaban源码追踪(2)-——-手动触发flow调度/" title="azkaban源码追踪(2)-——-手动触发flow调度" itemprop="url">azkaban源码追踪(2)-——-手动触发flow调度</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2016-12-05T09:04:53.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>对应的操作是进入到某个project中，然后单次执行下面的某个flow。会触发web-server这边与exec-server的远程调用去执行flow。</p>
-<h4 id="相关类"><a href="#相关类" class="headerlink" title="相关类"></a>相关类</h4><ul>
-<li>Web-server<ul>
-<li>ExecutorServlet.doGet</li>
-<li>ExecutorManager</li>
-</ul>
-</li>
-<li>exec-server<ul>
-<li>ExecutorServlet.doGet</li>
-<li>FlowRunnerManager</li>
-<li>FlowRunner</li>
-<li>ExecutableFlowBase</li>
-<li>ExecutableNode</li>
-<li>JobRunner</li>
-<li>JobTypeManager</li>
-<li>Job</li>
-<li>AzkabanProcessBuilder</li>
-</ul>
-</li>
-</ul>
-<p>#### </p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
 
   <nav id="page-nav" class="clearfix">
-    <a class="extend prev" rel="prev" href="/page/18/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/17/">17</a><a class="page-number" href="/page/18/">18</a><span class="page-number current">19</span><a class="page-number" href="/page/20/">20</a><a class="page-number" href="/page/21/">21</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/20/">Next<span></span></a>
+    <a class="extend prev" rel="prev" href="/page/18/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/17/">17</a><a class="page-number" href="/page/18/">18</a><span class="page-number current">19</span><a class="page-number" href="/page/20/">20</a><a class="page-number" href="/page/21/">21</a><span class="space">&hellip;</span><a class="page-number" href="/page/25/">25</a><a class="extend next" rel="next" href="/page/20/">Next<span></span></a>
   </nav>
 
 </div>
@@ -951,31 +952,31 @@
 			
 		
 			
+				<li><a href="/tags/django/" title="django">django<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构/" title="架构">架构<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构，jaeger/" title="架构，jaeger">架构，jaeger<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Solr/" title="Solr">Solr<sup>1</sup></a></li>
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
 			
 		
 			
 				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/hue/" title="hue">hue<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
 			
 		
 		</ul>
@@ -1048,7 +1049,7 @@
 		
 
 		<p class="copyright">
-		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2018 
 		
 		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
 		

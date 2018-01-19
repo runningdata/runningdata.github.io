@@ -99,6 +99,170 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2016/06/15/azkaban源码追踪-单次调度flow/" title="azkaban源码追踪（二）-单次调度flow" itemprop="url">azkaban源码追踪（二）-单次调度flow</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-06-15T03:09:03.000Z" itemprop="datePublished"> 发表于 2016-06-15</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>对应的操作是进入到某个project中，然后单次执行下面的某个flow。会触发web-server这边与exec-server的远程调用去执行flow。</p>
+<h4 id="相关类"><a href="#相关类" class="headerlink" title="相关类"></a>相关类</h4><ul>
+<li>Web-server<ul>
+<li>ExecutorServlet.doGet</li>
+<li>ExecutorManager</li>
+</ul>
+</li>
+<li>exec-server<ul>
+<li>ExecutorServlet.doGet</li>
+<li>FlowRunnerManager</li>
+<li>FlowRunner</li>
+<li>ExecutableFlowBase</li>
+<li>ExecutableNode</li>
+<li>JobRunner</li>
+<li>JobTypeManager</li>
+<li>Job</li>
+<li>AzkabanProcessBuilder</li>
+</ul>
+</li>
+</ul>
+<p>#### </p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/源码/">源码</a><a href="/tags/azkaban/">azkaban</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/06/15/azkaban源码追踪（一）-uploadProject流程/" title="azkaban源码追踪（一）-uploadProject流程" itemprop="url">azkaban源码追踪（一）-uploadProject流程</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-06-15T02:34:28.000Z" itemprop="datePublished"> 发表于 2016-06-15</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h4 id="1-相关类"><a href="#1-相关类" class="headerlink" title="1. 相关类"></a>1. 相关类</h4><ul>
+<li>ProjectMangerServlet</li>
+<li>ProjectManager</li>
+<li>ValidatorManager</li>
+<li>DirectoryFlowLoader</li>
+<li>JdbcProjectLoader</li>
+</ul>
+<h4 id="2-对应的流程log"><a href="#2-对应的流程log" class="headerlink" title="2. 对应的流程log"></a>2. 对应的流程log</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">2016/06/14 15:39:18.537 +0800 INFO [ProjectManagerServlet] [Azkaban] Uploading file willjob.zip</div><div class="line">2016/06/14 15:39:23.861 +0800 INFO [ProjectManager] [Azkaban] Uploading files to mytestProject</div><div class="line">2016/06/14 15:40:16.454 +0800 WARN [XmlValidatorManager] [Azkaban] Validator directory validators does not exist or is not a directory</div><div class="line">2016/06/14 15:40:16.455 +0800 WARN [XmlValidatorManager] [Azkaban] Azkaban properties file does not contain the key project.validators</div><div class="line">2016/06/14 15:40:35.752 +0800 INFO [ProjectManager] [Azkaban] Validating project willjob.zip using the registered validators [Director</div><div class="line">2016/06/14 16:11:45.952 +0800 INFO [XmlValidatorManager] [Azkaban] Validation status of validator Directory Flow is PASS</div><div class="line">2016/06/14 16:56:51.338 +0800 INFO [ProjectManager] [Azkaban] Uploading file to db willjob.zip</div><div class="line">2016/06/14 16:56:51.338 +0800 INFO [JdbcProjectLoader] [Azkaban] Uploading to mytestProject version:1 file:willjob.zip</div><div class="line">2016/06/14 16:56:51.341 +0800 INFO [JdbcProjectLoader] [Azkaban] Creating message digest for upload willjob.zip</div><div class="line">2016/06/14 16:56:51.343 +0800 INFO [JdbcProjectLoader] [Azkaban] Md5 hash created</div><div class="line">2016/06/14 16:56:51.359 +0800 INFO [JdbcProjectLoader] [Azkaban] Read bytes for willjob.zip size:560</div><div class="line">2016/06/14 16:56:51.359 +0800 INFO [JdbcProjectLoader] [Azkaban] Running update for willjob.zip chunk 0</div><div class="line">2016/06/14 16:56:51.360 +0800 INFO [JdbcProjectLoader] [Azkaban] Finished update for willjob.zip chunk 0</div><div class="line">2016/06/14 16:56:51.362 +0800 INFO [JdbcProjectLoader] [Azkaban] Commiting upload willjob.zip</div><div class="line">2016/06/14 16:56:51.363 +0800 INFO [ProjectManager] [Azkaban] Uploading flow to db willjob.zip</div><div class="line">2016/06/14 16:56:51.363 +0800 INFO [JdbcProjectLoader] [Azkaban] Uploading flows</div><div class="line">2016/06/14 16:56:51.418 +0800 INFO [JdbcProjectLoader] [Azkaban] Flow upload will3 is byte size 214</div><div class="line">2016/06/14 16:56:51.432 +0800 INFO [JdbcProjectLoader] [Azkaban] Flow upload will2 is byte size 238</div><div class="line">2016/06/14 16:56:51.434 +0800 INFO [ProjectManager] [Azkaban] Changing project versions willjob.zip</div><div class="line">2016/06/14 16:56:51.436 +0800 INFO [ProjectManager] [Azkaban] Uploading Job properties</div><div class="line">2016/06/14 16:56:51.820 +0800 INFO [ProjectManager] [Azkaban] Uploading Props properties</div><div class="line">2016/06/14 16:56:51.822 +0800 INFO [ProjectManager] [Azkaban] Uploaded project files. Cleaning up temp files.</div><div class="line">2016/06/14 16:56:51.927 +0800 INFO [ProjectManager] [Azkaban] Cleaning up old install files older than -2</div></pre></td></tr></table></figure>
+<h4 id="3-ProjectManager"><a href="#3-ProjectManager" class="headerlink" title="3. ProjectManager"></a>3. ProjectManager</h4><p>白话一下ProjectManager处理上传zip文件的过程：</p>
+<ol>
+<li>将文件存到/tmp目录并解压</li>
+<li>使用DirectoryFlowLoader解析文件，放置到这个loader的状态变量中。这些变量会一直保存在内存里，以供后面使用</li>
+<li>遍历loader里的flowMap，把每个flow都加上最新的project_id和version</li>
+<li>上传project信息<ul>
+<li>4.1 把zip文件弄成字节流上传到mysql的project_files表中</li>
+<li>4.2 把最新版本的project信息上传到project_versions表中</li>
+</ul>
+</li>
+<li>上传flow: 把flow逐个序列化成json，再弄成byte字节流，再使用gzip压缩，上传至project_flows表中</li>
+<li>更新projects里的相关记录，并修改内存中的project信息【修改时间等、最新版本的flows】</li>
+<li>上传job的详细信息到project_properties中，job的详细信息也是json-&gt;byte[]-&gt;gzip的过程</li>
+<li>上传props的详细信息到project_properties中，流程同job完全一样【这个debug的时候数据是空的】</li>
+<li>将此次操作插入到project_event中，之后删除本地/tmp下的文件</li>
+<li>使用project_id和当前version判断依次清除先前版本的project_flows的flow、project_properties、project_files、project_versions中的记录【会有最近版本保留数量设置project.version.retention，默认是3】</li>
+<li>完成<br><img src="/imgs/azkaban/azkaban-upload-zip-handleflow.png" alt="azkaban上传zip很粗糙的流程图"><h4 id="4-文件解析"><a href="#4-文件解析" class="headerlink" title="4. 文件解析"></a>4. 文件解析</h4>DirectoryFlowLoader加载文件目录，解析所有的文件，进行解析，将信息存放在自己的状态变量中：<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> Props props;                          <span class="comment">// 环境、配置信息</span></div><div class="line"><span class="keyword">private</span> HashSet&lt;String&gt; rootNodes;            <span class="comment">// 根节点，也就是实际执行的时候的起始节点</span></div><div class="line"><span class="keyword">private</span> HashMap&lt;String, Flow&gt; flowMap;        <span class="comment">// 所有的flow，key是flowId</span></div><div class="line"><span class="keyword">private</span> HashMap&lt;String, Node&gt; nodeMap;        <span class="comment">// 所有的node，key是JobId或者embed的flowId</span></div><div class="line"><span class="comment">// node之间的dependency，key是job名称，value是一系列的相关依赖job，一般是children，然后Edge指定从谁到谁</span></div><div class="line"><span class="keyword">private</span> HashMap&lt;String, Map&lt;String, Edge&gt;&gt; nodeDependencies;  </div><div class="line"><span class="keyword">private</span> HashMap&lt;String, Props&gt; jobPropsMap;   <span class="comment">// 包含job的详细信息</span></div><div class="line"></div><div class="line"><span class="comment">// flow之间的依赖关系【embedeed flow】</span></div><div class="line"><span class="keyword">private</span> HashMap&lt;String, Set&lt;String&gt;&gt; flowDependencies;</div><div class="line"></div><div class="line"><span class="keyword">private</span> ArrayList&lt;FlowProps&gt; flowPropsList;</div><div class="line"><span class="keyword">private</span> ArrayList&lt;Props&gt; propsList;</div><div class="line"><span class="keyword">private</span> Set&lt;String&gt; errors;</div><div class="line"><span class="keyword">private</span> Set&lt;String&gt; duplicateJobs;</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 临时解压目录 baseDirectory : temp/46769225</span></div><div class="line"><span class="comment">// 项目信息 project: testPro</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">loadProjectFlow</span><span class="params">(Project project, File baseDirectory)</span> </span>&#123;</div><div class="line">    propsList = <span class="keyword">new</span> ArrayList&lt;Props&gt;();</div><div class="line">    flowPropsList = <span class="keyword">new</span> ArrayList&lt;FlowProps&gt;();</div><div class="line">    jobPropsMap = <span class="keyword">new</span> HashMap&lt;String, Props&gt;();</div><div class="line">    nodeMap = <span class="keyword">new</span> HashMap&lt;String, Node&gt;();</div><div class="line">    flowMap = <span class="keyword">new</span> HashMap&lt;String, Flow&gt;();</div><div class="line">    errors = <span class="keyword">new</span> HashSet&lt;String&gt;();</div><div class="line">    duplicateJobs = <span class="keyword">new</span> HashSet&lt;String&gt;();</div><div class="line">    nodeDependencies = <span class="keyword">new</span> HashMap&lt;String, Map&lt;String, Edge&gt;&gt;();</div><div class="line">    rootNodes = <span class="keyword">new</span> HashSet&lt;String&gt;();</div><div class="line">    flowDependencies = <span class="keyword">new</span> HashMap&lt;String, Set&lt;String&gt;&gt;();</div><div class="line"></div><div class="line">    <span class="comment">// 加载所有的properties、job文件，创建node对象</span></div><div class="line">    loadProjectFromDir(baseDirectory.getPath(), baseDirectory, <span class="keyword">null</span>);</div><div class="line"></div><div class="line">    jobPropertiesCheck(project);</div><div class="line"></div><div class="line">    <span class="comment">// Create edges and find missing dependencies</span></div><div class="line">    resolveDependencies();</div><div class="line"></div><div class="line">    <span class="comment">// 创建flows. 在此之后flowMap里就已经构建好了flow以及job之间的依赖了，node之间通过level来界定先后关系</span></div><div class="line">    buildFlowsFromDependencies();</div><div class="line"></div><div class="line">    <span class="comment">// 处理embedded flows，就是嵌入的flow</span></div><div class="line">    resolveEmbeddedFlows();</div><div class="line"></div><div class="line">  &#125;</div></pre></td></tr></table></figure>
+<h5 id="loadProjectFromDir方法详细"><a href="#loadProjectFromDir方法详细" class="headerlink" title="loadProjectFromDir方法详细"></a>loadProjectFromDir方法详细</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">loadProjectFromDir</span><span class="params">(String base, File dir, Props parent)</span> </span>&#123;</div><div class="line">  <span class="comment">// 找出所有的properties</span></div><div class="line">  File[] propertyFiles = dir.listFiles(<span class="keyword">new</span> SuffixFilter(PROPERTY_SUFFIX));</div><div class="line">  Arrays.sort(propertyFiles);</div><div class="line"></div><div class="line">  <span class="keyword">for</span> (File file : propertyFiles) &#123;</div><div class="line">      String relative = getRelativeFilePath(base, file.getPath());</div><div class="line">      parent = <span class="keyword">new</span> Props(parent, file);</div><div class="line">      parent.setSource(relative);</div><div class="line">      FlowProps flowProps = <span class="keyword">new</span> FlowProps(parent);</div><div class="line">      flowPropsList.add(flowProps);</div><div class="line">      logger.info(<span class="string">"Adding "</span> + relative);</div><div class="line">      propsList.add(parent);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">// 加载job文件</span></div><div class="line">  File[] jobFiles = dir.listFiles(<span class="keyword">new</span> SuffixFilter(JOB_SUFFIX));</div><div class="line">  <span class="keyword">for</span> (File file : jobFiles) &#123;</div><div class="line">    String jobName = getNameWithoutExtension(file);</div><div class="line">      <span class="keyword">if</span> (!duplicateJobs.contains(jobName)) &#123;</div><div class="line">        <span class="keyword">if</span> (jobPropsMap.containsKey(jobName)) &#123;</div><div class="line">          <span class="comment">// 是否有重复</span></div><div class="line">          ... </div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">          Props prop = <span class="keyword">new</span> Props(parent, file);</div><div class="line">          String relative = getRelativeFilePath(base, file.getPath());</div><div class="line">          prop.setSource(relative);</div><div class="line"></div><div class="line">          Node node = <span class="keyword">new</span> Node(jobName);</div><div class="line">          String type = prop.getString(<span class="string">"type"</span>, <span class="keyword">null</span>);</div><div class="line">          <span class="keyword">if</span> (type == <span class="keyword">null</span>) &#123;</div><div class="line">            errors.add(<span class="string">"Job doesn't have type set '"</span> + jobName + <span class="string">"'."</span>);</div><div class="line">          &#125;</div><div class="line">          node.setType(type); <span class="comment">// job类型</span></div><div class="line">          node.setJobSource(relative);    <span class="comment">// job相对路径</span></div><div class="line">          <span class="keyword">if</span> (parent != <span class="keyword">null</span>) &#123;</div><div class="line">            node.setPropsSource(parent.getSource());</div><div class="line">          &#125;</div><div class="line"></div><div class="line">          <span class="comment">// Force root node</span></div><div class="line">          <span class="keyword">if</span> (prop.getBoolean(CommonJobProperties.ROOT_NODE, <span class="keyword">false</span>)) &#123;</div><div class="line">            rootNodes.add(jobName);</div><div class="line">          &#125;</div><div class="line"></div><div class="line">          <span class="comment">// 把properties和node放进loader中的队列中</span></div><div class="line">          jobPropsMap.put(jobName, prop);</div><div class="line">          nodeMap.put(jobName, node);</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">// 检查是否有子目录</span></div><div class="line">  File[] subDirs = dir.listFiles(DIR_FILTER);</div><div class="line">  <span class="keyword">for</span> (File file : subDirs) &#123;</div><div class="line">    loadProjectFromDir(base, file, parent);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="常用的blob处理代码"><a href="#常用的blob处理代码" class="headerlink" title="常用的blob处理代码"></a>常用的blob处理代码</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">String propertyJSON = PropsUtils.toJSONString(props, <span class="keyword">true</span>);</div><div class="line">   <span class="keyword">byte</span>[] data = propertyJSON.getBytes(<span class="string">"UTF-8"</span>);</div><div class="line">   <span class="keyword">if</span> (defaultEncodingType == EncodingType.GZIP) &#123;</div><div class="line">     data = GZIPUtils.gzipBytes(data);</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+<h4 id="5-其他"><a href="#5-其他" class="headerlink" title="5.其他"></a>5.其他</h4><p><img src="/imgs/azkaban/azkaban-upload-zip-node.png" alt="azkaban上传zip文件时生成的Node结构"></p>
+<p>level表示当前node所在的层次。</p>
+<p><img src="/imgs/azkaban/Edge-structure.png" alt="azkaban上传zip后内存中表示node连接的Edge结构"></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/源码/">源码</a><a href="/tags/azkaban/">azkaban</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2015/12/10/spring-quartz集群配置全部资料/" title="spring + quartz集群配置全部资料" itemprop="url">spring + quartz集群配置全部资料</a>
   </h1>
   <p class="article-author">By
@@ -687,210 +851,9 @@
 
 
 
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2015/12/03/ElasticSearch-kibana-Dashboard-定义与使用/" title="ElasticSearch kibana Dashboard 定义与使用" itemprop="url">ElasticSearch kibana Dashboard 定义与使用</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2015-12-03T07:31:45.000Z" itemprop="datePublished"> 发表于 2015-12-03</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>以前在骡迹物流的时候只是玩儿了一下kibana简单的功能，并没有投入使用，当时也基本上玩儿遍了各种可视化，就是么有弄dashboard。<br>在美团这边前两天被拉进elasticsearch的群里，然后收到一个kibana的地址，今儿下午尝试性地玩儿了一下，还蛮爽的，有些惊异。</p>
-<p>dashboard是一个画布，然后这个画布上需要放置很多的visualize，也就是说在弄dashboard之前是需要先准备好visualize的，它由visualize和search组成。</p>
-<h3 id="1-准备源材料"><a href="#1-准备源材料" class="headerlink" title="1. 准备源材料"></a>1. 准备源材料</h3><p>创建并保存visualization和search</p>
-<p><img src="/imgs/es/准备源材料.png" alt=""></p>
-<h3 id="2-新建dashboard"><a href="#2-新建dashboard" class="headerlink" title="2. 新建dashboard"></a>2. 新建dashboard</h3><p><img src="/imgs/es/新建dashboard.png" alt=""></p>
-<h3 id="3-为dashboard添加元素"><a href="#3-为dashboard添加元素" class="headerlink" title="3. 为dashboard添加元素"></a>3. 为dashboard添加元素</h3><p><img src="/imgs/es/创建dashboard.png" alt=""></p>
-<h3 id="4-调整后保存"><a href="#4-调整后保存" class="headerlink" title="4. 调整后保存"></a>4. 调整后保存</h3><p><img src="/imgs/es/保存.png" alt=""></p>
-<p>好了，这已经非常好看了，完全可以直接看了。以后再有运营提数据需求，我就直接创建search或者visualization后，生成dashboard。可是问题又来了，咋给他看呢？总不能让所有的运营人员都登陆kibana页面来瞅吧，那样的话还得加权限神马的，比如对个别页面有只读权限，其他页面或者操作没有任何权限才对。静静地思考，kibana和elasticsearch已然有了思路，是不可能倒在权限这个小问题上的，肯定有一种合理的方式去分享给需求端看。fun，找找看~</p>
-<h3 id="5-dashboard组件化"><a href="#5-dashboard组件化" class="headerlink" title="5. dashboard组件化"></a>5. dashboard组件化</h3><p>叫我脑残，功能就放在眼前<br><img src="/imgs/es/share.png" alt=""></p>
-<p>获取到iframe后，自然就会想到，这个东西是可以嵌入到我们自己的网页中的。如此一来的话，就可以直接将数据存储在elasticsearch中，之后在elasticsearch和kibana之上建立自己的search，visualization，dashboard。然后将最终的dashboard嵌入到应用页面。</p>
-<p>还是有些问题，直接在浏览器访问这个dashboard的url的话会发现其实就是kibana那个页面，但是放进iframe之后就成了不可编辑的状态，而且只有组件，上面不会有kibana的head，这个状态比较理想。可是右击查看源代码的话，还是可以看到kibana的页面接口URL，如果直接访问还是可以直接进行编辑。</p>
-<p>查了一下权限相关</p>
-<ul>
-<li><a href="https://github.com/floragunncom/search-guard" target="_blank" rel="external">https://github.com/floragunncom/search-guard</a></li>
-<li><a href="http://drops.wooyun.org/tips/8129" target="_blank" rel="external">http://drops.wooyun.org/tips/8129</a></li>
-<li><a href="http://3gods.com/2015/09/10/Shield%20Control.html" target="_blank" rel="external">http://3gods.com/2015/09/10/Shield%20Control.html</a></li>
-</ul>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/ElasticSearch/">ElasticSearch</a><a href="/tags/kibana/">kibana</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2015/11/19/guava整理/" title="guava整理 - Basic utilities" itemprop="url">guava整理 - Basic utilities</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2015-11-19T07:04:51.000Z" itemprop="datePublished"> 发表于 2015-11-19</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>总是看到guava的身影，今天来大概浏览一下这个Google项目。</p>
-<h3 id="1-对于null的思考"><a href="#1-对于null的思考" class="headerlink" title="1. 对于null的思考"></a>1. 对于null的思考</h3><p>null值的特点：</p>
-<ul>
-<li>不能清晰表达任何业务模型<br> 就是说在很多情况下，我们看到null的时候通常要分析一下context才能知道这里是什么情况</li>
-<li>容易被人忽视<br> 很多时候coder会专注于自己正在思考的核心业务场景，编写代码逻辑。容易忘记处理null对象的情况，所以一些nullPointerException通常是由于不可避免的粗心遗漏造成的。</li>
-</ul>
-<p>Optional<t><br>    当获取某个值的时候，尽量使用Optional<t>, T能够帮助我们理解当前的业务模型，而Optional.get()这一个不是很方便的调用则会时刻提醒我们充分考虑当前场景下，如果主对象为null应当采取的措施。<br>    有异曲同工之妙的还有scala中的Option<t></t></t></t></p>
-<p>API概览：<br>    <a href="http://docs.guava-libraries.googlecode.com/git/javadoc/com/google/common/base/Optional.html" target="_blank" rel="external">http://docs.guava-libraries.googlecode.com/git/javadoc/com/google/common/base/Optional.html</a></p>
-<h3 id="2-前置条件"><a href="#2-前置条件" class="headerlink" title="2. 前置条件"></a>2. 前置条件</h3><p>就是一些常用的、通用的、简单的条件判断，<br>API:<a href="http://docs.guava-libraries.googlecode.com/git-history/release/javadoc/com/google/common/base/Preconditions.html" target="_blank" rel="external">http://docs.guava-libraries.googlecode.com/git-history/release/javadoc/com/google/common/base/Preconditions.html</a></p>
-<p>java7其实也添加了一些方法：<br><a href="http://docs.oracle.com/javase/7/docs/api/java/util/Objects.html#requireNonNull(java.lang.Object,java.lang.String" target="_blank" rel="external">http://docs.oracle.com/javase/7/docs/api/java/util/Objects.html#requireNonNull(java.lang.Object,java.lang.String</a>)</p>
-<p>如果不满足这些条件，就会抛出Exception</p>
-<h3 id="3-通用对象方法"><a href="#3-通用对象方法" class="headerlink" title="3. 通用对象方法"></a>3. 通用对象方法</h3><p>对于Object默认的toString hashCode等方法提供简单实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">Objects.equal(&quot;a&quot;, &quot;a&quot;); // returns true</div><div class="line">Objects.equal(null, &quot;a&quot;); // returns false</div><div class="line">Objects.equal(&quot;a&quot;, null); // returns false</div><div class="line">Objects.equal(null, null); // returns true</div></pre></td></tr></table></figure></p>
-<p>equals方法给处理了null值情况。</p>
-<p>java7也是用了类似guava的<a href="http://google.github.io/guava/releases/snapshot/api/docs/com/google/common/base/Objects.html#hashCode(java.lang.Object...)的" target="_blank" rel="external">http://google.github.io/guava/releases/snapshot/api/docs/com/google/common/base/Objects.html#hashCode(java.lang.Object...)的</a><br><a href="http://docs.oracle.com/javase/7/docs/api/java/util/Objects.html#hash(java.lang.Object" target="_blank" rel="external">http://docs.oracle.com/javase/7/docs/api/java/util/Objects.html#hash(java.lang.Object</a>…)</p>
-<p>可读的toString<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">// Returns &quot;ClassName&#123;x=1&#125;&quot;</div><div class="line">   MoreObjects.toStringHelper(this)</div><div class="line">       .add(&quot;x&quot;, 1)</div><div class="line">       .toString();</div><div class="line"></div><div class="line">   // Returns &quot;MyObject&#123;x=1&#125;&quot;</div><div class="line">   MoreObjects.toStringHelper(&quot;MyObject&quot;)</div><div class="line">       .add(&quot;x&quot;, 1)</div><div class="line">       .toString();</div></pre></td></tr></table></figure></p>
-<p><a href="http://docs.guava-libraries.googlecode.com/git-history/release/javadoc/com/google/common/base/Objects.html#equal(java.lang.Object" target="_blank" rel="external">http://docs.guava-libraries.googlecode.com/git-history/release/javadoc/com/google/common/base/Objects.html#equal(java.lang.Object</a>, java.lang.Object)</p>
-<h3 id="4-ComparisonChain"><a href="#4-ComparisonChain" class="headerlink" title="4. ComparisonChain"></a>4. ComparisonChain</h3><p>任何一个条件返回非0值，就比较结束。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">public int compareTo(Foo that) &#123;</div><div class="line">     return ComparisonChain.start()</div><div class="line">         .compare(this.aString, that.aString)</div><div class="line">         .compare(this.anInt, that.anInt)</div><div class="line">         .compare(this.anEnum, that.anEnum, Ordering.natural().nullsLast())</div><div class="line">         .result();</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
-<h3 id="5-异常传播"><a href="#5-异常传播" class="headerlink" title="5. 异常传播"></a>5. 异常传播</h3><p>简化Throwable的处理<br>有时候我们catch住一个Exception，但是并不想在这个catch块里处理，就会throw出去给下个块。最常见的例子是RuntimeException和Error，本来我们并不想catch它们，但是通常它们又会被catch住。</p>
-<p>具体使用没看太明白</p>
-<p>集合类使用</p>
-<h3 id="1-不可变集合"><a href="#1-不可变集合" class="headerlink" title="1. 不可变集合"></a>1. 不可变集合</h3><ul>
-<li>安全</li>
-<li>不存在并发问题</li>
-<li>空间可预测</li>
-</ul>
-<p>注：目前guava的不可变集合都不许有null元素，如果要使用带有null的不可变集合，那么选用JDK自带的Collections.unmodifiableXXX</p>
-<p>使用不可变集合</p>
-<ul>
-<li>copyOf：如ImmutableSet.copyOf(set);</li>
-<li>of：如ImmutableSet.of(“a”, “b”, “c”)或 ImmutableMap.of(“a”, 1, “b”, 2);</li>
-<li>builder：public static final ImmutableSet<color\> GOOGLE_COLORS =<pre><code>ImmutableSet.&lt;Color\&gt;builder()
-    .addAll(WEBSAFE_COLORS)
-    .add(new Color(0, 191, 255))
-    .build();
-</code></pre>asList视图</color\></li>
-</ul>
-<p>所有不可变集合都有一个asList()方法提供ImmutableList视图，来帮助你用列表形式方便地读取集合元素。例如，你可以使用sortedSet.asList().get(k)从ImmutableSortedSet中读取第k个最小元素。</p>
-<p>asList()返回的ImmutableList通常是——并不总是——开销稳定的视图实现，而不是简单地把元素拷贝进List。也就是说，asList返回的列表视图通常比一般的列表平均性能更好，比如，在底层集合支持的情况下，它总是使用高效的contains方法。</p>
-<h3 id="2-新的集合类型"><a href="#2-新的集合类型" class="headerlink" title="2. 新的集合类型"></a>2. 新的集合类型</h3><p>JDK没有，但是又被非常广泛使用的集合类型。</p>
-<ul>
-<li><p>MultiSet</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">private void outMuiltSet() &#123;</div><div class="line">   System.out.println(&quot;-------------------&quot;);</div><div class="line">   System.out.println(strs.size());</div><div class="line">   System.out.println(strs.count(new Object())); //count(Object element): 返回给定参数元素的个数</div><div class="line">   System.out.println(strs.count(&quot;sdfsd&quot;)); //count(Object element): 返回给定参数元素的个数</div><div class="line">   System.out.println(strs);</div><div class="line"> &#125;</div><div class="line"></div><div class="line"> public void test3() throws Throwable &#123;</div><div class="line">   strs = TreeMultiset.create();</div><div class="line">   strs.add(&quot;sdfsd&quot;, 2); //add(E element,int occurrences): 向其中添加指定个数的元素</div><div class="line">   strs.add(&quot;sdfsd&quot;);  // add(E element): 向其中添加单个元素</div><div class="line">   strs.add(&quot;dlkjlkj&quot;);</div><div class="line">   System.out.println(strs.elementSet());  // elementSet(): 将不同的元素放入一个Set中</div><div class="line">   Set&lt;Multiset.Entry&lt;Comparable&gt;&gt; entries = strs.entrySet();  //类似与Map.entrySet 返回Set。包含的Entry支持使用getElement()和getCount()</div><div class="line">   for (Multiset.Entry entry: entries) &#123;</div><div class="line">     System.out.println(entry.getElement());</div><div class="line">     System.out.println(entry.getCount());</div><div class="line">   &#125;</div><div class="line">   outMuiltSet();</div><div class="line">   strs.remove(&quot;sdfsd&quot;); // remove(E element): 移除一个元素，其count值 会响应减少</div><div class="line">   outMuiltSet();</div><div class="line">   strs.setCount(&quot;sdfsd&quot;, 10); // 设定某一个元素的重复次数</div><div class="line">   outMuiltSet();</div><div class="line">   strs.remove(&quot;sdfsd&quot;, 2); //remove(E element,int occurrences): 移除相应个数的元素</div><div class="line">   outMuiltSet();</div><div class="line">   strs.setCount(&quot;sdfsd&quot;, 8, 20); //setCount(E element,int oldCount,int newCount): 将符合原有重复个数的元素修改为新的重复次数</div><div class="line">   strs.setCount(&quot;sdfsd&quot;, 8, 20);</div><div class="line">   strs.setCount(&quot;dlkjlkj&quot;, 8, 20);</div><div class="line">   outMuiltSet();</div><div class="line"> &#125;</div></pre></td></tr></table></figure>
-</li>
-<li><p>SortedMultiset</p>
-</li>
-</ul>
-<p>SortedMultiset是Multiset 接口的变种，它支持高效地获取指定范围的子集。比方说，你可以用 latencies.subMultiset(0,BoundType.CLOSED, 100, BoundType.OPEN).size()来统计你的站点中延迟在100毫秒以内的访问，然后把这个值和latencies.size()相比，以获取这个延迟水平在总体访问中的比例。</p>
-<p>TreeMultiset实现SortedMultiset接口。</p>
-<ul>
-<li>Multimap<br>可以用两种方式思考Multimap的概念:</li>
-</ul>
-<p>“键-单个值映射”的集合: a-&gt;1, a-&gt;2, a-&gt;4, b-&gt;3, c-&gt;5<br>“键-值集合映射”的映射: a-&gt;[1,2,4], b-&gt;3, c-&gt;5<br>一般情况下都会使用ListMultimap或SetMultimap接口，它们分别把键映射到List或Set。<br>Multimap.get(key)以集合形式返回键所对应的值视图, 即使没有任何对应的值，也会返回空集合。<br>对值视图集合进行的修改最终都会反映到底层的Multimap。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">public void testMap() &#123;</div><div class="line">    ImmutableListMultimap&lt;String, Integer&gt; of = ImmutableListMultimap.of(&quot;a&quot;, 1, &quot;a&quot;, 2, &quot;b&quot;, 1);</div><div class="line">    System.out.println(of.asMap());</div><div class="line">    ListMultimap map = ArrayListMultimap.create(of);</div><div class="line">    map.put(&quot;a&quot;, 234);</div><div class="line">    map.putAll(&quot;c&quot;, ImmutableSet.of(123,3243));</div><div class="line">    System.out.println(map);</div><div class="line">  &#125;</div></pre></td></tr></table></figure>
-<ul>
-<li>BiMap<br>实现键值对的双向映射,并保持它们间的同步。</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">BiMap&lt;String, Integer&gt; map = HashBiMap.create();</div><div class="line">   map.put(&quot;foo&quot;, 1);</div><div class="line">   map.put(&quot;bar&quot;, 2);</div><div class="line">   map.put(&quot;quux&quot;, 3);</div><div class="line"></div><div class="line">   map.inverse().forcePut(1, &quot;quux&quot;);  // 会导致foo被替换成quux，而quux的value也成了1，就是&#123;bar=2, quux=1&#125;</div><div class="line">   System.out.println(map);</div></pre></td></tr></table></figure>
-<ul>
-<li>Table</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">String v1 = &quot;a&quot;;</div><div class="line">    String v2 = &quot;b&quot;;</div><div class="line">    String v3 = &quot;c&quot;;</div><div class="line">    Table&lt;String, String, Integer&gt; weightedGraph = HashBasedTable.create();</div><div class="line">    weightedGraph.put(v1, v2, 4);</div><div class="line">    weightedGraph.put(v1, v3, 20);</div><div class="line">    weightedGraph.put(v2, v3, 5);</div><div class="line">    System.out.println(weightedGraph);</div><div class="line"></div><div class="line">    System.out.println(weightedGraph.row(v1) + &quot;........sdfsd&quot;); // 按照rowKey查询</div><div class="line">    System.out.println(weightedGraph.column(v3)); // 按照Columnkey查询</div></pre></td></tr></table></figure>
-<ul>
-<li>ClassToInstanceMap</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">ClassToInstanceMap&lt;Number&gt; numberDefaults=MutableClassToInstanceMap.create();</div><div class="line">    numberDefaults.putInstance(Integer.class, Integer.valueOf(0));</div><div class="line">    numberDefaults.putInstance(Integer.class, Float.valueOf(0)); // 编译报错</div></pre></td></tr></table></figure>
-<ul>
-<li><p>RangeSet<br>RangeSet描述了一组不相连的、非空的区间。当把一个区间添加到可变的RangeSet时，所有相连的区间会被合并，空区间会被忽略。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">RangeSet&lt;Integer&gt; rangeSet = TreeRangeSet.create();</div><div class="line">    System.out.println(rangeSet);</div><div class="line">    rangeSet.add(Range.closed(1, 10)); // &#123;[1,10]&#125;</div><div class="line">    System.out.println(rangeSet);</div><div class="line">    rangeSet.add(Range.closedOpen(11, 15));//不相连区间:&#123;[1,10], [11,15)&#125;</div><div class="line">    System.out.println(rangeSet);</div><div class="line">    rangeSet.add(Range.closedOpen(15, 20)); //相连区间; &#123;[1,10], [11,20)&#125;</div><div class="line">    System.out.println(rangeSet);</div><div class="line">    rangeSet.add(Range.openClosed(0, 0)); //空区间; &#123;[1,10], [11,20)&#125;</div><div class="line">    System.out.println(rangeSet);</div><div class="line">    rangeSet.remove(Range.open(5, 10)); //分割[1, 10]; &#123;[1,5], [10,10], [11,20)&#125;</div><div class="line">    System.out.println(rangeSet);</div></pre></td></tr></table></figure>
-</li>
-<li><p>RangeMap<br>RangeMap描述了”不相交的、非空的区间”到特定值的映射。和RangeSet不同，RangeMap不会合并相邻的映射，即便相邻的区间映射到相同的值。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">RangeMap&lt;Integer, String&gt; rangeMap = TreeRangeMap.create();</div><div class="line">    rangeMap.put(Range.closed(1, 10), &quot;foo&quot;); //&#123;[1,10] =&gt; &quot;foo&quot;&#125;</div><div class="line">    System.out.println(rangeMap);</div><div class="line">    rangeMap.put(Range.open(3, 6), &quot;bar&quot;); //&#123;[1,3] =&gt; &quot;foo&quot;, (3,6) =&gt; &quot;bar&quot;, [6,10] =&gt; &quot;foo&quot;&#125;</div><div class="line">    System.out.println(rangeMap);</div><div class="line">    rangeMap.put(Range.open(10, 20), &quot;foo&quot;); //&#123;[1,3] =&gt; &quot;foo&quot;, (3,6) =&gt; &quot;bar&quot;, [6,10] =&gt; &quot;foo&quot;, (10,20) =&gt; &quot;foo&quot;&#125;</div><div class="line">    System.out.println(rangeMap);</div><div class="line">    rangeMap.remove(Range.closed(5, 11)); //&#123;[1,3] =&gt; &quot;foo&quot;, (3,5) =&gt; &quot;bar&quot;, (11,20) =&gt; &quot;foo&quot;&#125;</div><div class="line">    System.out.println(rangeMap);</div></pre></td></tr></table></figure>
-</li>
-</ul>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/guava/">guava</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
 
   <nav id="page-nav" class="clearfix">
-    <a class="extend prev" rel="prev" href="/page/21/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/20/">20</a><a class="page-number" href="/page/21/">21</a><span class="page-number current">22</span><a class="page-number" href="/page/23/">23</a><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/23/">Next<span></span></a>
+    <a class="extend prev" rel="prev" href="/page/21/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/20/">20</a><a class="page-number" href="/page/21/">21</a><span class="page-number current">22</span><a class="page-number" href="/page/23/">23</a><a class="page-number" href="/page/24/">24</a><a class="page-number" href="/page/25/">25</a><a class="extend next" rel="next" href="/page/23/">Next<span></span></a>
   </nav>
 
 </div>
@@ -963,31 +926,31 @@
 			
 		
 			
+				<li><a href="/tags/django/" title="django">django<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构/" title="架构">架构<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构，jaeger/" title="架构，jaeger">架构，jaeger<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Solr/" title="Solr">Solr<sup>1</sup></a></li>
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
 			
 		
 			
 				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/hue/" title="hue">hue<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
 			
 		
 		</ul>
@@ -1060,7 +1023,7 @@
 		
 
 		<p class="copyright">
-		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2018 
 		
 		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
 		

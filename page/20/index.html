@@ -99,6 +99,146 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2016/12/05/docker-centos-6.4安装手记/" title="docker-centos-6.4安装手记" itemprop="url">docker-centos-6.4安装手记</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:04:54.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="version-Base-not-defined-in-file-libdevmapper-so-1-02-with-link-time-reference"><a href="#version-Base-not-defined-in-file-libdevmapper-so-1-02-with-link-time-reference" class="headerlink" title="version Base not defined in file libdevmapper.so.1.02 with link time reference"></a>version Base not defined in file libdevmapper.so.1.02 with link time reference</h2><p>yum install device-mapper-event-libs -y</p>
+<p>参考： <a href="http://qicheng0211.blog.51cto.com/3958621/1582909" target="_blank" rel="external">http://qicheng0211.blog.51cto.com/3958621/1582909</a></p>
+<h2 id="can’t-initialize-iptables-table-nat’"><a href="#can’t-initialize-iptables-table-nat’" class="headerlink" title="can’t initialize iptables table `nat’"></a>can’t initialize iptables table `nat’</h2><p>编译内核的时候没有选中iptable_nat module相关的组件。<br>重新到内核文件夹中make </p>
+<h2 id="GCC-4-8-or-higher-required"><a href="#GCC-4-8-or-higher-required" class="headerlink" title="GCC 4.8 or higher required"></a>GCC 4.8 or higher required</h2><p>参考：<a href="https://gist.github.com/stephenturner/e3bc5cfacc2dc67eca8b" target="_blank" rel="external">https://gist.github.com/stephenturner/e3bc5cfacc2dc67eca8b</a></p>
+<p>参考：</p>
+<ul>
+<li><a href="http://blog.csdn.net/scaleqiao/article/details/46633011" target="_blank" rel="external">http://blog.csdn.net/scaleqiao/article/details/46633011</a></li>
+<li></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/azkaban源码追踪(2)-——-手动触发flow调度/" title="azkaban源码追踪(2)-——-手动触发flow调度" itemprop="url">azkaban源码追踪(2)-——-手动触发flow调度</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:04:53.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>对应的操作是进入到某个project中，然后单次执行下面的某个flow。会触发web-server这边与exec-server的远程调用去执行flow。</p>
+<h4 id="相关类"><a href="#相关类" class="headerlink" title="相关类"></a>相关类</h4><ul>
+<li>Web-server<ul>
+<li>ExecutorServlet.doGet</li>
+<li>ExecutorManager</li>
+</ul>
+</li>
+<li>exec-server<ul>
+<li>ExecutorServlet.doGet</li>
+<li>FlowRunnerManager</li>
+<li>FlowRunner</li>
+<li>ExecutableFlowBase</li>
+<li>ExecutableNode</li>
+<li>JobRunner</li>
+<li>JobTypeManager</li>
+<li>Job</li>
+<li>AzkabanProcessBuilder</li>
+</ul>
+</li>
+</ul>
+<p>#### </p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2016/08/19/akka-in-action-读书笔记（8）/" title="akka in action 读书笔记（8）" itemprop="url">akka in action 读书笔记（8）</a>
   </h1>
   <p class="article-author">By
@@ -1151,144 +1291,9 @@
 
 
 
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2016/07/16/JPARepository杂记/" title="JPARepository杂记" itemprop="url">JPARepository杂记</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2016-07-16T15:05:41.000Z" itemprop="datePublished"> 发表于 2016-07-16</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h2 id="join时报错"><a href="#join时报错" class="headerlink" title="join时报错"></a>join时报错</h2><p>报错<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">QuerySyntaxException: expecting IDENT, found &apos;*&apos; near line 1</div></pre></td></tr></table></figure></p>
-<p>原始sql<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">hql:<span class="keyword">select</span> a.* <span class="keyword">from</span> <span class="keyword">Archive</span> a,Employee e,Department d <span class="keyword">where</span> a.contractEndDate = :<span class="built_in">date</span> <span class="keyword">and</span> a.status = <span class="string">'A'</span> <span class="keyword">and</span> a.empId = e.id <span class="keyword">and</span> e.status = <span class="string">'A'</span> <span class="keyword">and</span> e.type = <span class="string">'A'</span></div></pre></td></tr></table></figure></p>
-<p>改成<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">select</span> a <span class="keyword">from</span> <span class="keyword">Archive</span> a,Employee e,Department d <span class="keyword">where</span> a.contractEndDate = :<span class="built_in">date</span> <span class="keyword">and</span> a.status = <span class="string">'A'</span> <span class="keyword">and</span> a.empId = e.id <span class="keyword">and</span> e.status = <span class="string">'A'</span> <span class="keyword">and</span> e.type = <span class="string">'A'</span></div></pre></td></tr></table></figure></p>
-<p>select 后面为对象 a .而非 a.*</p>
-<p>参考：<br><a href="http://blog.sina.com.cn/s/blog_4bf2e5550100n2gh.html" target="_blank" rel="external">http://blog.sina.com.cn/s/blog_4bf2e5550100n2gh.html</a></p>
-<h2 id="SQL面向Entity"><a href="#SQL面向Entity" class="headerlink" title="SQL面向Entity"></a>SQL面向Entity</h2><p>指的是在JPARepository的子类中自定义的函数<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">TblBloodRepository</span> <span class="keyword">extends</span> <span class="title">JpaRepository</span>&lt;<span class="title">TblBlood</span>, <span class="title">Integer</span>&gt;</span>&#123;</div><div class="line">    <span class="function">TblBlood <span class="title">findByTblName</span><span class="params">(String tblName)</span></span>;</div><div class="line"></div><div class="line">    <span class="meta">@Query</span>(<span class="string">"select a from "</span></div><div class="line">            + <span class="string">"(select blood from TblBlood blood where valid = 1) a"</span></div><div class="line">            + <span class="string">" left outer join "</span></div><div class="line">            + <span class="string">"(select distinct parentTbl from TblBlood where valid = 1) b"</span></div><div class="line">            + <span class="string">" on a.tblName = b.parentTbl"</span></div><div class="line">            + <span class="string">" where b.parentTbl is null"</span>)</div><div class="line">    <span class="function">List&lt;TblBlood&gt; <span class="title">selectAllLeaf</span><span class="params">()</span></span>;</div><div class="line"></div><div class="line">    <span class="meta">@Modifying</span></div><div class="line">    <span class="meta">@Query</span>(<span class="string">"update TblBlood set valid = 0 where tblName=:tblName"</span>)</div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">makePreviousInvalid</span><span class="params">(@Param(<span class="string">"tblName"</span>)</span>String tblName)</span>;</div><div class="line"></div><div class="line">    <span class="meta">@Query</span>(<span class="string">"select b from"</span></div><div class="line">            + <span class="string">" TblBlood a join TblBlood b"</span></div><div class="line">            + <span class="string">" on a.parentTbl = b.tblName and b.valid = 1"</span></div><div class="line">            + <span class="string">" where a.valid = 1 and a.tblName = :tblName"</span>)</div><div class="line">    <span class="function">List&lt;TblBlood&gt; <span class="title">selectParentByTblName</span><span class="params">(@Param(<span class="string">"tblName"</span>)</span>String tblName)</span>;</div><div class="line"></div><div class="line">    <span class="meta">@Query</span>(<span class="string">"from TblBlood where valid = 1 and parentTbl=:tblName"</span>)</div><div class="line">    <span class="function"><span class="keyword">public</span> List&lt;TblBlood&gt; <span class="title">selectByParentTblName</span><span class="params">(@Param(<span class="string">"tblName"</span>)</span>String tblName)</span>;</div><div class="line"></div><div class="line">    <span class="meta">@Query</span>(<span class="string">"from TblBlood where valid = 1 and tblName=:tblName"</span>)</div><div class="line">    <span class="function">List&lt;TblBlood&gt; <span class="title">selectByTblName</span><span class="params">(@Param(<span class="string">"tblName"</span>)</span>String tblName)</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>TblBlood就是对象的类名，而不是真正的表名。</p>
-<h2 id="自join"><a href="#自join" class="headerlink" title="自join"></a>自join</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Query</span>(<span class="string">"select b from"</span></div><div class="line">            + <span class="string">" TblBlood a join TblBlood b"</span></div><div class="line">            + <span class="string">" on a.parentTbl = b.tblName and b.valid = 1"</span></div><div class="line">            + <span class="string">" where a.valid = 1 and a.tblName = ?1"</span>)</div><div class="line">    <span class="function">List&lt;TblBlood&gt; <span class="title">selectParentByTblName</span><span class="params">(String tblName)</span></span>;</div></pre></td></tr></table></figure>
-<p>报错<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">  Path expected for join!</div><div class="line">	at org.hibernate.hql.internal.ast.HqlSqlWalker.createFromJoinElement(HqlSqlWalker.java:378)</div><div class="line">	at org.hibernate.hql.internal.antlr.HqlSqlBaseWalker.joinElement(HqlSqlBaseWalker.java:3858)</div><div class="line">	at org.hibernate.hql.internal.antlr.HqlSqlBaseWalker.fromElement(HqlSqlBaseWalker.java:3644)</div><div class="line">	at org.hibernate.hql.internal.antlr.HqlSqlBaseWalker.fromElementList(HqlSqlBaseWalker.java:3522)</div><div class="line"> </div><div class="line"> org.springframework.beans.factory.BeanCreationException: Error creating bean with name &apos;tblBloodRepository&apos;: Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Validation failed for query for method public abstract java.util.List com.will.hivesolver.repositories.TblBloodRepository.selectParentByTblName(java.lang.String)!</div><div class="line">	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1574)</div><div class="line">	...</div><div class="line">Caused by: java.lang.IllegalArgumentException: Validation failed for query for method public abstract java.util.List com.will.hivesolver.repositories.TblBloodRepository.selectParentByTblName(java.lang.String)!</div><div class="line">	at org.springframework.data.jpa.repository.query.SimpleJpaQuery.validateQuery(SimpleJpaQuery.java:84)</div><div class="line">	.....</div><div class="line">Caused by: java.lang.IllegalStateException: No data type for node: org.hibernate.hql.internal.ast.tree.IdentNode </div><div class="line"> \-[IDENT] IdentNode: &apos;b&apos; &#123;originalText=b&#125;</div><div class="line"></div><div class="line">	at org.hibernate.hql.internal.ast.tree.SelectClause.initializeExplicitSelectClause(SelectClause.java:174)</div><div class="line">	at org.hibernate.hql.internal.ast.HqlSqlWalker.useSelectClause(HqlSqlWalker.java:923)</div><div class="line">	...</div></pre></td></tr></table></figure></p>
-<h2 id="不能更新"><a href="#不能更新" class="headerlink" title="不能更新"></a>不能更新</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">严重: Servlet.service() for servlet [api] in context with path [/metamap] threw exception [Request processing failed; nested exception is org.springframework.dao.InvalidDataAccessApiUsageException: Executing an update/delete query; nested exception is javax.persistence.TransactionRequiredException: Executing an update/delete query] with root cause</div><div class="line">javax.persistence.TransactionRequiredException: Executing an update/delete query</div></pre></td></tr></table></figure>
-<p>Spring Data JPA，事务导致的异常</p>
-<p>需要在springMVC的xml里添加,这里只扫描Controller所在的位置里的Controller<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">context:component-scan</span> <span class="attr">base-package</span>=<span class="string">"com.will.hivesolver.controller"</span> <span class="attr">use-default-filters</span>=<span class="string">"false"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">context:include-filter</span> <span class="attr">type</span>=<span class="string">"annotation"</span> <span class="attr">expression</span>=<span class="string">"org.springframework.stereotype.Controller"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">context:include-filter</span> <span class="attr">type</span>=<span class="string">"annotation"</span> <span class="attr">expression</span>=<span class="string">"org.springframework.web.bind.annotation.ControllerAdvice"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">context:component-scan</span>&gt;</span></div></pre></td></tr></table></figure></p>
-<p>在applicationContext.xml中添加，这里必须不能扫描上面扫描过的Controller：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">context:component-scan</span> <span class="attr">base-package</span>=<span class="string">"com.will.hivesolver"</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">context:exclude-filter</span> <span class="attr">type</span>=<span class="string">"annotation"</span> <span class="attr">expression</span>=<span class="string">"org.springframework.stereotype.Controller"</span>/&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">context:exclude-filter</span> <span class="attr">type</span>=<span class="string">"annotation"</span> <span class="attr">expression</span>=<span class="string">"org.springframework.web.bind.annotation.ControllerAdvice"</span>/&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">context:component-scan</span>&gt;</span></div></pre></td></tr></table></figure></p>
-<p>参考：<a href="https://github.com/springside/springside4/wiki/Spring-MVC" target="_blank" rel="external">https://github.com/springside/springside4/wiki/Spring-MVC</a></p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/spring/">spring</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2016/07/16/express杂记/" title="express杂记" itemprop="url">express杂记</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2016-07-16T15:02:39.000Z" itemprop="datePublished"> 发表于 2016-07-16</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h2 id="app-set-get"><a href="#app-set-get" class="headerlink" title="app.set/get"></a>app.set/get</h2><p>用来查看或者设置一些配置参数</p>
-<h2 id="express里变量的换行出不来"><a href="#express里变量的换行出不来" class="headerlink" title="express里变量的换行出不来"></a>express里变量的换行出不来</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">router.get(<span class="string">'/get_log'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</div><div class="line">      worker.exec(<span class="string">"cat "</span> + req.query.location, <span class="function"><span class="keyword">function</span> (<span class="params">error, stdout, stderr</span>) </span>&#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'stderr : '</span> + stderr);</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'stdout : '</span> + stdout);</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'error : '</span> + error);</div><div class="line">        res.render(<span class="string">'etls/log'</span>, &#123;<span class="attr">stdout</span> : stdout, <span class="attr">log</span> : req.query.location&#125;);</div><div class="line">      &#125;); </div><div class="line">    &#125;);</div></pre></td></tr></table></figure>
-<p>后面控制台的输出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">stderr : </div><div class="line">stdout : # job for mymeta@my_table</div><div class="line"># author : will</div><div class="line"># create time : 19700118070840</div><div class="line"># pre settings </div><div class="line">delete from default.tbl</div><div class="line">select * from batting</div><div class="line">error : null</div></pre></td></tr></table></figure></p>
-<p>模板文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">#&#123;stdout&#125;</div></pre></td></tr></table></figure></p>
-<p>前端输出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"># job for mymeta@my_table # author : will # create time : 19700118070840 # pre settings delete from default.tbl select * from batting</div></pre></td></tr></table></figure></p>
-<p>控制台的stdout变量是换行的，但是前端就不换行。试了一下res.send()，结果也是这样。</p>
-<p>模板修改为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">!&#123;stdout.replace(/\n/g, &apos;&lt;br/&gt;&apos;)&#125;</div></pre></td></tr></table></figure></p>
-<p>如果使用res.send()的话，就res.send(stdout.replace(/\n/g, ‘<br>‘))就行了。</p>
-<p>这个换行支持起来那么难么？比较low的感觉。</p>
-<h2 id="body-parser"><a href="#body-parser" class="headerlink" title="body-parser"></a>body-parser</h2><p>安装了body parser之后就可以方便的在req中使用 <code>req.body</code>来获取form内容，使用<code>req.query</code>来获取querystring里的内容了。</p>
-<p>但是一定要注意express的app.use是有前后次序的。<code>踩过坑</code></p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/nodejs/">nodejs</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
 
   <nav id="page-nav" class="clearfix">
-    <a class="extend prev" rel="prev" href="/page/19/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/18/">18</a><a class="page-number" href="/page/19/">19</a><span class="page-number current">20</span><a class="page-number" href="/page/21/">21</a><a class="page-number" href="/page/22/">22</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/21/">Next<span></span></a>
+    <a class="extend prev" rel="prev" href="/page/19/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/18/">18</a><a class="page-number" href="/page/19/">19</a><span class="page-number current">20</span><a class="page-number" href="/page/21/">21</a><a class="page-number" href="/page/22/">22</a><span class="space">&hellip;</span><a class="page-number" href="/page/25/">25</a><a class="extend next" rel="next" href="/page/21/">Next<span></span></a>
   </nav>
 
 </div>
@@ -1361,31 +1366,31 @@
 			
 		
 			
+				<li><a href="/tags/django/" title="django">django<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构/" title="架构">架构<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构，jaeger/" title="架构，jaeger">架构，jaeger<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Solr/" title="Solr">Solr<sup>1</sup></a></li>
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
 			
 		
 			
 				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/hue/" title="hue">hue<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
 			
 		
 		</ul>
@@ -1458,7 +1463,7 @@
 		
 
 		<p class="copyright">
-		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2018 
 		
 		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
 		

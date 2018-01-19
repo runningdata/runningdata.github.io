@@ -99,6 +99,199 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2017/09/07/marathon---constraints/" title="marathon---constraints" itemprop="url">marathon---constraints</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-09-07T06:17:50.000Z" itemprop="datePublished"> 发表于 2017-09-07</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>constraint控制app运行的位置，可以用来调优容错以及本地部署。constraint包含3个部分：fieldname， operator， 可选参数。field可以是agent node 的hostname或者agent node的其他属性。</p>
+<h2 id="Fields"><a href="#Fields" class="headerlink" title="Fields"></a>Fields</h2><h4 id="Hostname"><a href="#Hostname" class="headerlink" title="Hostname"></a>Hostname</h4><p>支持所有的marathon operator 。</p>
+<h4 id="Attribute"><a href="#Attribute" class="headerlink" title="Attribute"></a>Attribute</h4><p>如果filed name不是hostname，就会被看作一个mesos agent node 的attribute。一个mesos agent attribute可以用来给agent node打tag。可以看一下mesos-slave –help.</p>
+<p>如果制定的attribute还没有在agent node上定义，那么多数的operator都会拒绝在agent node上运行任务。目前是有UNLIKE operator会接受这个offer，其他的都会拒绝。</p>
+<p>attribute field支持marathon所有的operator。</p>
+<p>Marathon 支持text，scalar，range以及set类型的attribute的值。对于scalar、range、set类型的值，marathon会基于格式化的值执行一个字符串对比操作。对于range和set类型，格式分别是[begin-end,….]和{item,….}。例如: [100-200]和{a,b,c]</p>
+<p>LIKE和UNLIKE的operator支持正则表达式。</p>
+<h2 id="Operator"><a href="#Operator" class="headerlink" title="Operator"></a>Operator</h2><h4 id="UNIQUE-operator"><a href="#UNIQUE-operator" class="headerlink" title="UNIQUE operator"></a>UNIQUE operator</h4><p>UNIQUE是告诉marathon对于一个app的所有task保证attribute的唯一性。例如下面的contraint保证了每个host上只运行一个app任务。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">   &quot;id&quot;: &quot;sleep-unique&quot;,</div><div class="line">   &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">   &quot;instances&quot;: 3,</div><div class="line">   &quot;constraints&quot;: [[&quot;hostname&quot;, &quot;UNIQUE&quot;]]</div><div class="line"> &#125;&apos;</div></pre></td></tr></table></figure>
+<h4 id="CLUSTER-operator"><a href="#CLUSTER-operator" class="headerlink" title="CLUSTER operator"></a>CLUSTER operator</h4><p>CLUSTER可以让app 的task运行在共享指定attribute的agent node上。对于有硬件要求的任务比较适用，或者想要把任务集中运行在同一个机栈中。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">    &quot;id&quot;: &quot;sleep-cluster&quot;,</div><div class="line">    &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">    &quot;instances&quot;: 3,</div><div class="line">    &quot;constraints&quot;: [[&quot;rack_id&quot;, &quot;CLUSTER&quot;, &quot;rack-1&quot;]]</div><div class="line">  &#125;&apos;</div></pre></td></tr></table></figure></p>
+<p>也可以指定一个hostname，把app绑定在指定的一个机器上。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">    &quot;id&quot;: &quot;sleep-cluster&quot;,</div><div class="line">    &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">    &quot;instances&quot;: 3,</div><div class="line">    &quot;constraints&quot;: [[&quot;hostname&quot;, &quot;CLUSTER&quot;, &quot;a.specific.node.com&quot;]]</div><div class="line">  &#125;&apos;</div></pre></td></tr></table></figure></p>
+<h4 id="GROUP-BY-operator"><a href="#GROUP-BY-operator" class="headerlink" title="GROUP_BY operator"></a>GROUP_BY operator</h4><p>风来在不同的rack或者数据中心中均匀地分配任务，实现HA。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">    &quot;id&quot;: &quot;sleep-group-by&quot;,</div><div class="line">    &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">    &quot;instances&quot;: 3,</div><div class="line">    &quot;constraints&quot;: [[&quot;rack_id&quot;, &quot;GROUP_BY&quot;]]</div><div class="line">  &#125;&apos;</div></pre></td></tr></table></figure>
+<p>marathon会分析mesos进来的offer，获取不同的rack_id属性。如果任务没有覆盖到所有的值，那么在constraint中指定一个数。如果不指定，可能会出现任务只被部署到一个rack的情况。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">    &quot;id&quot;: &quot;sleep-group-by&quot;,</div><div class="line">    &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">    &quot;instances&quot;: 3,</div><div class="line">    &quot;constraints&quot;: [[&quot;rack_id&quot;, &quot;GROUP_BY&quot;, &quot;3&quot;]]</div><div class="line">  &#125;&apos;</div></pre></td></tr></table></figure></p>
+<h4 id="LIKE-operator"><a href="#LIKE-operator" class="headerlink" title="LIKE operator"></a>LIKE operator</h4><p>接收一个正则表达式作为参数，允许filed值满足这个正则的所有agent node运行当前任务。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">    &quot;id&quot;: &quot;sleep-group-by&quot;,</div><div class="line">    &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">    &quot;instances&quot;: 3,</div><div class="line">    &quot;constraints&quot;: [[&quot;rack_id&quot;, &quot;LIKE&quot;, &quot;rack-[1-3]&quot;]]</div><div class="line">  &#125;&apos;</div></pre></td></tr></table></figure></p>
+<p>注意，参数一定要有，不然会有警告。</p>
+<h4 id="UNLIKE-operator"><a href="#UNLIKE-operator" class="headerlink" title="UNLIKE operator"></a>UNLIKE operator</h4><p>和LIKE operator一样的道理。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">   &quot;id&quot;: &quot;sleep-group-by&quot;,</div><div class="line">   &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">   &quot;instances&quot;: 3,</div><div class="line">   &quot;constraints&quot;: [[&quot;rack_id&quot;, &quot;UNLIKE&quot;, &quot;rack-[7-9]&quot;]]</div><div class="line"> &#125;&apos;</div></pre></td></tr></table></figure>
+<h4 id="MAX-PER-operator"><a href="#MAX-PER-operator" class="headerlink" title="MAX_PER operator"></a>MAX_PER operator</h4><p>接受一个数字参数，制定每个group的最大大小。可以用来限制跨rack或者数据中心的任务数量。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">curl -X POST -H &quot;Content-type: application/json&quot; localhost:8080/v2/apps -d &apos;&#123;</div><div class="line">   &quot;id&quot;: &quot;sleep-group-by&quot;,</div><div class="line">   &quot;cmd&quot;: &quot;sleep 60&quot;,</div><div class="line">   &quot;instances&quot;: 3,</div><div class="line">   &quot;constraints&quot;: [[&quot;rack_id&quot;, &quot;MAX_PER&quot;, &quot;2&quot;]]</div><div class="line"> &#125;&apos;</div></pre></td></tr></table></figure>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/09/05/compose版本/" title="compose版本" itemprop="url">compose版本</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-09-05T06:25:40.000Z" itemprop="datePublished"> 发表于 2017-09-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>compose文件是一个yaml文件，定义了docker app的service, network, volume等</p>
+<p>有三个版本</p>
+<ul>
+<li>version1， 在YAML文件中别指定version就是了。</li>
+<li>version2.x。在YAML里指定version: ‘2’,或者version: ‘2.1’</li>
+<li>version3.x。最新版本，也是最推荐使用的版本，可以兼容swarm模式。通过在YAML中指定version: ‘3’或者version: ‘3.1’声明。</li>
+</ul>
+<p>如果使用了多个compose文件模式，或者用了extending service，那么每个文件的version声明应该是一样的。</p>
+<h2 id="Version1"><a href="#Version1" class="headerlink" title="Version1"></a>Version1</h2><p>不额外指定version的compose文件被看作”version1”。所有的service都被定义在yaml文件的root上。</p>
+<p>version1是compose 1.6.x开始支持的，未来会被放弃。</p>
+<p>version1文件不能声明volume, network或者build arguments。</p>
+<p>compose不能使用网络：每个container都是连接在default bridge网络上的，相互之间用IP沟通。可以使用links来启用container之间的相互发现。</p>
+<p>例子：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">web:</div><div class="line">  build: .</div><div class="line">  ports:</div><div class="line">   - &quot;5000:5000&quot;</div><div class="line">  volumes:</div><div class="line">   - .:/code</div><div class="line">  links:</div><div class="line">   - redis</div><div class="line">redis:</div><div class="line">  image: redis</div></pre></td></tr></table></figure></p>
+<h2 id="version-2"><a href="#version-2" class="headerlink" title="version 2"></a>version 2</h2><p>compose文件中，必须在root指定相应version，而且所有的service都要定义在services下。</p>
+<p>version 2要求compose 1.6.0+， docker engine版本1.10。0+。</p>
+<p>可以通过volumes指定volume，也可以通过networks指定容器的网络。</p>
+<p>默认情况下，每个container都加入一个app级别的默认网络，而且可以通过自身的hostname被发现。也就是说links就没啥必要了，详情<a href="https://docs.docker.com/compose/compose-file/compose-file-v2/#networking/" target="_blank" rel="external">参考</a>。</p>
+<p>简单例子：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">version: &apos;2&apos;</div><div class="line">services:</div><div class="line">  web:</div><div class="line">    build: .</div><div class="line">    ports:</div><div class="line">     - &quot;5000:5000&quot;</div><div class="line">    volumes:</div><div class="line">     - .:/code</div><div class="line">  redis:</div><div class="line">    image: redis</div></pre></td></tr></table></figure></p>
+<p>稍微复杂点儿的例子, 定义了volumes和network<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">version: &apos;2&apos;</div><div class="line">services:</div><div class="line">  web:</div><div class="line">    build: .</div><div class="line">    ports:</div><div class="line">     - &quot;5000:5000&quot;</div><div class="line">    volumes:</div><div class="line">     - .:/code</div><div class="line">    networks:</div><div class="line">      - front-tier</div><div class="line">      - back-tier</div><div class="line">  redis:</div><div class="line">    image: redis</div><div class="line">    volumes:</div><div class="line">      - redis-data:/var/lib/redis</div><div class="line">    networks:</div><div class="line">      - back-tier</div><div class="line">volumes:</div><div class="line">  redis-data:</div><div class="line">    driver: local</div><div class="line">networks:</div><div class="line">  front-tier:</div><div class="line">    driver: bridge</div><div class="line">  back-tier:</div><div class="line">    driver: bridge</div></pre></td></tr></table></figure></p>
+<p>还有一些其他的选项来支持网络：</p>
+<ul>
+<li>aliases</li>
+<li><p>depends_on用来指定service之间的依赖关系</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">version: &apos;2&apos;</div><div class="line">services:</div><div class="line">  web:</div><div class="line">    build: .</div><div class="line">    depends_on:</div><div class="line">      - db</div><div class="line">      - redis</div><div class="line">  redis:</div><div class="line">    image: redis</div><div class="line">  db:</div><div class="line">    image: postgres</div></pre></td></tr></table></figure>
+</li>
+<li><p>ipv4_address, ipv6_address</p>
+</li>
+</ul>
+<h2 id="Version2-1"><a href="#Version2-1" class="headerlink" title="Version2.1"></a>Version2.1</h2><p>是version2的升级版，需要docker engine是1.12.0+， compose版本是1.9.0+。</p>
+<p>添加了以下参数</p>
+<ul>
+<li>link_local_ips</li>
+<li>isolation</li>
+<li>volume和network的labels</li>
+<li>volumes的name</li>
+<li>userns_mode</li>
+<li>healthcheck</li>
+<li>sysctls</li>
+<li>pids_limit</li>
+</ul>
+<h2 id="Version2-2"><a href="#Version2-2" class="headerlink" title="Version2.2"></a>Version2.2</h2><p>version2.1的升级，，需要docker engine是1.14.0+， compose版本是1.13.0+。允许指定默认的scale数。<br>添加了下面参数：</p>
+<ul>
+<li>init</li>
+<li>scale</li>
+</ul>
+<h2 id="version2-3"><a href="#version2-3" class="headerlink" title="version2.3"></a>version2.3</h2><p>version2.2的升级，，需要docker engine是17.06.0+， compose版本是1.16.0+。</p>
+<p>添加了下面参数:</p>
+<ul>
+<li>target for build configurations</li>
+<li>start_period for healthchecks</li>
+</ul>
+<h2 id="version3"><a href="#version3" class="headerlink" title="version3"></a>version3</h2><p>主要是解决compose和docker swarm mode的兼容性问题。</p>
+<ul>
+<li>移除选项：volume_driver, volumes_from, cpu_shares, cpu_quota, cpuset, mem_limit, memswap_limit, extends, group_add</li>
+<li>添加选项：deploy</li>
+</ul>
+<h2 id="version3-3"><a href="#version3-3" class="headerlink" title="version3.3"></a>version3.3</h2><p>version3的升级版。添加以下参数：</p>
+<ul>
+<li>build的labels</li>
+<li>credential_spec</li>
+<li>configs</li>
+<li>deploy endpoint_mode</li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2017/09/04/label的生命周期/" title="label的生命周期" itemprop="url">label的生命周期</a>
   </h1>
   <p class="article-author">By
@@ -726,158 +919,9 @@
 
 
 
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/08/22/apache-atlas数据治理/" title="apache-atlas数据治理" itemprop="url">apache-atlas数据治理</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-08-22T06:46:36.000Z" itemprop="datePublished"> 发表于 2017-08-22</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>Atlas是一个可扩展的一系列的核心基础管理服务。</p>
-<p>特性</p>
-<ul>
-<li>数据分类<ul>
-<li>为数据定义面向业务的分类标签</li>
-<li>定义、annotate、自动获取数据集之间的关系【source、target、中间处理的process】</li>
-<li>导出元数据到第三方系统</li>
-</ul>
-</li>
-<li>中心化监听<ul>
-<li>捕获每个app、process等数据交互的安全信息</li>
-<li>捕获每个步骤【execution、step、activities】的操作信息</li>
-</ul>
-</li>
-<li>搜索和lineage<ul>
-<li>预定义导航路径来检索数据分类和监听信息</li>
-<li>基于文本的索引，定位对应数据和监听的事件</li>
-<li>对数据集的血统可视化，可以看到操作、安全等信息</li>
-</ul>
-</li>
-<li>安全和策略引擎<ul>
-<li>基于数据分类、属性、角色的运行时Rationalize compliance policy</li>
-<li>Advanced definition of policies for preventing data derivation based on classification (i.e. re-identification) – Prohibitions</li>
-<li>Column and Row level masking based on cell values and attibutes.</li>
-</ul>
-</li>
-</ul>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/08/18/prometheus自定义exporter/" title="prometheus自定义exporter" itemprop="url">prometheus自定义exporter</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-08-18T07:30:10.000Z" itemprop="datePublished"> 发表于 2017-08-18</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h2 id="可维护性和简洁度"><a href="#可维护性和简洁度" class="headerlink" title="可维护性和简洁度"></a>可维护性和简洁度</h2><p>最核心的地方是考虑一下获取metrics的成本与途径。</p>
-<p>如果已经有了一个不错的、不怎么修改的metrics，那么就很容易搞定。例如haproxy exporter</p>
-<p>如果有上百个metrcis，而且随着版本变化metric也一直在变，那就会有得受了。例如mysql exporter </p>
-<p>node exporter介于两者之间，是个别的module总在变化。</p>
-<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>exporter不应该关心app在哪里的配置，也能够使用filter过滤一些太稀碎的metric。</p>
-<p>与监控系统协作的时候，framework和protocol相关的东西会很复杂。</p>
-<p>最好是既有系统的数据结构能有prometheus一致，或者近似。这样就可以自动转化metric的形式，例如Cloudwatch, SNMP and Collectd。</p>
-<p>其实更多情况是不那么标准的。例如jmx exporter， 用户必须说明怎样进行metric转化才行。</p>
-<p>YAML是标准的prometheus配置文件格式。</p>
-<h2 id="metrics"><a href="#metrics" class="headerlink" title="metrics"></a>metrics</h2><h4 id="命名"><a href="#命名" class="headerlink" title="命名"></a>命名</h4><h4 id="label"><a href="#label" class="headerlink" title="label"></a>label</h4><p>避免使用type作为label名称，太通用，而且无意义。应该是用避免使用一些类似region, zone, cluster,az,datacenter,dc,woner,customer,stage,environment, env等字眼。</p>
-<h4 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> prometheus_client <span class="keyword">import</span> start_http_server, Metric, REGISTRY</div><div class="line"><span class="keyword">import</span> json</div><div class="line"><span class="keyword">import</span> requests</div><div class="line"><span class="keyword">import</span> sys</div><div class="line"><span class="keyword">import</span> time</div><div class="line"></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">JsonCollector</span><span class="params">()</span>:</span></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">init</span><span class="params">(self, endpoint, appname, srvtype, separator=<span class="string">'__'</span>)</span>:</span></div><div class="line">        self._endpoint = endpoint</div><div class="line">        self._appname = appname</div><div class="line">        self._separator = separator</div><div class="line">        self._srvtype = srvtype</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, target)</span>:</span></div><div class="line">        self.init(target.url, target.appname, target.srvtype)</div><div class="line"></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">handle_type</span><span class="params">(self, prefix, d, metric</span></span></div><div class="line">        <span class="string">'''</span></div><div class="line">        本来是应该使用具体的metric类型的，调用其add_metric接口。</div><div class="line">        但是由于这是一个JSON到prometheus的通用方法，所以没有那样处理。</div><div class="line">        '''</div><div class="line">        prefix = prefix.upper<span class="params">()</span></div><div class="line">        if isinstance<span class="params">(d, dict)</span>:</div><div class="line">            self.extract_dict<span class="params">(prefix, d, metric)</span></div><div class="line">        elif isinstance<span class="params">(d, list)</span>:</div><div class="line">            self.extract_list<span class="params">(prefix, d, metric)</span></div><div class="line">        else:</div><div class="line">            if not isinstance<span class="params">(d, <span class="params">(str, unicode)</span>)</span>:</div><div class="line">                metric.add_sample<span class="params">(<span class="string">'json_val'</span>,</span></div><div class="line">                                  value=d, labels=&#123;<span class="string">'app_name'</span>: self._appname, <span class="string">'rowkey'</span>: prefix&#125;)</div><div class="line">            else:</div><div class="line">                try:</div><div class="line">                    val = float<span class="params">(d)</span></div><div class="line">                    metric.add_sample<span class="params">(<span class="string">'json_val'</span>,</span></div><div class="line">                                  value=val, labels=&#123;<span class="string">'app_name'</span>: self._appname, <span class="string">'rowkey'</span>: prefix&#125;)</div><div class="line">                except ValueError:</div><div class="line">                    print<span class="params">(<span class="string">'Error convert %s to float for %s'</span> % <span class="params">(d, prefix)</span>)</span></div><div class="line">    </div><div class="line">    </div><div class="line">    def extract_dict<span class="params">(self, prefix, dd, metric)</span>:</div><div class="line">        for k, v in dd.items<span class="params">()</span>:</div><div class="line">            if len<span class="params">(prefix)</span> == <span class="number">0</span>:</div><div class="line">                self.handle_type<span class="params">(k, v, metric)</span></div><div class="line">            else:</div><div class="line">                self.handle_type<span class="params">(prefix + self._separator + k, v, metric)</span></div><div class="line">    </div><div class="line">    </div><div class="line">    def extract_list<span class="params">(self, prefix, dd, metric)</span>:</div><div class="line">        for i in dd:</div><div class="line">            if len<span class="params">(prefix)</span> == <span class="number">0</span>:</div><div class="line">                self.handle_type<span class="params">(dd.index<span class="params">(i)</span>, i, metric)</span></div><div class="line">            else:</div><div class="line">                self.handle_type<span class="params">(prefix + self._separator + dd.index<span class="params">(i)</span>, i, metric)</span></div><div class="line"></div><div class="line">    def collect<span class="params">(self)</span>:</div><div class="line">        <span class="string">'''</span></div><div class="line">        此处需要注意，接口返回的是这里的结果，不要把metric弄成成员变量。</div><div class="line">        应该每次都new一个返回去，不然add_sample会把所有的变量都累加进去</div><div class="line">        '''</div><div class="line">        try:</div><div class="line">            response = json.loads<span class="params">(requests.get<span class="params">(self._endpoint)</span>.content.decode<span class="params">(<span class="string">'UTF-8'</span>)</span>)</span></div><div class="line">            metric = Metric<span class="params">(self._srvtype, <span class="string">'spark program id'</span>, <span class="string">'summary'</span>)</span></div><div class="line">            self.handle_type<span class="params">(<span class="string">''</span>, response, metric)</span></div><div class="line">            yield metric</div><div class="line">        except Exception, e:</div><div class="line">            print e.message</div><div class="line"></div><div class="line"></div><div class="line">class Target<span class="params">()</span>:</div><div class="line">    def __init__<span class="params">(self, srvtype, appname, url)</span>:</div><div class="line">        self.srvtype = srvtype</div><div class="line">        self.appname = appname</div><div class="line">        self.url = url</div><div class="line"></div><div class="line">if __name__ == <span class="string">'__main__'</span>:</div><div class="line">    # Usage: json_exporter.py port</div><div class="line">    </div><div class="line">    print<span class="params">(sys.argv)</span></div><div class="line">    start_http_server<span class="params">(int<span class="params">(sys.argv[<span class="number">1</span>])</span>)</span></div><div class="line">    targets = list<span class="params">()</span></div><div class="line">    targets.append<span class="params">(Target<span class="params">(<span class="string">'flume'</span>, <span class="string">'haijun_flume_test1'</span>, <span class="string">'http://10.2.19.94:34545/metrics'</span>)</span>)</span></div><div class="line">    targets.append<span class="params">(Target<span class="params">(<span class="string">'spark_streaming'</span>, <span class="string">'h5_streaming_test1'</span>, <span class="string">'http://datanode02.will.com:8088/proxy/application_1501827559666_32228/metrics/json'</span>)</span>)</span></div><div class="line">    for target in targets:</div><div class="line">        REGISTRY.register<span class="params">(JsonCollector<span class="params">(target)</span>)</span></div><div class="line">    #REGISTRY.register<span class="params">(JsonCollector<span class="params">()</span>)</span></div><div class="line"></div><div class="line">    while True: time.sleep<span class="params">(<span class="number">10</span>)</span></div></pre></td></tr></table></figure>
-<p>下面是爬取yarn中指定名称规范的运行中的app的简单示例代码。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> requests</div><div class="line"><span class="keyword">import</span> json</div><div class="line"><span class="keyword">import</span> re</div><div class="line"></div><div class="line"></div><div class="line">url = <span class="string">'http://datanode02.will.com:8088/ws/v1/cluster/apps?states=RUNNING'</span></div><div class="line">html_doc = requests.get(url).content</div><div class="line">result = json.loads(html_doc)</div><div class="line"><span class="keyword">for</span> app <span class="keyword">in</span> result[<span class="string">'apps'</span>][<span class="string">'app'</span>]:</div><div class="line">    <span class="keyword">if</span> re.match(<span class="string">'.*_online'</span>, app[<span class="string">'name'</span>]): </div><div class="line">        print(app[<span class="string">'name'</span>], app[<span class="string">'trackingUrl'</span>] + <span class="string">'metrics/json'</span>)</div></pre></td></tr></table></figure></p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
 
   <nav id="page-nav" class="clearfix">
-    <a class="extend prev" rel="prev" href="/page/7/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><span class="page-number current">8</span><a class="page-number" href="/page/9/">9</a><a class="page-number" href="/page/10/">10</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/9/">Next<span></span></a>
+    <a class="extend prev" rel="prev" href="/page/7/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><span class="page-number current">8</span><a class="page-number" href="/page/9/">9</a><a class="page-number" href="/page/10/">10</a><span class="space">&hellip;</span><a class="page-number" href="/page/25/">25</a><a class="extend next" rel="next" href="/page/9/">Next<span></span></a>
   </nav>
 
 </div>
@@ -950,31 +994,31 @@
 			
 		
 			
+				<li><a href="/tags/django/" title="django">django<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构/" title="架构">架构<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构，jaeger/" title="架构，jaeger">架构，jaeger<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Solr/" title="Solr">Solr<sup>1</sup></a></li>
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
 			
 		
 			
 				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/hue/" title="hue">hue<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
 			
 		
 		</ul>
@@ -1047,7 +1091,7 @@
 		
 
 		<p class="copyright">
-		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2018 
 		
 		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
 		

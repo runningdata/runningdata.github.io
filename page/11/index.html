@@ -99,6 +99,154 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2017/05/25/linux中的hang进程/" title="linux中的hang进程" itemprop="url">linux中的hang进程</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-05-25T03:10:38.000Z" itemprop="datePublished"> 发表于 2017-05-25</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>5月24号晚上发现62上有两个hang的进程，占满了内存与cpu</p>
+<p>第一个是M2H任务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">root     10082     1 97 May21 ?        3-20:08:33 /server/java/jdk1.8.0_60/bin/java -Xmx4096m -Dhdp.version=2.4.2.0-258 -Djava.net.preferIPv4Stack=true -Dhdp.version=2.4.2.0-258 -Dhadoop.log.dir=/var/log/hadoop/root -Dhadoop.log.file=hadoop.log -Dhadoop.home.dir=/usr/hdp/2.4.2.0-258/hadoop -Dhadoop.id.str=root -Dhadoop.root.logger=INFO,console -Djava.library.path=:/usr/hdp/2.4.2.0-258/hadoop/lib/native/Linux-amd64-64:/usr/hdp/2.4.2.0-258/hadoop/lib/native -Dhadoop.policy.file=hadoop-policy.xml -Djava.net.preferIPv4Stack=true -Xmx4096m -Dhadoop.security.logger=INFO,NullAppender org.apache.sqoop.Sqoop import -Dmapreduce.job.queuename=xstorm --connect jdbc:mysql://10.0.100.73:3306/xiaodai?useCursorFetch=true&amp;dontTrackOpenResources=true&amp;defaultFetchSize=2000 --driver com.mysql.jdbc.Driver --username weixddata_read --password G7iu1BMo9LWs2e --hive-database ods_tinyv --columns ID,USER_ID,WB_USERNAME,MOBILE,BIZ_ID,MSG_TYPE,SMS_TYPE,DATA_SOURCE,SMS_ID,TASK_ID,SEND_STATUS,RES_CODE,REPORT_STATUS,SEND_TIME,REPORT_TIME,SEND_EXCEPTION --where DATE_FORMAT(SEND_TIME, &apos;%Y-%m-%d&apos;)=&apos;2017-05-20&apos; --table SMS_INFO --hive-import --hive-overwrite --target-dir ods_tinyv_SMS_INFO --outdir /server/app/sqoop/vo --bindir /server/app/sqoop/vo --verbose -m 1 --delete-target-dir --hive-import --hive-table o_wb_xiaodai_sms_info_i --hive-partition-key dt --hive-partition-value 2017-05-20 --null-string \\N --null-non-string \\N</div></pre></td></tr></table></figure></p>
+<p>还有一个HIVE任务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">root      3483     1 96 May23 ?        1-11:12:07 /server/java/jdk1.8.0_60/bin/java -Xmx4096m -Dhdp.version=2.4.2.0-258 -Djava.net.preferIPv4Stack=true -Dhdp.version=2.4.2.0-258 -Djava.net.preferIPv4Stack=true -XX:NewRatio=12 -XX:MaxHeapFreeRatio=40 -XX:MinHeapFreeRatio=15 -XX:+UseNUMA -XX:+UseParallelGC -XX:-UseGCOverheadLimit -Dhdp.version=2.4.2.0-258 -Dhadoop.log.dir=/var/log/hadoop/root -Dhadoop.log.file=hadoop.log -Dhadoop.home.dir=/usr/hdp/2.4.2.0-258/hadoop -Dhadoop.id.str=root -Dhadoop.root.logger=INFO,console -Djava.library.path=:/usr/hdp/2.4.2.0-258/hadoop/lib/native/Linux-amd64-64:/usr/hdp/2.4.2.0-258/hadoop/lib/native -Dhadoop.policy.file=hadoop-policy.xml -Djava.net.preferIPv4Stack=true -Xmx4096m -Xmx1024m -Dhadoop.security.logger=INFO,NullAppender -Dhdp.version=2.4.2.0-258 -Dhadoop.log.dir=/var/log/hadoop/root -Dhadoop.log.file=hadoop.log -Dhadoop.home.dir=/usr/hdp/2.4.2.0-258/hadoop -Dhadoop.id.str=root -Dhadoop.root.logger=INFO,console -Djava.library.path=:/usr/hdp/2.4.2.0-258/hadoop/lib/native/Linux-amd64-64:/usr/hdp/2.4.2.0-258/hadoop/lib/native:/usr/hdp/2.4.2.0-258/hadoop/lib/native/Linux-amd64-64:/usr/hdp/2.4.2.0-258/hadoop/lib/native -Dhadoop.policy.file=hadoop-policy.xml -Djava.net.preferIPv4Stack=true -Xmx4096m -Xmx4096m -Xmx1024m -Dhadoop.security.logger=INFO,NullAppender org.apache.hadoop.util.RunJar /usr/hdp/2.4.2.0-258/hive/lib/hive-exec-1.2.1000.2.4.2.0-258.jar org.apache.hadoop.hive.ql.exec.mr.ExecDriver -localtask -plan file:/tmp/root/228f95e6-26ee-4466-bd3d-a91195c86bf4/hive_2017-05-23_10-38-11_000_7465740175512782543-1/-local-10004/plan.xml -jobconffile file:/tmp/root/228f95e6-26ee-4466-bd3d-a91195c86bf4/hive_2017-05-23_10-38-11_000_7465740175512782543-1/-local-10005/jobconf.xml</div></pre></td></tr></table></figure></p>
+<p>手贱，先kill掉了，不然还能看到上面的plan文件，和job配置文件什么的。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/05/18/runningdata改版记录/" title="runningdata改版记录" itemprop="url">runningdata改版记录</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-05-18T02:54:54.000Z" itemprop="datePublished"> 发表于 2017-05-18</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>抽象ETLObjRelated，其他对象继承之</p>
+<ul>
+<li>ETL的字段名tbl_name需要在数据库里修改为name<ul>
+<li>tasks里的exec_etl_sche任务会调用etl.name【老表的tbl_name会报错找不到】</li>
+</ul>
+</li>
+<li>执行metamap 0045的migrations，这个只是添加字段，不会造成额外影响</li>
+<li></li>
+</ul>
+<p>sdf </p>
+<ol>
+<li><p>确保新的save方法都已经注释掉</p>
+</li>
+<li><p>./manage.py migrate metamap 0050 –settings=metamap.config</p>
+</li>
+<li><p>开始清洗</p>
+</li>
+</ol>
+<ul>
+<li>clean_etl</li>
+<li>clean_rel</li>
+<li>clean_m2h</li>
+<li>before_clean_blood</li>
+<li>clean_blood</li>
+<li>clean_h2m</li>
+<li>clean_jar</li>
+<li>clean_email</li>
+<li>clean_task[分别执行clean， type=4, type=1等等]</li>
+<li>clean_period</li>
+</ul>
+<h2 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h2><ol>
+<li>H2M中的个别现象，多个周期的数据存放在同一个表中：<br>SELECT * from metamap_sqoophive2mysql where id in (71,72,73,74,75,76)<br>需要额外手动维护execblood</li>
+<li>放开那些注释</li>
+</ol>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2017/05/10/django用户组的思考/" title="django用户组的思考" itemprop="url">django用户组的思考</a>
   </h1>
   <p class="article-author">By
@@ -872,195 +1020,9 @@
 
 
 
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/20/ambari中启用hive-ACID事务/" title="ambari中启用hive-ACID事务" itemprop="url">ambari中启用hive-ACID事务</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-20T12:21:45.000Z" itemprop="datePublished"> 发表于 2017-04-20</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>场景</p>
-<ul>
-<li>数据重新执行</li>
-<li>数据流重新执行</li>
-<li>逐渐改变的维度</li>
-<li>维度历史变更</li>
-</ul>
-<p>标准sql通过insert、update、delete、事务还有最近出现的merge方式来提供acid操作。这些已经被证明足够使用的了。</p>
-<h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><ul>
-<li>事务表。hive支持单表事务，但是目标表必须需要声明是支持事务的。</li>
-<li>分区表。hive支持表分区，把数据分开以提供快速查询。分区与ACID是相互独立的概念。通常大表都是有分区的。</li>
-<li>ACID操作（insert/update/delete）。</li>
-<li>主键</li>
-<li>流式数据。数据可以通过storm、flume等流式进入hive的事务表中</li>
-<li>优化并发。</li>
-<li>压缩。数据必须时段性的被压缩一下，节省空间，优化数据访问。最好让系统自动处理这件事情。，不过也可以设置外部的调度器。</li>
-</ul>
-<h4 id="启用ACID事务"><a href="#启用ACID事务" class="headerlink" title="启用ACID事务"></a>启用ACID事务</h4><h4 id="hello"><a href="#hello" class="headerlink" title="hello"></a>hello</h4><p>创建一个事务表，并插入一些数据<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">drop</span> <span class="keyword">table</span> <span class="keyword">if</span> <span class="keyword">exists</span> hello_acid;</div><div class="line"><span class="keyword">create</span> <span class="keyword">table</span> hello_acid (<span class="keyword">key</span> <span class="built_in">int</span>, <span class="keyword">value</span> <span class="built_in">int</span>)</div><div class="line">partitioned <span class="keyword">by</span> (load_date <span class="built_in">date</span>)</div><div class="line">clustered <span class="keyword">by</span>(<span class="keyword">key</span>) <span class="keyword">into</span> <span class="number">3</span> buckets</div><div class="line"><span class="keyword">stored</span> <span class="keyword">as</span> orc tblproperties (<span class="string">'transactional'</span>=<span class="string">'true'</span>);</div></pre></td></tr></table></figure></p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> hello_acid <span class="keyword">partition</span> (load_date=<span class="string">'2016-03-01'</span>) <span class="keyword">values</span> (<span class="number">1</span>, <span class="number">1</span>);</div><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> hello_acid <span class="keyword">partition</span> (load_date=<span class="string">'2016-03-02'</span>) <span class="keyword">values</span> (<span class="number">2</span>, <span class="number">2</span>);</div><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> hello_acid <span class="keyword">partition</span> (load_date=<span class="string">'2016-03-03'</span>) <span class="keyword">values</span> (<span class="number">3</span>, <span class="number">3</span>);</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> hello_acid;</div></pre></td></tr></table></figure>
-<p>删除数据：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">delete</span> <span class="keyword">from</span> hello_acid <span class="keyword">where</span> <span class="keyword">key</span> = <span class="number">2</span>;</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> hello_acid;</div></pre></td></tr></table></figure></p>
-<p>更新数据：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">update</span> hello_acid <span class="keyword">set</span> <span class="keyword">value</span> = <span class="number">10</span> <span class="keyword">where</span> <span class="keyword">key</span> = <span class="number">3</span>;</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> hello_acid;</div></pre></td></tr></table></figure></p>
-<p>这些DML语句意在在大数据中执行少量修改，应该是记录级别的数据管理。如果你有小的多个批量修改，应该使用streaming data ingestion。</p>
-<h4 id="Streaming-Data-Ingestion"><a href="#Streaming-Data-Ingestion" class="headerlink" title="Streaming Data Ingestion"></a>Streaming Data Ingestion</h4><p>许多时候我们需要处理连续的实时数据流，想要更方便的操作这些数据。hive可以自动把流式数据加入hive表中，也支持实时的数据抽取与查询。</p>
-<p>现在hive提供两种：</p>
-<ul>
-<li>已经存在是<a href="https://github.com/apache/storm/tree/master/external/storm-hive" target="_blank" rel="external">storm hive bolt</a>方案，<a href="https://flume.apache.org/FlumeUserGuide.html#hive-sink" target="_blank" rel="external">flume hive sink</a>方案。这些工具对数据有较少的操作，重在转移数据</li>
-<li>直接使用低级的<a href="https://cwiki.apache.org/confluence/display/Hive/Streaming+Data+Ingest" target="_blank" rel="external">Streaming Ingest API</a>.</li>
-</ul>
-<p>在使用streaming api之前，需要先创建好分区事务表。从查询角度来看，一切应该都是确定好的。</p>
-<h4 id="4-实践"><a href="#4-实践" class="headerlink" title="4. 实践"></a>4. 实践</h4><p>插入几条数据对我们测试起来很简单，但是实际环境中，我们需要一次性处理几千或者几百万的数据。下面我们通过几个通用场景讨论一下怎样处理数据批次。</p>
-<p>这些模型需要你建立一个主键。hive并不强制主键唯一，所以你必须在你app中控制一下。虽然hive2.1介绍了non-validating 外键，但是这东西目前还并没有被完整全面的验证过。</p>
-<h5 id="4-1-searched-updates"><a href="#4-1-searched-updates" class="headerlink" title="4.1 searched updates"></a>4.1 searched updates</h5><p>hive  ACID支持searched updates，这是一种常见的更新方式。注意，基于hive ACID的架构，更新必须通过批处理的方式执行。一次更新一行这种事情在实际使用中是行不通的。如果想通过某种方式一次性更新大量数据，那么searched updates就可以帮你了。</p>
-<p>假设有一个维度表，包含的一个flag，指示当前记录是不是最新的值。这样我们就可以沿时间追踪维度变更情况。当维度表发生更新的时候，我们就把已经存在记录的设置成old。<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">drop</span> <span class="keyword">table</span> <span class="keyword">if</span> <span class="keyword">exists</span> mydim;</div><div class="line"><span class="keyword">create</span> <span class="keyword">table</span> mydim (<span class="keyword">key</span> <span class="built_in">int</span>, <span class="keyword">name</span> <span class="keyword">string</span>, zip <span class="keyword">string</span>, is_current <span class="built_in">boolean</span>)</div><div class="line">clustered <span class="keyword">by</span>(<span class="keyword">key</span>) <span class="keyword">into</span> <span class="number">3</span> buckets</div><div class="line"><span class="keyword">stored</span> <span class="keyword">as</span> orc tblproperties (<span class="string">'transactional'</span>=<span class="string">'true'</span>);</div></pre></td></tr></table></figure></p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> mydim <span class="keyword">values</span></div><div class="line">  (<span class="number">1</span>, <span class="string">'bob'</span>,   <span class="string">'95136'</span>, <span class="literal">true</span>),</div><div class="line">  (<span class="number">2</span>, <span class="string">'joe'</span>,   <span class="string">'70068'</span>, <span class="literal">true</span>),</div><div class="line">  (<span class="number">3</span>, <span class="string">'steve'</span>, <span class="string">'22150'</span>, <span class="literal">true</span>);</div></pre></td></tr></table></figure>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">drop</span> <span class="keyword">table</span> <span class="keyword">if</span> <span class="keyword">exists</span> updates_staging_table;</div><div class="line"><span class="keyword">create</span> <span class="keyword">table</span> updates_staging_table (<span class="keyword">key</span> <span class="built_in">int</span>, newzip <span class="keyword">string</span>);</div><div class="line"><span class="keyword">insert</span> <span class="keyword">into</span> updates_staging_table <span class="keyword">values</span> (<span class="number">1</span>, <span class="number">87102</span>), (<span class="number">3</span>, <span class="number">45220</span>);</div></pre></td></tr></table></figure>
-<p>执行更新,执行前后可以看一下维度表的数据变化，其实就是更新了flag而已。<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">update</span> mydim <span class="keyword">set</span> is_current=<span class="literal">false</span></div><div class="line">  <span class="keyword">where</span> mydim.key <span class="keyword">in</span> (<span class="keyword">select</span> <span class="keyword">key</span> <span class="keyword">from</span> updates_staging_table);</div></pre></td></tr></table></figure></p>
-<h5 id="4-2-searched-deletes"><a href="#4-2-searched-deletes" class="headerlink" title="4.2 searched deletes"></a>4.2 searched deletes</h5><p>批量删除也可以使用staging table轻松搞定。但是需要你在表之间放置一个公共key，有些类似RDBMS中的主键。<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">delete</span> <span class="keyword">from</span> mydim</div><div class="line"><span class="keyword">where</span> mydim.key <span class="keyword">in</span> (<span class="keyword">select</span> <span class="keyword">key</span> <span class="keyword">from</span> updates_staging_table);</div><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> mydim;</div></pre></td></tr></table></figure></p>
-<h4 id="5-批量覆盖更新"><a href="#5-批量覆盖更新" class="headerlink" title="5. 批量覆盖更新"></a>5. 批量覆盖更新</h4><p>有的时候我们需要批量更新一些数据。例如第一种SCD更新或者数据重导。hive目前还不支持merge操作，在支持之前，我们只能考虑使用先删除后插入的方式，但这样可能会造成查询客户端脏读。或者也可以在重新清洗的时候临时停掉查询。</p>
-<h4 id="6-ACID工具"><a href="#6-ACID工具" class="headerlink" title="6. ACID工具"></a>6. ACID工具</h4><p>ACID事务执行过程中会创建一系列的锁。事务和他们的事务锁可以通过hive的一些工具来查看。</p>
-<h5 id="6-1-查看事务"><a href="#6-1-查看事务" class="headerlink" title="6.1 查看事务"></a>6.1 查看事务</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">show transactions</div></pre></td></tr></table></figure>
-<h5 id="6-1-查看锁"><a href="#6-1-查看锁" class="headerlink" title="6.1 查看锁"></a>6.1 查看锁</h5><p>有read, update，X lock。update锁与update操作互斥，但是与read兼容。X锁，与所有锁都互斥，属于独占。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">show locks</div></pre></td></tr></table></figure></p>
-<h5 id="6-1-终止事务"><a href="#6-1-终止事务" class="headerlink" title="6.1 终止事务"></a>6.1 终止事务</h5><p>注意这并不会马上kill掉所有相关查询。ACID查询是周期性执行的，默认是2.5分钟，如果他们检测到自己的事务被kill，就会执行自动退出。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">abort transactions T1 T2 T3</div></pre></td></tr></table></figure></p>
-<h4 id="7-性能考虑"><a href="#7-性能考虑" class="headerlink" title="7. 性能考虑"></a>7. 性能考虑</h4><ul>
-<li>创建分区</li>
-<li>insert快，update和delete都会比较慢一些，因为要扫描整个分区。</li>
-<li>如果你们的工作里需要大量更新数据，那么请周期行执行compaction操作。不然数据大小会越来越大，查询也会越来越慢。</li>
-</ul>
-<h4 id="8-深入探究"><a href="#8-深入探究" class="headerlink" title="8. 深入探究"></a>8. 深入探究</h4><p>在使用之前一定要深入了解这套系统的工作原理，并且在你的可以容忍丢失的数据上执行测试。过程中也注意备份数据。</p>
-<p>ACID表有一个隐藏字段<code>row__id</code>。这个系统内置的字段名称有可能会变。你应该构建一个基于这个字段的长远的方案。</p>
-<p>这个字段记录的内容有：</p>
-<ul>
-<li>数据被insert或者update的active的事务id</li>
-<li>数据所在bucket的bucketid</li>
-<li>此次事务或者bucket中的rowid</li>
-</ul>
-<p>看一下<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">hive&gt; select row__id from hello_acid;</div><div class="line">OK</div><div class="line">&#123;"transactionid":12,"bucketid":0,"rowid":0&#125;</div><div class="line">&#123;"transactionid":10,"bucketid":1,"rowid":0&#125;</div></pre></td></tr></table></figure></p>
-<p>常用场景就是确认所有的数据都load进来了。假设上游数据provider认为hive里的持久化数据丢失了，那么你的provider(storm Bolt比如)就会告诉你插入这些数据的事务ID。然后我们可以使用这个事务id计算一下实际的记录数。查询的时候使用X替换掉你的事务ID<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">set</span> hive.optimize.ppd=<span class="literal">false</span>;</div><div class="line"><span class="keyword">select</span> <span class="keyword">count</span>(*) <span class="keyword">from</span> hello_acid <span class="keyword">where</span> row__id.transactionid = X;</div></pre></td></tr></table></figure></p>
-<p>记牢，事务中插入的数据有可能会被后续的update或者delete语句影响到，所以如果count数并不符合，那就可能是这些因素造成的。</p>
-<p>参考：</p>
-<p><a href="https://hortonworks.com/hadoop-tutorial/using-hive-acid-transactions-insert-update-delete-data/" target="_blank" rel="external">https://hortonworks.com/hadoop-tutorial/using-hive-acid-transactions-insert-update-delete-data/</a></p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/20/HIVE创建bucketed表/" title="HIVE创建bucketed表" itemprop="url">HIVE创建bucketed表</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-20T10:54:03.000Z" itemprop="datePublished"> 发表于 2017-04-20</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>建表语句<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">CREATE TABLE user_info_bucketed(user_id BIGINT, firstname STRING, lastname STRING)</div><div class="line">COMMENT &apos;A bucketed copy of user_info&apos;</div><div class="line">PARTITIONED BY(ds STRING)</div><div class="line">CLUSTERED BY(user_id) INTO 256 BUCKETS;</div></pre></td></tr></table></figure></p>
-<p>基于字段user_id分桶的。</p>
-<p>使用<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">set</span> hive.enforce.bucketing = <span class="literal">true</span>;  <span class="comment">-- (<span class="doctag">Note:</span> Not needed in Hive 2.x onward)</span></div><div class="line">FROM user_id</div><div class="line"><span class="keyword">INSERT</span> OVERWRITE <span class="keyword">TABLE</span> user_info_bucketed</div><div class="line"><span class="keyword">PARTITION</span> (ds=<span class="string">'2009-02-25'</span>)</div><div class="line"><span class="keyword">SELECT</span> userid, firstname, lastname <span class="keyword">WHERE</span> ds=<span class="string">'2009-02-25'</span>;</div></pre></td></tr></table></figure></p>
-<p>hive怎样把row打散到不同的bucket中去的呢？一般是决定于hash函数，使用什么hash函数又取决于分桶字段的类型。比如整型字段就使用hash_int函数。</p>
-<p>注意，如果分桶字段类型不同于insert进来的数据类型会出错的，或者手动使用不同类型的数据执行分桶操作也会出错。只要设置了<code>set hive.enforce.bucketing=true</code>，就能够正确的把数据发布到对应的地方。</p>
-<p>再来一个例子<br>Bucketed Sorted Table<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> page_view(viewTime <span class="built_in">INT</span>, userid <span class="built_in">BIGINT</span>,</div><div class="line">     page_url <span class="keyword">STRING</span>, referrer_url <span class="keyword">STRING</span>,</div><div class="line">     ip <span class="keyword">STRING</span> <span class="keyword">COMMENT</span> <span class="string">'IP Address of the User'</span>)</div><div class="line"> <span class="keyword">COMMENT</span> <span class="string">'This is the page view table'</span></div><div class="line"> PARTITIONED <span class="keyword">BY</span>(dt <span class="keyword">STRING</span>, country <span class="keyword">STRING</span>)</div><div class="line"> CLUSTERED <span class="keyword">BY</span>(userid) SORTED <span class="keyword">BY</span>(viewTime) <span class="keyword">INTO</span> <span class="number">32</span> BUCKETS</div><div class="line"> <span class="keyword">ROW</span> <span class="keyword">FORMAT</span> <span class="keyword">DELIMITED</span></div><div class="line">   <span class="keyword">FIELDS</span> <span class="keyword">TERMINATED</span> <span class="keyword">BY</span> <span class="string">'\001'</span></div><div class="line">   COLLECTION ITEMS <span class="keyword">TERMINATED</span> <span class="keyword">BY</span> <span class="string">'\002'</span></div><div class="line">   <span class="keyword">MAP</span> <span class="keyword">KEYS</span> <span class="keyword">TERMINATED</span> <span class="keyword">BY</span> <span class="string">'\003'</span></div><div class="line"> <span class="keyword">STORED</span> <span class="keyword">AS</span> SEQUENCEFILE;</div></pre></td></tr></table></figure></p>
-<p>这个表根据userid分桶，每个bucket中按照viewTime升序排列。这种组织结果允许用户更高效的抽取clustered的字段，这里就是userid字段了。排序属性让内部操作能够快速处理估算查询的任务。MAP KEYS和COLLECTION ITEMS关键词可以用来处理字段是list或者map的情况。</p>
-<p>CLUSTERED BY 和 SORTED BY并不影响insert数据。用户需要注意reducer数必须要跟bucket的数量一致，在query语句中还要使用CLUSTER BY 和SORT BY语句。</p>
-<p>还有一种倾斜表。适用于某些表中确认包含倾斜数据的情况。通过指定倾斜key，hive会把他们打散到不同的文件中。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> list_bucket_single (<span class="keyword">key</span> <span class="keyword">STRING</span>, <span class="keyword">value</span> <span class="keyword">STRING</span>)</div><div class="line">  SKEWED <span class="keyword">BY</span> (<span class="keyword">key</span>) <span class="keyword">ON</span> (<span class="number">1</span>,<span class="number">5</span>,<span class="number">6</span>) [<span class="keyword">STORED</span> <span class="keyword">AS</span> DIRECTORIES];</div></pre></td></tr></table></figure>
-<p>下面这个是有两个倾斜key<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">CREATE TABLE list_bucket_multiple (col1 STRING, col2 int, col3 STRING)</div><div class="line">  SKEWED BY (col1, col2) ON ((&apos;s1&apos;,1), (&apos;s3&apos;,3), (&apos;s13&apos;,13), (&apos;s78&apos;,78)) [STORED AS DIRECTORIES];</div></pre></td></tr></table></figure></p>
-<p>参考：</p>
-<ul>
-<li><a href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL+BucketedTables" target="_blank" rel="external">https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL+BucketedTables</a></li>
-<li><a href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL#LanguageManualDDL-BucketedSortedTables" target="_blank" rel="external">https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL#LanguageManualDDL-BucketedSortedTables</a></li>
-</ul>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
 
   <nav id="page-nav" class="clearfix">
-    <a class="extend prev" rel="prev" href="/page/10/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="page-number" href="/page/10/">10</a><span class="page-number current">11</span><a class="page-number" href="/page/12/">12</a><a class="page-number" href="/page/13/">13</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/12/">Next<span></span></a>
+    <a class="extend prev" rel="prev" href="/page/10/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="page-number" href="/page/10/">10</a><span class="page-number current">11</span><a class="page-number" href="/page/12/">12</a><a class="page-number" href="/page/13/">13</a><span class="space">&hellip;</span><a class="page-number" href="/page/25/">25</a><a class="extend next" rel="next" href="/page/12/">Next<span></span></a>
   </nav>
 
 </div>
@@ -1133,31 +1095,31 @@
 			
 		
 			
+				<li><a href="/tags/django/" title="django">django<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构/" title="架构">架构<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构，jaeger/" title="架构，jaeger">架构，jaeger<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Solr/" title="Solr">Solr<sup>1</sup></a></li>
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
 			
 		
 			
 				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/hue/" title="hue">hue<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
 			
 		
 		</ul>
@@ -1230,7 +1192,7 @@
 		
 
 		<p class="copyright">
-		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2018 
 		
 		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
 		

@@ -1,0 +1,595 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <script type="text/javascript">
+    (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+    })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+    
+    _st('install','yNiKTKaAnwd1uuxVMfiE','2.0.0');
+  </script>
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?5b99dfd487346155d274c0c49c3fb869";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  
+    <title>django中使用threadlocal存放tracer | Will&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Will Chen">
+    
+
+    
+    <meta name="description" content="基于上篇《服务trace的一些理解》，想办法把django的view里的tracer和model.pre_save的tracer通过threadlocal统一起来。
+结合gunicorn考虑一下，其实如果能保证gunicorn的每个worker都是单线程的话，就不存在这种问题，只要弄一个静态的tracer就可以了。
+思路
+middleware从threadlocal引入tracer，打在reque">
+<meta property="og:type" content="article">
+<meta property="og:title" content="django中使用threadlocal存放tracer">
+<meta property="og:url" content="https://runningdata.github.io/2018/01/19/django中使用threadlocal存放tracer/index.html">
+<meta property="og:site_name" content="Will's Blog">
+<meta property="og:description" content="基于上篇《服务trace的一些理解》，想办法把django的view里的tracer和model.pre_save的tracer通过threadlocal统一起来。
+结合gunicorn考虑一下，其实如果能保证gunicorn的每个worker都是单线程的话，就不存在这种问题，只要弄一个静态的tracer就可以了。
+思路
+middleware从threadlocal引入tracer，打在reque">
+<meta property="og:image" content="https://runningdata.github.io/imgs/trace/django_jaeger_redis_tracer.png">
+<meta property="og:updated_time" content="2018-01-19T07:47:21.048Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="django中使用threadlocal存放tracer">
+<meta name="twitter:description" content="基于上篇《服务trace的一些理解》，想办法把django的view里的tracer和model.pre_save的tracer通过threadlocal统一起来。
+结合gunicorn考虑一下，其实如果能保证gunicorn的每个worker都是单线程的话，就不存在这种问题，只要弄一个静态的tracer就可以了。
+思路
+middleware从threadlocal引入tracer，打在reque">
+<meta name="twitter:image" content="https://runningdata.github.io/imgs/trace/django_jaeger_redis_tracer.png">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Will&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Will&#39;s Blog" title="Will&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Will&#39;s Blog">Will&#39;s Blog</a></h1>
+				<h2 class="blog-motto">简易 变易 不易</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+                                                <form class="search" action="/search/index.html" method="get" accept-charset="utf-8" target="_blank">
+                                                        <label>搜索</label>
+                                                <input name="s" type="hidden" value= null ><input type="text" class="st-default-search-input" name="q" size="30" placeholder="搜索"><br>
+                                                </form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2018/01/19/django中使用threadlocal存放tracer/" title="django中使用threadlocal存放tracer" itemprop="url">django中使用threadlocal存放tracer</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2018-01-19T07:46:07.000Z" itemprop="datePublished"> 发表于 2018-01-19</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#思路"><span class="toc-text">思路</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#代码"><span class="toc-text">代码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#不足"><span class="toc-text">不足</span></a></li></ol>
+		
+		</div>
+		
+		<p>基于上篇《服务trace的一些理解》，想办法把django的view里的tracer和model.pre_save的tracer通过threadlocal统一起来。</p>
+<p>结合gunicorn考虑一下，其实如果能保证gunicorn的每个worker都是单线程的话，就不存在这种问题，只要弄一个静态的tracer就可以了。</p>
+<h4 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h4><ul>
+<li>middleware从threadlocal引入tracer，打在request层面，这里会有第一个span</li>
+<li>redis/db的关键API通过<code>jaeger_tracer</code>装饰器方式获得threadlocal里的tracer，新增一个child span</li>
+</ul>
+<h4 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h4><p>middleware沿用<code>django_opentracing</code>的使用方式，修改生成tracer的方式为每个thread一个tracer，因为worker可能是多线程的，也方便后面处理逻辑获取当前线程中既有的tracer：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">try</span>:</div><div class="line">    <span class="comment"># Django &gt;= 1.10</span></div><div class="line">    <span class="keyword">from</span> django.utils.deprecation <span class="keyword">import</span> MiddlewareMixin</div><div class="line"><span class="keyword">except</span> ImportError:</div><div class="line">    <span class="comment"># Not required for Django &lt;= 1.9, see:</span></div><div class="line">    <span class="comment"># https://docs.djangoproject.com/en/1.10/topics/http/middleware/#upgrading-pre-django-1-10-style-middleware</span></div><div class="line">    MiddlewareMixin = object</div><div class="line"></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">WillOpenTracingMiddleware</span><span class="params">(MiddlewareMixin)</span>:</span></div><div class="line">    <span class="string">'''</span></div><div class="line">    __init__()只会被调用一次，没有参数，只有server对第一个request生成response的时候被调用一次</div><div class="line">    '''</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, get_response=None)</span>:</span></div><div class="line">        <span class="string">'''</span></div><div class="line">        TODO: ANSWER Qs</div><div class="line">        - Is it better to place all tracing info in the settings file, or to require a tracing.py file with configurations?</div><div class="line">        - Also, better to have try/catch with empty tracer or just fail fast if there's no tracer specified</div><div class="line">        '''</div><div class="line">        self.get_response = get_response</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">process_view</span><span class="params">(self, request, view_func, view_args, view_kwargs)</span>:</span></div><div class="line">        <span class="comment"># 如果配置中并不是trace所有request，这个middleware就不会有任何作为，实际trace应该交由decorator来做</span></div><div class="line">        <span class="keyword">if</span> <span class="keyword">not</span> threadlocals.get_current_tracer()._trace_all:</div><div class="line">            <span class="keyword">return</span> <span class="keyword">None</span></div><div class="line"></div><div class="line">        <span class="keyword">if</span> hasattr(settings, <span class="string">'OPENTRACING_TRACED_ATTRIBUTES'</span>):</div><div class="line">            traced_attributes = getattr(settings, <span class="string">'OPENTRACING_TRACED_ATTRIBUTES'</span>)</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            traced_attributes = []</div><div class="line">        threadlocals.set_thread_variable(<span class="string">'request'</span>, request)</div><div class="line">        threadlocals.get_current_tracer()._apply_tracing(request, view_func, traced_attributes)</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">process_response</span><span class="params">(self, request, response)</span>:</span></div><div class="line">        threadlocals.get_current_tracer()._finish_tracing(request)</div><div class="line">        <span class="keyword">return</span> response</div></pre></td></tr></table></figure></p>
+<p><code>django_opentracing</code>中的<code>DjangoTracer</code>剖析一下:<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">DjangoTracer</span><span class="params">(object)</span>:</span></div><div class="line">    <span class="string">'''</span></div><div class="line">    是对一种tracer的wrapper</div><div class="line">    '''</div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, tracer=None)</span>:</span></div><div class="line">        self._tracer_implementation = <span class="keyword">None</span></div><div class="line">        <span class="keyword">if</span> tracer:</div><div class="line">            self._tracer_implementation = tracer</div><div class="line">        self._current_spans = &#123;&#125;</div><div class="line">        <span class="keyword">if</span> <span class="keyword">not</span> hasattr(settings, <span class="string">'OPENTRACING_TRACE_ALL'</span>):</div><div class="line">            self._trace_all = <span class="keyword">False</span></div><div class="line">        <span class="keyword">elif</span> <span class="keyword">not</span> getattr(settings, <span class="string">'OPENTRACING_TRACE_ALL'</span>):</div><div class="line">            self._trace_all = <span class="keyword">False</span></div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            self._trace_all = <span class="keyword">True</span></div><div class="line"></div><div class="line"><span class="meta">    @property</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_tracer</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">if</span> self._tracer_implementation:</div><div class="line">            <span class="keyword">return</span> self._tracer_implementation</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            <span class="keyword">return</span> opentracing.tracer</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_span</span><span class="params">(self, request)</span>:</span></div><div class="line">        <span class="string">'''</span></div><div class="line">        @param request</div><div class="line">        返回trace给定request的span</div><div class="line">        '''</div><div class="line">        <span class="keyword">return</span> self._current_spans.get(request, <span class="keyword">None</span>)</div><div class="line">        </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">trace</span><span class="params">(self, *attributes)</span>:</span></div><div class="line">        <span class="string">'''</span></div><div class="line">        这是上面提到的Function decorator</div><div class="line">        注意:必须在 @app.route decorator后面</div><div class="line">        @param attributes any number of flask.Request attributes</div><div class="line">        (strings) to be set as tags on the created span</div><div class="line">        '''</div><div class="line">        <span class="function"><span class="keyword">def</span> <span class="title">decorator</span><span class="params">(view_func)</span>:</span></div><div class="line">            <span class="comment"># <span class="doctag">TODO:</span> do we want to provide option of overriding trace_all_requests so that they</span></div><div class="line">            <span class="comment"># can trace certain attributes of the request for just this request (this would require</span></div><div class="line">            <span class="comment"># to reinstate the name-mangling with a trace identifier, and another settings key)</span></div><div class="line">            <span class="comment"># 如果是_trace_all，就直接返回，原因参考上面的middleware的逻辑</span></div><div class="line">            <span class="keyword">if</span> self._trace_all:</div><div class="line">                <span class="keyword">return</span> view_func</div><div class="line">            <span class="comment"># otherwise, execute decorator</span></div><div class="line">            <span class="function"><span class="keyword">def</span> <span class="title">wrapper</span><span class="params">(request)</span>:</span></div><div class="line">                span = self._apply_tracing(request, view_func, list(attributes))</div><div class="line">                r = view_func(request)</div><div class="line">                self._finish_tracing(request)</div><div class="line">                <span class="keyword">return</span> r</div><div class="line">            <span class="keyword">return</span> wrapper</div><div class="line">        <span class="keyword">return</span> decorator</div><div class="line">    </div><div class="line">    <span class="comment"># 实际trace逻辑</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_apply_tracing</span><span class="params">(self, request, view_func, attributes)</span>:</span></div><div class="line">        <span class="string">'''</span></div><div class="line">        避免middleware和decorator之间出现重写。返回request的新的span和view_func的正确的operation名字</div><div class="line">        '''</div><div class="line">        <span class="comment"># strip headers for trace info</span></div><div class="line">        headers = &#123;&#125;</div><div class="line">        <span class="keyword">for</span> k,v <span class="keyword">in</span> request.META.iteritems():</div><div class="line">            k = k.lower().replace(<span class="string">'_'</span>,<span class="string">'-'</span>)</div><div class="line">            <span class="keyword">if</span> k.startswith(<span class="string">'http-'</span>):</div><div class="line">                k = k[<span class="number">5</span>:]</div><div class="line">            headers[k] = v</div><div class="line"></div><div class="line">        <span class="comment"># start new span from trace info</span></div><div class="line">        span = <span class="keyword">None</span></div><div class="line">        operation_name = view_func.__name__</div><div class="line">        <span class="keyword">try</span>:</div><div class="line">            span_ctx = self._tracer.extract(opentracing.Format.HTTP_HEADERS, headers)</div><div class="line">            span = self._tracer.start_span(operation_name=operation_name, child_of=span_ctx)</div><div class="line">        <span class="keyword">except</span> (opentracing.InvalidCarrierException, opentracing.SpanContextCorruptedException) <span class="keyword">as</span> e:</div><div class="line">            span = self._tracer.start_span(operation_name=operation_name)</div><div class="line">        <span class="keyword">if</span> span <span class="keyword">is</span> <span class="keyword">None</span>:</div><div class="line">            span = self._tracer.start_span(operation_name=operation_name)</div><div class="line"></div><div class="line">        <span class="comment"># add span to current spans</span></div><div class="line">        <span class="comment"># 把request与span的对应关系存进这个DjangoTracer的一个字典里</span></div><div class="line">        <span class="comment"># 按执行过程推理，如果有request并发的话，保证span不会错乱，跟threadlocal的作用差不多，但是需要额外的request参数才行</span></div><div class="line">        self._current_spans[request] = span</div><div class="line"></div><div class="line">        <span class="comment"># log any traced attributes</span></div><div class="line">        <span class="keyword">for</span> attr <span class="keyword">in</span> attributes:</div><div class="line">            <span class="keyword">if</span> hasattr(request, attr):</div><div class="line">                payload = str(getattr(request, attr))</div><div class="line">                <span class="keyword">if</span> payload:</div><div class="line">                    span.set_tag(attr, payload)</div><div class="line"></div><div class="line">        <span class="keyword">return</span> span</div><div class="line"></div><div class="line">    <span class="comment"># 将所有span结束</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_finish_tracing</span><span class="params">(self, request)</span>:</span></div><div class="line">        span = self._current_spans.pop(request, <span class="keyword">None</span>)</div><div class="line">        <span class="keyword">if</span> span <span class="keyword">is</span> <span class="keyword">not</span> <span class="keyword">None</span>:</div><div class="line">            span.finish()</div></pre></td></tr></table></figure></p>
+<p>我们的思路是使用threadlocal实现，原因上面也提到了，threadlocal不用给方法传递类似request这种额外的参数。对于后端redis/mysql等会很方便。</p>
+<p>下面是一个简单的使用<code>DjangoTracer</code>的threadlocal实现简版：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># -*- coding: utf-8 -*-</span></div><div class="line"><span class="string">"""</span></div><div class="line">__init__ module for the threadlocals package</div><div class="line">"""</div><div class="line"><span class="keyword">import</span> opentracing</div><div class="line"><span class="keyword">from</span> django_opentracing <span class="keyword">import</span> DjangoTracer</div><div class="line"><span class="keyword">from</span> jaeger_client <span class="keyword">import</span> Config</div><div class="line"><span class="keyword">from</span> threading <span class="keyword">import</span> local</div><div class="line"></div><div class="line">__docformat__ = <span class="string">"restructuredtext"</span></div><div class="line"></div><div class="line">_threadlocals = local()</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">set_thread_variable</span><span class="params">(key, val)</span>:</span></div><div class="line">    setattr(_threadlocals, key, val)</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_thread_variable</span><span class="params">(key, default=None)</span>:</span></div><div class="line">    <span class="keyword">return</span> getattr(_threadlocals, key, default)</div><div class="line"></div><div class="line"><span class="comment"># 通过threadlocal获取当前线程的tracer</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_current_tracer</span><span class="params">()</span>:</span></div><div class="line">    <span class="keyword">if</span> <span class="keyword">not</span> hasattr(_threadlocals, <span class="string">'tracer'</span>):</div><div class="line">        config = Config(</div><div class="line">            config=&#123;</div><div class="line">                <span class="string">'sampler'</span>: &#123;</div><div class="line">                    <span class="string">'type'</span>: <span class="string">'const'</span>,</div><div class="line">                    <span class="string">'param'</span>: <span class="number">1</span></div><div class="line">                &#125;,</div><div class="line">                <span class="string">'local_agent'</span>: &#123;</div><div class="line">                    <span class="string">'reporting_host'</span>: <span class="string">'10.103.27.152'</span></div><div class="line">                &#125;</div><div class="line">            &#125;,</div><div class="line">            service_name=<span class="string">'will-django'</span></div><div class="line">        )</div><div class="line">        set_request_variable(<span class="string">'tracer'</span>, DjangoTracer(config.initialize_tracer()))</div><div class="line">    <span class="keyword">return</span> get_thread_variable(<span class="string">'tracer'</span>)</div></pre></td></tr></table></figure></p>
+<p>自定义<code>jaeger_tracer</code>装饰器：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">jaeger_tracer</span><span class="params">(service=<span class="string">'will'</span>)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_my_decorator</span><span class="params">(func)</span>:</span></div><div class="line">        <span class="function"><span class="keyword">def</span> <span class="title">_decorator</span><span class="params">(*args, **kwargs)</span>:</span></div><div class="line">            <span class="keyword">with</span> get_current_tracer()._tracer.start_span(os.path.basename(inspect.getsourcefile(func))[:<span class="number">-2</span>] + func.func_name,</div><div class="line">                                                         child_of=get_current_tracer().get_span(</div><div class="line">                                                                 get_current_request())) <span class="keyword">as</span> ttspan:</div><div class="line">                <span class="comment"># ttspan.set_tag(ext_tags.SPAN_KIND, ext_tags.SPAN_KIND_RPC_CLIENT)</span></div><div class="line">                <span class="comment"># ttspan.set_tag(ext_tags.PEER_SERVICE, service)</span></div><div class="line">                <span class="keyword">for</span> k, v <span class="keyword">in</span> kwargs.items():</div><div class="line">                    ttspan.set_tag(k, v)</div><div class="line">                ttspan.set_tag(<span class="string">'args'</span>, args[<span class="number">1</span>:])</div><div class="line">                ttspan.log_event(<span class="string">'this is done by will'</span>)</div><div class="line">                <span class="keyword">return</span> func(*args, **kwargs)</div><div class="line">        <span class="keyword">return</span> _decorator</div><div class="line">    <span class="keyword">return</span> _my_decorator</div></pre></td></tr></table></figure></p>
+<p>使用例子：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@jaeger_tracer('redis')</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_keys</span><span class="params">()</span>:</span></div><div class="line">    r = redis.StrictRedis(connection_pool=pool)</div><div class="line">    <span class="keyword">return</span> [key <span class="keyword">for</span> key <span class="keyword">in</span> r.keys() <span class="keyword">if</span> <span class="string">'_'</span> <span class="keyword">not</span> <span class="keyword">in</span> key <span class="keyword">and</span> <span class="string">'unack'</span> <span class="keyword">not</span> <span class="keyword">in</span> key]</div></pre></td></tr></table></figure></p>
+<p><img src="/imgs/trace/django_jaeger_redis_tracer.png" alt="产出的jaeger trace效果图"></p>
+<h4 id="不足"><a href="#不足" class="headerlink" title="不足"></a>不足</h4><ul>
+<li>只支持两层span，request一层，然后redis一层。如果还有多层，需要在current_span那里下点儿功夫了</li>
+<li>djangoTracer的字典是可有可无的，因为不再是针对request的，而是针对thread的</li>
+</ul>
+<p>参考：</p>
+<ul>
+<li><a href="https://github.com/shtalinberg/django-actions-logger/blob/master/actionslog/middleware.py" target="_blank" rel="external">https://github.com/shtalinberg/django-actions-logger/blob/master/actionslog/middleware.py</a></li>
+<li><a href="https://github.com/benoitc/gunicorn/issues/1045" target="_blank" rel="external">https://github.com/benoitc/gunicorn/issues/1045</a></li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/django/">django</a><a href="/tags/jaeger/">jaeger</a><a href="/tags/架构/">架构</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://runningdata.github.io/2018/01/19/django中使用threadlocal存放tracer/" data-title="django中使用threadlocal存放tracer | Will&#39;s Blog" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2018/01/19/django针对model进行decorator实现AOP/" title="django针对model进行decorator实现AOP">
+  <strong>上一篇：</strong><br/>
+  <span>
+  django针对model进行decorator实现AOP</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/12/26/hue兼容slider部署的presto/"  title="hue兼容slider部署的presto">
+ <strong>下一篇：</strong><br/> 
+ <span>hue兼容slider部署的presto
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<!-- 多说评论框 start -->
+  <div class="ds-thread" data-thread-key="2018/01/19/django中使用threadlocal存放tracer/" data-title="django中使用threadlocal存放tracer" data-url="https://runningdata.github.io/2018/01/19/django中使用threadlocal存放tracer/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"ruoyuchen"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共JS代码 end -->
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#思路"><span class="toc-number">1.</span> <span class="toc-text">思路</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#代码"><span class="toc-number">2.</span> <span class="toc-text">代码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#不足"><span class="toc-number">3.</span> <span class="toc-text">不足</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/youdaonote/" title="youdaonote">youdaonote<sup>187</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/源码/" title="源码">源码<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/akka/" title="akka">akka<sup>9</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/flume/" title="flume">flume<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/solr/" title="solr">solr<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/spring/" title="spring">spring<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/调度平台/" title="调度平台">调度平台<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/azkaban/" title="azkaban">azkaban<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scala/" title="scala">scala<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ambari/" title="ambari">ambari<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/quartz/" title="quartz">quartz<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/django/" title="django">django<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构/" title="架构">架构<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构，jaeger/" title="架构，jaeger">架构，jaeger<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/willcup" target="_blank" title=" 我自己的github">github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://thisding.com" target="_blank" title="朋友的主页">Steven&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=null&verifier=&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Will Chen in MeiTuan. <br/>
+			元 亨 利 贞.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:chenxin15@meituan.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2018 
+		
+		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fe6d1f421bbc9962127a50488f9ed37d1' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

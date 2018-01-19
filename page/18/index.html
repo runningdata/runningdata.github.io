@@ -99,6 +99,222 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2016/12/05/nodejs学习笔记/" title="nodejs学习笔记" itemprop="url">nodejs学习笔记</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:08:17.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>v8的出现，还有commonjs的规范化使得nodejs提供后台服务成为可能。</p>
+<p>两种启动方式：</p>
+<ul>
+<li>node app.js   不自动更新</li>
+<li>supervisor app.js 自动更新，修改后不用重启</li>
+</ul>
+<hr>
+<h2 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h2><ul>
+<li><p>默认全部都是异步操作</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line">fs.readFile(<span class="string">'test.file'</span>, <span class="string">'utf-8'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">err, data</span>)</span>&#123;</div><div class="line">    <span class="keyword">if</span> (err) &#123;</div><div class="line">        <span class="built_in">console</span>.log(err);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="built_in">console</span>.log(data);</div><div class="line">    &#125;</div><div class="line">&#125;);</div><div class="line"><span class="built_in">console</span>.log(<span class="string">'end'</span>); <span class="comment">// 这一行会先被打印出来</span></div></pre></td></tr></table></figure>
+</li>
+<li><p>全部基于事件处理机制，nodejs的所有机制都是围绕事件回调机制完成的。事件的回调函数在执行的过程中，可能会发出IO请求或者emit事件，执行完毕后再返回事件循环</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 声明事件对象</span></div><div class="line"><span class="keyword">var</span> EventEmitter=<span class="built_in">require</span>(<span class="string">'events'</span>).EventEmiiter;</div><div class="line"><span class="keyword">var</span> event = <span class="keyword">new</span> EventEmiiter();</div><div class="line"></div><div class="line"><span class="comment">//注册事件</span></div><div class="line">event.on(<span class="string">'some_event'</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">"this is a custom event"</span>);</div><div class="line">&#125;);</div><div class="line"></div><div class="line"></div><div class="line"><span class="comment">// 3秒钟后触发事件</span></div><div class="line">setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    event.emit(<span class="string">'some_event'</span>);</div><div class="line">&#125;, <span class="number">3000</span>);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<hr>
+<h2 id="module和package"><a href="#module和package" class="headerlink" title="module和package"></a>module和package</h2><p>nodejs的module可以是js、json或者c++扩展。<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> http = <span class="built_in">require</span>(<span class="string">'http'</span>); <span class="comment">// c++的module</span></div></pre></td></tr></table></figure></p>
+<p>exports是模块对外开放的接口<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> name;</div><div class="line">exports.setName = <span class="function"><span class="keyword">function</span>(<span class="params">n</span>)</span>&#123;</div><div class="line">    name = n;</div><div class="line">&#125;</div><div class="line"></div><div class="line">exports.say = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'name is : '</span> + name);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>require是外部引用模块的接口, 只会引入一次<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> modu1=<span class="built_in">require</span>(<span class="string">'./modu'</span>);</div><div class="line">modu1.setName(<span class="string">'will'</span>);</div><div class="line"><span class="keyword">var</span> modu2=<span class="built_in">require</span>(<span class="string">'./modu'</span>);</div><div class="line">modu2.setName(<span class="string">'william'</span>);</div><div class="line">modu2.say(); <span class="comment">// 会输出william</span></div></pre></td></tr></table></figure></p>
+<p>如果我们要每次都弄一个新的对象呢??<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">hello</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> name;</div><div class="line">    <span class="keyword">this</span>.setName = <span class="function"><span class="keyword">function</span>(<span class="params">n</span>)</span>&#123;</div><div class="line">        name = n;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="keyword">this</span>.say = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'name is : '</span> + name);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="built_in">module</span>.exports = hello;</div></pre></td></tr></table></figure></p>
+<p>对应的引入为：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> hello=<span class="built_in">require</span>(<span class="string">'./modu'</span>);</div><div class="line"><span class="keyword">var</span> modu1 = <span class="keyword">new</span> hello();</div><div class="line">modu1.setName(<span class="string">'will'</span>);</div><div class="line"><span class="keyword">var</span> modu2 = <span class="keyword">new</span> hello();</div><div class="line">modu2.setName(<span class="string">'william'</span>);</div><div class="line">modu1.say(); <span class="comment">// 会输出will</span></div><div class="line">modu2.say(); <span class="comment">// 会输出william</span></div></pre></td></tr></table></figure></p>
+<h3 id="pacakge"><a href="#pacakge" class="headerlink" title="pacakge"></a>pacakge</h3><p>commonJS规范后，可以发布在npm上</p>
+<ul>
+<li>package.json在根目录下，没有的话就去找index.js</li>
+<li>二进制文件在bin目录下</li>
+<li>js代码在lib目录下</li>
+<li>测试在test目录</li>
+<li>….</li>
+</ul>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">// package.json</div><div class="line">&#123;</div><div class="line">    "main" : "./lib/index.js", // 入口</div><div class="line">    "name" : "名",</div><div class="line">    "repositories": "仓库托管地址数据，每个元素要包含type、url、path",</div><div class="line">    "dependencies" : "依赖"</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<hr>
+<h2 id="包管理器和代码调试"><a href="#包管理器和代码调试" class="headerlink" title="包管理器和代码调试"></a>包管理器和代码调试</h2><h4 id="包管理器"><a href="#包管理器" class="headerlink" title="包管理器"></a>包管理器</h4><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>介绍</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>npm init</td>
+<td>初始化一个package目录，会自动生成规范目录与package.json</td>
+</tr>
+<tr>
+<td>npm install xxx</td>
+<td>本地模式安装xxx，将package安装到node_modules目录下</td>
+</tr>
+<tr>
+<td>npm list</td>
+<td>查看已经安装的包</td>
+</tr>
+<tr>
+<td>npm help <json></json></td>
+<td>查看json的使用</td>
+</tr>
+<tr>
+<td>npm publish</td>
+<td>进入到package下执行，发布package到公共库（最好是通过npm init生成的目录规范）</td>
+</tr>
+<tr>
+<td>npm unpublish</td>
+<td>取消发布</td>
+</tr>
+</tbody>
+</table>
+<p><strong><em>全局安装的包，不能直接require，不会搜索/usr/local/lib/node_modules。只有需要命令行使用的时候才安装全局模式</em></strong></p>
+<h4 id="代码调试"><a href="#代码调试" class="headerlink" title="代码调试"></a>代码调试</h4><ol>
+<li>node –debug-brk=5858 app.js, 会等待debug连上来</li>
+<li>eclipse插件V8 vm里弄一个debug就行了</li>
+</ol>
+<hr>
+<h2 id="全局对象和全局变量"><a href="#全局对象和全局变量" class="headerlink" title="全局对象和全局变量"></a>全局对象和全局变量</h2><p>global是所有全局变量的宿主。</p>
+<h4 id="console"><a href="#console" class="headerlink" title="console"></a>console</h4><p>log\error\trace</p>
+<h4 id="process"><a href="#process" class="headerlink" title="process"></a>process</h4><p>描述当前进程状态，提供了与os交互的接口。<br>|变量|描述|<br>|—|—|<br>|process.argv|命令行参数，第一个是node，第二是脚本名称，第三个才是参数|<br>|process.stdout|标准输出|<br>|process.stdin|标准输入，需要先process.stdin.resume()|<br>|process.nextTick(callback)|为事件循环设置一个任务|<br>nodejs适合io密集型的应用，而不是计算密集型的应用。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">doSth</span>(<span class="params">args, callback</span>)</span>&#123;</div><div class="line">    sthComplext(args);</div><div class="line">    callback();</div><div class="line">&#125;;</div><div class="line"></div><div class="line">doSth(<span class="string">'123'</span>, <span class="function"><span class="keyword">function</span> <span class="title">onEnd</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    compute();</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>有了process.nextTick后可以写成：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">doSth</span>(<span class="params">args, callback</span>)</span>&#123;</div><div class="line">    sthComplext(args);</div><div class="line">    process.nextTick(callback); <span class="comment">// 把耗时的两个程序拆成两个事件，提高并行度</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="util和EventEmitter"><a href="#util和EventEmitter" class="headerlink" title="util和EventEmitter"></a>util和EventEmitter</h2><h5 id="utilities"><a href="#utilities" class="headerlink" title="utilities"></a>utilities</h5><table>
+<thead>
+<tr>
+<th>api</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>inheris(constructor, superConstructor)</td>
+<td>实现对象间原型继承</td>
+</tr>
+<tr>
+<td>inspect()</td>
+<td>将任意对象以字符串的形式打印出来</td>
+</tr>
+</tbody>
+</table>
+<h5 id="events"><a href="#events" class="headerlink" title="events"></a>events</h5><p>nodejs本身架构就是事件驱动的。<br>EventEmitter的核心就是事件发射与事件监听功能的封装。EventEmitter的每个事件由一个事件或若干个参数组成。对于某个事件，EventEmitter支持若干个事件监听器。事件发生时，事件监听器被依次调用，事件参数作为回调函数的参数传递。<br>|api|描述|<br>|—|—|<br>|EventEmitter.on(event, listener)|为指定事件注册监听器|<br>|EventEmitter.emit()|发射event事件|<br>|EventEmitter.once(event, listener)|监听器只出发一次|<br>|EventEmitter.removeListener(event, listener)|移除监听器|<br>|EventEmitter.removeAllListener(event)|移除所有监听器|</p>
+<p>特殊事件error，出错的时候，EventEmitter没有注册相应的监听器，就当做异常，退出程序，打印调用栈。</p>
+<p>一般继承EventEmitter来使用它。 </p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/celery笔记/" title="celery笔记" itemprop="url">celery笔记</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:07:37.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>需求需要异步调用后台执行时间长的任务，而且任务结束后回写一些status到数据库。</p>
+<p>开始的时候，在django中使用自己的threadpool：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># !/usr/bin/env python</span></div><div class="line"><span class="comment"># -*- coding:utf-8 -*-</span></div><div class="line"><span class="string">'''</span></div><div class="line">created by will </div><div class="line">'''</div><div class="line"><span class="keyword">import</span> Queue</div><div class="line"><span class="keyword">import</span> logging</div><div class="line"><span class="keyword">import</span> subprocess</div><div class="line"><span class="keyword">import</span> threading</div><div class="line"><span class="keyword">import</span> time, os</div><div class="line"><span class="keyword">from</span> django.utils <span class="keyword">import</span> timezone</div><div class="line"><span class="keyword">from</span> subprocess <span class="keyword">import</span> Popen</div><div class="line"></div><div class="line"><span class="keyword">from</span> metamap.models <span class="keyword">import</span> Executions</div><div class="line"></div><div class="line"><span class="keyword">from</span> metamap.utils <span class="keyword">import</span> enums</div><div class="line"></div><div class="line">logger = logging.getLogger(<span class="string">'django'</span>)</div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">WorkManager</span><span class="params">(object)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, work_num=<span class="number">1000</span>, thread_num=<span class="number">2</span>)</span>:</span></div><div class="line">        self.work_queue = Queue.Queue()</div><div class="line">        self.threads = []</div><div class="line">        <span class="comment"># self.__init_work_queue(work_num)</span></div><div class="line">        self.__init_thread_pool(thread_num)</div><div class="line"></div><div class="line">    <span class="string">"""</span></div><div class="line">      初始化线程</div><div class="line">    """</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init_thread_pool</span><span class="params">(self, thread_num)</span>:</span></div><div class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(thread_num):</div><div class="line">            self.threads.append(Work(self.work_queue))</div><div class="line"></div><div class="line">    <span class="string">"""</span></div><div class="line">      初始化工作队列</div><div class="line">    """</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init_work_queue</span><span class="params">(self, jobs_num)</span>:</span></div><div class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(jobs_num):</div><div class="line">            self.add_job(do_job, i)</div><div class="line"></div><div class="line">    <span class="string">"""</span></div><div class="line">      添加一项工作入队</div><div class="line">    """</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_job</span><span class="params">(self, func, *args)</span>:</span></div><div class="line">        self.work_queue.put((func, list(args)))  <span class="comment"># 任务入队，Queue内部实现了同步机制</span></div><div class="line"></div><div class="line">    <span class="string">"""</span></div><div class="line">      检查剩余队列任务</div><div class="line">    """</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">check_queue</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> self.work_queue.qsize()</div><div class="line"></div><div class="line">    <span class="string">"""</span></div><div class="line">      等待所有线程运行完毕</div><div class="line">    """</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">wait_allcomplete</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">for</span> item <span class="keyword">in</span> self.threads:</div><div class="line">            <span class="keyword">if</span> item.isAlive(): item.join()</div><div class="line"></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Work</span><span class="params">(threading.Thread)</span>:</span></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, work_queue)</span>:</span></div><div class="line">        threading.Thread.__init__(self)</div><div class="line">        self.work_queue = work_queue</div><div class="line">        self.start()</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="comment"># 死循环，从而让创建的线程在一定条件下关闭退出</span></div><div class="line">        <span class="keyword">while</span> <span class="keyword">True</span>:</div><div class="line">            location = <span class="string">''</span></div><div class="line">            <span class="keyword">try</span>:</div><div class="line">                do, args = self.work_queue.get_nowait()  <span class="comment"># 任务异步出队，Queue内部实现了同步机制</span></div><div class="line">                logger.info(<span class="string">'%s method '</span> % do)</div><div class="line">                logger.info(<span class="string">'%s find job ....... %s '</span> % (self.getName(), <span class="string">''</span>.join(args[<span class="number">0</span>])))</div><div class="line">                returncode = do(args)</div><div class="line">                self.work_queue.task_done()  <span class="comment"># 通知系统任务完成</span></div><div class="line">                location = <span class="string">''</span>.join(args[<span class="number">1</span>])</div><div class="line">                execution = Executions.objects.get(logLocation=location)</div><div class="line">                execution.end_time = timezone.now()</div><div class="line">                logger.info(<span class="string">'%s return code is %d'</span> % (self.getName(), returncode))</div><div class="line">                <span class="keyword">if</span> returncode == <span class="number">0</span>:</div><div class="line">                    execution.status = enums.EXECUTION_STATUS.DONE</div><div class="line">                <span class="keyword">else</span>:</div><div class="line">                    execution.status = enums.EXECUTION_STATUS.FAILED</div><div class="line">                execution.save()</div><div class="line">            <span class="keyword">except</span> Queue.Empty:</div><div class="line">                time.sleep(<span class="number">3</span>)</div><div class="line">            <span class="keyword">except</span> Executions.DoesNotExist:</div><div class="line">                logger.error(<span class="string">'cannot find execution from db for location %s'</span> % location)</div><div class="line">            <span class="keyword">except</span> Exception, e:</div><div class="line">                logger.error(<span class="string">'got error :%s'</span> % str(e))</div><div class="line">                <span class="keyword">break</span></div><div class="line"></div><div class="line"></div><div class="line"><span class="comment"># 具体要做的任务</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">do_job</span><span class="params">(*args)</span>:</span></div><div class="line">    logger.debug(args)</div><div class="line">    log = args[<span class="number">0</span>][<span class="number">1</span>]</div><div class="line">    command = args[<span class="number">0</span>][<span class="number">0</span>]</div><div class="line">    p = Popen([<span class="string">''</span>.join(command)], stdout=open(log, <span class="string">'a'</span>), stderr=subprocess.STDOUT, shell=<span class="keyword">True</span>, universal_newlines=<span class="keyword">True</span>)</div><div class="line">    p.wait()</div><div class="line">    <span class="keyword">return</span> p.returncode</div><div class="line"></div><div class="line"></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</div><div class="line">    start = time.time()</div><div class="line">    <span class="comment"># work_manager = WorkManager(10, 3)</span></div><div class="line">    <span class="comment"># work_manager.add_job(do_job, "sh /usr/local/metamap/test.sh")</span></div><div class="line">    <span class="comment"># work_manager.add_job(do_job, "sh /usr/local/metamap/test.sh")</span></div><div class="line">    <span class="keyword">print</span> <span class="string">"doneeeeeeeeeeeeee"</span></div><div class="line">    end = time.time()</div><div class="line">    <span class="keyword">print</span> <span class="string">"cost all time: %s"</span> % (end - start)</div></pre></td></tr></table></figure></p>
+<p>遇到两个问题：</p>
+<ul>
+<li>django项目的manage.py运行的时候，连接池会随着view代码的加载而初始化运行，导致命令不退出，一直hang着</li>
+<li>结合gunicorn使用的时候，即便已经完成了django的一次request和response过程，重定向到了任务的状态页面。但是gunicorn任务此次request并未结束，导致worker自认为请求超时自杀，另起worker。比如后台异步任务在连接池中需要执行400s，而gunicorn的请求超时时间是300s，那么到了300s的时候当前worker的进程就被kill，然后另起一个新的worker。那么后台的线程池里执行的这个任务就也随着worker的退出被中止了。</li>
+</ul>
+<p>问了一些大神的意见， 推荐给我celery。尝试django-celery未成功，所以就使用了原生的celery，解决了以上问题。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2016/12/05/django中使用视图/" title="django中使用视图" itemprop="url">django中使用视图</a>
   </h1>
   <p class="article-author">By
@@ -697,150 +913,9 @@
 
 
 
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2016/12/05/hive中的权限/" title="hive中的权限" itemprop="url">hive中的权限</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2016-12-05T09:05:20.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h2 id="用例"><a href="#用例" class="headerlink" title="用例"></a>用例</h2><ol>
-<li>把hive当做存储工具。使用pig、MR等并行计算工具访问hive，hdfs权限通过文件认证来解决。metadata的访问需要通过hive配置的认证。</li>
-<li>把hive作为一个查询引擎。又分为两种：</li>
-</ol>
-<ul>
-<li>a. hive命令行。这些用户可以有hdfs权限，也能看到hive的metastore，有点儿像1。</li>
-<li>b. jdbc等通过hiveserver2访问。他们不能访问HDFS。</li>
-</ul>
-<p>三种认证机制。</p>
-<h5 id="Storage-Based-Authorization-in-the-Metastore-Server"><a href="#Storage-Based-Authorization-in-the-Metastore-Server" class="headerlink" title="Storage Based Authorization in the Metastore Server"></a>Storage Based Authorization in the Metastore Server</h5><p>在1和2.a里，用户可以直接访问到数据，hive没有控制这块。hdfs权限验证担当了主要任务。当你访问一个database、table、partition的时候，他会检查你是否有对应目录的权限。为了看到通过hiveserver2访问的用户的真实信息，需要设置hive.server2.enable.doAs为true。</p>
-<h5 id="SQL-Standards-Based-AuthorizationSQL-Standards-Based-Authorization-in-HiveServer2"><a href="#SQL-Standards-Based-AuthorizationSQL-Standards-Based-Authorization-in-HiveServer2" class="headerlink" title="SQL Standards Based AuthorizationSQL Standards Based Authorization in HiveServer2"></a>SQL Standards Based AuthorizationSQL Standards Based Authorization in HiveServer2</h5><p>虽然Storage Based Authorization可以控制对database、table、partition的访问，但是他不能很好地控制对字段和view的访问，因为他是基于文件系统权限控制的。好的控制应该是可以控制用户访问的行和列。hiveserver2可以满足这种需求，可以只提供你的sql需要的行和列。</p>
-<p>SQL Standards Based Authorization是基于sql标准的，可以使用revoke/grant语句控制权限。但是必须在hiveserver2的配置里设置一下。</p>
-<p>注意如果启用了SQL Standards Based Authorization，那么2a这种方式就被禁用了。因为安全起见，不可能使用hive里的访问控制策略来控制hive命令行，用户可以直接访问HDFS，这样就直接绕过了认证机制。</p>
-<h5 id="Default-Hive-Authorization-Legacy-Mode"><a href="#Default-Hive-Authorization-Legacy-Mode" class="headerlink" title="Default Hive Authorization (Legacy Mode)"></a>Default Hive Authorization (Legacy Mode)</h5><p>这并不能完全控制好权限，会有很多漏洞。例如，没有统一的分配权限的用户，所有的用户都可以自己grant权限。</p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a href="https://cwiki.apache.org/confluence/display/Hive/Storage+Based+Authorization+in+the+Metastore+Server" target="_blank" rel="external">https://cwiki.apache.org/confluence/display/Hive/Storage+Based+Authorization+in+the+Metastore+Server</a></li>
-<li><a href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Authorization" target="_blank" rel="external">https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Authorization</a></li>
-</ul>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2016/12/05/django中模型之间的关系/" title="django中模型之间的关系" itemprop="url">django中模型之间的关系</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2016-12-05T09:05:17.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h2 id="Many-to-One"><a href="#Many-to-One" class="headerlink" title="Many-to-One"></a>Many-to-One</h2><p>使用<code>django.db.models.ForeignKey</code>来定义，像其他的字段类型一样，额外需要一个指定model类的位置。</p>
-<p>例如，有一个Car model，它的生产厂家是Manufacturer，也就是一个厂家对应多个车，但是每个车只属于一个生产厂家。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> django.db <span class="keyword">import</span> models</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Manufacturer</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="comment"># ...</span></div><div class="line">    <span class="keyword">pass</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Car</span><span class="params">(models.Model)</span>:</span></div><div class="line">    manufacturer = models.ForeignKey(Manufacturer, on_delete=models.CASCADE)</div><div class="line">    <span class="comment"># ...</span></div></pre></td></tr></table></figure></p>
-<p>除此之外，也可以创建<a href="https://docs.djangoproject.com/en/1.9/ref/models/fields/#recursive-relationships" target="_blank" rel="external">递归关系</a>以及<a href="https://docs.djangoproject.com/en/1.9/ref/models/fields/#lazy-relationships" target="_blank" rel="external">未定义模型的关系</a>。详见<a href="https://docs.djangoproject.com/en/1.9/ref/models/fields/#ref-foreignkey" target="_blank" rel="external">此处</a>。</p>
-<p>建议把<code>ForeignKey</code>字段设置成目标model的小写形式，弄成别的也不会出错，但是最好规范一些。</p>
-<p>对应数据库里面生成的字段名是<code>manufacturer_id</code>，就是在我们定义的属性的名字后面缀上<code>_id</code>。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Car</span><span class="params">(models.Model)</span>:</span></div><div class="line">    company_that_makes_it = models.ForeignKey(</div><div class="line">        Manufacturer,</div><div class="line">        on_delete=models.CASCADE,</div><div class="line">    )</div><div class="line">    <span class="comment"># ...</span></div></pre></td></tr></table></figure>
-<p>更多<a href="https://docs.djangoproject.com/en/1.9/topics/db/examples/many_to_one/" target="_blank" rel="external">实例</a></p>
-<h2 id="Many-To-Many"><a href="#Many-To-Many" class="headerlink" title="Many-To-Many"></a>Many-To-Many</h2><p>使用<a href="https://docs.djangoproject.com/en/1.9/ref/models/fields/#django.db.models.ManyToManyField" target="_blank" rel="external"><code>ManyToManyField</code></a>关键字定义多对多关系。</p>
-<p>例如，一个Pizza有多个Topping，一个Topping也可以放在多个pizza上。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> django.db <span class="keyword">import</span> models</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Topping</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="comment"># ...</span></div><div class="line">    <span class="keyword">pass</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Pizza</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="comment"># ...</span></div><div class="line">    toppings = models.ManyToManyField(Topping)</div></pre></td></tr></table></figure>
-<p>以上无论哪个对象里放置<code>ManyToManyFiled</code>都可以，但是只能放在其中一个里面，不能都放。</p>
-<p>两者的互相访问<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">pizza.toppings</div><div class="line">topping.pizza_set</div></pre></td></tr></table></figure></p>
-<p>更多<a href="https://docs.djangoproject.com/en/1.9/topics/db/examples/many_to_many/" target="_blank" rel="external">实例</a></p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
 
   <nav id="page-nav" class="clearfix">
-    <a class="extend prev" rel="prev" href="/page/17/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/16/">16</a><a class="page-number" href="/page/17/">17</a><span class="page-number current">18</span><a class="page-number" href="/page/19/">19</a><a class="page-number" href="/page/20/">20</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/19/">Next<span></span></a>
+    <a class="extend prev" rel="prev" href="/page/17/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/16/">16</a><a class="page-number" href="/page/17/">17</a><span class="page-number current">18</span><a class="page-number" href="/page/19/">19</a><a class="page-number" href="/page/20/">20</a><span class="space">&hellip;</span><a class="page-number" href="/page/25/">25</a><a class="extend next" rel="next" href="/page/19/">Next<span></span></a>
   </nav>
 
 </div>
@@ -913,31 +988,31 @@
 			
 		
 			
+				<li><a href="/tags/django/" title="django">django<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构/" title="架构">架构<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构，jaeger/" title="架构，jaeger">架构，jaeger<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Solr/" title="Solr">Solr<sup>1</sup></a></li>
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
 			
 		
 			
 				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/hue/" title="hue">hue<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
 			
 		
 		</ul>
@@ -1010,7 +1085,7 @@
 		
 
 		<p class="copyright">
-		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2018 
 		
 		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
 		

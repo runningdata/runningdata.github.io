@@ -99,6 +99,160 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2017/02/17/安装dockercenter的ucp/" title="安装dockercenter的ucp" itemprop="url">安装dockercenter的ucp</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-02-17T10:53:36.000Z" itemprop="datePublished"> 发表于 2017-02-17</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker pull docker/ucp:2.1.0</div><div class="line">2.1.0: Pulling from docker/ucp</div><div class="line">b7f33cc0b48e: Pulling fs layer </div><div class="line">8257d57cc15c: Pulling fs layer </div><div class="line">b7f33cc0b48e: Pull complete </div><div class="line">8257d57cc15c: Extracting [==================================================&gt;] 348.8 kB/348.8 kB</div><div class="line">8257d57cc15c: Pull complete </div><div class="line">f691f14109b2: Pull complete </div><div class="line">Digest: sha256:fd43a6560b6f5731d0e383a7b5fe6da91cea11bc6b3fd65afe08f5e4a97dbc90</div><div class="line">Status: Downloaded newer image for docker/ucp:2.1.0</div><div class="line">[root@controller wil]# docker run --rm -it --name ucp   -v /var/run/docker.sock:/var/run/docker.sock   docker/ucp:2.1.0 install   --host-address 10.1.5.129   --interactive</div><div class="line"></div><div class="line">INFO[0000] Verifying your system is compatible with UCP </div><div class="line">INFO[0000] Your engine version 1.13.1, build 092cba3 (3.10.0-514.2.2.el7.x86_64) is compatible </div><div class="line">WARN[0003] Your system uses devicemapper.  We can not accurately detect available storage space.  Please make sure you have at least 3.00 GB available in /server/dspace </div><div class="line">Admin Username: unable to scan value: unexpected newline</div><div class="line">FATA[0005] unable to get admin username, giving up    </div><div class="line">[root@controller wil]# docker login</div><div class="line">Login with your Docker ID to push and pull images from Docker Hub. If you don&apos;t have a Docker ID, head over to https://hub.docker.com to create one.</div><div class="line">Username (willcup): </div><div class="line">Password: </div><div class="line">Login Succeeded</div><div class="line">[root@controller wil]# docker run --rm -it --name ucp   -v /var/run/docker.sock:/var/run/docker.sock   docker/ucp:2.1.0 install   --host-address 10.1.5.129   --interactive</div><div class="line">INFO[0000] Verifying your system is compatible with UCP </div><div class="line">INFO[0000] Your engine version 1.13.1, build 092cba3 (3.10.0-514.2.2.el7.x86_64) is compatible </div><div class="line">WARN[0001] Your system uses devicemapper.  We can not accurately detect available storage space.  Please make sure you have at least 3.00 GB available in /server/dspace </div><div class="line">Admin Username: willcup</div><div class="line">Admin Password: </div><div class="line">Confirm Admin Password: </div><div class="line">INFO[0021] Pulling required images... (this may take a while)</div></pre></td></tr></table></figure>
+<p>可以看到如果不先docker login的话，启动时候就报错找不到admin name。然而启动的时候又让我们自己定义admin name和passwd。醉了。</p>
+<p>打开debug：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker run --rm -it --name ucp   -v /var/run/docker.sock:/var/run/docker.sock   docker/ucp:2.1.0 install   --host-address 10.1.5.129   -D --interactive</div><div class="line">DEBU[0000] New UCP Instance ID will be &quot;XZNK:CP6T:DHHE:XJZA:OXOM:CLS6:RIRW:SAVZ:4JIL:G3Q4:DJ7F:L7P3&quot; </div><div class="line">INFO[0000] Verifying your system is compatible with UCP </div><div class="line">DEBU[0000] Checking for compatible kernel version       </div><div class="line">DEBU[0000] Kernel version 3.10.0-514.2.2.el7.x86_64 is compatible </div><div class="line">DEBU[0000] Checking for compatible engine version       </div><div class="line">INFO[0000] Your engine version 1.13.1, build 092cba3 (3.10.0-514.2.2.el7.x86_64) is compatible </div><div class="line">DEBU[0000] Container ucp-phase2 not present: Error: No such container: ucp-phase2 </div><div class="line">DEBU[0000] Detected container ucp                       </div><div class="line">DEBU[0000] Container ucp-controller not present: Error: No such container: ucp-controller </div><div class="line">DEBU[0000] Container ucp-swarm-manager not present: Error: No such container: ucp-swarm-manager </div><div class="line">DEBU[0000] Container ucp-swarm-join not present: Error: No such container: ucp-swarm-join </div><div class="line">DEBU[0000] Container ucp-kv not present: Error: No such container: ucp-kv </div><div class="line">DEBU[0000] Container ucp-proxy not present: Error: No such container: ucp-proxy </div><div class="line">DEBU[0000] Container ucp-client-root-ca not present: Error: No such container: ucp-client-root-ca </div><div class="line">DEBU[0000] Container ucp-cluster-root-ca not present: Error: No such container: ucp-cluster-root-ca </div><div class="line">DEBU[0000] Container ucp-auth-store not present: Error: No such container: ucp-auth-store </div><div class="line">DEBU[0000] Container ucp-auth-api not present: Error: No such container: ucp-auth-api </div><div class="line">DEBU[0000] Container ucp-auth-worker not present: Error: No such container: ucp-auth-worker </div><div class="line">DEBU[0000] Container ucp-kv-backup not present: Error: No such container: ucp-kv-backup </div><div class="line">DEBU[0000] Container ucp-kv-restore not present: Error: No such container: ucp-kv-restore </div><div class="line">DEBU[0000] Container ucp-metrics not present: Error: No such container: ucp-metrics </div><div class="line">DEBU[0000] Validating base system meets minimum requirements </div><div class="line">DEBU[0000] Your system meets minimum memory requirements:  3.88 GB &gt;= 2.00 GB </div><div class="line">WARN[0000] Your system uses devicemapper.  We can not accurately detect available storage space.  Please make sure you have at least 3.00 GB available in /server/dspace </div><div class="line">Admin Username: will</div><div class="line">Admin Password: </div><div class="line">Confirm Admin Password: </div><div class="line">DEBU[0207] Checking for images                          </div><div class="line">INFO[0207] All required images are present              </div><div class="line">DEBU[0208] Local Name: controller                       </div><div class="line">WARN[0208] None of the hostnames we&apos;ll be using in the UCP certificates [controller 127.0.0.1 172.17.0.1] contain a domain component.  Your generated certs may fail TLS validation unless you only use one of these shortnames or IPs to connect.  You can use the --san flag to add more aliases </div><div class="line"></div><div class="line">You may enter additional aliases (SANs) now or press enter to proceed with the above list.</div><div class="line">Additional aliases: willalias</div><div class="line">DEBU[0222] User entered: willalias</div><div class="line">                     </div><div class="line">DEBU[0222] Hostnames: [controller 127.0.0.1 172.17.0.1 willalias] </div><div class="line">DEBU[0245] Launching phase 2 with: [install --host-address 10.1.5.129 -D --interactive] (6f2f352ea35e614de1005fe6d93c9843c3f972dc1e7cf5191ea9ed7a0e46fb25) </div><div class="line">DEBU[0000] Beginning phase 2 install for instance XZNK:CP6T:DHHE:XJZA:OXOM:CLS6:RIRW:SAVZ:4JIL:G3Q4:DJ7F:L7P3 </div><div class="line">DEBU[0000] Checking for compatible kernel version       </div><div class="line">DEBU[0000] Kernel version 3.10.0-514.2.2.el7.x86_64 is compatible </div><div class="line">DEBU[0000] Checking for compatible engine version       </div><div class="line">DEBU[0000] Detected container ucp-phase2                </div><div class="line">DEBU[0001] Container ucp-controller not present: Error: No such container: ucp-controller </div><div class="line">DEBU[0001] Container ucp-swarm-manager not present: Error: No such container: ucp-swarm-manager </div><div class="line">DEBU[0001] Container ucp-swarm-join not present: Error: No such container: ucp-swarm-join </div><div class="line">DEBU[0001] Container ucp-kv not present: Error: No such container: ucp-kv </div><div class="line">DEBU[0001] Container ucp-proxy not present: Error: No such container: ucp-proxy </div><div class="line">DEBU[0001] Container ucp-client-root-ca not present: Error: No such container: ucp-client-root-ca </div><div class="line">DEBU[0001] Container ucp-cluster-root-ca not present: Error: No such container: ucp-cluster-root-ca </div><div class="line">DEBU[0001] Container ucp-auth-store not present: Error: No such container: ucp-auth-store </div><div class="line">DEBU[0001] Container ucp-auth-api not present: Error: No such container: ucp-auth-api </div><div class="line">DEBU[0001] Container ucp-auth-worker not present: Error: No such container: ucp-auth-worker </div><div class="line">DEBU[0001] Container ucp-kv-backup not present: Error: No such container: ucp-kv-backup </div><div class="line">DEBU[0001] Container ucp-kv-restore not present: Error: No such container: ucp-kv-restore </div><div class="line">DEBU[0001] Container ucp-metrics not present: Error: No such container: ucp-metrics </div><div class="line">DEBU[0001] Local Name: controller                       </div><div class="line">DEBU[0001] Hostnames: [controller 127.0.0.1 172.17.0.1 willalias] </div><div class="line">DEBU[0001] This node is known as efpood09fyouiyib1f78y5oa6 </div><div class="line">DEBU[0001] Got node IP 10.1.5.129 from swarm            </div><div class="line">DEBU[0001] EnginePortCheck: port 2375, prpl http, err Get http://10.1.5.129:2375/info: dial tcp 10.1.5.129:2375: getsockopt: connection refused </div><div class="line">DEBU[0001] EnginePortCheck: port 2375, prpl https, err Get https://10.1.5.129:2375/info: dial tcp 10.1.5.129:2375: getsockopt: connection refused </div><div class="line">DEBU[0001] EnginePortCheck: port 2376, prpl http, err Get http://10.1.5.129:2376/info: dial tcp 10.1.5.129:2376: getsockopt: connection refused </div><div class="line">DEBU[0001] EnginePortCheck: port 2376, prpl https, err Get https://10.1.5.129:2376/info: dial tcp 10.1.5.129:2376: getsockopt: connection refused </div><div class="line">DEBU[0001] Checking for available and accessible port 12387 </div><div class="line">DEBU[0001] Checking for available and accessible port 12380 </div><div class="line">DEBU[0001] Checking for available and accessible port 12381 </div><div class="line">DEBU[0001] Checking for available and accessible port 443 </div><div class="line">DEBU[0001] Checking for available and accessible port 12382 </div><div class="line">DEBU[0001] Checking for available and accessible port 2376 </div><div class="line">DEBU[0001] Checking for available and accessible port 12383 </div><div class="line">DEBU[0001] Checking for available and accessible port 12376 </div><div class="line">DEBU[0001] Checking for available and accessible port 12384 </div><div class="line">DEBU[0001] Checking for available and accessible port 4789 </div><div class="line">DEBU[0001] Checking for available and accessible port 12385 </div><div class="line">DEBU[0001] Checking for available and accessible port 12379 </div><div class="line">DEBU[0001] Checking for available and accessible port 12386 </div><div class="line">DEBU[0038] Checking for liveness of http://10.1.5.129:4789/ </div><div class="line">DEBU[0039] Connected to http://10.1.5.129:4789/         </div><div class="line">DEBU[0063] Checking for liveness of http://10.1.5.129:12387/ </div><div class="line">DEBU[0063] Connected to http://10.1.5.129:12387/        </div><div class="line">DEBU[0089] Checking for liveness of http://10.1.5.129:12382/ </div><div class="line">DEBU[0089] Connected to http://10.1.5.129:12382/        </div><div class="line">DEBU[0114] Checking for liveness of http://10.1.5.129:12384/ </div><div class="line">DEBU[0114] Connected to http://10.1.5.129:12384/        </div><div class="line">DEBU[0126] Checking for liveness of http://10.1.5.129:12376/ </div><div class="line">DEBU[0126] Connected to http://10.1.5.129:12376/        </div><div class="line">DEBU[0158] Checking for liveness of http://10.1.5.129:12383/ </div><div class="line">DEBU[0161] Connected to http://10.1.5.129:12383/        </div><div class="line">DEBU[0183] Checking for liveness of http://10.1.5.129:443/ </div><div class="line">DEBU[0185] Connected to http://10.1.5.129:443/          </div><div class="line">DEBU[0199] Checking for liveness of http://10.1.5.129:2376/ </div><div class="line">DEBU[0201] Connected to http://10.1.5.129:2376/         </div><div class="line">DEBU[0235] Checking for liveness of http://10.1.5.129:12386/ </div><div class="line">DEBU[0240] Connected to http://10.1.5.129:12386/        </div><div class="line">DEBU[0260] Checking for liveness of http://10.1.5.129:12381/ </div><div class="line">DEBU[0260] Connected to http://10.1.5.129:12381/        </div><div class="line">DEBU[0271] Checking for liveness of http://10.1.5.129:12385/ </div><div class="line">DEBU[0271] Connected to http://10.1.5.129:12385/        </div><div class="line">DEBU[0295] Checking for liveness of http://10.1.5.129:12379/ </div><div class="line">DEBU[0295] Connected to http://10.1.5.129:12379/        </div><div class="line">DEBU[0321] Checking for liveness of http://10.1.5.129:12380/ </div><div class="line">DEBU[0321] Connected to http://10.1.5.129:12380/        </div><div class="line">DEBU[0429] All ports are open and available             </div><div class="line">DEBU[0429] Purging old state from UCP volumes mounted in /var/lib/docker/ucp </div><div class="line">INFO[0429] Establishing mutual Cluster Root CA with Swarm </div><div class="line">INFO[0429] Installing UCP with host address 10.1.5.129 - If this is incorrect, please specify an alternative address with the &apos;--host-address&apos; flag </div><div class="line">INFO[0429] Generating UCP Client Root CA                </div><div class="line">DEBU[0429] Writing /var/lib/docker/ucp/ucp-client-root-ca/key.pem </div><div class="line">INFO[0430] Deploying UCP Service                        </div><div class="line">DEBU[0433] Local task container not found, trying again. </div><div class="line">DEBU[0459] Local task container not found, trying again. </div><div class="line">................</div><div class="line">................</div><div class="line">DEBU[0461] Local task container not found, trying again. </div><div class="line">ERRO[0461] Unable to get local task container for ucp-agent service </div><div class="line">FATA[0461] unable to find local task container</div></pre></td></tr></table></figure></p>
+<p>重新仔细阅读一下官方文档，发现有些前置条件没有满足：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">Docker Engine 1.13.0</div><div class="line">Docker Remote API 1.25</div><div class="line">Compose 1.9</div></pre></td></tr></table></figure></p>
+<p>刚才docker remote没有开启，compose的版本也不够。</p>
+<p>先升级一下所有docker节点的compose：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">[root@dnode2 willyarnbase]# curl -L &quot;https://github.com/docker/compose/releases/download/1.11.1/docker-compose-$(uname -s)-$(uname -m)&quot; -o /usr/local/bin/docker-compose</div><div class="line">  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current</div><div class="line">                                 Dload  Upload   Total   Spent    Left  Speed</div><div class="line">100   600    0   600    0     0    534      0 --:--:--  0:00:01 --:--:--   534</div><div class="line">100 8053k  100 8053k    0     0   403k      0  0:00:19  0:00:19 --:--:--  806k</div><div class="line">[root@dnode2 willyarnbase]# docker-compose -v</div><div class="line">docker-compose version 1.11.1, build 7c5d5e4</div></pre></td></tr></table></figure></p>
+<p>再编辑/etc/docker/daemon.json配置文件，添加下面配置，启动docker remote API:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&quot;hosts&quot;: [&quot;tcp://0.0.0.0:4243&quot;,&quot;unix:///var/run/docker.sock&quot;]</div></pre></td></tr></table></figure></p>
+<p>然后访问此docker节点的4243接口，例如：<a href="http://10.1.5.129:4243/images/json，测试可以获取到当前节点的image信息，代表已经成功启用了docker" target="_blank" rel="external">http://10.1.5.129:4243/images/json，测试可以获取到当前节点的image信息，代表已经成功启用了docker</a> remote api。</p>
+<p>访问<a href="http://10.1.5.129:4243/version，查看相关版本信息：" target="_blank" rel="external">http://10.1.5.129:4243/version，查看相关版本信息：</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">&quot;Version&quot;: &quot;1.13.1&quot;,</div><div class="line">&quot;ApiVersion&quot;: &quot;1.26&quot;,</div><div class="line">&quot;MinAPIVersion&quot;: &quot;1.12&quot;,</div><div class="line">&quot;GitCommit&quot;: &quot;092cba3&quot;,</div><div class="line">&quot;GoVersion&quot;: &quot;go1.7.5&quot;,</div><div class="line">&quot;Os&quot;: &quot;linux&quot;,</div><div class="line">&quot;Arch&quot;: &quot;amd64&quot;,</div><div class="line">&quot;KernelVersion&quot;: &quot;3.10.0-514.2.2.el7.x86_64&quot;,</div><div class="line">&quot;BuildTime&quot;: &quot;2017-02-08T06:38:28.018621521+00:00&quot;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>版本是1.26，已经满足前面的各个docker组件的版本需求，把这个配置scp给其他的docker节点即可。</p>
+<p>参考： <a href="https://docs.docker.com/engine/api/v1.26/" target="_blank" rel="external">https://docs.docker.com/engine/api/v1.26/</a></p>
+<p>再去controller启动ucp：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">[root@controller wil]# docker run --rm -it --name ucp   -v /var/run/docker.sock:/var/run/docker.sock   docker/ucp:2.1.0 install   --host-address 10.1.5.129  --interactive</div><div class="line">INFO[0000] Verifying your system is compatible with UCP </div><div class="line">INFO[0000] Your engine version 1.13.1, build 092cba3 (3.10.0-514.2.2.el7.x86_64) is compatible </div><div class="line">FATA[0019] This swarm is already managed by UCP. Please either uninstall UCP first using the &apos;uninstall-ucp&apos; operation or upgrade your cluster to a newer version</div></pre></td></tr></table></figure></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/02/09/机器学习与R语言——模型Tips/" title="机器学习与R语言——模型Tips" itemprop="url">机器学习与R语言——模型Tips</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-02-09T06:21:36.000Z" itemprop="datePublished"> 发表于 2017-02-09</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>通用<br>=<br>对于NA缺失值的处理，连续型的可以给以均值、枚举型应该给一个unknown的计数。</p>
+<p>距离类的算法，需要将各个特征进行标准化【z-score、max-min】</p>
+<p>kmeans聚类<br>=<br>选择类的数量：根据业务判断</p>
+<p>聚类结果的各类中的数量不应相差过于悬殊【也跟业务有关】</p>
+<p>可以根据各个cluster中的特征z-score看出各个cluster自己的特性，并为之冠以业务名称。</p>
+<p>模型性能评价<br>=<br>我们通常只用了分类结果，但是隐藏的概率没有看到。</p>
+<p>例如，一个分类器可以同99%的把握确信包含“免费”和“铃声”等词语的短信是垃圾短信，但是只有51%的把握确信包含“今晚”的短信是垃圾短信。这两种情况都会被预测为垃圾短信，但是对两者做判断的确信程度就很大。一个是99，另一个才只有51，后者就极容易出现错误判断。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&gt; head(subset(sms_results, actual_type != predict_type))</div></pre></td></tr></table></figure></p>
+<h4 id="混淆矩阵"><a href="#混淆矩阵" class="headerlink" title="混淆矩阵"></a>混淆矩阵</h4><p>通常使用二元的混淆矩阵：</p>
+<p>准确率、错误率<br>kappa统计量<br>灵敏度（真阳性lv）、特异性（真阴性率）<br>精确度（阳性预测值）、召回率<br>F度量（综合精确度和召回率）</p>
+<p>使用ROC曲线来可视化模型的可用性，ROC曲线是Y为真阳性比例、X为假阳性比例的线图。<br>AUC是ROC曲线下的面积，一般作为评价分类器的统计量。(Area Under the ROC)</p>
+<h4 id="抽样"><a href="#抽样" class="headerlink" title="抽样"></a>抽样</h4><p>分层抽样：在从全量数据中抽取训练集或测试集的时候有个问题，就是每个类别中的数量可能过大或过小，因此我们应该从每个类别中按同样比例随机抽取数据。</p>
+<p>K折交叉验证的方法默认就是使用分层抽样进行每次数据集的划分的。</p>
+<p>较小数据集的时候，自助法抽样比K折的效果更好一些。</p>
+<h4 id="提高模型的性能"><a href="#提高模型的性能" class="headerlink" title="提高模型的性能"></a>提高模型的性能</h4><p>可以使用caret进行自动参数调整，考虑三个问题：</p>
+<ul>
+<li>需要使用数据来训练哪种机器学习模型</li>
+<li>哪些模型参数是可以调整的，能调整的空间有多大</li>
+<li>使用何种评价标准来评估模型从而找到最优的候选者</li>
+<li></li>
+</ul>
+<p>朴素贝叶斯<br>=<br>假设数据集的所有特征都具有相同的重要性和独立性。</p>
+<p>在贝叶斯算法中，概率值是相乘的，所以概率为0的值将导致该消息是垃圾邮件的后验概率为0.这种问题使用一种叫做拉普拉斯估计(Laplace estimator)的方法解决，本质上就是给频率表中的每个技术都加上一个较小的数，保证每一类中每个特征发生的概率是非零的。</p>
+<p>决策树<br>=<br>boosting算法思想：通过将很多能力弱的学习算法组合在一起，就可以创建一个团队，这比任何一个单独学习算法都强的多。每个模型都有一组特定的优点和缺点，对于特定的问题，可能更好，也可能更差，而使用优缺互补的多种学习方法的结合，就可以显著提高分类器的准确性。</p>
+<p>C5.0中是添加一个trials参数，表示在模型增强团队中使用的独立决策树的数量。trials设置了一个上限，如果该算法识别出额外的试验似乎没有提高模型准确性，那么它将停止添加决策树。</p>
+<p>为啥默认不用boosting呢？一是时间因素，二是如果训练数据集很杂乱，那么boosting可能根本不会改善模型性能。</p>
+<p>针对具体业务，设置风险矩阵cost matrix，添加到模型训练过程中，虽然整体预测准确率会降低，但是能够降低业务风险。</p>
+<p>规则学习<br>=<br>规则学习经常以一种类似决策树学习的方式被使用。分类规则代表的是if-else逻辑语句形式的知识，可以用来对未标记的案例指定一个分类。</p>
+<p>与决策树不同的是，决策树必须从上倒下地应用，而规则是单独存在的事实。根据相同数据建立的模型，规则学习的结果通常比决策树的结果更简洁、更直接、更容易理解。</p>
+<p>规则学习擅长识别偶发事件。</p>
+<p>决策树是分而治之，规则学习是独立而治之，区别是考虑决策节点的时候是否受过去决策历史的影响。</p>
+<p>分类规则也可以直接从决策树获得。从一个叶子节点开始沿着树枝回到树根，就获得一系列的决策，这些决策可以组合成一个单一的规则。</p>
+<p>当训练模型事，如果制定rules=TRUE,C5.0函数就利用分类规则生成模型了。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2017/02/08/R数据结构/" title="R数据结构" itemprop="url">R数据结构</a>
   </h1>
   <p class="article-author">By
@@ -869,132 +1023,9 @@
 
 
 
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/01/09/R/" title="R" itemprop="url">R</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-01-09T02:35:22.000Z" itemprop="datePublished"> 发表于 2017-01-09</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div></pre></td><td class="code"><pre><div class="line">library(SparkR)</div><div class="line">library(tseries)</div><div class="line">library(forecast)</div><div class="line">library(magrittr)</div><div class="line"></div><div class="line">sc&lt;-sparkR.init()</div><div class="line">hivecontext&lt;-sparkRHive.init(sc)</div><div class="line">sqlcontext&lt;-sparkRSQL.init(sc)</div><div class="line"></div><div class="line">dateline&lt;-seq.Date(from = as.Date(&quot;2015-05-01&quot;),to=as.Date(&quot;2017-01-04&quot;),by=&quot;day&quot;)%&gt;%data.frame(.)</div><div class="line">colnames(dateline)&lt;-&quot;log_day&quot;</div><div class="line">dateline&lt;-createDataFrame(sqlContext=sqlcontext,data=dateline)</div><div class="line">registerTempTable(dateline,&quot;premium_date&quot;)</div><div class="line">  </div><div class="line"></div><div class="line">#  Query the premium log of the users who are still remained for 30d and not labeled as brush.</div><div class="line">z0&lt;-&quot;select	a.userid,</div><div class="line">		          from_unixtime(unix_timestamp(c.log_day,&apos;yyyyMMdd&apos;),&apos;yyyy-MM-dd&apos;) as log_day,</div><div class="line">              c.premium_final</div><div class="line">from dim_jlc.dim_user_info a</div><div class="line">left join app_jlc.brush_user b on a.userid=b.userid and b.log_day=&apos;2017-01-04&apos;</div><div class="line">left join fact_jlc.premium_record c on a.userid=c.userid</div><div class="line">where b.userid is null and datediff(&apos;2017-01-04&apos;,to_date(a.invest1st_time))&gt;30&quot;</div><div class="line"></div><div class="line">z1&lt;-&quot;select	a.userid,</div><div class="line">		to_date(a.invest1st_time) as invest1st_day</div><div class="line">from dim_jlc.dim_user_info a</div><div class="line">left join app_jlc.brush_user b on a.userid=b.userid</div><div class="line">where b.userid is null and datediff(&apos;2017-01-04&apos;,to_date(a.invest1st_time))&gt;30&quot;</div><div class="line"></div><div class="line">result&lt;-sql(hivecontext,z0)</div><div class="line">userinfo&lt;-sql(hivecontext,z1)</div><div class="line">colnames(result)&lt;-c(&quot;userid&quot;,&quot;log_day&quot;,&quot;premium&quot;)</div><div class="line">cache(result)</div><div class="line">cache(userinfo)</div><div class="line"></div><div class="line">user_num&lt;-dim(userinfo)[1]</div><div class="line">for(i in 1:user_num)&#123;</div><div class="line">  userid&lt;-</div><div class="line">  start_day&lt;-select(userinfo,&quot;invest1st_day&quot;)</div><div class="line">  dateline&lt;-seq()</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">#rawdata&lt;-fread(&quot;raw0104.csv&quot;)</div><div class="line">#rawdata_df&lt;-tbl_df(rawdata)</div><div class="line">#colnames(rawdata_df)&lt;-c(&quot;userid&quot;,&quot;log_day&quot;,&quot;premium&quot;)</div><div class="line"></div><div class="line">userinfo_df&lt;-collect(userinfo)</div><div class="line">userinfo_df&lt;-tbl_df(userinfo_df)</div></pre></td></tr></table></figure>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/01/02/rancher上手与问题/" title="rancher上手与问题" itemprop="url">rancher上手与问题</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-01-02T07:26:07.000Z" itemprop="datePublished"> 发表于 2017-01-02</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <ol>
-<li>rancher里的host能不能同时属于env1和env2，测试了一下，貌似一个host上只能启动一个agent。</li>
-</ol>
-<p>先把host1和host2添加到env1后，添加了wordpress的service stack，之后将所有服务都停掉，并deactivate两个hosts。</p>
-<p>新建env2，将host1、host2同样的方法添加到env2中，布置mesos集群。</p>
-<p>此时切回env1，再去激活host，发现已经不行了，host上提示disconnected。查看下面的container里，是有rancher agent的。有可能这个agent是在env2的那个把，所以不能连接到env1。</p>
-<p>那：就是不能同时属于两个env咯？</p>
-<ol>
-<li>遇到get ip timeout问题，一般升级这个组件的版本就可以了</li>
-<li>如果我们升级了某个组件的版本，再去调整这个组件的scale，它竟然会先自动降级，然后再调整scale。然后版本就<strong>又恢复成低版本</strong>的了。 Orz….</li>
-<li></li>
-</ol>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
 
   <nav id="page-nav" class="clearfix">
-    <a class="extend prev" rel="prev" href="/page/13/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/12/">12</a><a class="page-number" href="/page/13/">13</a><span class="page-number current">14</span><a class="page-number" href="/page/15/">15</a><a class="page-number" href="/page/16/">16</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/15/">Next<span></span></a>
+    <a class="extend prev" rel="prev" href="/page/13/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/12/">12</a><a class="page-number" href="/page/13/">13</a><span class="page-number current">14</span><a class="page-number" href="/page/15/">15</a><a class="page-number" href="/page/16/">16</a><span class="space">&hellip;</span><a class="page-number" href="/page/25/">25</a><a class="extend next" rel="next" href="/page/15/">Next<span></span></a>
   </nav>
 
 </div>
@@ -1067,31 +1098,31 @@
 			
 		
 			
+				<li><a href="/tags/django/" title="django">django<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构/" title="架构">架构<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构，jaeger/" title="架构，jaeger">架构，jaeger<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Solr/" title="Solr">Solr<sup>1</sup></a></li>
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
 			
 		
 			
 				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/hue/" title="hue">hue<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
 			
 		
 		</ul>
@@ -1164,7 +1195,7 @@
 		
 
 		<p class="copyright">
-		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2018 
 		
 		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
 		

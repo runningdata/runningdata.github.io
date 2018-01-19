@@ -99,6 +99,196 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2016/12/05/Ember-data-定制化adapter/" title="Ember-data-定制化adapter" itemprop="url">Ember-data-定制化adapter</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:09:13.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>adapter在Ember Data中决定数据怎样被持久化到后端数据存储层。比如处理URL格式、REST API的header等。(数据格式决定于<br><a href="../customizing-serializers/">serializer</a>.)Ember Data的默认adapter有一些内置的假设规范，参看：REST API should look。如果你的后端不满足这些规范，就集成默认的adapter，修改一下它的方法。</p>
+<p>一些典型的应用场景是在你的urls中使用<br><code>underscores_case</code> , 使用中介而不是直接使用你后端的server，甚至直接使用<br><a href="https://github.com/locks/ember-localstorage-adapter" target="_blank" rel="external">local storage backend</a>.</p>
+<p>继承adapter在Ember Data中是很轻松的过程。</p>
+<p>如果你的后端你有一致性要求，你可以定义一个<br><code>adapter:application</code>.  <code>adapter:application</code> 的优先级高于所有其他的默认Adapter, 但是低于model内指定的Adapters.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  // Application specific overrides go here</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>如果你有一个model相对于其他的model在与后台沟通的时候需要额外的规则，那么你就可以创建一个Model指定的<br>Adapter：<code>ember generate adapter adapter-name</code>.<br>例如，运行<code>ember generate adapter post</code> 会创建下面的文件:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  namespace: &apos;api/v1&apos;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>Ember Data默认有几个内置的adapter。</p>
+<ul>
+<li><p><a href="http://emberjs.com/api/data/classes/DS.Adapter.html" target="_blank" rel="external">Adapter</a> 是最基础的adapter，不好喊任何功能。如果你要创建一个不同于其他的adapter功能的adapter，通常它是要给不错的起点。</p>
+</li>
+<li><p><a href="http://emberjs.com/api/data/classes/DS.JSONAPIAdapter.html" target="_blank" rel="external">JSONAPIAdapter</a><br><code>JSONAPIAdapter</code>是遵循默认JSON API规范的adapter，负责通过XHR传递JSON与http server沟通。</p>
+</li>
+<li><p><a href="http://emberjs.com/api/data/classes/DS.RESTAdapter.html" target="_blank" rel="external">RESTAdapter</a><br><code>RESTAdapter</code> 通过XHR传递JSON允许你的store与http server直接沟通。2.0版本之前，这个是默认的adapter。</p>
+</li>
+</ul>
+<h2 id="定制化JSONAPIAdapter"><a href="#定制化JSONAPIAdapter" class="headerlink" title="定制化JSONAPIAdapter"></a>定制化JSONAPIAdapter</h2><p><a href="http://emberjs.com/api/data/classes/DS.JSONAPIAdapter.html" target="_blank" rel="external">JSONAPIAdapter</a><br>有一些很好用的hooks来适应非标准的后台。</p>
+<h3 id="URL规范"><a href="#URL规范" class="headerlink" title="URL规范"></a>URL规范</h3><p><code>JSONAPIAdapter</code>可以通过mode的名字来判断 URLs.比如，如果你通过ID查询<code>Post</code>:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">store.findRecord(<span class="string">'post'</span>, <span class="number">1</span>).then(<span class="function"><span class="keyword">function</span>(<span class="params">post</span>) </span>&#123;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>JSON API adapter会自动发送一个<code>GET</code> 请求到<code>/posts/1</code>.</p>
+<p>JSON API adapter中的操作与url对应如下:</p>
+<table><br>  <thead><br>    <tr><th>Action</th><th>HTTP Verb</th><th>URL</th></tr><br>  </thead><br>  <tbody><br>    <tr><th>Find</th><td>GET</td><td>/posts/123</td></tr><br>    <tr><th>Find All</th><td>GET</td><td>/posts</td></tr><br>    <tr><th>Update</th><td>PATCH</td><td>/posts/123</td></tr><br>    <tr><th>Create</th><td>POST</td><td>/posts</td></tr><br>    <tr><th>Delete</th><td>DELETE</td><td>/posts/123</td></tr><br>  </tbody><br></table>
+
+<h4 id="Pluralization-Customization"><a href="#Pluralization-Customization" class="headerlink" title="Pluralization Customization"></a>Pluralization Customization</h4><p>To facilitate pluralizing model names when generating route urls Ember<br>Data comes bundled with<br><a href="https://github.com/stefanpenner/ember-inflector" target="_blank" rel="external">Ember Inflector</a>, a<br>ActiveSupport::Inflector compatible library for inflecting words<br>between plural and singular forms. Irregular or uncountable<br>pluralizations can be specified via <code>Ember.Inflector.inflector</code>.<br>A common way to do this is<br>（上面的没咋看懂，就是url中处理model负数问题的）<br>:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">// sets up Ember.Inflector</div><div class="line">import &apos;./models/custom-inflector-rules&apos;;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">import Inflector from &apos;ember-inflector&apos;;</div><div class="line"></div><div class="line">const inflector = Inflector.inflector;</div><div class="line"></div><div class="line">inflector.irregular(&apos;formula&apos;, &apos;formulae&apos;);</div><div class="line">inflector.uncountable(&apos;advice&apos;);</div><div class="line"></div><div class="line">// Meet Ember Inspector&apos;s expectation of an export</div><div class="line">export default &#123;&#125;;</div></pre></td></tr></table></figure>
+<p>这告诉JSON API adapter对于<code>formula</code>的请求应该去<code>/formulae/1</code> 而不是 <code>/formulas/1</code>, 对于<code>advice</code>的请求应该去 <code>/advice/1</code> 而不是 <code>/advices/1</code>.</p>
+<h4 id="Endpoint-Path-Customization"><a href="#Endpoint-Path-Customization" class="headerlink" title="Endpoint Path Customization"></a>Endpoint Path Customization</h4><p><code>namespace</code> 属性可以作为指定url的前缀.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  namespace: &apos;api/1&apos;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>请求<code>person</code> 被指向 <code>http://emberjs.com/api/1/people/1</code>.</p>
+<h4 id="Host-Customization"><a href="#Host-Customization" class="headerlink" title="Host Customization"></a>Host Customization</h4><p>默认adapter会向当前域发送请求。如果要指定新的域名需要设置adapter的<code>host</code>属性。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  host: &apos;https://api.example.com&apos;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>请求<code>person</code> 会指向 <code>https://api.example.com/people/1</code>.</p>
+<h4 id="Path-Customization"><a href="#Path-Customization" class="headerlink" title="Path Customization"></a>Path Customization</h4><p>默认 <code>JSONAPIAdapter</code>会处理model的名字为复数，生成path。如果这并不适用于你的后台，那就override <code>pathForType</code> 方法.</p>
+<p>例如，如果你不想复数化你的model名称，而是要把你的model名字从驼峰转为下滑线，你可以这边写<br><code>pathForType</code> 方法:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  pathForType: function(type) &#123;</div><div class="line">    return Ember.String.underscore(type);</div><div class="line">  &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>请求 <code>person</code> 被定向到 <code>/person/1</code>.<br>请求 <code>user-profile</code>定向到 <code>/user_profile/1</code>.</p>
+<h4 id="Headers-customization"><a href="#Headers-customization" class="headerlink" title="Headers customization"></a>Headers customization</h4><p>又的API必须要有一些header才行，如果提供一个key。在<code>JSONAPIAdapter</code>的 <code>headers</code>对象中我们可以设置任意的header信息。Ember Data会在发送每个ajax 请求的时候带上它们.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  headers: &#123;</div><div class="line">    &apos;API_KEY&apos;: &apos;secret key&apos;,</div><div class="line">    &apos;ANOTHER_HEADER&apos;: &apos;Some header value&apos;</div><div class="line">  &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p><code>headers</code>也可以使用 computed property来支持动态header. 下面例子中是基于<code>session</code>service中的<code>authToken</code>属性的.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  session: Ember.inject.service(&apos;session&apos;),</div><div class="line">  headers: Ember.computed(&apos;session.authToken&apos;, function() &#123;</div><div class="line">    return &#123;</div><div class="line">      &apos;API_KEY&apos;: this.get(&apos;session.authToken&apos;),</div><div class="line">      &apos;ANOTHER_HEADER&apos;: &apos;Some header value&apos;</div><div class="line">    &#125;;</div><div class="line">  &#125;)</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>In some cases, your dynamic headers may require data from some<br>object outside of Ember’s observer system (for example<br><code>document.cookie</code>). You can use the<br><a href="http://emberjs.com/api/classes/Ember.ComputedProperty.html#method_volatile" target="_blank" rel="external">volatile</a><br>function to set the property into a non-cached mode causing the headers to<br>be recomputed with every request.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  headers: Ember.computed(function() &#123;</div><div class="line">    return &#123;</div><div class="line">      &apos;API_KEY&apos;: Ember.get(document.cookie.match(/apiKey\=([^;]*)/), &apos;1&apos;),</div><div class="line">      &apos;ANOTHER_HEADER&apos;: &apos;Some header value&apos;</div><div class="line">    &#125;;</div><div class="line">  &#125;).volatile()</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h4 id="Authoring-Adapters"><a href="#Authoring-Adapters" class="headerlink" title="Authoring Adapters"></a>Authoring Adapters</h4><p><code>defaultSerializer</code> 可以用来指定adapter的serializer. 只有model需要指定的serializer或者么有定义<code>serializer:application</code>的时候才会用到。</p>
+<p>在app中, 指定<br><code>serializer:application</code>通常很容易. 但是，如果你是一个社区adapter的作者，记住一定要设置这个属性，以免你的用户忘记没有指定这个属性，Ember就报错了。.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">import JSONAPIAdapter from &apos;ember-data/adapters/json-api&apos;;</div><div class="line"></div><div class="line">export default JSONAPIAdapter.extend(&#123;</div><div class="line">  defaultSerializer: &apos;-default&apos;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h2 id="社区的Adapters"><a href="#社区的Adapters" class="headerlink" title="社区的Adapters"></a>社区的Adapters</h2><p>可以从下面的地址中找到社区贡献的adapter，或许有适合你的哦:</p>
+<ul>
+<li><a href="http://emberobserver.com/categories/data" target="_blank" rel="external">Ember Observer</a></li>
+<li><a href="https://github.com/search?q=ember+data+adapter&amp;ref=cmdform" target="_blank" rel="external">GitHub</a></li>
+<li><a href="http://bower.io/search/?q=ember-data-" target="_blank" rel="external">Bower</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/jenkins/" title="jenkins" itemprop="url">jenkins</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T09:09:07.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="安装插件"><a href="#安装插件" class="headerlink" title=" 安装插件"></a> 安装插件</h2><p> <code>问题</code>：每次在线安装插件的时候，Jenkins默认都是使用www.google.com去验证网络是否通畅，如果不通畅下面指定的插件还是会去下载，但是根本就不会安装。(比较让人费解的是，都下了还不安，要么就别下了也)</p>
+<p> <code>期望</code>：使用www.baidu.com来验证网络，或者跳过验证。</p>
+<p> <code>方案</code>: 修改/var/lib/jenkins/updates/default.json里的connectionCheckUrl，这个文件特别大， 但是这个connectionCheckUrl一般都在最开始的地方。</p>
+<h2 id="启用用户验证"><a href="#启用用户验证" class="headerlink" title="启用用户验证"></a>启用用户验证</h2><p>系统管理-&gt; Configure Global Security</p>
+<h2 id="maven相关"><a href="#maven相关" class="headerlink" title="maven相关"></a>maven相关</h2><p>安装maven插件</p>
+<h4 id="maven仓库"><a href="#maven仓库" class="headerlink" title="maven仓库"></a>maven仓库</h4><p>主要是为了能够让每个maven项目build的时候都使用一个公共的maven地址，而又不想去默认的~/.m2/repository(我们这边/的硬盘不是很大).</p>
+<p>安装一个插件：config file provider plugin<br>在系统管理-&gt;Managed files里添加一个maven的settings文件，可以把自己线上的maven配置信息弄过来。</p>
+<h4 id="maven构建"><a href="#maven构建" class="headerlink" title="maven构建"></a>maven构建</h4><p>maven项目配置的时候，记得以下几点</p>
+<ul>
+<li>在goals和options里指定maven构建目标，反正我是二逼的忘掉了。这一条只为二逼的自己</li>
+<li>root pom指定相对根目录的pom.xml的位置。</li>
+<li>修改config file provider plugin的settings.xml指定的localRepository对于Jenkins用户的可读可写可执行的权限，懒货如我，直接整个repo都777了。</li>
+</ul>
+<h4 id="发布到tomcat"><a href="#发布到tomcat" class="headerlink" title="发布到tomcat"></a>发布到tomcat</h4><p><code>期望</code>：<br>build成功后直接使用shell将war包发布到tomcat，并重启之，等待一段时间后，测试一系列接口，确认后台正常服务。</p>
+<p><code>问题</code>：<br>jenkins的job进程创建的、包括调用脚本创建的进程都会随着Jenkins job进程的退出而退出。</p>
+<p>参考：<a href="https://wiki.jenkins-ci.org/display/JENKINS/ProcessTreeKiller" target="_blank" rel="external">ProcessTreeKiller</a></p>
+<p><code>方案</code>：<br>下载Deploy to container Plugin，在指定project下配置构建完成后操作，配置好tomcat的相关信息之后，尝试build。</p>
+<p>发现报错:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div></pre></td><td class="code"><pre><div class="line">Deploying /var/lib/jenkins/jobs/metamap/workspace/metamap_java/target/metamap.war to container Tomcat 7.x Remote</div><div class="line">ERROR: Build step failed with exception</div><div class="line">org.codehaus.cargo.container.ContainerException: Failed to redeploy [/var/lib/jenkins/jobs/metamap/workspace/metamap_java/target/metamap.war]</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.AbstractTomcatManagerDeployer.redeploy(AbstractTomcatManagerDeployer.java:189)</div><div class="line">	at hudson.plugins.deploy.CargoContainerAdapter.deploy(CargoContainerAdapter.java:73)</div><div class="line">	at hudson.plugins.deploy.CargoContainerAdapter$1.invoke(CargoContainerAdapter.java:116)</div><div class="line">	at hudson.plugins.deploy.CargoContainerAdapter$1.invoke(CargoContainerAdapter.java:103)</div><div class="line">	at hudson.FilePath.act(FilePath.java:990)</div><div class="line">	at hudson.FilePath.act(FilePath.java:968)</div><div class="line">	at hudson.plugins.deploy.CargoContainerAdapter.redeploy(CargoContainerAdapter.java:103)</div><div class="line">	at hudson.plugins.deploy.DeployPublisher.perform(DeployPublisher.java:61)</div><div class="line">	at hudson.tasks.BuildStepMonitor$3.perform(BuildStepMonitor.java:45)</div><div class="line">	at hudson.model.AbstractBuild$AbstractBuildExecution.perform(AbstractBuild.java:782)</div><div class="line">	at hudson.model.AbstractBuild$AbstractBuildExecution.performAllBuildSteps(AbstractBuild.java:723)</div><div class="line">	at hudson.maven.MavenModuleSetBuild$MavenModuleSetBuildExecution.post2(MavenModuleSetBuild.java:1037)</div><div class="line">	at hudson.model.AbstractBuild$AbstractBuildExecution.post(AbstractBuild.java:668)</div><div class="line">	at hudson.model.Run.execute(Run.java:1763)</div><div class="line">	at hudson.maven.MavenModuleSetBuild.run(MavenModuleSetBuild.java:529)</div><div class="line">	at hudson.model.ResourceController.execute(ResourceController.java:98)</div><div class="line">	at hudson.model.Executor.run(Executor.java:410)</div><div class="line">Caused by: org.codehaus.cargo.container.tomcat.internal.TomcatManagerException: The username you provided is not allowed to use the text-based Tomcat Manager (error 403)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.TomcatManager.invoke(TomcatManager.java:555)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.TomcatManager.list(TomcatManager.java:686)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.TomcatManager.getStatus(TomcatManager.java:699)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.AbstractTomcatManagerDeployer.redeploy(AbstractTomcatManagerDeployer.java:174)</div><div class="line">	... 16 more</div><div class="line">Caused by: java.io.IOException: Server returned HTTP response code: 403 for URL: http://10.0.1.62:8080//manager/text/list</div><div class="line">	at sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1839)</div><div class="line">	at sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1440)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.TomcatManager.invoke(TomcatManager.java:544)</div><div class="line">	... 19 more</div><div class="line">org.codehaus.cargo.container.tomcat.internal.TomcatManagerException: The username you provided is not allowed to use the text-based Tomcat Manager (error 403)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.TomcatManager.invoke(TomcatManager.java:555)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.TomcatManager.list(TomcatManager.java:686)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.TomcatManager.getStatus(TomcatManager.java:699)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.AbstractTomcatManagerDeployer.redeploy(AbstractTomcatManagerDeployer.java:174)</div><div class="line">	at hudson.plugins.deploy.CargoContainerAdapter.deploy(CargoContainerAdapter.java:73)</div><div class="line">	at hudson.plugins.deploy.CargoContainerAdapter$1.invoke(CargoContainerAdapter.java:116)</div><div class="line">	at hudson.plugins.deploy.CargoContainerAdapter$1.invoke(CargoContainerAdapter.java:103)</div><div class="line">	at hudson.FilePath.act(FilePath.java:990)</div><div class="line">	at hudson.FilePath.act(FilePath.java:968)</div><div class="line">	at hudson.plugins.deploy.CargoContainerAdapter.redeploy(CargoContainerAdapter.java:103)</div><div class="line">	at hudson.plugins.deploy.DeployPublisher.perform(DeployPublisher.java:61)</div><div class="line">	at hudson.tasks.BuildStepMonitor$3.perform(BuildStepMonitor.java:45)</div><div class="line">	at hudson.model.AbstractBuild$AbstractBuildExecution.perform(AbstractBuild.java:782)</div><div class="line">	at hudson.model.AbstractBuild$AbstractBuildExecution.performAllBuildSteps(AbstractBuild.java:723)</div><div class="line">	at hudson.maven.MavenModuleSetBuild$MavenModuleSetBuildExecution.post2(MavenModuleSetBuild.java:1037)</div><div class="line">	at hudson.model.AbstractBuild$AbstractBuildExecution.post(AbstractBuild.java:668)</div><div class="line">	at hudson.model.Run.execute(Run.java:1763)</div><div class="line">	at hudson.maven.MavenModuleSetBuild.run(MavenModuleSetBuild.java:529)</div><div class="line">	at hudson.model.ResourceController.execute(ResourceController.java:98)</div><div class="line">	at hudson.model.Executor.run(Executor.java:410)</div><div class="line">Caused by: java.io.IOException: Server returned HTTP response code: 403 for URL: http://10.0.1.62:8080//manager/text/list</div><div class="line">	at sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1839)</div><div class="line">	at sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1440)</div><div class="line">	at org.codehaus.cargo.container.tomcat.internal.TomcatManager.invoke(TomcatManager.java:544)</div><div class="line">	... 19 more</div><div class="line">Build step &apos;Deploy war/ear to a container&apos; marked build as failure</div></pre></td></tr></table></figure></p>
+<p>修改对应tomcat的conf/tomcat-users.xml，添加tomcat-script角色，并赋予给当前的tomcat管理员用户。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">build pom done.....</div><div class="line">Deploying /var/lib/jenkins/jobs/metamap/workspace/metamap_java/target/metamap.war to container Tomcat 7.x Remote</div><div class="line">  Redeploying [/var/lib/jenkins/jobs/metamap/workspace/metamap_java/target/metamap.war]</div><div class="line">  Undeploying [/var/lib/jenkins/jobs/metamap/workspace/metamap_java/target/metamap.war]</div><div class="line">  Deploying [/var/lib/jenkins/jobs/metamap/workspace/metamap_java/target/metamap.war]</div><div class="line">Finished: SUCCESS</div></pre></td></tr></table></figure>
+<h2 id="使用root用户"><a href="#使用root用户" class="headerlink" title="使用root用户"></a>使用root用户</h2><p>因为会部署很多任务放在jenkins上，而各个任务都有自己的权限目录，使用jenkins用户执行任务会有些不方便，总是遇到权限问题。</p>
+<p>结合我们既有环境考虑，使用root用户执行jenkins任务并不会造成额外的危险。（操作jenksin 的人很有限，而且各自有账户）</p>
+<p>具体步骤:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">vim /etc/sysconfig/jenkins</div><div class="line">$JENKINS_USER=&quot;root&quot;</div><div class="line"></div><div class="line">chown -R root:root /var/lib/jenkins</div><div class="line">chown -R root:root /var/cache/jenkins</div><div class="line">chown -R root:root /var/log/jenkins</div><div class="line"></div><div class="line">service jenkins restart</div></pre></td></tr></table></figure></p>
+<p>先在jenkins配置文件里指定jenkins系统执行任务的用户，之后修改jenkins既有目录的权限，重启服务。</p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>python脚本不及时输出，最后一股子出来。<br>在执行python命令前，先添加环境变量：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">export PYTHONUNBUFFERED=1</div></pre></td></tr></table></figure></p>
+<ul>
+<li><a href="https://stackoverflow.com/questions/11631951/jenkins-console-output-not-in-realtime" target="_blank" rel="external">https://stackoverflow.com/questions/11631951/jenkins-console-output-not-in-realtime</a></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2016/12/05/ember异常记录/" title="ember异常记录" itemprop="url">ember异常记录</a>
   </h1>
   <p class="article-author">By
@@ -800,225 +990,9 @@
 
 
 
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2016/12/05/nodejs学习笔记/" title="nodejs学习笔记" itemprop="url">nodejs学习笔记</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2016-12-05T09:08:17.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>v8的出现，还有commonjs的规范化使得nodejs提供后台服务成为可能。</p>
-<p>两种启动方式：</p>
-<ul>
-<li>node app.js   不自动更新</li>
-<li>supervisor app.js 自动更新，修改后不用重启</li>
-</ul>
-<hr>
-<h2 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h2><ul>
-<li><p>默认全部都是异步操作</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line">fs.readFile(<span class="string">'test.file'</span>, <span class="string">'utf-8'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">err, data</span>)</span>&#123;</div><div class="line">    <span class="keyword">if</span> (err) &#123;</div><div class="line">        <span class="built_in">console</span>.log(err);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="built_in">console</span>.log(data);</div><div class="line">    &#125;</div><div class="line">&#125;);</div><div class="line"><span class="built_in">console</span>.log(<span class="string">'end'</span>); <span class="comment">// 这一行会先被打印出来</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>全部基于事件处理机制，nodejs的所有机制都是围绕事件回调机制完成的。事件的回调函数在执行的过程中，可能会发出IO请求或者emit事件，执行完毕后再返回事件循环</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 声明事件对象</span></div><div class="line"><span class="keyword">var</span> EventEmitter=<span class="built_in">require</span>(<span class="string">'events'</span>).EventEmiiter;</div><div class="line"><span class="keyword">var</span> event = <span class="keyword">new</span> EventEmiiter();</div><div class="line"></div><div class="line"><span class="comment">//注册事件</span></div><div class="line">event.on(<span class="string">'some_event'</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">"this is a custom event"</span>);</div><div class="line">&#125;);</div><div class="line"></div><div class="line"></div><div class="line"><span class="comment">// 3秒钟后触发事件</span></div><div class="line">setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    event.emit(<span class="string">'some_event'</span>);</div><div class="line">&#125;, <span class="number">3000</span>);</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<hr>
-<h2 id="module和package"><a href="#module和package" class="headerlink" title="module和package"></a>module和package</h2><p>nodejs的module可以是js、json或者c++扩展。<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> http = <span class="built_in">require</span>(<span class="string">'http'</span>); <span class="comment">// c++的module</span></div></pre></td></tr></table></figure></p>
-<p>exports是模块对外开放的接口<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> name;</div><div class="line">exports.setName = <span class="function"><span class="keyword">function</span>(<span class="params">n</span>)</span>&#123;</div><div class="line">    name = n;</div><div class="line">&#125;</div><div class="line"></div><div class="line">exports.say = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'name is : '</span> + name);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>require是外部引用模块的接口, 只会引入一次<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> modu1=<span class="built_in">require</span>(<span class="string">'./modu'</span>);</div><div class="line">modu1.setName(<span class="string">'will'</span>);</div><div class="line"><span class="keyword">var</span> modu2=<span class="built_in">require</span>(<span class="string">'./modu'</span>);</div><div class="line">modu2.setName(<span class="string">'william'</span>);</div><div class="line">modu2.say(); <span class="comment">// 会输出william</span></div></pre></td></tr></table></figure></p>
-<p>如果我们要每次都弄一个新的对象呢??<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">hello</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> name;</div><div class="line">    <span class="keyword">this</span>.setName = <span class="function"><span class="keyword">function</span>(<span class="params">n</span>)</span>&#123;</div><div class="line">        name = n;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="keyword">this</span>.say = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'name is : '</span> + name);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="built_in">module</span>.exports = hello;</div></pre></td></tr></table></figure></p>
-<p>对应的引入为：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> hello=<span class="built_in">require</span>(<span class="string">'./modu'</span>);</div><div class="line"><span class="keyword">var</span> modu1 = <span class="keyword">new</span> hello();</div><div class="line">modu1.setName(<span class="string">'will'</span>);</div><div class="line"><span class="keyword">var</span> modu2 = <span class="keyword">new</span> hello();</div><div class="line">modu2.setName(<span class="string">'william'</span>);</div><div class="line">modu1.say(); <span class="comment">// 会输出will</span></div><div class="line">modu2.say(); <span class="comment">// 会输出william</span></div></pre></td></tr></table></figure></p>
-<h3 id="pacakge"><a href="#pacakge" class="headerlink" title="pacakge"></a>pacakge</h3><p>commonJS规范后，可以发布在npm上</p>
-<ul>
-<li>package.json在根目录下，没有的话就去找index.js</li>
-<li>二进制文件在bin目录下</li>
-<li>js代码在lib目录下</li>
-<li>测试在test目录</li>
-<li>….</li>
-</ul>
-<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">// package.json</div><div class="line">&#123;</div><div class="line">    "main" : "./lib/index.js", // 入口</div><div class="line">    "name" : "名",</div><div class="line">    "repositories": "仓库托管地址数据，每个元素要包含type、url、path",</div><div class="line">    "dependencies" : "依赖"</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<hr>
-<h2 id="包管理器和代码调试"><a href="#包管理器和代码调试" class="headerlink" title="包管理器和代码调试"></a>包管理器和代码调试</h2><h4 id="包管理器"><a href="#包管理器" class="headerlink" title="包管理器"></a>包管理器</h4><table>
-<thead>
-<tr>
-<th>命令</th>
-<th>介绍</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>npm init</td>
-<td>初始化一个package目录，会自动生成规范目录与package.json</td>
-</tr>
-<tr>
-<td>npm install xxx</td>
-<td>本地模式安装xxx，将package安装到node_modules目录下</td>
-</tr>
-<tr>
-<td>npm list</td>
-<td>查看已经安装的包</td>
-</tr>
-<tr>
-<td>npm help <json></json></td>
-<td>查看json的使用</td>
-</tr>
-<tr>
-<td>npm publish</td>
-<td>进入到package下执行，发布package到公共库（最好是通过npm init生成的目录规范）</td>
-</tr>
-<tr>
-<td>npm unpublish</td>
-<td>取消发布</td>
-</tr>
-</tbody>
-</table>
-<p><strong><em>全局安装的包，不能直接require，不会搜索/usr/local/lib/node_modules。只有需要命令行使用的时候才安装全局模式</em></strong></p>
-<h4 id="代码调试"><a href="#代码调试" class="headerlink" title="代码调试"></a>代码调试</h4><ol>
-<li>node –debug-brk=5858 app.js, 会等待debug连上来</li>
-<li>eclipse插件V8 vm里弄一个debug就行了</li>
-</ol>
-<hr>
-<h2 id="全局对象和全局变量"><a href="#全局对象和全局变量" class="headerlink" title="全局对象和全局变量"></a>全局对象和全局变量</h2><p>global是所有全局变量的宿主。</p>
-<h4 id="console"><a href="#console" class="headerlink" title="console"></a>console</h4><p>log\error\trace</p>
-<h4 id="process"><a href="#process" class="headerlink" title="process"></a>process</h4><p>描述当前进程状态，提供了与os交互的接口。<br>|变量|描述|<br>|—|—|<br>|process.argv|命令行参数，第一个是node，第二是脚本名称，第三个才是参数|<br>|process.stdout|标准输出|<br>|process.stdin|标准输入，需要先process.stdin.resume()|<br>|process.nextTick(callback)|为事件循环设置一个任务|<br>nodejs适合io密集型的应用，而不是计算密集型的应用。</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">doSth</span>(<span class="params">args, callback</span>)</span>&#123;</div><div class="line">    sthComplext(args);</div><div class="line">    callback();</div><div class="line">&#125;;</div><div class="line"></div><div class="line">doSth(<span class="string">'123'</span>, <span class="function"><span class="keyword">function</span> <span class="title">onEnd</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    compute();</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
-<p>有了process.nextTick后可以写成：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">doSth</span>(<span class="params">args, callback</span>)</span>&#123;</div><div class="line">    sthComplext(args);</div><div class="line">    process.nextTick(callback); <span class="comment">// 把耗时的两个程序拆成两个事件，提高并行度</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<hr>
-<h2 id="util和EventEmitter"><a href="#util和EventEmitter" class="headerlink" title="util和EventEmitter"></a>util和EventEmitter</h2><h5 id="utilities"><a href="#utilities" class="headerlink" title="utilities"></a>utilities</h5><table>
-<thead>
-<tr>
-<th>api</th>
-<th>描述</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>inheris(constructor, superConstructor)</td>
-<td>实现对象间原型继承</td>
-</tr>
-<tr>
-<td>inspect()</td>
-<td>将任意对象以字符串的形式打印出来</td>
-</tr>
-</tbody>
-</table>
-<h5 id="events"><a href="#events" class="headerlink" title="events"></a>events</h5><p>nodejs本身架构就是事件驱动的。<br>EventEmitter的核心就是事件发射与事件监听功能的封装。EventEmitter的每个事件由一个事件或若干个参数组成。对于某个事件，EventEmitter支持若干个事件监听器。事件发生时，事件监听器被依次调用，事件参数作为回调函数的参数传递。<br>|api|描述|<br>|—|—|<br>|EventEmitter.on(event, listener)|为指定事件注册监听器|<br>|EventEmitter.emit()|发射event事件|<br>|EventEmitter.once(event, listener)|监听器只出发一次|<br>|EventEmitter.removeListener(event, listener)|移除监听器|<br>|EventEmitter.removeAllListener(event)|移除所有监听器|</p>
-<p>特殊事件error，出错的时候，EventEmitter没有注册相应的监听器，就当做异常，退出程序，打印调用栈。</p>
-<p>一般继承EventEmitter来使用它。 </p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2016/12/05/celery笔记/" title="celery笔记" itemprop="url">celery笔记</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2016-12-05T09:07:37.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>需求需要异步调用后台执行时间长的任务，而且任务结束后回写一些status到数据库。</p>
-<p>开始的时候，在django中使用自己的threadpool：<br><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># !/usr/bin/env python</span></div><div class="line"><span class="comment"># -*- coding:utf-8 -*-</span></div><div class="line"><span class="string">'''</span></div><div class="line">created by will </div><div class="line">'''</div><div class="line"><span class="keyword">import</span> Queue</div><div class="line"><span class="keyword">import</span> logging</div><div class="line"><span class="keyword">import</span> subprocess</div><div class="line"><span class="keyword">import</span> threading</div><div class="line"><span class="keyword">import</span> time, os</div><div class="line"><span class="keyword">from</span> django.utils <span class="keyword">import</span> timezone</div><div class="line"><span class="keyword">from</span> subprocess <span class="keyword">import</span> Popen</div><div class="line"></div><div class="line"><span class="keyword">from</span> metamap.models <span class="keyword">import</span> Executions</div><div class="line"></div><div class="line"><span class="keyword">from</span> metamap.utils <span class="keyword">import</span> enums</div><div class="line"></div><div class="line">logger = logging.getLogger(<span class="string">'django'</span>)</div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">WorkManager</span><span class="params">(object)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, work_num=<span class="number">1000</span>, thread_num=<span class="number">2</span>)</span>:</span></div><div class="line">        self.work_queue = Queue.Queue()</div><div class="line">        self.threads = []</div><div class="line">        <span class="comment"># self.__init_work_queue(work_num)</span></div><div class="line">        self.__init_thread_pool(thread_num)</div><div class="line"></div><div class="line">    <span class="string">"""</span></div><div class="line">      初始化线程</div><div class="line">    """</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init_thread_pool</span><span class="params">(self, thread_num)</span>:</span></div><div class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(thread_num):</div><div class="line">            self.threads.append(Work(self.work_queue))</div><div class="line"></div><div class="line">    <span class="string">"""</span></div><div class="line">      初始化工作队列</div><div class="line">    """</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init_work_queue</span><span class="params">(self, jobs_num)</span>:</span></div><div class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(jobs_num):</div><div class="line">            self.add_job(do_job, i)</div><div class="line"></div><div class="line">    <span class="string">"""</span></div><div class="line">      添加一项工作入队</div><div class="line">    """</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_job</span><span class="params">(self, func, *args)</span>:</span></div><div class="line">        self.work_queue.put((func, list(args)))  <span class="comment"># 任务入队，Queue内部实现了同步机制</span></div><div class="line"></div><div class="line">    <span class="string">"""</span></div><div class="line">      检查剩余队列任务</div><div class="line">    """</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">check_queue</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> self.work_queue.qsize()</div><div class="line"></div><div class="line">    <span class="string">"""</span></div><div class="line">      等待所有线程运行完毕</div><div class="line">    """</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">wait_allcomplete</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">for</span> item <span class="keyword">in</span> self.threads:</div><div class="line">            <span class="keyword">if</span> item.isAlive(): item.join()</div><div class="line"></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Work</span><span class="params">(threading.Thread)</span>:</span></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, work_queue)</span>:</span></div><div class="line">        threading.Thread.__init__(self)</div><div class="line">        self.work_queue = work_queue</div><div class="line">        self.start()</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="comment"># 死循环，从而让创建的线程在一定条件下关闭退出</span></div><div class="line">        <span class="keyword">while</span> <span class="keyword">True</span>:</div><div class="line">            location = <span class="string">''</span></div><div class="line">            <span class="keyword">try</span>:</div><div class="line">                do, args = self.work_queue.get_nowait()  <span class="comment"># 任务异步出队，Queue内部实现了同步机制</span></div><div class="line">                logger.info(<span class="string">'%s method '</span> % do)</div><div class="line">                logger.info(<span class="string">'%s find job ....... %s '</span> % (self.getName(), <span class="string">''</span>.join(args[<span class="number">0</span>])))</div><div class="line">                returncode = do(args)</div><div class="line">                self.work_queue.task_done()  <span class="comment"># 通知系统任务完成</span></div><div class="line">                location = <span class="string">''</span>.join(args[<span class="number">1</span>])</div><div class="line">                execution = Executions.objects.get(logLocation=location)</div><div class="line">                execution.end_time = timezone.now()</div><div class="line">                logger.info(<span class="string">'%s return code is %d'</span> % (self.getName(), returncode))</div><div class="line">                <span class="keyword">if</span> returncode == <span class="number">0</span>:</div><div class="line">                    execution.status = enums.EXECUTION_STATUS.DONE</div><div class="line">                <span class="keyword">else</span>:</div><div class="line">                    execution.status = enums.EXECUTION_STATUS.FAILED</div><div class="line">                execution.save()</div><div class="line">            <span class="keyword">except</span> Queue.Empty:</div><div class="line">                time.sleep(<span class="number">3</span>)</div><div class="line">            <span class="keyword">except</span> Executions.DoesNotExist:</div><div class="line">                logger.error(<span class="string">'cannot find execution from db for location %s'</span> % location)</div><div class="line">            <span class="keyword">except</span> Exception, e:</div><div class="line">                logger.error(<span class="string">'got error :%s'</span> % str(e))</div><div class="line">                <span class="keyword">break</span></div><div class="line"></div><div class="line"></div><div class="line"><span class="comment"># 具体要做的任务</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">do_job</span><span class="params">(*args)</span>:</span></div><div class="line">    logger.debug(args)</div><div class="line">    log = args[<span class="number">0</span>][<span class="number">1</span>]</div><div class="line">    command = args[<span class="number">0</span>][<span class="number">0</span>]</div><div class="line">    p = Popen([<span class="string">''</span>.join(command)], stdout=open(log, <span class="string">'a'</span>), stderr=subprocess.STDOUT, shell=<span class="keyword">True</span>, universal_newlines=<span class="keyword">True</span>)</div><div class="line">    p.wait()</div><div class="line">    <span class="keyword">return</span> p.returncode</div><div class="line"></div><div class="line"></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</div><div class="line">    start = time.time()</div><div class="line">    <span class="comment"># work_manager = WorkManager(10, 3)</span></div><div class="line">    <span class="comment"># work_manager.add_job(do_job, "sh /usr/local/metamap/test.sh")</span></div><div class="line">    <span class="comment"># work_manager.add_job(do_job, "sh /usr/local/metamap/test.sh")</span></div><div class="line">    <span class="keyword">print</span> <span class="string">"doneeeeeeeeeeeeee"</span></div><div class="line">    end = time.time()</div><div class="line">    <span class="keyword">print</span> <span class="string">"cost all time: %s"</span> % (end - start)</div></pre></td></tr></table></figure></p>
-<p>遇到两个问题：</p>
-<ul>
-<li>django项目的manage.py运行的时候，连接池会随着view代码的加载而初始化运行，导致命令不退出，一直hang着</li>
-<li>结合gunicorn使用的时候，即便已经完成了django的一次request和response过程，重定向到了任务的状态页面。但是gunicorn任务此次request并未结束，导致worker自认为请求超时自杀，另起worker。比如后台异步任务在连接池中需要执行400s，而gunicorn的请求超时时间是300s，那么到了300s的时候当前worker的进程就被kill，然后另起一个新的worker。那么后台的线程池里执行的这个任务就也随着worker的退出被中止了。</li>
-</ul>
-<p>问了一些大神的意见， 推荐给我celery。尝试django-celery未成功，所以就使用了原生的celery，解决了以上问题。</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
 
   <nav id="page-nav" class="clearfix">
-    <a class="extend prev" rel="prev" href="/page/16/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/15/">15</a><a class="page-number" href="/page/16/">16</a><span class="page-number current">17</span><a class="page-number" href="/page/18/">18</a><a class="page-number" href="/page/19/">19</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/18/">Next<span></span></a>
+    <a class="extend prev" rel="prev" href="/page/16/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/15/">15</a><a class="page-number" href="/page/16/">16</a><span class="page-number current">17</span><a class="page-number" href="/page/18/">18</a><a class="page-number" href="/page/19/">19</a><span class="space">&hellip;</span><a class="page-number" href="/page/25/">25</a><a class="extend next" rel="next" href="/page/18/">Next<span></span></a>
   </nav>
 
 </div>
@@ -1091,31 +1065,31 @@
 			
 		
 			
+				<li><a href="/tags/django/" title="django">django<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构/" title="架构">架构<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构，jaeger/" title="架构，jaeger">架构，jaeger<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Solr/" title="Solr">Solr<sup>1</sup></a></li>
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
 			
 		
 			
 				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/hue/" title="hue">hue<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
 			
 		
 		</ul>
@@ -1188,7 +1162,7 @@
 		
 
 		<p class="copyright">
-		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2018 
 		
 		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
 		

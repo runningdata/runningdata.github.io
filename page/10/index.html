@@ -99,6 +99,124 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2017/07/04/自如爬虫/" title="自如爬虫" itemprop="url">自如爬虫</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-04T08:08:37.000Z" itemprop="datePublished"> 发表于 2017-07-04</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>筛选房源的URL</p>
+<p>筛选的是北土城的房子：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">https://phoenix.ziroom.com/v7/room/list.json?uid=0&amp;os=android%3A4.2.2&amp;suggestion_type=3&amp;model=HTC+One+X+-+4.2.2+-+API+17+-+720x1280&amp;sort=2&amp;suggestion_value=%E5%8C%97%E5%9C%9F%E5%9F%8E&amp;imei=000000000000000&amp;app_version=5.2.7&amp;network=WIFI&amp;ip=10.0.3.15&amp;size=10&amp;sign=fed60ace709254dbe7ca5b471ea8bb62&amp;timestamp=1499155383&amp;price=%2C&amp;page=1&amp;sign_open=1&amp;city_code=110000</div><div class="line"></div><div class="line">-- 下拉一页面</div><div class="line">https://phoenix.ziroom.com/v7/room/list.json?uid=0&amp;os=android%3A4.2.2&amp;suggestion_type=3&amp;model=HTC+One+X+-+4.2.2+-+API+17+-+720x1280&amp;sort=2&amp;suggestion_value=%E5%8C%97%E5%9C%9F%E5%9F%8E&amp;imei=000000000000000&amp;app_version=5.2.7&amp;network=WIFI&amp;ip=10.0.3.15&amp;size=10&amp;sign=924565090bc8a24dfd8f9dd07e04f4af&amp;timestamp=1499155456&amp;price=%2C&amp;page=2&amp;sign_open=1&amp;city_code=110000</div><div class="line"></div><div class="line">-- 下拉一页面</div><div class="line">https://phoenix.ziroom.com/v7/room/list.json?uid=0&amp;os=android%3A4.2.2&amp;suggestion_type=3&amp;model=HTC+One+X+-+4.2.2+-+API+17+-+720x1280&amp;sort=2&amp;suggestion_value=%E5%8C%97%E5%9C%9F%E5%9F%8E&amp;imei=000000000000000&amp;app_version=5.2.7&amp;network=WIFI&amp;ip=10.0.3.15&amp;size=10&amp;sign=2d87dcd80f06daf1b967b9b445fb302e&amp;timestamp=1499155491&amp;price=%2C&amp;page=3&amp;sign_open=1&amp;city_code=110000</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">uid	0</div><div class="line">os	android:4.2.2</div><div class="line">suggestion_type	3</div><div class="line">model	HTC One X - 4.2.2 - API 17 - 720x1280</div><div class="line">sort	2</div><div class="line">suggestion_value	北土城</div><div class="line">imei	000000000000000</div><div class="line">app_version	5.2.7</div><div class="line">network	WIFI</div><div class="line">ip	10.0.3.15</div><div class="line">size	10</div><div class="line">sign	fed60ace709254dbe7ca5b471ea8bb62</div><div class="line">timestamp	1499155383</div><div class="line">price	,</div><div class="line">page	1</div><div class="line">sign_open	1</div><div class="line">city_code	110000</div></pre></td></tr></table></figure>
+<p>房子详情页<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">https://phoenix.ziroom.com/v7/room/detail.json?sign=a97bdae17004d4c9bc535068316b2185&amp;uid=0&amp;timestamp=1499155557&amp;id=146610&amp;os=android%3A4.2.2&amp;model=HTC+One+X+-+4.2.2+-+API+17+-+720x1280&amp;imei=000000000000000&amp;app_version=5.2.7&amp;sign_open=1&amp;city_code=110000&amp;house_id=20624&amp;network=WIFI&amp;ip=10.0.3.15</div></pre></td></tr></table></figure></p>
+<p>可视化一下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">sign	a97bdae17004d4c9bc535068316b2185</div><div class="line">uid	0</div><div class="line">timestamp	1499155557</div><div class="line">id	146610</div><div class="line">os	android:4.2.2</div><div class="line">model	HTC One X - 4.2.2 - API 17 - 720x1280</div><div class="line">imei	000000000000000</div><div class="line">app_version	5.2.7</div><div class="line">sign_open	1</div><div class="line">city_code	110000</div><div class="line">house_id	20624</div><div class="line">network	WIFI</div><div class="line">ip	10.0.3.15</div></pre></td></tr></table></figure></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/04/pyenv多版本安装/" title="pyenv多版本安装" itemprop="url">pyenv多版本安装</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-04T03:18:32.000Z" itemprop="datePublished"> 发表于 2017-07-04</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">yum install -y git python-pip</div><div class="line">git clone https://github.com/pyenv/pyenv.git ~/.pyenv</div><div class="line">echo &apos;export PYENV_ROOT=&quot;$HOME/.pyenv&quot;&apos; &gt;&gt; ~/.bash_profile</div><div class="line">echo &apos;export PATH=&quot;$PYENV_ROOT/bin:$PATH&quot;&apos; &gt;&gt; ~/.bash_profile</div><div class="line">echo &apos;eval &quot;$(pyenv init -)&quot;&apos; &gt;&gt; ~/.bash_profile</div><div class="line"> yum install readline readline-devel readline-static openssl openssl-devel openssl-static sqlite-devel bzip2-devel bzip2-libs -y</div><div class="line"> pyenv install 3.6.1</div><div class="line"> git clone https://github.com/pyenv/pyenv-virtualenv.git $(pyenv root)/plugins/pyenv-virtualenv</div><div class="line"> pyenv shell 3.6.1</div><div class="line"> echo &apos;eval &quot;$(pyenv virtualenv-init -)&quot;&apos; &gt;&gt; ~/.bash_profile</div><div class="line"> pyenv virtualenv 3.6.1 will_3.6.1</div></pre></td></tr></table></figure>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">pyenv versions</div><div class="line"></div><div class="line">pyenv activate  will_3.6.1</div></pre></td></tr></table></figure>
+<p> 安装加速: 提前下载好对应python版本的tar.zx包，放到~/.pyenv/cache/下，然后再运行 pyenv install 3.6.1</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2017/07/03/RunningData执行用户迁移计划/" title="RunningData执行用户迁移计划" itemprop="url">RunningData执行用户迁移计划</a>
   </h1>
   <p class="article-author">By
@@ -754,157 +872,9 @@
 
 
 
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/05/25/linux中的hang进程/" title="linux中的hang进程" itemprop="url">linux中的hang进程</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-05-25T03:10:38.000Z" itemprop="datePublished"> 发表于 2017-05-25</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>5月24号晚上发现62上有两个hang的进程，占满了内存与cpu</p>
-<p>第一个是M2H任务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">root     10082     1 97 May21 ?        3-20:08:33 /server/java/jdk1.8.0_60/bin/java -Xmx4096m -Dhdp.version=2.4.2.0-258 -Djava.net.preferIPv4Stack=true -Dhdp.version=2.4.2.0-258 -Dhadoop.log.dir=/var/log/hadoop/root -Dhadoop.log.file=hadoop.log -Dhadoop.home.dir=/usr/hdp/2.4.2.0-258/hadoop -Dhadoop.id.str=root -Dhadoop.root.logger=INFO,console -Djava.library.path=:/usr/hdp/2.4.2.0-258/hadoop/lib/native/Linux-amd64-64:/usr/hdp/2.4.2.0-258/hadoop/lib/native -Dhadoop.policy.file=hadoop-policy.xml -Djava.net.preferIPv4Stack=true -Xmx4096m -Dhadoop.security.logger=INFO,NullAppender org.apache.sqoop.Sqoop import -Dmapreduce.job.queuename=xstorm --connect jdbc:mysql://10.0.100.73:3306/xiaodai?useCursorFetch=true&amp;dontTrackOpenResources=true&amp;defaultFetchSize=2000 --driver com.mysql.jdbc.Driver --username weixddata_read --password G7iu1BMo9LWs2e --hive-database ods_tinyv --columns ID,USER_ID,WB_USERNAME,MOBILE,BIZ_ID,MSG_TYPE,SMS_TYPE,DATA_SOURCE,SMS_ID,TASK_ID,SEND_STATUS,RES_CODE,REPORT_STATUS,SEND_TIME,REPORT_TIME,SEND_EXCEPTION --where DATE_FORMAT(SEND_TIME, &apos;%Y-%m-%d&apos;)=&apos;2017-05-20&apos; --table SMS_INFO --hive-import --hive-overwrite --target-dir ods_tinyv_SMS_INFO --outdir /server/app/sqoop/vo --bindir /server/app/sqoop/vo --verbose -m 1 --delete-target-dir --hive-import --hive-table o_wb_xiaodai_sms_info_i --hive-partition-key dt --hive-partition-value 2017-05-20 --null-string \\N --null-non-string \\N</div></pre></td></tr></table></figure></p>
-<p>还有一个HIVE任务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">root      3483     1 96 May23 ?        1-11:12:07 /server/java/jdk1.8.0_60/bin/java -Xmx4096m -Dhdp.version=2.4.2.0-258 -Djava.net.preferIPv4Stack=true -Dhdp.version=2.4.2.0-258 -Djava.net.preferIPv4Stack=true -XX:NewRatio=12 -XX:MaxHeapFreeRatio=40 -XX:MinHeapFreeRatio=15 -XX:+UseNUMA -XX:+UseParallelGC -XX:-UseGCOverheadLimit -Dhdp.version=2.4.2.0-258 -Dhadoop.log.dir=/var/log/hadoop/root -Dhadoop.log.file=hadoop.log -Dhadoop.home.dir=/usr/hdp/2.4.2.0-258/hadoop -Dhadoop.id.str=root -Dhadoop.root.logger=INFO,console -Djava.library.path=:/usr/hdp/2.4.2.0-258/hadoop/lib/native/Linux-amd64-64:/usr/hdp/2.4.2.0-258/hadoop/lib/native -Dhadoop.policy.file=hadoop-policy.xml -Djava.net.preferIPv4Stack=true -Xmx4096m -Xmx1024m -Dhadoop.security.logger=INFO,NullAppender -Dhdp.version=2.4.2.0-258 -Dhadoop.log.dir=/var/log/hadoop/root -Dhadoop.log.file=hadoop.log -Dhadoop.home.dir=/usr/hdp/2.4.2.0-258/hadoop -Dhadoop.id.str=root -Dhadoop.root.logger=INFO,console -Djava.library.path=:/usr/hdp/2.4.2.0-258/hadoop/lib/native/Linux-amd64-64:/usr/hdp/2.4.2.0-258/hadoop/lib/native:/usr/hdp/2.4.2.0-258/hadoop/lib/native/Linux-amd64-64:/usr/hdp/2.4.2.0-258/hadoop/lib/native -Dhadoop.policy.file=hadoop-policy.xml -Djava.net.preferIPv4Stack=true -Xmx4096m -Xmx4096m -Xmx1024m -Dhadoop.security.logger=INFO,NullAppender org.apache.hadoop.util.RunJar /usr/hdp/2.4.2.0-258/hive/lib/hive-exec-1.2.1000.2.4.2.0-258.jar org.apache.hadoop.hive.ql.exec.mr.ExecDriver -localtask -plan file:/tmp/root/228f95e6-26ee-4466-bd3d-a91195c86bf4/hive_2017-05-23_10-38-11_000_7465740175512782543-1/-local-10004/plan.xml -jobconffile file:/tmp/root/228f95e6-26ee-4466-bd3d-a91195c86bf4/hive_2017-05-23_10-38-11_000_7465740175512782543-1/-local-10005/jobconf.xml</div></pre></td></tr></table></figure></p>
-<p>手贱，先kill掉了，不然还能看到上面的plan文件，和job配置文件什么的。</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/05/18/runningdata改版记录/" title="runningdata改版记录" itemprop="url">runningdata改版记录</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2017-05-18T02:54:54.000Z" itemprop="datePublished"> 发表于 2017-05-18</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>抽象ETLObjRelated，其他对象继承之</p>
-<ul>
-<li>ETL的字段名tbl_name需要在数据库里修改为name<ul>
-<li>tasks里的exec_etl_sche任务会调用etl.name【老表的tbl_name会报错找不到】</li>
-</ul>
-</li>
-<li>执行metamap 0045的migrations，这个只是添加字段，不会造成额外影响</li>
-<li></li>
-</ul>
-<p>sdf </p>
-<ol>
-<li><p>确保新的save方法都已经注释掉</p>
-</li>
-<li><p>./manage.py migrate metamap 0050 –settings=metamap.config</p>
-</li>
-<li><p>开始清洗</p>
-</li>
-</ol>
-<ul>
-<li>clean_etl</li>
-<li>clean_rel</li>
-<li>clean_m2h</li>
-<li>before_clean_blood</li>
-<li>clean_blood</li>
-<li>clean_h2m</li>
-<li>clean_jar</li>
-<li>clean_email</li>
-<li>clean_task[分别执行clean， type=4, type=1等等]</li>
-<li>clean_period</li>
-</ul>
-<h2 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h2><ol>
-<li>H2M中的个别现象，多个周期的数据存放在同一个表中：<br>SELECT * from metamap_sqoophive2mysql where id in (71,72,73,74,75,76)<br>需要额外手动维护execblood</li>
-<li>放开那些注释</li>
-</ol>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/youdaonote/">youdaonote</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
 
   <nav id="page-nav" class="clearfix">
-    <a class="extend prev" rel="prev" href="/page/9/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/page/11/">11</a><a class="page-number" href="/page/12/">12</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/11/">Next<span></span></a>
+    <a class="extend prev" rel="prev" href="/page/9/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/page/11/">11</a><a class="page-number" href="/page/12/">12</a><span class="space">&hellip;</span><a class="page-number" href="/page/25/">25</a><a class="extend next" rel="next" href="/page/11/">Next<span></span></a>
   </nav>
 
 </div>
@@ -977,31 +947,31 @@
 			
 		
 			
+				<li><a href="/tags/django/" title="django">django<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构/" title="架构">架构<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构，jaeger/" title="架构，jaeger">架构，jaeger<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Solr/" title="Solr">Solr<sup>1</sup></a></li>
+				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
 			
 		
 			
 				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/hdfs/" title="hdfs">hdfs<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/hue/" title="hue">hue<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ElasticSearch/" title="ElasticSearch">ElasticSearch<sup>1</sup></a></li>
 			
 		
 		</ul>
@@ -1074,7 +1044,7 @@
 		
 
 		<p class="copyright">
-		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2018 
 		
 		<a href="/about" target="_blank" title="Will Chen">Will Chen</a>
 		
