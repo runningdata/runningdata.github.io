@@ -577,7 +577,7 @@
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/scala/">scala</a><a href="/tags/sbt/">sbt</a><a href="/tags/repository/">repository</a>
+  <span></span> <a href="/tags/sbt/">sbt</a><a href="/tags/repository/">repository</a><a href="/tags/scala/">scala</a>
   </div>
 
 </div>
@@ -857,68 +857,6 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2015/07/08/flume-源码阅读笔记（1）/" title="flume 源码阅读笔记（1）" itemprop="url">flume 源码阅读笔记（1）</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
-		
-  <p class="article-time">
-    <time datetime="2015-07-08T12:15:48.000Z" itemprop="datePublished"> 发表于 2015-07-08</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>#1 . 启动脚本<br>最开始肯定是从启动脚本flume-ng下手了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">FLUME_AGENT_CLASS=&quot;org.apache.flume.node.Application&quot; # 这个是主要入口</div><div class="line">FLUME_AVRO_CLIENT_CLASS=&quot;org.apache.flume.client.avro.AvroCLIClient&quot;</div><div class="line">FLUME_VERSION_CLASS=&quot;org.apache.flume.tools.VersionInfo&quot;</div><div class="line">FLUME_TOOLS_CLASS=&quot;org.apache.flume.tools.FlumeToolsMain&quot;</div></pre></td></tr></table></figure></p>
-<hr>
-<p>#2. 主程序入口Application<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div></pre></td><td class="code"><pre><div class="line">Options options = <span class="keyword">new</span> Options();</div><div class="line">..... <span class="comment">//一大堆命令行参数</span></div><div class="line"></div><div class="line"> CommandLineParser parser = <span class="keyword">new</span> GnuParser();</div><div class="line"> CommandLine commandLine = parser.parse(options, args);</div><div class="line"> <span class="comment">// 以上两行，对命令行参数解析完毕</span></div><div class="line"></div><div class="line"> <span class="comment">// 打印帮助信息</span></div><div class="line"> <span class="keyword">if</span> (commandLine.hasOption(<span class="string">'h'</span>)) &#123;</div><div class="line">   <span class="keyword">new</span> HelpFormatter().printHelp(<span class="string">"flume-ng agent"</span>, options, <span class="keyword">true</span>);</div><div class="line">   <span class="keyword">return</span>;</div><div class="line"> &#125;</div><div class="line"></div><div class="line"> String agentName = commandLine.getOptionValue(<span class="string">'n'</span>);</div><div class="line"> <span class="keyword">boolean</span> reload = !commandLine.hasOption(<span class="string">"no-reload-conf"</span>);</div><div class="line"></div><div class="line"> <span class="comment">// 是否有zookeeper的相关配置</span></div><div class="line"> <span class="keyword">if</span> (commandLine.hasOption(<span class="string">'z'</span>) || commandLine.hasOption(<span class="string">"zkConnString"</span>)) &#123;</div><div class="line">   isZkConfigured = <span class="keyword">true</span>;</div><div class="line"> &#125;</div><div class="line"> </div><div class="line"> <span class="comment">// 主角登场</span></div><div class="line"> Application application = <span class="keyword">null</span>;</div><div class="line"> <span class="keyword">if</span> (isZkConfigured) &#123;</div><div class="line">   <span class="comment">// get options</span></div><div class="line">   String zkConnectionStr = commandLine.getOptionValue(<span class="string">'z'</span>);</div><div class="line">   String baseZkPath = commandLine.getOptionValue(<span class="string">'p'</span>);</div><div class="line"></div><div class="line">   <span class="keyword">if</span> (reload) &#123;</div><div class="line">     EventBus eventBus = <span class="keyword">new</span> EventBus(agentName + <span class="string">"-event-bus"</span>);</div><div class="line">     List&lt;LifecycleAware&gt; components = Lists.newArrayList();</div><div class="line">     PollingZooKeeperConfigurationProvider zookeeperConfigurationProvider =</div><div class="line">       <span class="keyword">new</span> PollingZooKeeperConfigurationProvider(</div><div class="line">         agentName, zkConnectionStr, baseZkPath, eventBus);</div><div class="line">     components.add(zookeeperConfigurationProvider);</div><div class="line">     application = <span class="keyword">new</span> Application(components);</div><div class="line">     eventBus.register(application);</div><div class="line">   &#125; <span class="keyword">else</span> &#123;</div><div class="line">     StaticZooKeeperConfigurationProvider zookeeperConfigurationProvider =</div><div class="line">       <span class="keyword">new</span> StaticZooKeeperConfigurationProvider(</div><div class="line">         agentName, zkConnectionStr, baseZkPath);</div><div class="line">     application = <span class="keyword">new</span> Application();</div><div class="line">     application.handleConfigurationEvent(zookeeperConfigurationProvider</div><div class="line">       .getConfiguration());</div><div class="line">   &#125;</div><div class="line"> &#125; <span class="keyword">else</span> &#123;</div><div class="line">   File configurationFile = <span class="keyword">new</span> File(commandLine.getOptionValue(<span class="string">'f'</span>));</div><div class="line">   <span class="comment">/*</span></div><div class="line">    * 如果配置文件不存在，就直接报错</div><div class="line">    */</div><div class="line">   <span class="keyword">if</span> (!configurationFile.exists()) &#123;</div><div class="line">     ...</div><div class="line">   &#125;</div><div class="line">   List&lt;LifecycleAware&gt; components = Lists.newArrayList();</div><div class="line"></div><div class="line">   <span class="keyword">if</span> (reload) &#123;</div><div class="line">     EventBus eventBus = <span class="keyword">new</span> EventBus(agentName + <span class="string">"-event-bus"</span>);</div><div class="line">     PollingPropertiesFileConfigurationProvider configurationProvider =</div><div class="line">       <span class="keyword">new</span> PollingPropertiesFileConfigurationProvider(</div><div class="line">         agentName, configurationFile, eventBus, <span class="number">30</span>);</div><div class="line">     components.add(configurationProvider);</div><div class="line">     application = <span class="keyword">new</span> Application(components);</div><div class="line">     eventBus.register(application);</div><div class="line">   &#125; <span class="keyword">else</span> &#123;</div><div class="line">     PropertiesFileConfigurationProvider configurationProvider =</div><div class="line">       <span class="keyword">new</span> PropertiesFileConfigurationProvider(</div><div class="line">         agentName, configurationFile);</div><div class="line">     <span class="comment">// 下面为典型启动过程</span></div><div class="line">     application = <span class="keyword">new</span> Application();</div><div class="line">     application.handleConfigurationEvent(configurationProvider</div><div class="line">       .getConfiguration());</div><div class="line">   &#125;</div><div class="line"> &#125;</div><div class="line"> application.start(); <span class="comment">// 程序启动</span></div><div class="line"></div><div class="line"> <span class="comment">// 后面是shutdown hook，作清理工作</span></div></pre></td></tr></table></figure></p>
-<p>综上来看，有营养的代码很少，就是读个配置文件，然后直接就启动程序了。那么application的初始化和start方法里都有些什么操作呢？</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"> <span class="comment">// 1. 构造方法里只是注册一个LifecycleSupervisor，也就是管理生命周期的</span></div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="title">Application</span><span class="params">()</span> </span>&#123;</div><div class="line">   <span class="keyword">this</span>(<span class="keyword">new</span> ArrayList&lt;LifecycleAware&gt;(<span class="number">0</span>));</div><div class="line"> &#125;</div><div class="line"></div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="title">Application</span><span class="params">(List&lt;LifecycleAware&gt; components)</span> </span>&#123;</div><div class="line">   <span class="keyword">this</span>.components = components;</div><div class="line">   supervisor = <span class="keyword">new</span> LifecycleSupervisor();</div><div class="line"> &#125;</div><div class="line"></div><div class="line"><span class="comment">// 2. 根据conf重启所有components</span></div><div class="line"> <span class="meta">@Subscribe</span></div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">handleConfigurationEvent</span><span class="params">(MaterializedConfiguration conf)</span> </span>&#123;</div><div class="line">   stopAllComponents();</div><div class="line">   startAllComponents(conf); <span class="comment">// 这个conf来自于配置文件，你懂得，这些component肯定就是source channel sink 之类的了</span></div><div class="line"> &#125;</div><div class="line"> </div><div class="line"> <span class="comment">// 3. 使用1中初始化的supervisor对所有component进行监管</span></div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> </span>&#123;</div><div class="line">   <span class="keyword">for</span>(LifecycleAware component : components) &#123;</div><div class="line">     supervisor.supervise(component,</div><div class="line">         <span class="keyword">new</span> SupervisorPolicy.AlwaysRestartPolicy(), LifecycleState.START);</div><div class="line">   &#125;</div><div class="line"> &#125;</div></pre></td></tr></table></figure>
-<p>好，启动component的入口也明晰了<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startAllComponents</span><span class="params">(MaterializedConfiguration materializedConfiguration)</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (Entry&lt;String, Channel&gt; entry :</div><div class="line">      materializedConfiguration.getChannels().entrySet()) &#123;</div><div class="line">      <span class="keyword">try</span>&#123;</div><div class="line">        logger.info(<span class="string">"Starting Channel "</span> + entry.getKey());</div><div class="line">        <span class="comment">// 1. 将channel交给supervisor来进行生命周期管理，这里是启动</span></div><div class="line">        supervisor.supervise(entry.getValue(),</div><div class="line">            <span class="keyword">new</span> SupervisorPolicy.AlwaysRestartPolicy(), LifecycleState.START);</div><div class="line">      &#125; <span class="keyword">catch</span> (Exception e)&#123;</div><div class="line">        logger.error(<span class="string">"Error while starting &#123;&#125;"</span>, entry.getValue(), e);</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// 2. 启动sink 和 souce之前，确保所有的channel无误地启动完毕</span></div><div class="line">    <span class="keyword">for</span>(Channel ch: materializedConfiguration.getChannels().values())&#123;</div><div class="line">      <span class="keyword">while</span>(ch.getLifecycleState() != LifecycleState.START</div><div class="line">          &amp;&amp; !supervisor.isComponentInErrorState(ch))&#123;</div><div class="line">          logger.info(<span class="string">"Waiting for channel: "</span> + ch.getName() +</div><div class="line">              <span class="string">" to start. Sleeping for 500 ms"</span>);</div><div class="line">          Thread.sleep(<span class="number">500</span>);</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// 3. 同上方式，启动sink</span></div><div class="line">    </div><div class="line">    <span class="comment">// 4. 同上方式，启动source</span></div><div class="line"></div><div class="line">    <span class="comment">// 监控： 目前支持ganlia和http jetty两种，需要在命令行指定type</span></div><div class="line">    <span class="comment">// $ bin/flume-ng agent --conf-file example.conf --name a1 -Dflume.monitoring.type=ganglia -Dflume.monitoring.hosts=com.example:1234,com.example2:5455</span></div><div class="line">    <span class="keyword">this</span>.loadMonitoring();</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
-<p>至此启动流程就完毕了。太简单了也~~~</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    
-
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/源码/">源码</a><a href="/tags/flume/">flume</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
       <a href="/2015/07/08/flume-源码阅读笔记（2）/" title="flume 源码阅读笔记（2）" itemprop="url">flume 源码阅读笔记（2）</a>
   </h1>
   <p class="article-author">By
@@ -974,6 +912,68 @@
 *  PollingRunner runner
 </code></pre><p>轮询调用sink的驱动器，如果channel里有任何可用的event，都会尝试执行。与source不同，所有的sink都会被涉及。Runner像是Processor的Wrapper。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> </span>&#123;</div><div class="line">    SinkProcessor policy = getPolicy();</div><div class="line">    policy.start();</div><div class="line">    runner = <span class="keyword">new</span> PollingRunner(); <span class="comment">//封装shouldStop决定是否运行</span></div><div class="line">    runner.policy = policy;</div><div class="line">    runner.counterGroup = counterGroup;</div><div class="line">    runner.shouldStop = <span class="keyword">new</span> AtomicBoolean();</div><div class="line">    runnerThread = <span class="keyword">new</span> Thread(runner);</div><div class="line">    runnerThread.setName(<span class="string">"SinkRunner-PollingRunner-"</span> +</div><div class="line">        policy.getClass().getSimpleName());</div><div class="line">    runnerThread.start();</div><div class="line">    lifecycleState = LifecycleState.START;</div><div class="line">  &#125;</div></pre></td></tr></table></figure>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    
+
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/源码/">源码</a><a href="/tags/flume/">flume</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/07/08/flume-源码阅读笔记（1）/" title="flume 源码阅读笔记（1）" itemprop="url">flume 源码阅读笔记（1）</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Will Chen" target="_blank" itemprop="author">Will Chen</a>
+		
+  <p class="article-time">
+    <time datetime="2015-07-08T12:15:48.000Z" itemprop="datePublished"> 发表于 2015-07-08</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>#1 . 启动脚本<br>最开始肯定是从启动脚本flume-ng下手了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">FLUME_AGENT_CLASS=&quot;org.apache.flume.node.Application&quot; # 这个是主要入口</div><div class="line">FLUME_AVRO_CLIENT_CLASS=&quot;org.apache.flume.client.avro.AvroCLIClient&quot;</div><div class="line">FLUME_VERSION_CLASS=&quot;org.apache.flume.tools.VersionInfo&quot;</div><div class="line">FLUME_TOOLS_CLASS=&quot;org.apache.flume.tools.FlumeToolsMain&quot;</div></pre></td></tr></table></figure></p>
+<hr>
+<p>#2. 主程序入口Application<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div></pre></td><td class="code"><pre><div class="line">Options options = <span class="keyword">new</span> Options();</div><div class="line">..... <span class="comment">//一大堆命令行参数</span></div><div class="line"></div><div class="line"> CommandLineParser parser = <span class="keyword">new</span> GnuParser();</div><div class="line"> CommandLine commandLine = parser.parse(options, args);</div><div class="line"> <span class="comment">// 以上两行，对命令行参数解析完毕</span></div><div class="line"></div><div class="line"> <span class="comment">// 打印帮助信息</span></div><div class="line"> <span class="keyword">if</span> (commandLine.hasOption(<span class="string">'h'</span>)) &#123;</div><div class="line">   <span class="keyword">new</span> HelpFormatter().printHelp(<span class="string">"flume-ng agent"</span>, options, <span class="keyword">true</span>);</div><div class="line">   <span class="keyword">return</span>;</div><div class="line"> &#125;</div><div class="line"></div><div class="line"> String agentName = commandLine.getOptionValue(<span class="string">'n'</span>);</div><div class="line"> <span class="keyword">boolean</span> reload = !commandLine.hasOption(<span class="string">"no-reload-conf"</span>);</div><div class="line"></div><div class="line"> <span class="comment">// 是否有zookeeper的相关配置</span></div><div class="line"> <span class="keyword">if</span> (commandLine.hasOption(<span class="string">'z'</span>) || commandLine.hasOption(<span class="string">"zkConnString"</span>)) &#123;</div><div class="line">   isZkConfigured = <span class="keyword">true</span>;</div><div class="line"> &#125;</div><div class="line"> </div><div class="line"> <span class="comment">// 主角登场</span></div><div class="line"> Application application = <span class="keyword">null</span>;</div><div class="line"> <span class="keyword">if</span> (isZkConfigured) &#123;</div><div class="line">   <span class="comment">// get options</span></div><div class="line">   String zkConnectionStr = commandLine.getOptionValue(<span class="string">'z'</span>);</div><div class="line">   String baseZkPath = commandLine.getOptionValue(<span class="string">'p'</span>);</div><div class="line"></div><div class="line">   <span class="keyword">if</span> (reload) &#123;</div><div class="line">     EventBus eventBus = <span class="keyword">new</span> EventBus(agentName + <span class="string">"-event-bus"</span>);</div><div class="line">     List&lt;LifecycleAware&gt; components = Lists.newArrayList();</div><div class="line">     PollingZooKeeperConfigurationProvider zookeeperConfigurationProvider =</div><div class="line">       <span class="keyword">new</span> PollingZooKeeperConfigurationProvider(</div><div class="line">         agentName, zkConnectionStr, baseZkPath, eventBus);</div><div class="line">     components.add(zookeeperConfigurationProvider);</div><div class="line">     application = <span class="keyword">new</span> Application(components);</div><div class="line">     eventBus.register(application);</div><div class="line">   &#125; <span class="keyword">else</span> &#123;</div><div class="line">     StaticZooKeeperConfigurationProvider zookeeperConfigurationProvider =</div><div class="line">       <span class="keyword">new</span> StaticZooKeeperConfigurationProvider(</div><div class="line">         agentName, zkConnectionStr, baseZkPath);</div><div class="line">     application = <span class="keyword">new</span> Application();</div><div class="line">     application.handleConfigurationEvent(zookeeperConfigurationProvider</div><div class="line">       .getConfiguration());</div><div class="line">   &#125;</div><div class="line"> &#125; <span class="keyword">else</span> &#123;</div><div class="line">   File configurationFile = <span class="keyword">new</span> File(commandLine.getOptionValue(<span class="string">'f'</span>));</div><div class="line">   <span class="comment">/*</span></div><div class="line">    * 如果配置文件不存在，就直接报错</div><div class="line">    */</div><div class="line">   <span class="keyword">if</span> (!configurationFile.exists()) &#123;</div><div class="line">     ...</div><div class="line">   &#125;</div><div class="line">   List&lt;LifecycleAware&gt; components = Lists.newArrayList();</div><div class="line"></div><div class="line">   <span class="keyword">if</span> (reload) &#123;</div><div class="line">     EventBus eventBus = <span class="keyword">new</span> EventBus(agentName + <span class="string">"-event-bus"</span>);</div><div class="line">     PollingPropertiesFileConfigurationProvider configurationProvider =</div><div class="line">       <span class="keyword">new</span> PollingPropertiesFileConfigurationProvider(</div><div class="line">         agentName, configurationFile, eventBus, <span class="number">30</span>);</div><div class="line">     components.add(configurationProvider);</div><div class="line">     application = <span class="keyword">new</span> Application(components);</div><div class="line">     eventBus.register(application);</div><div class="line">   &#125; <span class="keyword">else</span> &#123;</div><div class="line">     PropertiesFileConfigurationProvider configurationProvider =</div><div class="line">       <span class="keyword">new</span> PropertiesFileConfigurationProvider(</div><div class="line">         agentName, configurationFile);</div><div class="line">     <span class="comment">// 下面为典型启动过程</span></div><div class="line">     application = <span class="keyword">new</span> Application();</div><div class="line">     application.handleConfigurationEvent(configurationProvider</div><div class="line">       .getConfiguration());</div><div class="line">   &#125;</div><div class="line"> &#125;</div><div class="line"> application.start(); <span class="comment">// 程序启动</span></div><div class="line"></div><div class="line"> <span class="comment">// 后面是shutdown hook，作清理工作</span></div></pre></td></tr></table></figure></p>
+<p>综上来看，有营养的代码很少，就是读个配置文件，然后直接就启动程序了。那么application的初始化和start方法里都有些什么操作呢？</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"> <span class="comment">// 1. 构造方法里只是注册一个LifecycleSupervisor，也就是管理生命周期的</span></div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="title">Application</span><span class="params">()</span> </span>&#123;</div><div class="line">   <span class="keyword">this</span>(<span class="keyword">new</span> ArrayList&lt;LifecycleAware&gt;(<span class="number">0</span>));</div><div class="line"> &#125;</div><div class="line"></div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="title">Application</span><span class="params">(List&lt;LifecycleAware&gt; components)</span> </span>&#123;</div><div class="line">   <span class="keyword">this</span>.components = components;</div><div class="line">   supervisor = <span class="keyword">new</span> LifecycleSupervisor();</div><div class="line"> &#125;</div><div class="line"></div><div class="line"><span class="comment">// 2. 根据conf重启所有components</span></div><div class="line"> <span class="meta">@Subscribe</span></div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">handleConfigurationEvent</span><span class="params">(MaterializedConfiguration conf)</span> </span>&#123;</div><div class="line">   stopAllComponents();</div><div class="line">   startAllComponents(conf); <span class="comment">// 这个conf来自于配置文件，你懂得，这些component肯定就是source channel sink 之类的了</span></div><div class="line"> &#125;</div><div class="line"> </div><div class="line"> <span class="comment">// 3. 使用1中初始化的supervisor对所有component进行监管</span></div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> </span>&#123;</div><div class="line">   <span class="keyword">for</span>(LifecycleAware component : components) &#123;</div><div class="line">     supervisor.supervise(component,</div><div class="line">         <span class="keyword">new</span> SupervisorPolicy.AlwaysRestartPolicy(), LifecycleState.START);</div><div class="line">   &#125;</div><div class="line"> &#125;</div></pre></td></tr></table></figure>
+<p>好，启动component的入口也明晰了<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startAllComponents</span><span class="params">(MaterializedConfiguration materializedConfiguration)</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (Entry&lt;String, Channel&gt; entry :</div><div class="line">      materializedConfiguration.getChannels().entrySet()) &#123;</div><div class="line">      <span class="keyword">try</span>&#123;</div><div class="line">        logger.info(<span class="string">"Starting Channel "</span> + entry.getKey());</div><div class="line">        <span class="comment">// 1. 将channel交给supervisor来进行生命周期管理，这里是启动</span></div><div class="line">        supervisor.supervise(entry.getValue(),</div><div class="line">            <span class="keyword">new</span> SupervisorPolicy.AlwaysRestartPolicy(), LifecycleState.START);</div><div class="line">      &#125; <span class="keyword">catch</span> (Exception e)&#123;</div><div class="line">        logger.error(<span class="string">"Error while starting &#123;&#125;"</span>, entry.getValue(), e);</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// 2. 启动sink 和 souce之前，确保所有的channel无误地启动完毕</span></div><div class="line">    <span class="keyword">for</span>(Channel ch: materializedConfiguration.getChannels().values())&#123;</div><div class="line">      <span class="keyword">while</span>(ch.getLifecycleState() != LifecycleState.START</div><div class="line">          &amp;&amp; !supervisor.isComponentInErrorState(ch))&#123;</div><div class="line">          logger.info(<span class="string">"Waiting for channel: "</span> + ch.getName() +</div><div class="line">              <span class="string">" to start. Sleeping for 500 ms"</span>);</div><div class="line">          Thread.sleep(<span class="number">500</span>);</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// 3. 同上方式，启动sink</span></div><div class="line">    </div><div class="line">    <span class="comment">// 4. 同上方式，启动source</span></div><div class="line"></div><div class="line">    <span class="comment">// 监控： 目前支持ganlia和http jetty两种，需要在命令行指定type</span></div><div class="line">    <span class="comment">// $ bin/flume-ng agent --conf-file example.conf --name a1 -Dflume.monitoring.type=ganglia -Dflume.monitoring.hosts=com.example:1234,com.example2:5455</span></div><div class="line">    <span class="keyword">this</span>.loadMonitoring();</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
+<p>至此启动流程就完毕了。太简单了也~~~</p>
 
         
         
@@ -1069,6 +1069,14 @@
 			
 		
 			
+				<li><a href="/tags/架构/" title="架构">架构<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/django/" title="django">django<sup>2</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/mysql/" title="mysql">mysql<sup>2</sup></a></li>
 			
 		
@@ -1085,19 +1093,7 @@
 			
 		
 			
-				<li><a href="/tags/django/" title="django">django<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/架构/" title="架构">架构<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/架构，jaeger/" title="架构，jaeger">架构，jaeger<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ember/" title="ember">ember<sup>1</sup></a></li>
+				<li><a href="/tags/jaeger/" title="jaeger">jaeger<sup>2</sup></a></li>
 			
 		
 			
@@ -1105,11 +1101,15 @@
 			
 		
 			
-				<li><a href="/tags/R/" title="R">R<sup>1</sup></a></li>
+				<li><a href="/tags/kibana/" title="kibana">kibana<sup>1</sup></a></li>
 			
 		
 			
 				<li><a href="/tags/guava/" title="guava">guava<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/heroku/" title="heroku">heroku<sup>1</sup></a></li>
 			
 		
 		</ul>
